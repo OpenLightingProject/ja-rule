@@ -83,6 +83,11 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #define SYS_CLK_CONFIG_PRIMARY_XTAL         8000000ul
 #define SYS_CLK_CONFIG_SECONDARY_XTAL       0ul
    
+/*** Interrupt System Service Configuration ***/
+
+#define SYS_INT                     true
+
+
 /*** Ports System Service Configuration ***/
 
 #define SYS_PORT_AD1PCFG        ~0xffff
@@ -128,6 +133,39 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // Section: Middleware & Other Library Configuration
 // *****************************************************************************
 // *****************************************************************************
+
+/*** USB Driver Configuration ***/
+
+/* Enables Device Support */
+#define DRV_USB_DEVICE_SUPPORT      true
+
+/* Enables Device Support */
+#define DRV_USB_HOST_SUPPORT        false
+
+
+/* Maximum USB driver instances */
+#define DRV_USB_INSTANCES_NUMBER    1
+
+/* Interrupt mode enabled */
+#define DRV_USB_INTERRUPT_MODE      true
+
+/* Number of Endpoints used */
+#define DRV_USB_ENDPOINTS_NUMBER    1
+
+/*** USB Device Stack Configuration ***/
+
+/* Maximum device layer instances */
+#define USB_DEVICE_INSTANCES_NUMBER     1
+
+/* EP0 size in bytes */
+#define USB_DEVICE_EP0_BUFFER_SIZE      64
+
+
+
+
+/* Endpoint Transfer Queue Size combined for Read and write */
+#define USB_DEVICE_ENDPOINT_QUEUE_DEPTH_COMBINED    2
+
 
 
 

@@ -30,6 +30,11 @@
         </logicalFolder>
       </logicalFolder>
       <logicalFolder name="framework" displayName="framework" projectFiles="true">
+        <logicalFolder name="driver" displayName="driver" projectFiles="true">
+          <logicalFolder name="usb" displayName="usb" projectFiles="true">
+            <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/driver/usb/drv_usb.h</itemPath>
+          </logicalFolder>
+        </logicalFolder>
         <logicalFolder name="system" displayName="system" projectFiles="true">
           <logicalFolder name="common" displayName="common" projectFiles="true">
             <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/common/sys_common.h</itemPath>
@@ -38,10 +43,16 @@
           <logicalFolder name="devcon" displayName="devcon" projectFiles="true">
             <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/devcon/sys_devcon.h</itemPath>
           </logicalFolder>
+          <logicalFolder name="int" displayName="int" projectFiles="true">
+            <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/int/sys_int.h</itemPath>
+          </logicalFolder>
           <logicalFolder name="ports" displayName="ports" projectFiles="true">
             <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/ports/sys_ports.h</itemPath>
           </logicalFolder>
           <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/system.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="usb" displayName="usb" projectFiles="true">
+          <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/usb/usb_device.h</itemPath>
         </logicalFolder>
       </logicalFolder>
     </logicalFolder>
@@ -87,6 +98,18 @@
         </logicalFolder>
       </logicalFolder>
       <logicalFolder name="framework" displayName="framework" projectFiles="true">
+        <logicalFolder name="driver" displayName="driver" projectFiles="true">
+          <logicalFolder name="usb" displayName="usb" projectFiles="true">
+            <logicalFolder name="usbfs" displayName="usbfs" projectFiles="true">
+              <logicalFolder name="src" displayName="src" projectFiles="true">
+                <logicalFolder name="dynamic" displayName="dynamic" projectFiles="true">
+                  <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/driver/usb/usbfs/src/dynamic/drv_usb.c</itemPath>
+                  <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/driver/usb/usbfs/src/dynamic/drv_usb_device.c</itemPath>
+                </logicalFolder>
+              </logicalFolder>
+            </logicalFolder>
+          </logicalFolder>
+        </logicalFolder>
         <logicalFolder name="system" displayName="system" projectFiles="true">
           <logicalFolder name="devcon" displayName="devcon" projectFiles="true">
             <logicalFolder name="src" displayName="src" projectFiles="true">
@@ -94,9 +117,22 @@
               <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/devcon/src/sys_devcon_pic32mx.c</itemPath>
             </logicalFolder>
           </logicalFolder>
+          <logicalFolder name="int" displayName="int" projectFiles="true">
+            <logicalFolder name="src" displayName="src" projectFiles="true">
+              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/int/src/sys_int_pic32.c</itemPath>
+            </logicalFolder>
+          </logicalFolder>
           <logicalFolder name="ports" displayName="ports" projectFiles="true">
             <logicalFolder name="src" displayName="src" projectFiles="true">
               <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/ports/src/sys_ports.c</itemPath>
+            </logicalFolder>
+          </logicalFolder>
+        </logicalFolder>
+        <logicalFolder name="usb" displayName="usb" projectFiles="true">
+          <logicalFolder name="src" displayName="src" projectFiles="true">
+            <logicalFolder name="dynamic" displayName="dynamic" projectFiles="true">
+              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device.c</itemPath>
+              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_endpoint_functions.c</itemPath>
             </logicalFolder>
           </logicalFolder>
         </logicalFolder>
@@ -123,7 +159,7 @@
         <platformTool>PICkit3PlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
         <languageToolchainVersion>1.31</languageToolchainVersion>
-        <platform>3</platform>
+        <platform>2</platform>
       </toolsSet>
       <compileType>
         <linkerTool>

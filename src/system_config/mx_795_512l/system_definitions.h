@@ -53,8 +53,10 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #include "system/clk/sys_clk.h"
 #include "framework/system/clk/sys_clk_static.h"
 #include "system/devcon/sys_devcon.h"
+#include "system/int/sys_int.h"
 #include "system/ports/sys_ports.h"
 #include "system/debug/sys_debug.h"
+#include "usb/usb_device.h"
 
 
 // *****************************************************************************
@@ -82,6 +84,9 @@ typedef struct
 {
     SYS_MODULE_OBJ  sysDevcon;
 
+
+
+    SYS_MODULE_OBJ  usbDevObject0;
 
 
 } SYSTEM_OBJECTS;

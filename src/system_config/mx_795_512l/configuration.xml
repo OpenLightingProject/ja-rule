@@ -4,32 +4,28 @@
   <ForceOptimization flag="true"/>
   <Files>
     <File>
-      <Name>sys_devcon.c</Name>
-      <Path>/framework/system/devcon/src</Path>
+      <Name>drv_usb_device.c</Name>
+      <Path>/framework/driver/usb/usbfs/src/dynamic</Path>
     </File>
     <File>
       <Name>bsp_sys_init.c</Name>
       <Path>/bsp/pic32mx_eth_sk2</Path>
     </File>
     <File>
-      <Name>sys_devcon_pic32mx.c</Name>
-      <Path>/framework/system/devcon/src</Path>
+      <Name>usb_device.h</Name>
+      <Path>/framework/usb</Path>
+    </File>
+    <File>
+      <Name>drv_usb.c</Name>
+      <Path>/framework/driver/usb/usbfs/src/dynamic</Path>
     </File>
     <File>
       <Name>bsp_config.h</Name>
       <Path>/bsp/pic32mx_eth_sk2</Path>
     </File>
     <File>
-      <Name>system.h</Name>
-      <Path>/framework/system</Path>
-    </File>
-    <File>
       <Name>sys_devcon.h</Name>
       <Path>/framework/system/devcon</Path>
-    </File>
-    <File>
-      <Name>sys_common.h</Name>
-      <Path>/framework/system/common</Path>
     </File>
     <File>
       <Name>sys_module.h</Name>
@@ -43,12 +39,48 @@
       <Name>sys_ports.h</Name>
       <Path>/framework/system/ports</Path>
     </File>
+    <File>
+      <Name>drv_usb.h</Name>
+      <Path>/framework/driver/usb</Path>
+    </File>
+    <File>
+      <Name>sys_devcon.c</Name>
+      <Path>/framework/system/devcon/src</Path>
+    </File>
+    <File>
+      <Name>usb_device.c</Name>
+      <Path>/framework/usb/src/dynamic</Path>
+    </File>
+    <File>
+      <Name>sys_devcon_pic32mx.c</Name>
+      <Path>/framework/system/devcon/src</Path>
+    </File>
+    <File>
+      <Name>sys_int.h</Name>
+      <Path>/framework/system/int</Path>
+    </File>
+    <File>
+      <Name>sys_common.h</Name>
+      <Path>/framework/system/common</Path>
+    </File>
+    <File>
+      <Name>system.h</Name>
+      <Path>/framework/system</Path>
+    </File>
+    <File>
+      <Name>usb_device_endpoint_functions.c</Name>
+      <Path>/framework/usb/src/dynamic</Path>
+    </File>
+    <File>
+      <Name>sys_int_pic32.c</Name>
+      <Path>/framework/system/int/src</Path>
+    </File>
   </Files>
   <Templates>
     <Template>
       <Name>system_config.h</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>E35824C0AE252233EA6F09DA6A55BA88</Checksum>
+      <Checksum>A2E6FC5F22F89501C26841EE43363B6C</Checksum>
     </Template>
     <Template>
       <Name>app.c</Name>
@@ -57,7 +89,7 @@
     <Template>
       <Name>system_init.c</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>FA089AADD171DF58E0C50CE8A87985C8</Checksum>
+      <Checksum>804C91C7714172DA629F9C1936AC0131</Checksum>
     </Template>
     <Template>
       <Name>app.h</Name>
@@ -71,7 +103,7 @@
     <Template>
       <Name>system_tasks.c</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>C1E3FF9C42C260B098DE686E0175F30D</Checksum>
+      <Checksum>0BEE6C40D29196D89B516A74D8798052</Checksum>
     </Template>
     <Template>
       <Name>main.c</Name>
@@ -85,12 +117,12 @@
     <Template>
       <Name>system_interrupt.c</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>C8C4E46EE87D2D41D500AA4E3B0D4A12</Checksum>
+      <Checksum>904BC56B47D5CCC0DCED63BE72010D32</Checksum>
     </Template>
     <Template>
       <Name>system_definitions.h</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>B040E847749D1A9706134D9B8981957A</Checksum>
+      <Checksum>9B7C212BE9489BF0C0CC38C6930BCFF4</Checksum>
     </Template>
     <Template>
       <Name>sys_clk_static.h</Name>

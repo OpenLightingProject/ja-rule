@@ -70,6 +70,12 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // Section: System Interrupt Vector Functions
 // *****************************************************************************
 // *****************************************************************************
+void __ISR(_USB_1_VECTOR, ipl4) _IntHandlerUSBInstance0(void)
+{
+    USB_DEVICE_Tasks_ISR(sysObj.usbDevObject0);
+            
+}
+
  
 /*******************************************************************************
  End of File

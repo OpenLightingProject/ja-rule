@@ -80,6 +80,8 @@ void SYS_Tasks ( void )
     SYS_DEVCON_Tasks(sysObj.sysDevcon);
 
     /* Maintain Device Drivers */
+    /* USB Device layer tasks routine */ 
+    USB_DEVICE_Tasks(sysObj.usbDevObject0);
 
     /* Maintain the application's state machine. */
     APP_Tasks();
