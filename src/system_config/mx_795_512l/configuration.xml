@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <configuration>
-  <HarmonyPath path="../../../../opt/microchip/harmony/v1_02"/>
+  <HarmonyPath path="/opt/microchip/harmony/v1_02"/>
   <ForceOptimization flag="true"/>
   <Files>
     <File>
@@ -132,10 +132,10 @@
   </Templates>
   <CompilerItems>
     <C32>
-      <Include value="../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
+      <Include value="/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
     </C32>
   </CompilerItems>
   <Libraries>
-    <Library value="../../../../../../opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a"/>
+    <Library value="/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a"/>
   </Libraries>
 </configuration>
