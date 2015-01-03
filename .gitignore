@@ -2,3 +2,5 @@ ja-rule.X/build/*
 ja-rule.X/debug/*
 ja-rule.X/dist/*
 ja-rule.X/nbproject/Makefile*
+ja-rule.X/nbproject/Package*
+ja-rule.X/nbproject/private/*
