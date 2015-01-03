@@ -142,8 +142,6 @@ void USB_Tasks(void) {
       break;
 
     case USB_STATE_WAIT_FOR_CONFIGURATION:
-
-      /* Check if the device is configured */
       if (usbData.deviceIsConfigured == true) {
         if (USB_DEVICE_ActiveSpeedGet(usbData.usbDevHandle) == USB_SPEED_FULL) {
           endpointSize = 64;
