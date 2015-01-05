@@ -1,73 +1,33 @@
 /* 
  * File:   usb.h
  * Author: Simon Newton
- *
- * Created on January 3, 2015, 1:16 PM
  */
 
-#ifndef USB_H
-#define	USB_H
+#ifndef SRC_USB_H_
+#define SRC_USB_H_
 
-#include "system_config.h"
-#include "system_definitions.h"
+#include <stdint.h>
+#include "constants.h"
 
-typedef enum {
-  // USB state machine's initial state.
-  USB_STATE_INIT = 0,
-
-  // USB waits for device configuration
-  USB_STATE_WAIT_FOR_CONFIGURATION,
-
-  // USB runs the main task
-  USB_STATE_MAIN_TASK,
-
-  // USB error occurred
-  USB_STATE_ERROR
-} USB_STATES;
-
-typedef struct {
-  /* Device layer handle returned by device layer open function */
-  USB_DEVICE_HANDLE usbDevHandle;
-
-  // USB state
-  USB_STATES state;
-
-  /* Track device configuration */
-  bool deviceIsConfigured;
-
-  /* Configuration value */
-  uint8_t configValue;
-
-  /* speed */
-  USB_SPEED speed;
-
-  /* ep data sent */
-  bool epDataWritePending;
-
-  /* ep data received */
-  bool epDataReadPending;
-
-  /* Transfer handle */
-  USB_DEVICE_TRANSFER_HANDLE writeTranferHandle;
-
-  /* Transfer handle */
-  USB_DEVICE_TRANSFER_HANDLE readTranferHandle;
-
-  /* The transmit endpoint address */
-  USB_ENDPOINT_ADDRESS endpointTx;
-
-  /* The receive endpoint address */
-  USB_ENDPOINT_ADDRESS endpointRx;
-
-  /* Tracks the alternate setting */
-  uint8_t altSetting;
-
-} USB_DATA;
-
+/**
+ * @brief Initialize the USB layer.
+ */
 void USB_Initialize(void);
 
+/**
+ * @brief Perform the periodic USB layer tasks.
+ */
 void USB_Tasks(void);
 
+/**
+ * @brief Send a response.
+ * @param command The command class of the response.
+ * @param rc The return code of the response.
+ * @param data The payload data.
+ * @param data_length The length of the payload data.
+ */
+void SendResponse(Command command, uint8_t rc, const uint8_t* data,
+                  unsigned int data_length);
 
-#endif	/* USB_H */
+#endif  // SRC_USB_H_
 

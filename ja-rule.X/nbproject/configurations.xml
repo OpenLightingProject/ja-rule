@@ -22,6 +22,9 @@
         </logicalFolder>
         <itemPath>../src/app.h</itemPath>
         <itemPath>../src/usb.h</itemPath>
+        <itemPath>../src/dmx.h</itemPath>
+        <itemPath>../src/stream_decode.h</itemPath>
+        <itemPath>../src/constants.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -91,6 +94,7 @@
         <itemPath>../src/app.c</itemPath>
         <itemPath>../src/main.c</itemPath>
         <itemPath>../src/usb.c</itemPath>
+        <itemPath>../src/dmx.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -139,6 +143,7 @@
           </logicalFolder>
         </logicalFolder>
       </logicalFolder>
+      <itemPath>../src/stream_decode.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

@@ -50,7 +50,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #include "system_config.h"
 #include "system_definitions.h"
 #include "app.h"
-
+#include "constants.h"
 
 // ****************************************************************************
 // ****************************************************************************
@@ -112,7 +112,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
  * USB Device Layer Function Driver Registration 
  * Table
  **************************************************/
-const USB_DEVICE_FUNCTION_REGISTRATION_TABLE funcRegistrationTable[1] ={
+const USB_DEVICE_FUNCTION_REGISTRATION_TABLE funcRegistrationTable[1] = {
   /* Function 1 */
   {
     .configurationValue = 1, /* Configuration value */
@@ -128,7 +128,7 @@ const USB_DEVICE_FUNCTION_REGISTRATION_TABLE funcRegistrationTable[1] ={
 /*******************************************
  * USB Device Layer Descriptors
  *******************************************/
-const USB_DEVICE_DESCRIPTOR fullSpeedDeviceDescriptor ={
+const USB_DEVICE_DESCRIPTOR fullSpeedDeviceDescriptor = {
   0x12, // Size of this descriptor in bytes
   USB_DESCRIPTOR_DEVICE, // DEVICE descriptor type
   0x0200, // USB Spec Release Number in BCD format
@@ -136,8 +136,8 @@ const USB_DEVICE_DESCRIPTOR fullSpeedDeviceDescriptor ={
   0x00, // Subclass code
   0x00, // Protocol code
   USB_DEVICE_EP0_BUFFER_SIZE, // Max packet size for EP0, see usb_config.h
-  0x04D8, // Vendor ID: 0x04D8 is Microchip's Vendor ID
-  0x0053, // Product ID: 0x0053
+  USB_DEVICE_VENDOR_ID, // Vendor ID: 0x04D8 is Microchip's Vendor ID
+  USB_DEVICE_PRODUCT_ID, // Product ID: 0x0053
   0x0000, // Device release number in BCD format
   0x01, // Manufacturer string index
   0x02, // Product string index
@@ -148,7 +148,7 @@ const USB_DEVICE_DESCRIPTOR fullSpeedDeviceDescriptor ={
 /*******************************************
  *  Device Configuration Decriptor
  *******************************************/
-const uint8_t fullSpeedConfigurationDescriptor1[] ={
+const uint8_t fullSpeedConfigurationDescriptor1[] = {
   /* Configuration Descriptor Header */
 
   0x09, // Size of this descriptor in bytes
@@ -178,8 +178,8 @@ const uint8_t fullSpeedConfigurationDescriptor1[] ={
   USB_DESCRIPTOR_ENDPOINT, // Endpoint Descriptor
   0x1 | USB_EP_DIRECTION_OUT, // EndpointAddress
   USB_TRANSFER_TYPE_BULK, // Attributes
-  0x40, 0x00, // Size
-  1, // Interval
+  USB_MAX_PACKET_SIZE, 0x00, // Size
+  USB_POLLING_INTERVAL, // Interval
 
   /* Endpoint Descriptor 2 */
 
@@ -187,8 +187,8 @@ const uint8_t fullSpeedConfigurationDescriptor1[] ={
   USB_DESCRIPTOR_ENDPOINT, // Endpoint Descriptor
   0x1 | USB_EP_DIRECTION_IN, // EndpointAddress
   USB_TRANSFER_TYPE_BULK, // Attributes
-  0x40, 0x00, // Size
-  1 // Interval
+  USB_MAX_PACKET_SIZE, 0x00, // Size
+  USB_POLLING_INTERVAL // Interval
 };
 
 /* Language code string descriptor 0 */
@@ -201,10 +201,11 @@ const struct {
 /**************************************
  *  String descriptors.
  *************************************/
-sd000 ={
+sd000 = {
   sizeof (sd000),
   USB_DESCRIPTOR_STRING, {
-    0x0409}
+    0x0409
+  }
 };
 
 /* Manufacturer string descriptor 1*/
@@ -214,11 +215,12 @@ const struct {
   uint16_t string[25];
 }
 
-sd001 ={
+sd001 = {
   sizeof (sd001),
   USB_DESCRIPTOR_STRING, {
     'M', 'i', 'c', 'r', 'o', 'c', 'h', 'i', 'p', ' ',
-    'T', 'e', 'c', 'h', 'n', 'o', 'l', 'o', 'g', 'y', ' ', 'I', 'n', 'c', '.'}
+    'T', 'e', 'c', 'h', 'n', 'o', 'l', 'o', 'g', 'y', ' ', 'I', 'n', 'c', '.'
+  }
 };
 
 /* Product string descriptor */
@@ -228,17 +230,18 @@ const struct {
   uint16_t string[20];
 }
 
-sd002 ={
+sd002 = {
   sizeof (sd002),
   USB_DESCRIPTOR_STRING, {
     'O', 'p', 'e', 'n', ' ', 'L', 'i', 'g', 'h', 't', 'i', 'n', 'g', ' ',
-    'D', 'e', 'v', 'i', 'c', 'e'}
+    'D', 'e', 'v', 'i', 'c', 'e'
+  }
 };
 
 /***************************************
  * Array of string descriptors
  ***************************************/
-USB_DEVICE_STRING_DESCRIPTORS_TABLE stringDescriptors[3] ={
+USB_DEVICE_STRING_DESCRIPTORS_TABLE stringDescriptors[3] = {
   (const uint8_t * const) &sd000,
   (const uint8_t * const) &sd001,
   (const uint8_t * const) &sd002
@@ -247,7 +250,7 @@ USB_DEVICE_STRING_DESCRIPTORS_TABLE stringDescriptors[3] ={
 /*******************************************
  * Array of full speed config descriptors
  *******************************************/
-USB_DEVICE_CONFIGURATION_DESCRIPTORS_TABLE fullSpeedConfigDescSet[1] ={
+USB_DEVICE_CONFIGURATION_DESCRIPTORS_TABLE fullSpeedConfigDescSet[1] = {
   fullSpeedConfigurationDescriptor1
 };
 
@@ -255,21 +258,20 @@ USB_DEVICE_CONFIGURATION_DESCRIPTORS_TABLE fullSpeedConfigDescSet[1] ={
 /*******************************************
  * USB Device Layer Master Descriptor Table 
  *******************************************/
-const USB_DEVICE_MASTER_DESCRIPTOR usbMasterDescriptor =
-{
-    &fullSpeedDeviceDescriptor,   // Full Speed Device Descriptor.
-    1,                            // Total number of full speed configurations available.
-    &fullSpeedConfigDescSet[0],   // Pointer to array of full speed configurations descriptors.
+const USB_DEVICE_MASTER_DESCRIPTOR usbMasterDescriptor ={
+  &fullSpeedDeviceDescriptor, // Full Speed Device Descriptor.
+  1, // Total number of full speed configurations available.
+  &fullSpeedConfigDescSet[0], // Pointer to array of full speed configurations descriptors.
 
-    NULL,                         // High speed device desc is not supported.
-    0,                            // Total number of high speed configurations available.
-    NULL,                         // Pointer to array of high speed configurations descriptors.
+  NULL, // High speed device desc is not supported.
+  0, // Total number of high speed configurations available.
+  NULL, // Pointer to array of high speed configurations descriptors.
 
-    3,                            // Total number of string descriptors available.
-    stringDescriptors,            // Pointer to array of string descriptors
+  3, // Total number of string descriptors available.
+  stringDescriptors, // Pointer to array of string descriptors
 
-    NULL,                         // Pointer to full speed dev qualifier.
-    NULL,                         // Pointer to high speed dev qualifier.
+  NULL, // Pointer to full speed dev qualifier.
+  NULL, // Pointer to high speed dev qualifier.
 };
 
 /****************************************************
@@ -281,7 +283,7 @@ uint8_t __attribute__((aligned(512))) endPointTable[USB_DEVICE_ENDPOINT_TABLE_SI
  * USB Device Layer Initialization Data
  ****************************************************/
 
-const USB_DEVICE_INIT usbDevInitData ={
+const USB_DEVICE_INIT usbDevInitData = {
   /* System module initialization */
   .moduleInit =
   {SYS_MODULE_POWER_RUN_FULL},
@@ -350,7 +352,7 @@ SYSTEM_OBJECTS sysObj;
 
 /*** System Device Control Initialization Data ***/
 
-const SYS_DEVCON_INIT sysDevconInit ={
+const SYS_DEVCON_INIT sysDevconInit = {
   .moduleInit =
   {0},
 };

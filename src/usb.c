@@ -1,11 +1,70 @@
 /*
  * File:   usb.h
  * Author: Simon Newton
- *
- * Created on January 3, 2015, 1:16 PM
  */
 
 #include "usb.h"
+
+#include "system_config.h"
+#include "system_definitions.h"
+#include "constants.h"
+#include "stream_decode.h"
+
+typedef enum {
+  // USB state machine's initial state.
+  USB_STATE_INIT = 0,
+
+  // USB waits for device configuration
+  USB_STATE_WAIT_FOR_CONFIGURATION,
+
+  // USB runs the main task
+  USB_STATE_MAIN_TASK,
+
+  // USB error occurred
+  USB_STATE_ERROR
+} USB_STATES;
+
+typedef struct {
+  /* Device layer handle returned by device layer open function */
+  USB_DEVICE_HANDLE usbDevHandle;
+
+  // USB state
+  USB_STATES state;
+
+  /* Track device configuration */
+  bool deviceIsConfigured;
+
+  /* Configuration value */
+  uint8_t configValue;
+
+  /* speed */
+  USB_SPEED speed;
+
+  /* ep data sent */
+  bool epDataWritePending;
+
+  /* ep data received */
+  bool epDataReadPending;
+
+  /* Transfer handle */
+  USB_DEVICE_TRANSFER_HANDLE writeTranferHandle;
+
+  /* Transfer handle */
+  USB_DEVICE_TRANSFER_HANDLE readTranferHandle;
+
+  /* The transmit endpoint address */
+  USB_ENDPOINT_ADDRESS endpointTx;
+
+  /* The receive endpoint address */
+  USB_ENDPOINT_ADDRESS endpointRx;
+
+  /* Tracks the alternate setting */
+  uint8_t altSetting;
+
+  int epDataReadSize;
+
+} USB_DATA;
+
 
 USB_DATA usbData;
 
@@ -79,6 +138,7 @@ void APP_USBDeviceEventHandler(USB_DEVICE_EVENT event, void * eventData, uintptr
     case USB_DEVICE_EVENT_ENDPOINT_READ_COMPLETE:
       /* Endpoint read is complete */
       usbData.epDataReadPending = false;
+      usbData.epDataReadSize = ((USB_DEVICE_EVENT_DATA_ENDPOINT_WRITE_COMPLETE*) eventData)->length;
       break;
 
     case USB_DEVICE_EVENT_ENDPOINT_WRITE_COMPLETE:
@@ -111,6 +171,7 @@ void USB_Initialize(void) {
   usbData.epDataReadPending = false;
   usbData.epDataWritePending = false;
   usbData.altSetting = 0;
+  usbData.epDataReadSize = 0;
 }
 
 /******************************************************************************
@@ -162,9 +223,13 @@ void USB_Tasks(void) {
         usbData.epDataReadPending = true;
 
         /* Place a new read request. */
-        USB_DEVICE_EndpointRead(usbData.usbDevHandle, &usbData.readTranferHandle,
-                                usbData.endpointRx, &receivedDataBuffer[0], sizeof (receivedDataBuffer));
+        USB_DEVICE_RESULT result = USB_DEVICE_EndpointRead(
+                                                           usbData.usbDevHandle, &usbData.readTranferHandle,
+                                                           usbData.endpointRx, &receivedDataBuffer[0], sizeof (receivedDataBuffer));
 
+        if (result == USB_DEVICE_TRANSFER_HANDLE_INVALID) {
+          BSP_LEDToggle(BSP_LED_3);
+        }
         /* Device is ready to run the main task */
         usbData.state = USB_STATE_MAIN_TASK;
       }
@@ -185,38 +250,19 @@ void USB_Tasks(void) {
         /* Look at the data the host sent, to see what kind of
          * application specific command it sent. */
 
-        switch (receivedDataBuffer[0]) {
-          case 0x80:
-            break;
 
-          case 0x81:
-            if (usbData.epDataWritePending == false) {
-              /* Echo back to the host PC the command we are fulfilling
-               * in the first byte.  In this case, the Get Pushbutton
-               * State command. */
+        if (usbData.epDataWritePending == false) {
+          // we only go ahead and process the data if we can respond.
+          StreamDecode_Process(receivedDataBuffer, usbData.epDataReadSize);
 
-              transmitDataBuffer[0] = 0x81;
-              transmitDataBuffer[1] = 0x00;
-
-              /* Send the data to the host */
-
-              usbData.epDataWritePending = true;
-
-              USB_DEVICE_EndpointWrite(usbData.usbDevHandle, &usbData.writeTranferHandle,
-                                       usbData.endpointTx, &transmitDataBuffer[0],
-                                       sizeof (transmitDataBuffer),
-                                       USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE);
-            }
-            break;
-          default:
-            break;
+          // schedule the next read
+          usbData.epDataReadPending = true;
+          USB_DEVICE_EndpointRead(usbData.usbDevHandle,
+                                  &usbData.readTranferHandle,
+                                  usbData.endpointRx,
+                                  &receivedDataBuffer[0],
+                                  sizeof (receivedDataBuffer));
         }
-
-        usbData.epDataReadPending = true;
-
-        /* Place a new read request. */
-        USB_DEVICE_EndpointRead(usbData.usbDevHandle, &usbData.readTranferHandle,
-                                usbData.endpointRx, &receivedDataBuffer[0], sizeof (receivedDataBuffer));
       }
       break;
 
@@ -226,4 +272,32 @@ void USB_Tasks(void) {
     default:
       break;
   }
+}
+
+void SendResponse(Command command, uint8_t rc, const uint8_t* data,
+                  unsigned int data_length) {
+  if (usbData.epDataWritePending) {
+    BSP_LEDToggle(BSP_LED_2);
+    return;
+  }
+
+  transmitDataBuffer[0] = START_OF_MESSAGE_ID;
+  transmitDataBuffer[1] = command & 0xff;
+  transmitDataBuffer[2] = command >> 8;
+  transmitDataBuffer[3] = data_length & 0xf;
+  transmitDataBuffer[4] = data_length >> 8;
+  transmitDataBuffer[5] = rc;
+  if (data_length > 0) {
+    memcpy(transmitDataBuffer + 6, data, data_length);
+  }
+  transmitDataBuffer[6 + data_length] = END_OF_MESSAGE_ID;
+
+  usbData.epDataWritePending = true;
+
+  USB_DEVICE_EndpointWrite(usbData.usbDevHandle, &usbData.writeTranferHandle,
+                           usbData.endpointTx, transmitDataBuffer,
+                           data_length + 7,
+                           USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE);
+
+
 }
