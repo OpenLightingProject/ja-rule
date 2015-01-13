@@ -90,6 +90,8 @@ void TxFunction(Command command, uint8_t return_code, const IOVec* data) {
 void LoggerTest::testDisabled() {
   Logging_Initialize(TxFunction, false);
 
+  ASSERT_FALSE(Logging_IsEnabled());
+
   string test("This is a test");
   Logging_Log(test.c_str());
 
@@ -113,6 +115,8 @@ void LoggerTest::testDisabled() {
 void LoggerTest::testNullCallback() {
   Logging_Initialize(nullptr, true);
 
+  ASSERT_TRUE(Logging_IsEnabled());
+
   string test("This is a test");
   Logging_Log(test.c_str());
 
@@ -129,6 +133,7 @@ void LoggerTest::testNullCallback() {
  */
 void LoggerTest::testReset() {
   Logging_Initialize(TxFunction, true);
+  ASSERT_TRUE(Logging_IsEnabled());
 
   string test(1000, 'x');
   Logging_Log(test.c_str());
@@ -139,12 +144,14 @@ void LoggerTest::testReset() {
 
   // Now reset
   Logging_SetState(false);
+  ASSERT_FALSE(Logging_IsEnabled());
   ASSERT_FALSE(Logging_DataPending());
   ASSERT_FALSE(Logging_HasOverflowed());
   ASSERT_EMPTY(received_messages);
 
   // Re-enable
   Logging_SetState(true);
+  ASSERT_TRUE(Logging_IsEnabled());
   ASSERT_FALSE(Logging_DataPending());
   ASSERT_FALSE(Logging_HasOverflowed());
 
@@ -162,7 +169,7 @@ void LoggerTest::testReset() {
 }
 
 /*
- * 
+ * Check messages are correctly formed.
  */
 void LoggerTest::test() {
   Logging_Initialize(TxFunction, true);
