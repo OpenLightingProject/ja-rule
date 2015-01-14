@@ -68,7 +68,7 @@ extern inline bool Logging_HasOverflowed() {
  * @brief Log a message.
  * @param str The string to log.
  *
- * It's not safe to call Logging_Log from an ISR.
+ * @note It's not safe to call Logging_Log from an ISR.
  */
 void Logging_Log(const char* str);
 
