@@ -4,7 +4,7 @@
  */
 
 #ifndef SRC_CONSTANTS_H_
-#define	SRC_CONSTANTS_H_
+#define SRC_CONSTANTS_H_
 
 // *****************************************************************************
 // USB specific constants
@@ -39,6 +39,13 @@
 #define NULL_START_CODE 0x00
 
 // *****************************************************************************
+// Logger constants
+// *****************************************************************************
+
+// The size of the log buffer. Range 0 to INT16_MAX.
+#define LOG_BUFFER_SIZE 256
+
+// *****************************************************************************
 // Protocol specific constants
 // *****************************************************************************
 
@@ -47,7 +54,8 @@
  */
 typedef enum {
   ECHO = 0x80,
-  TX_DMX = 0x81
+  TX_DMX = 0x81,
+  GET_LOG = 0x82,
 } Command;
 
 
@@ -59,6 +67,9 @@ typedef enum {
 
 // The OK return code.
 #define RC_OK 0
+
+// The maximum data payload size
+#define PAYLOAD_SIZE 513
 
 #endif  // SRC_CONSTANTS_H_
 
