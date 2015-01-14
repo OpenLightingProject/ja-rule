@@ -32,15 +32,15 @@
 namespace testing {
 
 // Assert that two data blocks are the same.
-// Private, use ASSERT_DATA_EQUALS below.
-void _AssertDataEquals(
+// Private, use ASSERT_ARRAY_EQ.
+void _AssertArrayEquals(
     const CPPUNIT_NS::SourceLine &source_line,
     const uint8_t *expected,
     unsigned int expected_length,
     const uint8_t *actual,
     unsigned int actual_length);
 
-// Private, use ASSERT_VECTOR_EQ below
+// Private, use ASSERT_VECTOR_EQ.
 template <typename T>
 void _AssertVectorEq(
     const CPPUNIT_NS::SourceLine &source_line,
@@ -57,7 +57,7 @@ void _AssertVectorEq(
   }
 }
 
-// Private, use ASSERT_SET_EQ below
+// Private, use ASSERT_SET_EQ.
 template <typename T>
 void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
                   const std::set<T> &t1,

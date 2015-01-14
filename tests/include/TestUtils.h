@@ -56,17 +56,16 @@
 #define ASSERT_GTE(expected, output)  \
   CPPUNIT_ASSERT((expected) >= (output))
 
-#define ASSERT_DATA_EQUALS(expected, expected_length, actual, \
-                               actual_length)  \
-  ola::testing::_AssertDataEquals(\
+#define ASSERT_ARRAY_EQ(expected, expected_length, actual, actual_length)  \
+  testing::_AssertArrayEquals(\
       CPPUNIT_SOURCELINE(), (expected), (expected_length), \
       (actual), (actual_length))
 
 #define ASSERT_VECTOR_EQ(expected, output)  \
-  ola::testing::_AssertVectorEq(CPPUNIT_SOURCELINE(), (expected), (output))
+  testing::_AssertVectorEq(CPPUNIT_SOURCELINE(), (expected), (output))
 
 #define ASSERT_SET_EQ(expected, output)  \
-  ola::testing::_AssertSetEq(CPPUNIT_SOURCELINE(), (expected), (output))
+  testing::_AssertSetEq(CPPUNIT_SOURCELINE(), (expected), (output))
 
 #define ASSERT_NULL(value) \
   CPPUNIT_NS::Asserter::failIf( \
