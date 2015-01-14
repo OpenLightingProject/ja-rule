@@ -18,15 +18,18 @@ extern "C" {
 /**
  * @private
  */
-extern LoggerData g_logger_data;
+extern LoggerData g_logger;
 
 /**
  * @brief Initialize the Logging sub-system.
  * @param tx_cb The callback to use for sending messages when
  *   Logging_SendResponse is called.
  * @param enabled true to enable the logger, false to disable.
+ * @param max_payload_size The maximum size of the payload to be passed to the
+ *   TXFunction. Must be at least 2.
  */
-void Logging_Initialize(TXFunction tx_cb, bool enabled);
+void Logging_Initialize(TXFunction tx_cb, bool enabled,
+                        uint16_t max_payload_size);
 
 /**
  * @brief Change the state of the logger.
@@ -42,7 +45,7 @@ void Logging_SetState(bool enabled);
  * @returns true if the logger is enabled, false otherwise.
  */
 extern inline bool Logging_IsEnabled() {
-  return g_logger_data.enabled;
+  return g_logger.enabled;
 }
 
 /**
@@ -50,7 +53,7 @@ extern inline bool Logging_IsEnabled() {
  * @returns true if there is log data pending, false otherwise.
  */
 extern inline bool Logging_DataPending() {
-  return g_logger_data.head != -1;
+  return g_logger.read != -1;
 }
 
 /**
@@ -58,12 +61,14 @@ extern inline bool Logging_DataPending() {
  * @returns true if the buffer has overflowed, false otherwise.
  */
 extern inline bool Logging_HasOverflowed() {
-  return g_logger_data.overflow;
+  return g_logger.overflow;
 }
 
 /**
  * @brief Log a message.
  * @param str The string to log.
+ *
+ * It's not safe to call Logging_Log from an ISR.
  */
 void Logging_Log(const char* str);
 

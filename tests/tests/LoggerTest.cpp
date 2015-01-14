@@ -34,7 +34,8 @@ class LoggerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testDisabled);
   CPPUNIT_TEST(testNullCallback);
   CPPUNIT_TEST(testReset);
-  CPPUNIT_TEST(test);
+  CPPUNIT_TEST(testLogAndFetch);
+  CPPUNIT_TEST(testOverflow);
   CPPUNIT_TEST_SUITE_END();
 
  public:
@@ -49,17 +50,27 @@ class LoggerTest: public CppUnit::TestFixture {
   void testDisabled();
   void testNullCallback();
   void testReset();
-  void test();
+  void testLogAndFetch();
+  void testOverflow();
 
-  void Tx(Command command, uint8_t return_code, const IOVec* data) {
+  void Tx(Command command, uint8_t return_code, const IOVec* iov,
+          unsigned int iov_count) {
+    string payload;
+    for (unsigned int i = 0; i != iov_count; i++) {
+      payload.append(reinterpret_cast<char*>(iov[i].base), iov[i].length);
+    }
+
+    bool valid = !payload.empty();
+    bool overflow = valid ? (payload[0] & 0x01) : false;
+    string data = payload.size() > 1 ? payload.substr(1) : "";
+
     Message message = {
       .command = command,
-      .return_code = return_code
+      .return_code = return_code,
+      .valid = valid,
+      .overflow = overflow,
+      .data = data
     };
-    while (data != nullptr) {
-      message.data.append(reinterpret_cast<char*>(data->base), data->length);
-      data++;
-    }
     received_messages.push_back(message);
   }
 
@@ -67,6 +78,8 @@ class LoggerTest: public CppUnit::TestFixture {
   struct Message {
     Command command;
     uint8_t return_code;
+    bool valid;
+    bool overflow;
     string data;
   };
 
@@ -78,9 +91,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION(LoggerTest);
 /*
  * Called by the Logger code under test.
  */
-void TxFunction(Command command, uint8_t return_code, const IOVec* data) {
+void TxFunction(Command command, uint8_t return_code, const IOVec* iov,
+                 unsigned int iov_count) {
   if (logger_test) {
-    logger_test->Tx(command, return_code, data);
+    logger_test->Tx(command, return_code, iov, iov_count);
   }
 }
 
@@ -88,7 +102,7 @@ void TxFunction(Command command, uint8_t return_code, const IOVec* data) {
  * Confirm when the logger is disabled, no writes occur.
  */
 void LoggerTest::testDisabled() {
-  Logging_Initialize(TxFunction, false);
+  Logging_Initialize(TxFunction, false, PAYLOAD_SIZE);
 
   ASSERT_FALSE(Logging_IsEnabled());
 
@@ -104,6 +118,8 @@ void LoggerTest::testDisabled() {
   ASSERT_NOT_EMPTY(received_messages);
 
   const Message &message = received_messages[0];
+  ASSERT_TRUE(message.valid);
+  ASSERT_FALSE(message.overflow);
   ASSERT_EQ(GET_LOG, message.command);
   ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
   ASSERT_EQ(string(""), message.data);
@@ -113,7 +129,7 @@ void LoggerTest::testDisabled() {
  * Confirm passing a nullptr callback doesn't crash.
  */
 void LoggerTest::testNullCallback() {
-  Logging_Initialize(nullptr, true);
+  Logging_Initialize(nullptr, true, PAYLOAD_SIZE);
 
   ASSERT_TRUE(Logging_IsEnabled());
 
@@ -132,7 +148,7 @@ void LoggerTest::testNullCallback() {
  * Confirm resetting the Logger causes the flags to be reset.
  */
 void LoggerTest::testReset() {
-  Logging_Initialize(TxFunction, true);
+  Logging_Initialize(TxFunction, true, PAYLOAD_SIZE);
   ASSERT_TRUE(Logging_IsEnabled());
 
   string test(1000, 'x');
@@ -163,25 +179,120 @@ void LoggerTest::testReset() {
   Logging_SendResponse();
   ASSERT_NOT_EMPTY(received_messages);
   const Message &message = received_messages[0];
+  ASSERT_TRUE(message.valid);
   ASSERT_EQ(GET_LOG, message.command);
   ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
+  ASSERT_FALSE(message.overflow);
   ASSERT_EQ(test2, message.data);
 }
 
 /*
  * Check messages are correctly formed.
  */
-void LoggerTest::test() {
-  Logging_Initialize(TxFunction, true);
-  string test("This is a test");
-  Logging_Log(test.c_str());
+void LoggerTest::testLogAndFetch() {
+  // Set the payload size to something short so we can trigger the wrapping
+  // behavior.
+  Logging_Initialize(TxFunction, true, 100);
+  Logging_Log(string(200, 'x').c_str());
 
   ASSERT_TRUE(Logging_DataPending());
 
   Logging_SendResponse();
   ASSERT_NOT_EMPTY(received_messages);
-  const Message &message = received_messages[0];
-  ASSERT_EQ(GET_LOG, message.command);
-  ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
-  ASSERT_EQ(test, message.data);
+
+  {
+    const Message &message = received_messages[0];
+    ASSERT_TRUE(message.valid);
+    ASSERT_EQ(GET_LOG, message.command);
+    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
+    ASSERT_FALSE(message.overflow);
+    ASSERT_EQ(string(99, 'x'), message.data);
+  }
+
+  received_messages.clear();
+
+  // Now write some more data
+  Logging_Log(string(200, 'y').c_str());
+
+  ASSERT_TRUE(Logging_DataPending());
+  ASSERT_TRUE(Logging_HasOverflowed());
+
+  Logging_SendResponse();  // 99 'x'
+  Logging_SendResponse();  // 2 'x', 97 'y'
+  Logging_SendResponse();  // 58 'y'
+  Logging_SendResponse();  // Empty
+  ASSERT_EQ(static_cast<size_t>(4), received_messages.size());
+
+  {
+    const Message &message = received_messages[0];
+    ASSERT_TRUE(message.valid);
+    ASSERT_EQ(GET_LOG, message.command);
+    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
+    ASSERT_TRUE(message.overflow);
+    ASSERT_EQ(string(99, 'x'), message.data);
+  }
+
+  {
+    const Message &message = received_messages[1];
+    ASSERT_TRUE(message.valid);
+    ASSERT_EQ(GET_LOG, message.command);
+    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
+    ASSERT_FALSE(message.overflow);
+
+    const string expected = "xx" + string(97, 'y');
+    ASSERT_EQ(expected, message.data);
+  }
+
+  {
+    const Message &message = received_messages[2];
+    ASSERT_TRUE(message.valid);
+    ASSERT_EQ(GET_LOG, message.command);
+    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
+    ASSERT_FALSE(message.overflow);
+    ASSERT_EQ(string(58, 'y'), message.data);
+  }
+
+  {
+    const Message &message = received_messages[3];
+    ASSERT_TRUE(message.valid);
+    ASSERT_EQ(GET_LOG, message.command);
+    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
+    ASSERT_FALSE(message.overflow);
+    ASSERT_EQ(string(""), message.data);
+  }
+}
+
+/**
+ * Confirm the overflow flag is set correctly.
+ */
+void LoggerTest::testOverflow() {
+  Logging_Initialize(TxFunction, true, PAYLOAD_SIZE);
+  Logging_Log(string(1000, 'x').c_str());
+
+  ASSERT_TRUE(Logging_HasOverflowed());
+
+  Logging_SendResponse();
+  ASSERT_NOT_EMPTY(received_messages);
+  {
+    const Message &message = received_messages[0];
+    ASSERT_TRUE(message.valid);
+    ASSERT_EQ(GET_LOG, message.command);
+    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
+    ASSERT_TRUE(message.overflow);
+    ASSERT_EQ(string(256, 'x'), message.data);
+  }
+
+  received_messages.clear();
+
+  // Now fetch the next message, the overflow flag must clear.
+  Logging_SendResponse();
+  ASSERT_NOT_EMPTY(received_messages);
+  {
+    const Message &message = received_messages[0];
+    ASSERT_TRUE(message.valid);
+    ASSERT_EQ(GET_LOG, message.command);
+    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
+    ASSERT_FALSE(message.overflow);
+    ASSERT_EQ(string(""), message.data);
+  }
 }
