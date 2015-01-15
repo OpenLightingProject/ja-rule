@@ -21,7 +21,7 @@
 #include "constants.h"
 
 /**
- * @brief A IOVector, with a pointer to memory and a length attribute.
+ * @brief An IOVector, with a pointer to memory and a length attribute.
  */
 typedef struct {
   void* base;   /**< @brief A pointer to the data */
