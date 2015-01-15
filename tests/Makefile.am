@@ -2,6 +2,8 @@
 # As suggested by libtoolize
 ACLOCAL_AMFLAGS = -I config
 
+include aminclude.am
+
 AM_CFLAGS = -Wall -Werror
 
 COMMON_CFLAGS = -I ../src -Wall -Wformat -W -fvisibility-inlines-hidden \
