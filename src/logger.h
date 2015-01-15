@@ -1,6 +1,25 @@
-/* 
+/*
  * File:   logger.h
  * Author: Simon Newton
+ */
+
+/**
+ * @defgroup logger Logger
+ * @brief The Logging Subsystem.
+ *
+ * The Logger uses a ring buffer to store log messages. The messages can then be
+ * retrieved by the host system with a GET_LOG comand, which would then call
+ * Logging_SendResponse().
+ *
+ * An overflow occurs if there is more data than what would fit in the ring
+ * buffer. In this case, as much data as possible is saved and
+ * Logging_HasOverflowed() will return true. When the next call to
+ * Logging_SendResponse() is made the overflow flag will be reset.
+ *
+ * @addtogroup logger
+ * @{
+ * @file logger.h
+ * @brief The Logging Subsystem.
  */
 
 #ifndef SRC_LOGGER_H_
@@ -15,15 +34,14 @@ extern "C" {
 #include "transport.h"
 #include "loggerPrivate.h"
 
-/**
- * @private
- */
+///@cond INTERNAL
 extern LoggerData g_logger;
+///@endcond
 
 /**
  * @brief Initialize the Logging sub-system.
  * @param tx_cb The callback to use for sending messages when
- *   Logging_SendResponse is called.
+ *   Logging_SendResponse() is called.
  * @param enabled true to enable the logger, false to disable.
  * @param max_payload_size The maximum size of the payload to be passed to the
  *   TXFunction. Must be at least 2.
@@ -83,6 +101,10 @@ void Logging_SendResponse();
 #ifdef __cplusplus
 }
 #endif
+
+/**
+ * @}
+ */
 
 #endif  // SRC_LOGGER_H_
 
