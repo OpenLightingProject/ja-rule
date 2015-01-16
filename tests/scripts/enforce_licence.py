@@ -28,28 +28,6 @@ import textwrap
 CPP, JS, PROTOBUF, PYTHON = xrange(4)
 
 IGNORED_FILES = [
-  'common/rdm/testdata/duplicate_manufacturer.proto',
-  'common/rdm/testdata/duplicate_pid_name.proto',
-  'common/rdm/testdata/duplicate_pid_value.proto',
-  'common/rdm/testdata/inconsistent_pid.proto',
-  'common/rdm/testdata/invalid_esta_pid.proto',
-  'common/rdm/testdata/test_pids.proto',
-  'common/rdm/testdata/pids/pids1.proto',
-  'common/rdm/testdata/pids/pids2.proto',
-  'examples/ola-dmxconsole.cpp',
-  'examples/ola-dmxmonitor.cpp',
-  'include/ola/gen_callbacks.py',
-  'olad/www/mobile.js',
-  'olad/www/ola.js',
-  'python/ola/PidStoreLocation.py',
-  'python/ola/Version.py',
-  'tools/ola_trigger/config.tab.cpp',
-  'tools/ola_trigger/config.tab.h',
-  'tools/ola_trigger/lex.yy.cpp',
-  'tools/rdm/DataLocation.py',
-  'tools/rdm/static/jquery-1.7.2.min.js',
-  'tools/rdm/static/jquery-ui-1.8.21.custom.min.js',
-  'tools/rdm/static/ui.multiselect.js',
 ]
 
 def Usage(arg0):
