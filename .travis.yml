@@ -16,6 +16,7 @@ matrix:
       env: TASK='coverity'
     - env: TASK='doxygen'
     - env: TASK='lint'
+    - env: TASK='check-licences'
   allow_failures:
     - compiler: gcc
       env: TASK='coverage'

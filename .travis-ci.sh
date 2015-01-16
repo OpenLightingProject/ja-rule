@@ -11,7 +11,15 @@ if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   wget -O cpplint.py $CPP_LINT_URL;
   chmod u+x cpplint.py;
-  ./cpplint.py $(find ./ -name "*.h" -or -name "*.cpp" | xargs)
+  ./cpplint.py \
+    --filter=-legal/copyright \
+    $(find ./ -name "*.h" -or -name "*.cpp" | xargs)
+  if [[ $? -ne 0 ]]; then
+    exit 1;
+  fi;
+elif [[ $TASK = 'check-licences' ]]; then
+  # check licences only if it is the requested task
+  ./tests/scripts/enforce_licence.py
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
