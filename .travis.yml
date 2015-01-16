@@ -22,6 +22,23 @@ matrix:
     - compiler: gcc
       env: TASK='coverity'
 
+env:
+  global:
+   # -- BEGIN Coverity Scan ENV
+   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cd tests && autoreconf -i && ./configure"
+   # The build command with all of the arguments that you would apply to a manual `cov-build`
+   # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
+   - COVERITY_SCAN_BUILD_COMMAND="make"
+   # Name of the project
+   - COVERITY_SCAN_PROJECT_NAME="$TRAVIS_REPO_SLUG"
+   # Email address for notifications related to this build
+   - COVERITY_SCAN_NOTIFICATION_EMAIL="ja-rule-coverity@pjnewman.co.uk"
+   # Regular expression selects on which branches to run analysis
+   # Be aware of quotas. Do not run on every branch/commit
+   - COVERITY_SCAN_BRANCH_PATTERN=".*"
+   # COVERITY_SCAN_TOKEN via "travis encrypt" using the repo's public key
+   # -- END Coverity Scan ENV
+
 cache: apt
 
 before_install:
