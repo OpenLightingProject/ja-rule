@@ -1,10 +1,12 @@
 #include "logger.h"
 
-#include "constants.h"
 
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "constants.h"
+#include "system_pipeline.h"
 
 LoggerData g_logger;
 
@@ -21,12 +23,12 @@ static inline void SetLoggerIOVec(uint8_t index,
   *sum += length;
 }
 
-void Logging_Initialize(TXFunction tx_cb, bool enabled,
+void Logging_Initialize(TXFunction tx_cb,
                         uint16_t max_payload_size) {
   g_logger.tx_cb = tx_cb;
   g_logger.read = -1;
   g_logger.write = 0;
-  g_logger.enabled = enabled;
+  g_logger.enabled = false;
   g_logger.overflow = false;
   g_logger.max_payload_size = max_payload_size;
 }
@@ -77,9 +79,11 @@ void _mon_putc(char c) {
 }
 
 void Logging_SendResponse() {
+#ifndef PIPELINE_TRANSPORT_TX
   if (!g_logger.tx_cb) {
     return;
   }
+#endif
 
   uint8_t iovec_index = 0;
   unsigned int payload_size = 0;
@@ -123,5 +127,9 @@ void Logging_SendResponse() {
       g_logger.read = -1;
     }
   }
+#ifdef PIPELINE_TRANSPORT_TX
+  PIPELINE_TRANSPORT_TX(GET_LOG, RC_OK, g_logger.iovec, iovec_index);
+#else
   g_logger.tx_cb(GET_LOG, RC_OK, g_logger.iovec, iovec_index);
+#endif
 }

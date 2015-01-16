@@ -6,39 +6,43 @@ include aminclude.am
 
 AM_CFLAGS = -Wall -Werror
 
-COMMON_CFLAGS = -I ../src -Wall -Wformat -W -fvisibility-inlines-hidden \
-                -Werror
-COMMON_CXXFLAGS = -I ../src -I include/ \
-                  -Wall -Wformat -W -fvisibility-inlines-hidden
-
-COMMON_TESTING_FLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-
-COMMON_TESTING_LIBS = $(CPPUNIT_LIBS) \
-                      lib/libtest.la
+WARNING_FLAGS = -Wall -Wformat -W -fvisibility-inlines-hidden -Werror
 
 # LIBRARIES
 ##################################################
+
+TEST_FLAGS = -I include $(WARNING_FLAGS)
+
 noinst_LTLIBRARIES = lib/libtest.la
 
 lib_libtest_la_SOURCES = include/TestUtils.h \
                          include/TestUtilsPrivate.h \
                          lib/TestMain.cpp \
                          lib/TestUtils.cpp
-lib_libtest_la_CXXFLAGS = $(COMMON_CXXFLAGS)
+lib_libtest_la_CXXFLAGS = $(TEST_FLAGS)
 
 # Code Under Test
 ##################################################
+
+BUILD_FLAGS = -I system_config -I ../src $(WARNING_FLAGS)
+
 noinst_LTLIBRARIES += src/liblogger.la
 src_liblogger_la_SOURCES = src/logger.c
-src_liblogger_la_CFLAGS = $(COMMON_CFLAGS)
+src_liblogger_la_CFLAGS = $(BUILD_FLAGS)
 
 # TESTS
 ################################################
+TESTING_FLAGS = -I system_config -I ../src -I include \
+                $(WARNING_FLAGS) $(CPPUNIT_CFLAGS)
+
+TESTING_LIBS = $(CPPUNIT_LIBS) \
+               lib/libtest.la
+
 TESTS = tests/logger_tester
 
 check_PROGRAMS = tests/logger_tester
 
 tests_logger_tester_SOURCES = tests/LoggerTest.cpp
-tests_logger_tester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-tests_logger_tester_LDADD = $(COMMON_TESTING_LIBS) \
+tests_logger_tester_CXXFLAGS = $(TESTING_FLAGS)
+tests_logger_tester_LDADD = $(TESTING_LIBS) \
                             src/liblogger.la

@@ -102,7 +102,7 @@ void TxFunction(Command command, uint8_t return_code, const IOVec* iov,
  * Confirm when the logger is disabled, no writes occur.
  */
 void LoggerTest::testDisabled() {
-  Logging_Initialize(TxFunction, false, PAYLOAD_SIZE);
+  Logging_Initialize(TxFunction, PAYLOAD_SIZE);
 
   ASSERT_FALSE(Logging_IsEnabled());
 
@@ -129,7 +129,8 @@ void LoggerTest::testDisabled() {
  * Confirm passing a nullptr callback doesn't crash.
  */
 void LoggerTest::testNullCallback() {
-  Logging_Initialize(nullptr, true, PAYLOAD_SIZE);
+  Logging_Initialize(nullptr, PAYLOAD_SIZE);
+  Logging_SetState(true);
 
   ASSERT_TRUE(Logging_IsEnabled());
 
@@ -148,7 +149,8 @@ void LoggerTest::testNullCallback() {
  * Confirm resetting the Logger causes the flags to be reset.
  */
 void LoggerTest::testReset() {
-  Logging_Initialize(TxFunction, true, PAYLOAD_SIZE);
+  Logging_Initialize(TxFunction, PAYLOAD_SIZE);
+  Logging_SetState(true);
   ASSERT_TRUE(Logging_IsEnabled());
 
   string test(1000, 'x');
@@ -192,7 +194,8 @@ void LoggerTest::testReset() {
 void LoggerTest::testLogAndFetch() {
   // Set the payload size to something short so we can trigger the wrapping
   // behavior.
-  Logging_Initialize(TxFunction, true, 100);
+  Logging_Initialize(TxFunction, 100);
+  Logging_SetState(true);
   Logging_Log(string(200, 'x').c_str());
 
   ASSERT_TRUE(Logging_DataPending());
@@ -266,7 +269,8 @@ void LoggerTest::testLogAndFetch() {
  * Confirm the overflow flag is set correctly.
  */
 void LoggerTest::testOverflow() {
-  Logging_Initialize(TxFunction, true, PAYLOAD_SIZE);
+  Logging_Initialize(TxFunction, PAYLOAD_SIZE);
+  Logging_SetState(true);
   Logging_Log(string(1000, 'x').c_str());
 
   ASSERT_TRUE(Logging_HasOverflowed());
