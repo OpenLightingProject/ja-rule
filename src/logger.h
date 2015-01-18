@@ -46,10 +46,10 @@ extern LoggerData g_logger;
  * @param max_payload_size The maximum size of the payload to be passed to the
  *   TXFunction. Must be at least 2.
  *
- * @note If PIPELINE_TRANSPORT_TX is defined in system_pipeline.h, the macro
- * will override the tx_cb argument.
- *
  * A Logger starts off in the disabled state.
+ *
+ * If PIPELINE_TRANSPORT_TX is defined in system_pipeline.h, the macro
+ * will override the tx_cb argument.
  */
 void Logging_Initialize(TXFunction tx_cb,
                         uint16_t max_payload_size);
