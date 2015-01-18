@@ -6,7 +6,7 @@ include aminclude.am
 
 AM_CFLAGS = -Wall -Werror
 
-COMMON_CFLAGS = -I ../src -Wall -Wformat -W -fvisibility-inlines-hidden \
+COMMON_CFLAGS = -I ../src -Wall -Wformat -W \
                 -Werror
 COMMON_CXXFLAGS = -I ../src -I include/ \
                   -Wall -Wformat -W -fvisibility-inlines-hidden

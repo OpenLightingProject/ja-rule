@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.69])
+AC_PREREQ([2.65])
 AC_INIT([ja-rule], [0.0.1], [])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_HEADERS([config.h])
@@ -21,7 +21,7 @@ AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
 
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_CHECK_HEADER_STDBOOL
+AC_HEADER_STDBOOL
 AC_TYPE_UINT16_T
 AC_TYPE_UINT8_T
 
