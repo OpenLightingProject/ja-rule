@@ -6,12 +6,13 @@ include aminclude.am
 
 AM_CFLAGS = -Wall -Werror
 
-WARNING_FLAGS = -Wall -Wformat -W -fvisibility-inlines-hidden -Werror
+WARNING_CFLAGS = -Wall -Wformat -W -Werror
+WARNING_CXXFLAGS = $(WARNING_CFLAGS) -fvisibility-inlines-hidden
 
 # LIBRARIES
 ##################################################
 
-TEST_FLAGS = -I include $(WARNING_FLAGS)
+TEST_FLAGS = -I include $(WARNING_CXXFLAGS)
 
 noinst_LTLIBRARIES = lib/libtest.la
 
@@ -24,7 +25,7 @@ lib_libtest_la_CXXFLAGS = $(TEST_FLAGS)
 # Code Under Test
 ##################################################
 
-BUILD_FLAGS = -I system_config -I ../src $(WARNING_FLAGS)
+BUILD_FLAGS = -I system_config -I ../src $(WARNING_CFLAGS)
 
 noinst_LTLIBRARIES += src/liblogger.la
 src_liblogger_la_SOURCES = src/logger.c
@@ -33,7 +34,8 @@ src_liblogger_la_CFLAGS = $(BUILD_FLAGS)
 # TESTS
 ################################################
 TESTING_FLAGS = -I system_config -I ../src -I include \
-                $(WARNING_FLAGS) $(CPPUNIT_CFLAGS)
+                -std=c++11 \
+                $(WARNING_CXXFLAGS) $(CPPUNIT_CFLAGS)
 
 TESTING_LIBS = $(CPPUNIT_LIBS) \
                lib/libtest.la
