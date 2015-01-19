@@ -34,19 +34,24 @@ extern "C" {
 #include "transport.h"
 #include "loggerPrivate.h"
 
-///@cond INTERNAL
+/// @cond INTERNAL
 extern LoggerData g_logger;
-///@endcond
+/// @endcond
 
 /**
  * @brief Initialize the Logging sub-system.
  * @param tx_cb The callback to use for sending messages when
- *   Logging_SendResponse() is called.
- * @param enabled true to enable the logger, false to disable.
+ *   Logging_SendResponse() is called. This can be overridden, see the note
+ *   below.
  * @param max_payload_size The maximum size of the payload to be passed to the
  *   TXFunction. Must be at least 2.
+ *
+ * A Logger starts off in the disabled state.
+ *
+ * If PIPELINE_TRANSPORT_TX is defined in system_pipeline.h, the macro
+ * will override the tx_cb argument.
  */
-void Logging_Initialize(TXFunction tx_cb, bool enabled,
+void Logging_Initialize(TXFunction tx_cb,
                         uint16_t max_payload_size);
 
 /**
