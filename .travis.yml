@@ -1,0 +1,71 @@
+language: cpp
+
+script:
+ - "bash -ex .travis-ci.sh"
+
+matrix:
+  fast_finish: true
+  include:
+    - compiler: clang
+      env: TASK='compile'
+    - compiler: gcc
+      env: TASK='compile'
+    - compiler: gcc
+      env: TASK='coverage'
+    - compiler: gcc
+      env: TASK='coverity'
+    - env: TASK='doxygen'
+    - env: TASK='lint'
+    - env: TASK='check-licences'
+  allow_failures:
+    - compiler: gcc
+      env: TASK='coverage'
+    - compiler: gcc
+      env: TASK='coverity'
+
+env:
+  global:
+   # -- BEGIN Coverity Scan ENV
+   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cd tests && autoreconf -i && ./configure"
+   # The build command with all of the arguments that you would apply to a manual `cov-build`
+   # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
+   - COVERITY_SCAN_BUILD_COMMAND="make"
+   # Name of the project
+   - COVERITY_SCAN_PROJECT_NAME="$TRAVIS_REPO_SLUG"
+   # Email address for notifications related to this build
+   - COVERITY_SCAN_NOTIFICATION_EMAIL="ja-rule-coverity@pjnewman.co.uk"
+   # Regular expression selects on which branches to run analysis
+   # Be aware of quotas. Do not run on every branch/commit
+   - COVERITY_SCAN_BRANCH_PATTERN=".*"
+   # COVERITY_SCAN_TOKEN via "travis encrypt" using the repo's public key
+   - secure: "nF/6EPeDlLYX+tg9UC9XC3hgQhEfed1b78wLG+zOX+dt0DsvKp/JcaeEWOZ2OQriNG0XbX3kIAPmpYA9VrLIGtbv4Yrg8gghvY92pUJe8czAww63PjqqFVNctR5nzjbCncZ7yz1j1KlNuWRTmso6vLWOMVbpGx85A2w013MIT1A="
+   # -- END Coverity Scan ENV
+
+cache: apt
+
+before_install:
+ - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+ - sudo apt-get update -qq
+ - sudo apt-get install -qq libcppunit-dev libcppunit-1.12-1
+#g++-4.9 won't work on Ubuntu 12.04 that Travis currently uses
+#Coverity doesn't work with g++ 4.8, so don't bother with the upgrades for that
+ - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+ - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+#Remove the old g++/gcc to ensure we're using the latest ones
+ - if [ "$TASK" != "coverity" -a "$CXX" = "g++-4.8" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
+#Install coveralls if required
+ - if [ "$TASK" = "coverage" ]; then sudo pip install -qq cpp-coveralls; fi
+#Install doxygen if required
+ - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen; fi
+
+after_success:
+  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
+  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-4.8 -b . -E '.*Test\.cpp$' --gcov-options '\-lp' > /dev/null; fi
+
+#No notifications for now
+#notifications:
+#  irc:
+#    channels:
+#     - "chat.freenode.net#openlighting"
+#    on_success: change
+#    on_failure: change
