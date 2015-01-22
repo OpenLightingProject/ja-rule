@@ -12,8 +12,8 @@ if [[ $TASK = 'lint' ]]; then
   wget -O cpplint.py $CPP_LINT_URL;
   chmod u+x cpplint.py;
   ./cpplint.py \
-    --filter=-legal/copyright \
-    $(find ./ -name "*.h" -or -name "*.cpp" | xargs)
+    --filter=-legal/copyright,-build/include \
+    src/*.{h,c} tests/{include,lib,tests}/*.{h,cpp}
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
