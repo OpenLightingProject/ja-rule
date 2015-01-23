@@ -1,5 +1,5 @@
 # Ja Rule
-
+[![Build Status](https://travis-ci.org/OpenLightingProject/ja-rule.svg?branch=master)](https://travis-ci.org/OpenLightingProject/ja-rule)
 Skunkworks project.
 
 ## Development Environment Setup
