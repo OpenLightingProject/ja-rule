@@ -1,17 +1,19 @@
-/* 
+/*
  * File:   transport.h
  * Author: Simon Newton
  */
 
 /**
  * @defgroup transport Transport
- * @brief The generic Host / Device communication transport.
+ * @brief The Host <-> Device communication transport.
  *
+ * This contains the types used to transfer messages between the Host
+ * (typically a machine running a full OS) and the PIC device.
  *
  * @addtogroup transport
  * @{
  * @file transport.h
- * @brief The Host / Device communication transport.
+ * @brief The Host <-> Device communication transport.
  */
 
 #ifndef SRC_TRANSPORT_H_

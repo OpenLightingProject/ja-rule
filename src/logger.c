@@ -11,7 +11,7 @@
 LoggerData g_logger;
 
 #ifndef min
-#define	min(a,b)	(((a) < (b)) ? (a) : (b))
+#define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
 static inline void SetLoggerIOVec(uint8_t index,
