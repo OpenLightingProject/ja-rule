@@ -26,7 +26,7 @@
 
 namespace testing {
 
-void _AssertDataEquals(
+void _AssertArrayEquals(
     const CPPUNIT_NS::SourceLine &source_line,
     const uint8_t *expected,
     unsigned int expected_length,

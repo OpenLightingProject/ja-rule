@@ -27,9 +27,14 @@ lib_libtest_la_CXXFLAGS = $(TEST_FLAGS)
 
 BUILD_FLAGS = -I system_config -I ../src $(WARNING_CFLAGS)
 
-noinst_LTLIBRARIES += src/liblogger.la
+noinst_LTLIBRARIES += src/liblogger.la \
+                      src/libstreamdecoder.la
+
 src_liblogger_la_SOURCES = src/logger.c
 src_liblogger_la_CFLAGS = $(BUILD_FLAGS)
+
+src_libstreamdecoder_la_SOURCES = src/stream_decoder.c
+src_libstreamdecoder_la_CFLAGS = $(BUILD_FLAGS)
 
 # TESTS
 ################################################
@@ -40,11 +45,17 @@ TESTING_FLAGS = -I system_config -I ../src -I include \
 TESTING_LIBS = $(CPPUNIT_LIBS) \
                lib/libtest.la
 
-TESTS = tests/logger_tester
+TESTS = tests/logger_tester \
+        tests/stream_decoder_tester
 
-check_PROGRAMS = tests/logger_tester
+check_PROGRAMS = $(TESTS)
 
 tests_logger_tester_SOURCES = tests/LoggerTest.cpp
 tests_logger_tester_CXXFLAGS = $(TESTING_FLAGS)
 tests_logger_tester_LDADD = $(TESTING_LIBS) \
                             src/liblogger.la
+
+tests_stream_decoder_tester_SOURCES = tests/StreamDecoderTest.cpp
+tests_stream_decoder_tester_CXXFLAGS = $(TESTING_FLAGS)
+tests_stream_decoder_tester_LDADD = $(TESTING_LIBS) \
+                                   src/libstreamdecoder.la
