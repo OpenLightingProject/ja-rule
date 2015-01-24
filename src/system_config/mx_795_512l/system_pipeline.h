@@ -20,7 +20,13 @@ extern "C" {
 #define PIPELINE_TRANSPORT_TX(command, rc, iov, iov_count) \
   USB_TRANS_SendResponse(command, rc, iov, iov_count);
 
-
+/**
+ * @brief Controls which function is used to handle messages from the host.
+ *
+ * This should either call a function of type MessageHandler or be undefined.
+ */
+#define PIPELINE_HANDLE_MESSAGE(message) \
+  HandleMessage(message);
 
 #ifdef __cplusplus
 }
