@@ -27,9 +27,9 @@ extern "C" {
   * @brief A de-serialized message.
   */
 typedef struct {
-  uint16_t command;
-  uint16_t length;
-  const uint8_t* payload;
+  uint16_t command;  //!< The Command
+  uint16_t length;   //!< The payload length
+  const uint8_t* payload;  //!< A pointer to the payload data.
 } Message;
 
 

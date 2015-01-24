@@ -1,5 +1,5 @@
 /*
- * File:   stream_decode.h
+ * File:   stream_decoder.h
  * Author: Simon N
  */
 
