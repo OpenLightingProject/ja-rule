@@ -103,7 +103,7 @@ void StreamDecoder_Process(const uint8_t* data, unsigned int size) {
         // This frame is fragmented, which means we need to reassemble in the
         // fragment buffer. Fragmentation is expensive.
         payload_size = end - data;
-        if (payload_size < g_stream_data.message.length + 1 ||
+        if (payload_size < g_stream_data.message.length + 1u ||
             g_stream_data.fragment_offset != 0) {
           g_stream_data.fragmented_frame = true;
           payload_size = min(
