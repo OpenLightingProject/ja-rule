@@ -13,10 +13,10 @@
 void APP_Initialize(void) {
   DMX_Initialize();
   Flags_Initialize();
-  Logging_Initialize(NULL, PAYLOAD_SIZE);
+  Logger_Initialize(NULL, PAYLOAD_SIZE);
   MessageHandler_Initialize(NULL);
   StreamDecoder_Initialize(NULL);
-  Logging_SetState(true);
+  Logger_SetState(true);
   USBTransport_Initialize(NULL);
 }
 

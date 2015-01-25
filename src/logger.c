@@ -23,7 +23,7 @@ static inline void SetLoggerIOVec(uint8_t index,
   *sum += length;
 }
 
-void Logging_Initialize(TXFunction tx_cb,
+void Logger_Initialize(TXFunction tx_cb,
                         uint16_t max_payload_size) {
   g_logger.tx_cb = tx_cb;
   g_logger.read = -1;
@@ -33,7 +33,7 @@ void Logging_Initialize(TXFunction tx_cb,
   g_logger.max_payload_size = max_payload_size;
 }
 
-void Logging_SetState(bool enabled) {
+void Logger_SetState(bool enabled) {
   if (g_logger.enabled && !enabled) {
     g_logger.enabled = false;
     g_logger.overflow = false;
@@ -61,7 +61,7 @@ inline void PutChar(char c) {
   g_logger.write = (g_logger.write + 1) % LOG_BUFFER_SIZE;
 }
 
-void Logging_Log(const char* str) {
+void Logger_Log(const char* str) {
   if (!g_logger.enabled) {
     return;
   }
@@ -78,7 +78,7 @@ void _mon_putc(char c) {
   PutChar(c);
 }
 
-void Logging_SendResponse() {
+void Logger_SendResponse() {
 #ifndef PIPELINE_TRANSPORT_TX
   if (!g_logger.tx_cb) {
     return;

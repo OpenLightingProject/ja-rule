@@ -87,7 +87,7 @@ void testSendResponse(void **state) {
   // Now configure the device and clear the logging bit.
   USBEventHandler event_handler;
   ConfigureDevice(&event_handler);
-  Logging_SetDataPendingFlag(false);
+  Logger_SetDataPendingFlag(false);
 
   // Test a message with no data.
   const uint8_t expected_message[] = {
@@ -114,7 +114,7 @@ void testSendResponse(void **state) {
 
   // Send another message, this time with the logging flag set and some payload
   // data.
-  Logging_SetDataPendingFlag(true);
+  Logger_SetDataPendingFlag(true);
   const uint8_t chunk1[] = {1, 2};
   const uint8_t chunk2[] = {3, 4};
 
@@ -141,7 +141,7 @@ void testSendResponse(void **state) {
   assert_true(USBTransport_SendResponse(ECHO, RC_OK, iovec, arraysize(iovec)));
 
   CompleteWrite(event_handler);
-  Logging_SetDataPendingFlag(false);
+  Logger_SetDataPendingFlag(false);
 
   // Perform a send where USB_DEVICE_EndpointWrite returns an error
   expect_any(USB_DEVICE_EndpointWrite, usb_device);

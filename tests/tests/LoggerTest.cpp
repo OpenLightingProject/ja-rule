@@ -104,19 +104,19 @@ bool TxFunction(Command command, uint8_t return_code, const IOVec* iov,
  * Confirm when the logger is disabled, no writes occur.
  */
 void LoggerTest::testDisabled() {
-  Logging_Initialize(TxFunction, PAYLOAD_SIZE);
+  Logger_Initialize(TxFunction, PAYLOAD_SIZE);
 
-  ASSERT_FALSE(Logging_IsEnabled());
+  ASSERT_FALSE(Logger_IsEnabled());
 
   string test("This is a test");
-  Logging_Log(test.c_str());
+  Logger_Log(test.c_str());
 
-  ASSERT_FALSE(Logging_DataPending());
-  ASSERT_FALSE(Logging_HasOverflowed());
+  ASSERT_FALSE(Logger_DataPending());
+  ASSERT_FALSE(Logger_HasOverflowed());
 
-  // Even when the logger is disabled, Logging_SendResponse() should still
+  // Even when the logger is disabled, Logger_SendResponse() should still
   // transmit an (empty) message.
-  Logging_SendResponse();
+  Logger_SendResponse();
   ASSERT_NOT_EMPTY(received_messages);
 
   const Message &message = received_messages[0];
@@ -131,19 +131,19 @@ void LoggerTest::testDisabled() {
  * Confirm passing a nullptr callback doesn't crash.
  */
 void LoggerTest::testNullCallback() {
-  Logging_Initialize(nullptr, PAYLOAD_SIZE);
-  Logging_SetState(true);
+  Logger_Initialize(nullptr, PAYLOAD_SIZE);
+  Logger_SetState(true);
 
-  ASSERT_TRUE(Logging_IsEnabled());
+  ASSERT_TRUE(Logger_IsEnabled());
 
   string test("This is a test");
-  Logging_Log(test.c_str());
+  Logger_Log(test.c_str());
 
-  ASSERT_TRUE(Logging_DataPending());
-  ASSERT_FALSE(Logging_HasOverflowed());
+  ASSERT_TRUE(Logger_DataPending());
+  ASSERT_FALSE(Logger_HasOverflowed());
 
   // A nullptr callback means no messages.
-  Logging_SendResponse();
+  Logger_SendResponse();
   ASSERT_EMPTY(received_messages);
 }
 
@@ -151,36 +151,36 @@ void LoggerTest::testNullCallback() {
  * Confirm resetting the Logger causes the flags to be reset.
  */
 void LoggerTest::testReset() {
-  Logging_Initialize(TxFunction, PAYLOAD_SIZE);
-  Logging_SetState(true);
-  ASSERT_TRUE(Logging_IsEnabled());
+  Logger_Initialize(TxFunction, PAYLOAD_SIZE);
+  Logger_SetState(true);
+  ASSERT_TRUE(Logger_IsEnabled());
 
   string test(1000, 'x');
-  Logging_Log(test.c_str());
+  Logger_Log(test.c_str());
 
-  ASSERT_TRUE(Logging_DataPending());
-  ASSERT_TRUE(Logging_HasOverflowed());
+  ASSERT_TRUE(Logger_DataPending());
+  ASSERT_TRUE(Logger_HasOverflowed());
   ASSERT_EMPTY(received_messages);
 
   // Now reset
-  Logging_SetState(false);
-  ASSERT_FALSE(Logging_IsEnabled());
-  ASSERT_FALSE(Logging_DataPending());
-  ASSERT_FALSE(Logging_HasOverflowed());
+  Logger_SetState(false);
+  ASSERT_FALSE(Logger_IsEnabled());
+  ASSERT_FALSE(Logger_DataPending());
+  ASSERT_FALSE(Logger_HasOverflowed());
   ASSERT_EMPTY(received_messages);
 
   // Re-enable
-  Logging_SetState(true);
-  ASSERT_TRUE(Logging_IsEnabled());
-  ASSERT_FALSE(Logging_DataPending());
-  ASSERT_FALSE(Logging_HasOverflowed());
+  Logger_SetState(true);
+  ASSERT_TRUE(Logger_IsEnabled());
+  ASSERT_FALSE(Logger_DataPending());
+  ASSERT_FALSE(Logger_HasOverflowed());
 
   string test2(10, 'x');
-  Logging_Log(test2.c_str());
+  Logger_Log(test2.c_str());
 
-  ASSERT_TRUE(Logging_DataPending());
+  ASSERT_TRUE(Logger_DataPending());
 
-  Logging_SendResponse();
+  Logger_SendResponse();
   ASSERT_NOT_EMPTY(received_messages);
   const Message &message = received_messages[0];
   ASSERT_TRUE(message.valid);
@@ -196,13 +196,13 @@ void LoggerTest::testReset() {
 void LoggerTest::testLogAndFetch() {
   // Set the payload size to something short so we can trigger the wrapping
   // behavior.
-  Logging_Initialize(TxFunction, 100);
-  Logging_SetState(true);
-  Logging_Log(string(200, 'x').c_str());
+  Logger_Initialize(TxFunction, 100);
+  Logger_SetState(true);
+  Logger_Log(string(200, 'x').c_str());
 
-  ASSERT_TRUE(Logging_DataPending());
+  ASSERT_TRUE(Logger_DataPending());
 
-  Logging_SendResponse();
+  Logger_SendResponse();
   ASSERT_NOT_EMPTY(received_messages);
 
   {
@@ -217,15 +217,15 @@ void LoggerTest::testLogAndFetch() {
   received_messages.clear();
 
   // Now write some more data
-  Logging_Log(string(200, 'y').c_str());
+  Logger_Log(string(200, 'y').c_str());
 
-  ASSERT_TRUE(Logging_DataPending());
-  ASSERT_TRUE(Logging_HasOverflowed());
+  ASSERT_TRUE(Logger_DataPending());
+  ASSERT_TRUE(Logger_HasOverflowed());
 
-  Logging_SendResponse();  // 99 'x'
-  Logging_SendResponse();  // 2 'x', 97 'y'
-  Logging_SendResponse();  // 58 'y'
-  Logging_SendResponse();  // Empty
+  Logger_SendResponse();  // 99 'x'
+  Logger_SendResponse();  // 2 'x', 97 'y'
+  Logger_SendResponse();  // 58 'y'
+  Logger_SendResponse();  // Empty
   ASSERT_EQ(static_cast<size_t>(4), received_messages.size());
 
   {
@@ -271,13 +271,13 @@ void LoggerTest::testLogAndFetch() {
  * Confirm the overflow flag is set correctly.
  */
 void LoggerTest::testOverflow() {
-  Logging_Initialize(TxFunction, PAYLOAD_SIZE);
-  Logging_SetState(true);
-  Logging_Log(string(1000, 'x').c_str());
+  Logger_Initialize(TxFunction, PAYLOAD_SIZE);
+  Logger_SetState(true);
+  Logger_Log(string(1000, 'x').c_str());
 
-  ASSERT_TRUE(Logging_HasOverflowed());
+  ASSERT_TRUE(Logger_HasOverflowed());
 
-  Logging_SendResponse();
+  Logger_SendResponse();
   ASSERT_NOT_EMPTY(received_messages);
   {
     const Message &message = received_messages[0];
@@ -291,7 +291,7 @@ void LoggerTest::testOverflow() {
   received_messages.clear();
 
   // Now fetch the next message, the overflow flag must clear.
-  Logging_SendResponse();
+  Logger_SendResponse();
   ASSERT_NOT_EMPTY(received_messages);
   {
     const Message &message = received_messages[0];

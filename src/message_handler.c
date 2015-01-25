@@ -43,7 +43,7 @@ void MessageHandler_HandleMessage(const Message *message) {
       SendMessage(TX_DMX, RC_OK, NULL, 0);
       break;
     case GET_LOG:
-      Logging_SendResponse();
+      Logger_SendResponse();
       break;
     case GET_FLAGS:
       Flags_SendResponse();

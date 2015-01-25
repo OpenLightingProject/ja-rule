@@ -262,7 +262,7 @@ bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
 
   // Set appropriate flags.
   transmitDataBuffer[6] = 0;
-  if (Logging_DataPending()) {
+  if (Logger_DataPending()) {
     transmitDataBuffer[6] |= TRANSPORT_LOGS_PENDING;
   }
   if (Flags_HasChanged()) {
