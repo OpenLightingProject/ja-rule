@@ -62,7 +62,7 @@ bool USB_DEVICE_EndpointIsEnabled(
     USB_ENDPOINT_ADDRESS endpoint) {
   check_expected(usb_device);
   check_expected(endpoint);
-  return mock_type(bool);
+  return mock_type(bool);  // NOLINT(readability/function)
 }
 
 USB_SPEED USB_DEVICE_ActiveSpeedGet(USB_DEVICE_HANDLE usb_device) {
@@ -78,7 +78,8 @@ void USB_DEVICE_EventHandlerSet(
   check_expected(cb);
   check_expected(context);
 
-  USBEventHandler* cb_fn = mock_ptr_type(USBEventHandler*);
+  USBEventHandler* cb_fn =
+      mock_ptr_type(USBEventHandler*);  // NOLINT(readability/function)
   *cb_fn = cb;
 }
 

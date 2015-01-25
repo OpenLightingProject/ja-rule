@@ -158,7 +158,7 @@ void testSendResponse(void **state) {
 
   // Send a lot of data, and make sure we set the truncated bit.
   const unsigned int big_payload_size = PAYLOAD_SIZE + 100;
-  uint8_t large_payload[big_payload_size];
+  uint8_t large_payload[big_payload_size];  // NOLINT(runtime/arrays)
   memset(large_payload, 0, arraysize(large_payload));
   iovec[0].base = large_payload;
   iovec[0].length = big_payload_size;
