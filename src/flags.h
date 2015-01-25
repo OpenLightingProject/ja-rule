@@ -49,7 +49,7 @@ void Flags_Initialize(TXFunction tx_cb);
  * @brief Check if the flags have changed since the last GET_FLAGS message.
  * @returns true if the flags have changed, false otherwise.
  */
-extern inline bool Flags_HasChanged() {
+static inline bool Flags_HasChanged() {
   return g_flags.has_changed;
 }
 
@@ -58,7 +58,7 @@ extern inline bool Flags_HasChanged() {
  *
  * This indicates the Logger buffer overflowed and some messages were dropped.
  */
-extern inline void Flags_SetLogOverflow() {
+static inline void Flags_SetLogOverflow() {
   g_flags.flags.log_overflow = true;
   g_flags.has_changed = true;
 }
@@ -69,7 +69,7 @@ extern inline void Flags_SetLogOverflow() {
  * This indicates we tried to send a message to the host before the previous
  * message completed sending.
  */
-extern inline void Flags_SetTXDrop() {
+static inline void Flags_SetTXDrop() {
   g_flags.flags.tx_drop = true;
   g_flags.has_changed = true;
 }
@@ -79,7 +79,7 @@ extern inline void Flags_SetTXDrop() {
  *
  * This indicates USB_DEVICE_EndpointWrite returned an error.
  */
-extern inline void Flags_SetTXError() {
+static inline void Flags_SetTXError() {
   g_flags.flags.tx_error = true;
   g_flags.has_changed = true;
 }

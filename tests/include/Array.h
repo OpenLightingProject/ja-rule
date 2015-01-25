@@ -25,6 +25,8 @@
 #ifndef TESTS_INCLUDE_ARRAY_H_
 #define TESTS_INCLUDE_ARRAY_H_
 
+#include <stddef.h>
+
 /**
  * @brief A helper to determine the size of a statically allocated array.
  * @private

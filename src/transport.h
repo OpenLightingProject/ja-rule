@@ -26,9 +26,18 @@
  * @brief An IOVector, with a pointer to memory and a length attribute.
  */
 typedef struct {
-  void* base;   /**< @brief A pointer to the data */
-  unsigned int length;  /**< @brief The size of the data */
+  const void* base;   //!< A pointer to the data
+  unsigned int length;  //!< The size of the data
 } IOVec;
+
+/**
+ * @brief Flags use in a response message.
+ */
+typedef enum {
+  TRANSPORT_LOGS_PENDING = 0x01,  //!< Log messages are pending
+  TRANSPORT_FLAGS_CHANGED = 0x02,  //!< Flags have changed
+  TRANSPORT_MSG_TRUNCATED = 0x04  //!< The message has been truncated.
+} TransportFlags;
 
 /**
  * @brief A function pointer to send a message to the host
@@ -38,10 +47,15 @@ typedef struct {
  *   copied.
  * @param iov_count The number of IOVec structures in the array.
  */
-typedef void (*TXFunction)(Command, uint8_t, const IOVec*,
+typedef bool (*TXFunction)(Command, uint8_t, const IOVec*,
                            unsigned int);
 
-// typedef void (*RXFunction)(const uint8_t*, unsigned int));
+/**
+ * @brief A function pointer to call when data is received from the host.
+ * @param data A pointer to the new data.
+ * @param size The size of the data received.
+ */
+typedef void (*RXFunction)(const uint8_t*, unsigned int);
 
 #endif  // SRC_TRANSPORT_H_
 

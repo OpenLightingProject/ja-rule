@@ -1,56 +1,38 @@
 /*
- * File:   usb.h
+ * File:   usb_transport.c
  * Author: Simon Newton
  */
 
-#include "usb.h"
+#include "usb_transport.h"
 
+#include <string.h>
+
+#include "constants.h"
+#include "flags.h"
+#include "logger.h"
+#include "stream_decoder.h"
 #include "system_config.h"
 #include "system_definitions.h"
-#include "constants.h"
-#include "stream_decode.h"
+#include "transport.h"
 
 typedef enum {
-  // USB state machine's initial state.
   USB_STATE_INIT = 0,
-
-  // USB waits for device configuration
   USB_STATE_WAIT_FOR_CONFIGURATION,
-
-  // USB runs the main task
   USB_STATE_MAIN_TASK,
-
-  // USB error occurred
   USB_STATE_ERROR
-} USB_STATES;
+} USBTransportState;
 
 typedef struct {
-  /* Device layer handle returned by device layer open function */
-  USB_DEVICE_HANDLE usbDevHandle;
+  RXFunction rx_cb;
+  USB_DEVICE_HANDLE usb_device;  //!< The USB Device layer handle.
+  USBTransportState state;
+  bool is_configured;  //!< Keep track of if the device is configured.
 
-  // USB state
-  USB_STATES state;
+  bool tx_in_progress;  //!< True if there is a TX in progress
+  bool rx_in_progress;  //!< True if there is a RX in progress.
 
-  /* Track device configuration */
-  bool deviceIsConfigured;
-
-  /* Configuration value */
-  uint8_t configValue;
-
-  /* speed */
-  USB_SPEED speed;
-
-  /* ep data sent */
-  bool epDataWritePending;
-
-  /* ep data received */
-  bool epDataReadPending;
-
-  /* Transfer handle */
-  USB_DEVICE_TRANSFER_HANDLE writeTranferHandle;
-
-  /* Transfer handle */
-  USB_DEVICE_TRANSFER_HANDLE readTranferHandle;
+  USB_DEVICE_TRANSFER_HANDLE write_transfer;
+  USB_DEVICE_TRANSFER_HANDLE read_transfer;
 
   /* The transmit endpoint address */
   USB_ENDPOINT_ADDRESS endpointTx;
@@ -61,12 +43,10 @@ typedef struct {
   /* Tracks the alternate setting */
   uint8_t altSetting;
 
-  int epDataReadSize;
+  int rx_data_size;
+} USBTransportData;
 
-} USB_DATA;
-
-
-USB_DATA usbData;
+USBTransportData g_usb_transport_data;
 
 /* Receive data buffer */
 uint8_t receivedDataBuffer[USB_READ_BUFFER_SIZE] USB_MAKE_BUFFER_DMA_READY;
@@ -74,31 +54,29 @@ uint8_t receivedDataBuffer[USB_READ_BUFFER_SIZE] USB_MAKE_BUFFER_DMA_READY;
 /* Transmit data buffer */
 uint8_t transmitDataBuffer[USB_READ_BUFFER_SIZE] USB_MAKE_BUFFER_DMA_READY;
 
-// *****************************************************************************
-// *****************************************************************************
-// Section: Application Callback Functions
-// *****************************************************************************
-// *****************************************************************************
+/**
+ * @brief Called when device events occur.
+ * @param event The type of event
+ * @param event_data Data associated with the event
+ * @param context The context (unused).
+ */
+void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
+                               uintptr_t context) {
+  uint8_t* configurationValue;
+  USB_SETUP_PACKET* setupPacket;
 
-/*********************************************
- * Application USB Device Layer Event Handler
- *********************************************/
-
-void APP_USBDeviceEventHandler(USB_DEVICE_EVENT event, void * eventData, uintptr_t context) {
-  uint8_t * configurationValue;
-  USB_SETUP_PACKET * setupPacket;
   switch (event) {
     case USB_DEVICE_EVENT_RESET:
     case USB_DEVICE_EVENT_DECONFIGURED:
-      usbData.deviceIsConfigured = false;
+      g_usb_transport_data.is_configured = false;
       break;
 
     case USB_DEVICE_EVENT_CONFIGURED:
       // Check the configuration
-      configurationValue = (uint8_t *) eventData;
+      configurationValue = (uint8_t*) event_data;
       if (*configurationValue == 1) {
         // Reset endpoint data send & receive flag
-        usbData.deviceIsConfigured = true;
+        g_usb_transport_data.is_configured = true;
       }
       break;
 
@@ -108,42 +86,42 @@ void APP_USBDeviceEventHandler(USB_DEVICE_EVENT event, void * eventData, uintptr
 
     case USB_DEVICE_EVENT_POWER_DETECTED:
       /* VBUS is detected. Attach the device */
-      USB_DEVICE_Attach(usbData.usbDevHandle);
+      USB_DEVICE_Attach(g_usb_transport_data.usb_device);
       break;
 
     case USB_DEVICE_EVENT_POWER_REMOVED:
       /* VBUS is removed. Detach the device */
-      USB_DEVICE_Detach(usbData.usbDevHandle);
+      USB_DEVICE_Detach(g_usb_transport_data.usb_device);
       break;
 
     case USB_DEVICE_EVENT_CONTROL_TRANSFER_SETUP_REQUEST:
       /* This means we have received a setup packet */
-      setupPacket = (USB_SETUP_PACKET *) eventData;
+      setupPacket = (USB_SETUP_PACKET*) event_data;
       if (setupPacket->bRequest == USB_REQUEST_SET_INTERFACE) {
         /* If we have got the SET_INTERFACE request, we just acknowledge
          for now. This demo has only one alternate setting which is already
          active. */
-        USB_DEVICE_ControlStatus(usbData.usbDevHandle, USB_DEVICE_CONTROL_STATUS_OK);
+        USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device, USB_DEVICE_CONTROL_STATUS_OK);
       } else if (setupPacket->bRequest == USB_REQUEST_GET_INTERFACE) {
         /* We have only one alternate setting and this setting 0. So
          * we send this information to the host. */
 
-        USB_DEVICE_ControlSend(usbData.usbDevHandle, &usbData.altSetting, 1);
+        USB_DEVICE_ControlSend(g_usb_transport_data.usb_device, &g_usb_transport_data.altSetting, 1);
       } else {
         /* We have received a request that we cannot handle. Stall it*/
-        USB_DEVICE_ControlStatus(usbData.usbDevHandle, USB_DEVICE_CONTROL_STATUS_ERROR);
+        USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device, USB_DEVICE_CONTROL_STATUS_ERROR);
       }
       break;
 
     case USB_DEVICE_EVENT_ENDPOINT_READ_COMPLETE:
       /* Endpoint read is complete */
-      usbData.epDataReadPending = false;
-      usbData.epDataReadSize = ((USB_DEVICE_EVENT_DATA_ENDPOINT_WRITE_COMPLETE*) eventData)->length;
+      g_usb_transport_data.rx_in_progress = false;
+      g_usb_transport_data.rx_data_size = ((USB_DEVICE_EVENT_DATA_ENDPOINT_WRITE_COMPLETE*) event_data)->length;
       break;
 
     case USB_DEVICE_EVENT_ENDPOINT_WRITE_COMPLETE:
       /* Endpoint write is complete */
-      usbData.epDataWritePending = false;
+      g_usb_transport_data.tx_in_progress = false;
       break;
 
       /* These events are not used in this demo. */
@@ -152,152 +130,174 @@ void APP_USBDeviceEventHandler(USB_DEVICE_EVENT event, void * eventData, uintptr
     default:
       break;
   }
+  (void) context;
 }
 
-/*******************************************************************************
-  Function:
-    void USB_Initialize ( void )
-
-  Remarks:
-    See prototype in usb.h.
- */
-
-void USB_Initialize(void) {
-  usbData.state = USB_STATE_INIT;
-  usbData.usbDevHandle = USB_DEVICE_HANDLE_INVALID;
-  usbData.deviceIsConfigured = false;
-  usbData.endpointRx = 0x01;
-  usbData.endpointTx = 0x81;
-  usbData.epDataReadPending = false;
-  usbData.epDataWritePending = false;
-  usbData.altSetting = 0;
-  usbData.epDataReadSize = 0;
+void USBTransport_Initialize(RXFunction rx_cb) {
+  g_usb_transport_data.rx_cb = rx_cb;
+  g_usb_transport_data.state = USB_STATE_INIT;
+  g_usb_transport_data.usb_device = USB_DEVICE_HANDLE_INVALID;
+  g_usb_transport_data.is_configured = false;
+  g_usb_transport_data.endpointRx = 0x01;
+  g_usb_transport_data.endpointTx = 0x81;
+  g_usb_transport_data.rx_in_progress = false;
+  g_usb_transport_data.tx_in_progress = false;
+  g_usb_transport_data.altSetting = 0;
+  g_usb_transport_data.rx_data_size = 0;
 }
 
-/******************************************************************************
-  Function:
-    void APP_Tasks ( void )
-
-  Remarks:
-    See prototype in app.h.
- */
-
-void USB_Tasks(void) {
+void USBTransport_Tasks() {
   uint16_t endpointSize;
-  switch (usbData.state) {
+  switch (g_usb_transport_data.state) {
     case USB_STATE_INIT:
-      /* Open the device layer */
-      usbData.usbDevHandle = USB_DEVICE_Open(USB_DEVICE_INDEX_0,
-                                             DRV_IO_INTENT_READWRITE);
+      // Try to open the device layer.
+      g_usb_transport_data.usb_device = USB_DEVICE_Open(
+          USB_DEVICE_INDEX_0, DRV_IO_INTENT_READWRITE);
+      if (g_usb_transport_data.usb_device != USB_DEVICE_HANDLE_INVALID) {
+        // Register a callback with device layer to get event notification
+        // for end point 0.
+        USB_DEVICE_EventHandlerSet(g_usb_transport_data.usb_device,
+                                   USBTransport_EventHandler, 0);
 
-      if (usbData.usbDevHandle != USB_DEVICE_HANDLE_INVALID) {
-        /* Register a callback with device layer to get event notification (for end point 0) */
-        USB_DEVICE_EventHandlerSet(usbData.usbDevHandle, APP_USBDeviceEventHandler, 0);
-
-        usbData.state = USB_STATE_WAIT_FOR_CONFIGURATION;
+        g_usb_transport_data.state = USB_STATE_WAIT_FOR_CONFIGURATION;
       } else {
-        /* The Device Layer is not ready to be opened. We should try
-         * again later. */
+        // The Device Layer is not ready yet. Try again later.
       }
-
       break;
 
     case USB_STATE_WAIT_FOR_CONFIGURATION:
-      if (usbData.deviceIsConfigured == true) {
-        if (USB_DEVICE_ActiveSpeedGet(usbData.usbDevHandle) == USB_SPEED_FULL) {
+      if (g_usb_transport_data.is_configured == true) {
+        if (USB_DEVICE_ActiveSpeedGet(g_usb_transport_data.usb_device) == USB_SPEED_FULL) {
           endpointSize = 64;
-        } else if (USB_DEVICE_ActiveSpeedGet(usbData.usbDevHandle) == USB_SPEED_HIGH) {
+        } else if (USB_DEVICE_ActiveSpeedGet(g_usb_transport_data.usb_device) == USB_SPEED_HIGH) {
           endpointSize = 512;
         }
-        if (USB_DEVICE_EndpointIsEnabled(usbData.usbDevHandle, usbData.endpointRx) == false) {
+        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.endpointRx) == false) {
           /* Enable Read Endpoint */
-          USB_DEVICE_EndpointEnable(usbData.usbDevHandle, 0, usbData.endpointRx,
+          USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0, g_usb_transport_data.endpointRx,
                                     USB_TRANSFER_TYPE_BULK, endpointSize);
         }
-        if (USB_DEVICE_EndpointIsEnabled(usbData.usbDevHandle, usbData.endpointTx) == false) {
+        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.endpointTx) == false) {
           /* Enable Write Endpoint */
-          USB_DEVICE_EndpointEnable(usbData.usbDevHandle, 0, usbData.endpointTx,
+          USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0, g_usb_transport_data.endpointTx,
                                     USB_TRANSFER_TYPE_BULK, endpointSize);
         }
         /* Indicate that we are waiting for read */
-        usbData.epDataReadPending = true;
+        g_usb_transport_data.rx_in_progress = true;
 
         /* Place a new read request. */
         USB_DEVICE_RESULT result = USB_DEVICE_EndpointRead(
-                                                           usbData.usbDevHandle, &usbData.readTranferHandle,
-                                                           usbData.endpointRx, &receivedDataBuffer[0], sizeof (receivedDataBuffer));
+                                                           g_usb_transport_data.usb_device, &g_usb_transport_data.read_transfer,
+                                                           g_usb_transport_data.endpointRx, &receivedDataBuffer[0], sizeof (receivedDataBuffer));
 
-        if (result == USB_DEVICE_TRANSFER_HANDLE_INVALID) {
-          BSP_LEDToggle(BSP_LED_3);
-        }
+        (void) result;
+
         /* Device is ready to run the main task */
-        usbData.state = USB_STATE_MAIN_TASK;
+        g_usb_transport_data.state = USB_STATE_MAIN_TASK;
       }
       break;
 
     case USB_STATE_MAIN_TASK:
-      if (!usbData.deviceIsConfigured) {
+      if (!g_usb_transport_data.is_configured) {
         /* This means the device got deconfigured. Change the
          * application state back to waiting for configuration. */
-        usbData.state = USB_STATE_WAIT_FOR_CONFIGURATION;
+        g_usb_transport_data.state = USB_STATE_WAIT_FOR_CONFIGURATION;
 
-        /* Disable the endpoint*/
-        USB_DEVICE_EndpointDisable(usbData.usbDevHandle, usbData.endpointRx);
-        USB_DEVICE_EndpointDisable(usbData.usbDevHandle, usbData.endpointTx);
-        usbData.epDataReadPending = false;
-        usbData.epDataWritePending = false;
-      } else if (usbData.epDataReadPending == false) {
+        // Disable the endpoints
+        USB_DEVICE_EndpointDisable(g_usb_transport_data.usb_device,
+                                   g_usb_transport_data.endpointRx);
+        USB_DEVICE_EndpointDisable(g_usb_transport_data.usb_device,
+                                   g_usb_transport_data.endpointTx);
+        g_usb_transport_data.rx_in_progress = false;
+        g_usb_transport_data.tx_in_progress = false;
+      } else if (g_usb_transport_data.rx_in_progress == false) {
         /* Look at the data the host sent, to see what kind of
          * application specific command it sent. */
 
 
-        if (usbData.epDataWritePending == false) {
+        if (g_usb_transport_data.tx_in_progress == false) {
           // we only go ahead and process the data if we can respond.
-          StreamDecode_Process(receivedDataBuffer, usbData.epDataReadSize);
+#ifdef PIPELINE_TRANSPORT_TX
+          PIPELINE_TRANSPORT_RX(receivedDataBuffer,
+                                g_usb_transport_data.rx_data_size);
+#else
+          g_usb_transport_data.rx_cb(receivedDataBuffer,
+                                     g_usb_transport_data.rx_data_size);
+#endif
 
+          //USB_DEVICE_EndpointStall(g_usb_transport_data.usb_device,
+          //                         g_usb_transport_data.endpointRx);
           // schedule the next read
-          usbData.epDataReadPending = true;
-          USB_DEVICE_EndpointRead(usbData.usbDevHandle,
-                                  &usbData.readTranferHandle,
-                                  usbData.endpointRx,
+          /*
+          g_usb_transport_data.rx_in_progress = true;
+          USB_DEVICE_EndpointRead(g_usb_transport_data.usb_device,
+                                  &g_usb_transport_data.read_transfer,
+                                  g_usb_transport_data.endpointRx,
                                   &receivedDataBuffer[0],
                                   sizeof (receivedDataBuffer));
+          */
         }
       }
       break;
 
     case USB_STATE_ERROR:
       break;
-
     default:
       break;
   }
 }
 
-void SendResponse(Command command, uint8_t rc, const uint8_t* data,
-                  unsigned int data_length) {
-  if (usbData.epDataWritePending) {
-    BSP_LEDToggle(BSP_LED_2);
-    return;
+bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
+                               unsigned int iov_count) {
+  if (g_usb_transport_data.tx_in_progress ||
+      !g_usb_transport_data.is_configured) {
+    return false;
   }
 
   transmitDataBuffer[0] = START_OF_MESSAGE_ID;
   transmitDataBuffer[1] = command & 0xff;
   transmitDataBuffer[2] = command >> 8;
-  transmitDataBuffer[3] = data_length & 0xf;
-  transmitDataBuffer[4] = data_length >> 8;
+  // 3 & 4 are the length.
   transmitDataBuffer[5] = rc;
-  if (data_length > 0) {
-    memcpy(transmitDataBuffer + 6, data, data_length);
+
+  // Set appropriate flags.
+  transmitDataBuffer[6] = 0;
+  if (Logging_DataPending()) {
+    transmitDataBuffer[6] |= TRANSPORT_LOGS_PENDING;
   }
-  transmitDataBuffer[6 + data_length] = END_OF_MESSAGE_ID;
+  if (Flags_HasChanged()) {
+    transmitDataBuffer[6] |= TRANSPORT_FLAGS_CHANGED;
+  }
 
-  usbData.epDataWritePending = true;
+  unsigned int i = 0;
+  uint16_t offset = 0;
+  for (; i != iov_count; i++) {
+    if (offset + data[i].length > PAYLOAD_SIZE) {
+      memcpy(transmitDataBuffer + offset + 7, data[i].base,
+             PAYLOAD_SIZE - offset);
+      offset = PAYLOAD_SIZE;
+      transmitDataBuffer[6] |= TRANSPORT_MSG_TRUNCATED;
+      break;
+    } else {
+      memcpy(transmitDataBuffer + offset + 7, data[i].base, data[i].length);
+      offset += data[i].length;
+    }
+  }
 
-  USB_DEVICE_EndpointWrite(usbData.usbDevHandle, &usbData.writeTranferHandle,
-                           usbData.endpointTx, transmitDataBuffer,
-                           data_length + 7,
-                           USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE);
+  transmitDataBuffer[3] = offset & 0xf;
+  transmitDataBuffer[4] = offset >> 8;
+  transmitDataBuffer[7 + offset] = END_OF_MESSAGE_ID;
 
+  g_usb_transport_data.tx_in_progress = true;
 
+  USB_DEVICE_RESULT result = USB_DEVICE_EndpointWrite(
+      g_usb_transport_data.usb_device,
+      &g_usb_transport_data.write_transfer,
+      g_usb_transport_data.endpointTx, transmitDataBuffer,
+      offset + 8,
+      USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE);
+  if (result != USB_DEVICE_RESULT_OK) {
+    g_usb_transport_data.tx_in_progress = false;
+  }
+  return result == USB_DEVICE_RESULT_OK;
 }

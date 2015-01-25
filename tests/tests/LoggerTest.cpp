@@ -53,11 +53,11 @@ class LoggerTest: public CppUnit::TestFixture {
   void testLogAndFetch();
   void testOverflow();
 
-  void Tx(Command command, uint8_t return_code, const IOVec* iov,
+  bool Tx(Command command, uint8_t return_code, const IOVec* iov,
           unsigned int iov_count) {
     string payload;
     for (unsigned int i = 0; i != iov_count; i++) {
-      payload.append(reinterpret_cast<char*>(iov[i].base), iov[i].length);
+      payload.append(reinterpret_cast<const char*>(iov[i].base), iov[i].length);
     }
 
     bool valid = !payload.empty();
@@ -72,6 +72,7 @@ class LoggerTest: public CppUnit::TestFixture {
       .data = data
     };
     received_messages.push_back(message);
+    return true;
   }
 
  private:
@@ -91,11 +92,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(LoggerTest);
 /*
  * Called by the Logger code under test.
  */
-void TxFunction(Command command, uint8_t return_code, const IOVec* iov,
-                 unsigned int iov_count) {
+bool TxFunction(Command command, uint8_t return_code, const IOVec* iov,
+                unsigned int iov_count) {
   if (logger_test) {
-    logger_test->Tx(command, return_code, iov, iov_count);
+    return logger_test->Tx(command, return_code, iov, iov_count);
   }
+  return true;
 }
 
 /*

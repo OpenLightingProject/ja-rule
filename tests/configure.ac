@@ -41,6 +41,19 @@ DX_ENV_APPEND(PROJECT_NUMBER, $doxygen_project_number)
 
 DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
 
+# pkg-config
+PKG_PROG_PKG_CONFIG
+AS_IF([test -z "$PKG_CONFIG"],
+                  [AC_MSG_ERROR([Missing pkg-config, please install it])])
+
+
+# cmocka
+PKG_CHECK_MODULES(
+  [CMOCKA],
+  [cmocka >= 0.4.1],
+  [true],
+  [AC_MSG_ERROR([Please install cmocka >= 0.4.1])])
+
 # cppunit
 #####################################################
 AM_PATH_CPPUNIT([1.9.6], [],

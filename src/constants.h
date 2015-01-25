@@ -56,6 +56,7 @@ typedef enum {
   ECHO = 0x80,
   TX_DMX = 0x81,
   GET_LOG = 0x82,
+  GET_FLAGS = 0x83
 } Command;
 
 

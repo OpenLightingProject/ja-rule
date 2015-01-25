@@ -25,14 +25,14 @@
 #ifndef SRC_LOGGER_H_
 #define SRC_LOGGER_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdbool.h>
 #include <stdint.h>
 #include "transport.h"
 #include "loggerPrivate.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /// @cond INTERNAL
 extern LoggerData g_logger;
@@ -51,8 +51,7 @@ extern LoggerData g_logger;
  * If PIPELINE_TRANSPORT_TX is defined in system_pipeline.h, the macro
  * will override the tx_cb argument.
  */
-void Logging_Initialize(TXFunction tx_cb,
-                        uint16_t max_payload_size);
+void Logging_Initialize(TXFunction tx_cb, uint16_t max_payload_size);
 
 /**
  * @brief Change the state of the logger.
@@ -67,7 +66,7 @@ void Logging_SetState(bool enabled);
  * @brief Check if the logger is enabled.
  * @returns true if the logger is enabled, false otherwise.
  */
-extern inline bool Logging_IsEnabled() {
+static inline bool Logging_IsEnabled() {
   return g_logger.enabled;
 }
 
@@ -75,7 +74,7 @@ extern inline bool Logging_IsEnabled() {
  * @brief Check if there is log data pending.
  * @returns true if there is log data pending, false otherwise.
  */
-extern inline bool Logging_DataPending() {
+static inline bool Logging_DataPending() {
   return g_logger.read != -1;
 }
 
@@ -83,7 +82,7 @@ extern inline bool Logging_DataPending() {
  * @brief Check if the log buffer has overflowed
  * @returns true if the buffer has overflowed, false otherwise.
  */
-extern inline bool Logging_HasOverflowed() {
+static inline bool Logging_HasOverflowed() {
   return g_logger.overflow;
 }
 
