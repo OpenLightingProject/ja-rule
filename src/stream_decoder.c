@@ -10,7 +10,6 @@
 
 #include "constants.h"
 #include "system_pipeline.h"
-#include "usb.h"
 
 
 #ifndef min
@@ -31,7 +30,9 @@ typedef enum {
 
 typedef struct {
   StreamDecoderState state;
+#ifndef PIPELINE_HANDLE_MESSAGE
   MessageHandler handler;
+#endif
   Message message;
   unsigned int fragment_offset;
   uint8_t fragmented_buffer[PAYLOAD_SIZE];
@@ -42,7 +43,9 @@ StreamDecoderData g_stream_data;
 
 void StreamDecoder_Initialize(MessageHandler handler) {
   g_stream_data.state = START_OF_MESSAGE;
+#ifndef PIPELINE_HANDLE_MESSAGE
   g_stream_data.handler = handler;
+#endif
   g_stream_data.message.length = 0;
   g_stream_data.message.command = 0;
   g_stream_data.message.payload = NULL;

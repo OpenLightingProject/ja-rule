@@ -6,15 +6,15 @@
 
 #include "dmx.h"
 #include "logger.h"
-#include "usb.h"
+#include "usb_transport.h"
+#include "stream_decoder.h"
+#include "message_handler.h"
 
 void APP_Initialize(void) {
-
   DMX_Initialize();
-  StreamDecode_Initialize();
+  StreamDecoder_Initialize(NULL);
 
-  // TODO(simon): pass handler function here;
-  USB_Initialize();
+  USBTransport_Initialize(NULL);
 
   Logging_Initialize(NULL, PAYLOAD_SIZE);
   Logging_SetState(true);
@@ -22,6 +22,6 @@ void APP_Initialize(void) {
 
 
 void APP_Tasks(void) {
-  USB_Tasks();
+  USBTransport_Tasks();
   DMX_Tasks();
 }
