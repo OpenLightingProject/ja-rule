@@ -57,7 +57,7 @@ before_install:
  - if [ "$TASK" = "coverage" ]; then sudo pip install -qq cpp-coveralls; fi
 #Install doxygen if required
  - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen; fi
- - if [ "$TASK" = "compile" ]; then ./install-protobuf.sh; fi
+ - if [ "$TASK" = "compile" ]; then ./install-cmocka.sh; fi
 
 after_success:
   - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/tests/cov-int/scm_log.txt; fi
