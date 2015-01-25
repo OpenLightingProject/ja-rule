@@ -27,8 +27,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "logger_private.h"
 #include "transport.h"
-#include "loggerPrivate.h"
 
 #ifdef __cplusplus
 extern "C" {

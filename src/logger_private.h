@@ -1,5 +1,5 @@
-/* 
- * File:   loggerPrivate..h
+/*
+ * File:   logger_private..h
  * Author: Simon Newton
  */
 
@@ -7,6 +7,7 @@
 #define SRC_LOGGERPRIVATE_H_
 
 #include "constants.h"
+#include "transport.h"
 
 #ifdef __cplusplus
 extern "C" {
