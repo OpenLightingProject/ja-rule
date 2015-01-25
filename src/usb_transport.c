@@ -147,7 +147,7 @@ void USBTransport_Initialize(RXFunction rx_cb) {
 }
 
 void USBTransport_Tasks() {
-  uint16_t endpointSize;
+  uint16_t endpointSize = 64;
   switch (g_usb_transport_data.state) {
     case USB_STATE_INIT:
       // Try to open the device layer.
