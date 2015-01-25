@@ -62,7 +62,6 @@ typedef enum {
 typedef enum {
   RC_OK = 0,
   RC_UNKNOWN = 1,
-
 } ReturnCodes;
 
 // The Start of Message identifier.
