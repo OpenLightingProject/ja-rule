@@ -12,14 +12,13 @@
 
 void APP_Initialize(void) {
   DMX_Initialize();
-  StreamDecoder_Initialize(NULL);
-
-  USBTransport_Initialize(NULL);
-
+  Flags_Initialize();
   Logging_Initialize(NULL, PAYLOAD_SIZE);
+  MessageHandler_Initialize(NULL);
+  StreamDecoder_Initialize(NULL);
   Logging_SetState(true);
+  USBTransport_Initialize(NULL);
 }
-
 
 void APP_Tasks(void) {
   USBTransport_Tasks();

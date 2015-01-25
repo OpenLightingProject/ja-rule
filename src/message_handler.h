@@ -17,17 +17,27 @@
 #define SRC_MESSAGE_HANDLER_H_
 
 #include "stream_decoder.h"
+#include "transport.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
+ * @brief Initialize the Message Handler sub-system.
+ * @param tx_cb The callback to use for sending messages.
+ *
+ * If PIPELINE_TRANSPORT_TX is defined in system_pipeline.h, the macro
+ * will override the tx_cb argument.
+ */
+void MessageHandler_Initialize(TXFunction tx_cb);
+
+/**
  * @brief Handle messages from the Host System
  * @param message The message to handle, ownership is not transferred.
  *   Invalidated once the call completes.
  */
-void HandleMessage(const Message *message);
+void MessageHandler_HandleMessage(const Message* message);
 
 #ifdef __cplusplus
 }
