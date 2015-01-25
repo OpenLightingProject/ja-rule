@@ -1,8 +1,6 @@
-/* 
+/*
  * File:   message_handler.h
  * Author: Simon Newton
- *
- * Created on January 16, 2015, 8:21 AM
  */
 
 /**
@@ -15,12 +13,12 @@
  * @brief Handle messages from the Host.
  */
 
-#ifndef MESSAGE_HANDLER_H
-#define	MESSAGE_HANDLER_H
+#ifndef SRC_MESSAGE_HANDLER_H_
+#define SRC_MESSAGE_HANDLER_H_
 
 #include "stream_decoder.h"
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -31,11 +29,11 @@ extern "C" {
  */
 void HandleMessage(const Message *message);
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* MESSAGE_HANDLER_H */
+#endif  // SRC_MESSAGE_HANDLER_H_
 
 /**
  * @}

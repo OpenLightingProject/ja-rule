@@ -97,7 +97,7 @@ void FlagsTest::testFlags() {
     const Message &message = received_messages[0];
     ASSERT_EQ(GET_FLAGS, message.command);
     ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
-    ASSERT_EQ((unsigned long)1u, message.data.size());
+    ASSERT_EQ((size_t)1, message.data.size());
     ASSERT_EQ(string(1, 0), message.data);
     received_messages.clear();
   }

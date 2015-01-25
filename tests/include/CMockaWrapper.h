@@ -1,4 +1,8 @@
 
+
+#ifndef TESTS_INCLUDE_CMOCKAWRAPPER_H_
+#define TESTS_INCLUDE_CMOCKAWRAPPER_H_
+
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
@@ -11,3 +15,5 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
+
+#endif  // TESTS_INCLUDE_CMOCKAWRAPPER_H_
