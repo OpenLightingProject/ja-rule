@@ -5,12 +5,36 @@
  *
  * @section sec_Overview Overview
  *
+ * Ja Rule provides an open source DMX / RDM stack for PIC32 MCUs.
+ *
  * @section sec_Features Features
  *
  *
  * @section sec_Platforms Supported Platforms
  *
+ * This code is targeted at the PIC32 series MCUs. It uses the Harmony
+ * framework, so it's unlikely to work with other platforms without some
+ * serious porting effort.
+ *
+ * @section sec_Terminology Terminology
+ *
+ *<dl>
+ * <dt>Device</dt>
+ * <dd>The embedded system running this code.</dd>
+ * <dt>Host</dt>
+ * <dd>The system that typically runs a full OS, and is the USB / SPI bus
+ *     master.</dd>
+ * <dt>%Message</dt>
+ * <dd>A structured sequence of bytes exchanged between the Host and the
+ *     Device.</dd>
+ * <dt>Responder</dt>
+ * <dd>An RDM Responder, depending on the configuration of a Device, it may
+ *     act as an RDM Responder.</dd>
+ * </dl>
+ *
  * @section sec_GettingStarted Getting Started
  *
  * @section sec_Licensing Licensing
+ *
+ * TODO(simon): complete this
  */

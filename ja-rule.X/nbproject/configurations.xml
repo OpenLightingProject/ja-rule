@@ -18,13 +18,19 @@
             </logicalFolder>
             <itemPath>../src/system_config/mx_795_512l/system_config.h</itemPath>
             <itemPath>../src/system_config/mx_795_512l/system_definitions.h</itemPath>
+            <itemPath>../src/system_config/mx_795_512l/system_pipeline.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../src/app.h</itemPath>
-        <itemPath>../src/usb.h</itemPath>
         <itemPath>../src/dmx.h</itemPath>
-        <itemPath>../src/stream_decode.h</itemPath>
         <itemPath>../src/constants.h</itemPath>
+        <itemPath>../src/logger.h</itemPath>
+        <itemPath>../src/message_handler.h</itemPath>
+        <itemPath>../src/stream_decoder.h</itemPath>
+        <itemPath>../src/transport.h</itemPath>
+        <itemPath>../src/logger_private.h</itemPath>
+        <itemPath>../src/flags.h</itemPath>
+        <itemPath>../src/usb_transport.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -93,8 +99,12 @@
         </logicalFolder>
         <itemPath>../src/app.c</itemPath>
         <itemPath>../src/main.c</itemPath>
-        <itemPath>../src/usb.c</itemPath>
         <itemPath>../src/dmx.c</itemPath>
+        <itemPath>../src/logger.c</itemPath>
+        <itemPath>../src/message_handler.c</itemPath>
+        <itemPath>../src/stream_decoder.c</itemPath>
+        <itemPath>../src/flags.c</itemPath>
+        <itemPath>../src/usb_transport.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -143,7 +153,6 @@
           </logicalFolder>
         </logicalFolder>
       </logicalFolder>
-      <itemPath>../src/stream_decode.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

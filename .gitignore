@@ -9,10 +9,12 @@ ja-rule.X/nbproject/private/*
 *.gcno
 *.la
 *.lo
+*.log
 *.o
 *.so*
 *.swp
 *.tar*
+*.trs
 *.zip
 .deps
 .dirstamp
