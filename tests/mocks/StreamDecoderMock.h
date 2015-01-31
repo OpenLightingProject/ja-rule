@@ -13,16 +13,24 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * LoggerMock.h
- * Mock of the Logger.
+ * StreamDecoderMock.h
+ * A mock stream decoder.
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef TESTS_TESTS_LOGGERMOCK_H_
-#define TESTS_TESTS_LOGGERMOCK_H_
+#ifndef TESTS_MOCKS_STREAMDECODERMOCK_H_
+#define TESTS_MOCKS_STREAMDECODERMOCK_H_
 
-void Logger_SetDataPendingFlag(bool flag);
+#include <gmock/gmock.h>
+#include <stdint.h>
 
-void Logger_SetOverflowFlag(bool flag);
+class MockStreamDecoder {
+ public:
+  MOCK_METHOD2(Send, void(const uint8_t* data, unsigned int size));
+};
 
-#endif  // TESTS_TESTS_LOGGERMOCK_H_
+void StreamDecoder_SetMock(MockStreamDecoder* mock);
+
+void StreamDecoder_Process(const uint8_t* data, unsigned int size);
+
+#endif  // TESTS_MOCKS_STREAMDECODERMOCK_H_

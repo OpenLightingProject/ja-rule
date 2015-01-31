@@ -18,135 +18,108 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#include <cppunit/extensions/HelperMacros.h>
-#include <string>
-#include <vector>
+#include <gtest/gtest.h>
 
 #include "flags.h"
-#include "TestUtils.h"
+#include "Array.h"
+#include "TransportMock.h"
 
-using std::string;
+using ::testing::Args;
+using ::testing::StrictMock;
+using ::testing::Return;
+using ::testing::_;
 
-class FlagsTest *flags_test = nullptr;
-
-class FlagsTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(FlagsTest);
-  CPPUNIT_TEST(testFlags);
-  CPPUNIT_TEST_SUITE_END();
-
+class FlagsTest : public testing::Test {
  public:
-  void setUp() {
-    flags_test = this;
+  void SetUp() {
+    Transport_SetMock(&transport_mock);
+    Flags_Initialize(Transport_Send);
   }
 
-  void tearDown() {
-    flags_test = nullptr;
+  void TearDown() {
+    Transport_SetMock(nullptr);
   }
 
-  void testFlags();
-
-  bool Tx(Command command, uint8_t return_code, const IOVec* iov,
-          unsigned int iov_count) {
-    string payload;
-    for (unsigned int i = 0; i != iov_count; i++) {
-      payload.append(reinterpret_cast<const char*>(iov[i].base), iov[i].length);
-    }
-
-    Message message = {
-      .command = command,
-      .return_code = return_code,
-      .data = payload
-    };
-    received_messages.push_back(message);
-    return true;
-  }
-
- private:
-  struct Message {
-    Command command;
-    uint8_t return_code;
-    string data;
-  };
-
-  std::vector<Message> received_messages;
+  StrictMock<MockTransport> transport_mock;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(FlagsTest);
+TEST_F(FlagsTest, testUnsetFlags) {
+  EXPECT_FALSE(Flags_HasChanged());
 
-/*
- * Called by the Flags code under test.
- */
-bool TxFunction(Command command, uint8_t return_code, const IOVec* iov,
-                unsigned int iov_count) {
-  if (flags_test) {
-    return flags_test->Tx(command, return_code, iov, iov_count);
-  }
-  return true;
+  const uint8_t payload[] = {0};
+
+  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
+      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+      .WillOnce(Return(true));
+
+  Flags_SendResponse();
+  EXPECT_FALSE(Flags_HasChanged());
 }
 
-/**
- * Confirm the flags work as intended.
- */
-void FlagsTest::testFlags() {
-  Flags_Initialize(TxFunction);
-  ASSERT_FALSE(Flags_HasChanged());
-
-  Flags_SendResponse();
-  ASSERT_NOT_EMPTY(received_messages);
-  {
-    const Message &message = received_messages[0];
-    ASSERT_EQ(GET_FLAGS, message.command);
-    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
-    ASSERT_EQ((size_t)1, message.data.size());
-    ASSERT_EQ(string(1, 0), message.data);
-    received_messages.clear();
-  }
-
-  // Set the 'Log overflow' flag.
+TEST_F(FlagsTest, testLogOverflow) {
+  EXPECT_FALSE(Flags_HasChanged());
   Flags_SetLogOverflow();
-  ASSERT_TRUE(Flags_HasChanged());
+  EXPECT_TRUE(Flags_HasChanged());
+
+  const uint8_t payload[] = {1};
+
+  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
+      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+      .WillOnce(Return(true));
 
   Flags_SendResponse();
-  ASSERT_NOT_EMPTY(received_messages);
-  {
-    const Message &message = received_messages[0];
-    ASSERT_EQ(GET_FLAGS, message.command);
-    ASSERT_EQ(static_cast<uint8_t>(RC_OK), message.return_code);
-    ASSERT_EQ(string(1, 1), message.data);
-    received_messages.clear();
-  }
+  EXPECT_FALSE(Flags_HasChanged());
+}
 
-  ASSERT_FALSE(Flags_HasChanged());
-
-  // Set the 'TX drop' flag.
+TEST_F(FlagsTest, testTXDrop) {
+  EXPECT_FALSE(Flags_HasChanged());
   Flags_SetTXDrop();
-  ASSERT_TRUE(Flags_HasChanged());
+  EXPECT_TRUE(Flags_HasChanged());
+
+  const uint8_t payload[] = {2};
+
+  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
+      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+      .WillOnce(Return(true));
 
   Flags_SendResponse();
-  ASSERT_NOT_EMPTY(received_messages);
-  {
-    const Message &message = received_messages[0];
-    ASSERT_EQ(GET_FLAGS, message.command);
-    ASSERT_EQ(static_cast<uint8_t>(RC_OK), message.return_code);
-    ASSERT_EQ(string(1, 2), message.data);
-    received_messages.clear();
-  }
+  EXPECT_FALSE(Flags_HasChanged());
+}
 
-  // Set the 'TX error' flag.
+TEST_F(FlagsTest, testTXError) {
+  EXPECT_FALSE(Flags_HasChanged());
   Flags_SetTXError();
-  ASSERT_TRUE(Flags_HasChanged());
+  EXPECT_TRUE(Flags_HasChanged());
+
+  const uint8_t payload[] = {4};
+
+  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
+      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+      .WillOnce(Return(true));
 
   Flags_SendResponse();
-  ASSERT_NOT_EMPTY(received_messages);
-  {
-    const Message &message = received_messages[0];
-    ASSERT_EQ(GET_FLAGS, message.command);
-    ASSERT_EQ(static_cast<uint8_t>(RC_OK), message.return_code);
-    ASSERT_EQ(string(1, 4), message.data);
-    received_messages.clear();
-  }
+  EXPECT_FALSE(Flags_HasChanged());
+}
 
-  // TODO(simon): Add a test to confirm the flags aren't reset if the TX
-  // function fails. We need a decent mocking infrastructure setup before we
-  // can do this.
+TEST_F(FlagsTest, testSendFailure) {
+  EXPECT_FALSE(Flags_HasChanged());
+  Flags_SetLogOverflow();
+  EXPECT_TRUE(Flags_HasChanged());
+
+  const uint8_t payload[] = {1};
+
+  // The first send fails, so the flag state is maintained.
+  testing::InSequence seq;
+  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
+      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+      .WillOnce(Return(false));
+  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
+      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+      .WillOnce(Return(true));
+
+  Flags_SendResponse();
+  EXPECT_TRUE(Flags_HasChanged());
+
+  Flags_SendResponse();
+  EXPECT_FALSE(Flags_HasChanged());
 }

@@ -301,3 +301,7 @@ bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
   }
   return result == USB_DEVICE_RESULT_OK;
 }
+
+bool USBTransport_WritePending() {
+  return g_usb_transport_data.tx_in_progress;
+}

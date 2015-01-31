@@ -13,16 +13,30 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * USBMock.h
- * Mock of the Harmony USB module.
+ * LoggerMock.h
+ * Mock Logger.
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef TESTS_TESTS_USBMOCK_H_
-#define TESTS_TESTS_USBMOCK_H_
+#ifndef TESTS_MOCKS_LOGGERMOCK_H_
+#define TESTS_MOCKS_LOGGERMOCK_H_
 
-#include "usb_stub.h"
+#include <gmock/gmock.h>
 
-typedef void (*USBEventHandler)(USB_DEVICE_EVENT, void*, uintptr_t);
+#include "transport.h"
 
-#endif  // TESTS_TESTS_USBMOCK_H_
+class MockLogger {
+ public:
+  MOCK_METHOD2(Initialize, void(TXFunction tx_cb, uint16_t max_payload_size));
+  MOCK_METHOD1(SetState, void(bool enabled));
+  MOCK_METHOD1(Log, void(const char* str));
+  MOCK_METHOD0(SendResponse, void());
+};
+
+void Logger_SetMock(MockLogger* mock);
+
+void Logger_SetDataPendingFlag(bool flag);
+
+void Logger_SetOverflowFlag(bool flag);
+
+#endif  // TESTS_MOCKS_LOGGERMOCK_H_

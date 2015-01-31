@@ -18,75 +18,111 @@
  * Copyright (C) 2015 Simon Newton
  */
 
+#include <gtest/gtest.h>
+
 #include <string.h>
 
 #include "system_definitions.h"
 
 #include "Array.h"
-#include "CMockaWrapper.h"
 #include "LoggerMock.h"
+#include "Matchers.h"
+#include "StreamDecoderMock.h"
 #include "USBMock.h"
 #include "flags.h"
 #include "usb_transport.h"
+
+using ::testing::Args;
+using ::testing::Return;
+using ::testing::SaveArg;
+using ::testing::StrictMock;
+using ::testing::NotNull;
+using ::testing::_;
+
+typedef void (*USBEventHandler)(USB_DEVICE_EVENT, void*, uintptr_t);
+
+class USBTransportTest : public testing::Test {
+ public:
+  void SetUp() {
+    USB_SetMock(&usb_mock);
+    StreamDecoder_SetMock(&stream_decoder_mock);
+    // Logger_Initialize(Transport_Send, PAYLOAD_SIZE);
+  }
+
+  void TearDown() {
+    USB_SetMock(nullptr);
+    StreamDecoder_SetMock(nullptr);
+  }
+
+  void ConfigureDevice();
+  void CompleteWrite();
+
+  StrictMock<MockUSB> usb_mock;
+  StrictMock<MockStreamDecoder> stream_decoder_mock;
+
+  // The value here doesn't matter, we just need a pointer to represent the
+  // device.
+  USB_DEVICE_HANDLE dummy_device = 0;
+
+  // Holds a pointer to the USBTransport_EventHandler function once
+  // ConfigureDevice() has run
+  USBEventHandler m_event_handler_fn = nullptr;
+};
 
 /*
  * @brief Put the USB Device into configured mode.
  * @param event_handler, the captured USBEventHandler that can later be used to
  *   trigger events.
  */
-void ConfigureDevice(USBEventHandler *event_handler) {
-  // The value here doesn't matter, we just need a pointer to represent the
-  // device.
-  uint32_t dummy_device = 0;
-
-  expect_any(USB_DEVICE_Open, index);
-  expect_any(USB_DEVICE_Open, intent);
-  will_return(USB_DEVICE_Open, &dummy_device);
-
-  expect_value(USB_DEVICE_EventHandlerSet, usb_device, &dummy_device);
-  expect_any(USB_DEVICE_EventHandlerSet, cb);
-  expect_value(USB_DEVICE_EventHandlerSet, context, 0);
-
-  will_return(USB_DEVICE_EventHandlerSet, event_handler);
+void USBTransportTest::ConfigureDevice() {
+  EXPECT_CALL(usb_mock, Open(_, DRV_IO_INTENT_READWRITE))
+      .WillOnce(Return(dummy_device));
+  EXPECT_CALL(usb_mock,
+      EventHandlerSet(dummy_device, _, 0))
+      .WillOnce(SaveArg<1>(&m_event_handler_fn));
 
   USBTransport_Tasks();
+  ASSERT_THAT(m_event_handler_fn, NotNull());
 
+  // Send a USB_DEVICE_EVENT_CONFIGURED event.
   uint8_t configurationValue = 1;
-  (*event_handler)(USB_DEVICE_EVENT_CONFIGURED,
-                   reinterpret_cast<void*>(&configurationValue), 0);
+  m_event_handler_fn(USB_DEVICE_EVENT_CONFIGURED,
+                     reinterpret_cast<void*>(&configurationValue), 0);
 }
 
 /*
  * @brief Trigger a write-complete event.
  * @param event_handler The USBEventHandler to use to trigger the event.
  */
-void CompleteWrite(USBEventHandler event_handler) {
+void USBTransportTest::CompleteWrite() {
+  ASSERT_THAT(m_event_handler_fn, NotNull());
   uint8_t configurationValue = 0;
-  event_handler(USB_DEVICE_EVENT_ENDPOINT_WRITE_COMPLETE,
-                reinterpret_cast<void*>(&configurationValue), 0);
+  m_event_handler_fn(USB_DEVICE_EVENT_ENDPOINT_WRITE_COMPLETE,
+                     reinterpret_cast<void*>(&configurationValue), 0);
 }
 
 /*
- * Check an uninitialized device doesn't send anything.
+ * Check an uninitialized transport doesn't send anything.
  */
-void testUninitializedDevice(void **state) {
+TEST_F(USBTransportTest, uninitialized) {
+  // Even though we ca;;t USBTransport_Initialize() here, since we haven't
+  // called USBTransport_Tasks() the transport remains in an uninitialized
+  // state.
   USBTransport_Initialize(nullptr);
-  USBTransport_SendResponse(ECHO, RC_OK, NULL, 0);
-  (void) state;
+  EXPECT_FALSE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
 }
 
 /*
  * Check sending messages to the Host works.
  */
-void testSendResponse(void **state) {
-  USBTransport_Initialize(nullptr);
+TEST_F(USBTransportTest, sendResponse) {
+  USBTransport_Initialize(StreamDecoder_Process);
 
-  // Try with a unconfigured device.
-  assert_false(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  // Try with a unconfigured transport.
+  EXPECT_FALSE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
 
   // Now configure the device and clear the logging bit.
-  USBEventHandler event_handler;
-  ConfigureDevice(&event_handler);
+  ConfigureDevice();
   Logger_SetDataPendingFlag(false);
 
   // Test a message with no data.
@@ -94,27 +130,50 @@ void testSendResponse(void **state) {
     0x5a, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa5
   };
 
-  expect_any(USB_DEVICE_EndpointWrite, usb_device);
-  expect_any(USB_DEVICE_EndpointWrite, transfer);
-  expect_value(USB_DEVICE_EndpointWrite, endpoint, 0x81);
-  expect_memory(USB_DEVICE_EndpointWrite, data, expected_message,
-                arraysize(expected_message));
-  expect_value(USB_DEVICE_EndpointWrite, size, 8);
-  expect_value(USB_DEVICE_EndpointWrite, flags,
-               USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE);
-  will_return(USB_DEVICE_EndpointWrite, USB_DEVICE_RESULT_OK);
+  EXPECT_CALL(
+      usb_mock,
+      EndpointWrite(dummy_device, _, 0x81, _, _,
+                    USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
+      .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
+      .WillOnce(Return(USB_DEVICE_RESULT_OK));
 
-  assert_true(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_TRUE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_TRUE(USBTransport_WritePending());
 
+  CompleteWrite();
+  EXPECT_FALSE(USBTransport_WritePending());
+}
+
+TEST_F(USBTransportTest, doubleSendResponse) {
+  USBTransport_Initialize(StreamDecoder_Process);
+  ConfigureDevice();
+  Logger_SetDataPendingFlag(false);
+
+  const uint8_t expected_message[] = {
+    0x5a, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa5
+  };
+
+  EXPECT_CALL(
+      usb_mock,
+      EndpointWrite(dummy_device, _, 0x81, _, _,
+                    USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
+      .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
+      .WillOnce(Return(USB_DEVICE_RESULT_OK));
+
+  EXPECT_TRUE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
   // Try to send a second message while the first is pending.
-  assert_false(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_FALSE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_TRUE(USBTransport_WritePending());
 
-  // Now mark the Write as completed
-  CompleteWrite(event_handler);
+  CompleteWrite();
+  EXPECT_FALSE(USBTransport_WritePending());
+}
 
-  // Send another message, this time with the logging flag set and some payload
-  // data.
+TEST_F(USBTransportTest, sendResponseWithData) {
+  USBTransport_Initialize(StreamDecoder_Process);
+  ConfigureDevice();
   Logger_SetDataPendingFlag(true);
+
   const uint8_t chunk1[] = {1, 2};
   const uint8_t chunk2[] = {3, 4};
 
@@ -123,98 +182,98 @@ void testSendResponse(void **state) {
       { reinterpret_cast<const void*>(&chunk2), arraysize(chunk2) }
   };
 
-  const uint8_t expected_message2[] = {
+  const uint8_t expected_message[] = {
     0x5a, 0x80, 0x00, 0x04, 0x00, 0x00, 0x01,
     1, 2, 3, 4, 0xa5
   };
 
-  expect_any(USB_DEVICE_EndpointWrite, usb_device);
-  expect_any(USB_DEVICE_EndpointWrite, transfer);
-  expect_value(USB_DEVICE_EndpointWrite, endpoint, 0x81);
-  expect_memory(USB_DEVICE_EndpointWrite, data, expected_message2,
-                arraysize(expected_message2));
-  expect_value(USB_DEVICE_EndpointWrite, size, 12);
-  expect_value(USB_DEVICE_EndpointWrite, flags,
-               USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE);
-  will_return(USB_DEVICE_EndpointWrite, USB_DEVICE_RESULT_OK);
+  EXPECT_CALL(
+      usb_mock,
+      EndpointWrite(dummy_device, _, 0x81, _, _,
+                    USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
+      .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
+      .WillOnce(Return(USB_DEVICE_RESULT_OK));
 
-  assert_true(USBTransport_SendResponse(ECHO, RC_OK, iovec, arraysize(iovec)));
+  EXPECT_TRUE(USBTransport_SendResponse(ECHO, RC_OK, iovec, arraysize(iovec)));
+  EXPECT_TRUE(USBTransport_WritePending());
 
-  CompleteWrite(event_handler);
+  CompleteWrite();
+  EXPECT_FALSE(USBTransport_WritePending());
+}
+
+TEST_F(USBTransportTest, sendError) {
+  USBTransport_Initialize(StreamDecoder_Process);
+  ConfigureDevice();
   Logger_SetDataPendingFlag(false);
 
-  // Perform a send where USB_DEVICE_EndpointWrite returns an error
-  expect_any(USB_DEVICE_EndpointWrite, usb_device);
-  expect_any(USB_DEVICE_EndpointWrite, transfer);
-  expect_value(USB_DEVICE_EndpointWrite, endpoint, 0x81);
-  expect_memory(USB_DEVICE_EndpointWrite, data, expected_message,
-                arraysize(expected_message));
-  expect_value(USB_DEVICE_EndpointWrite, size, 8);
-  expect_value(USB_DEVICE_EndpointWrite, flags,
-               USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE);
-  will_return(USB_DEVICE_EndpointWrite, USB_DEVICE_RESULT_ERROR);
+  EXPECT_CALL(
+      usb_mock,
+      EndpointWrite(dummy_device, _, 0x81, _, _,
+                    USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
+      .WillOnce(Return(USB_DEVICE_RESULT_ERROR));
 
-  assert_false(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_FALSE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_FALSE(USBTransport_WritePending());
+}
+
+TEST_F(USBTransportTest, truncateResponse) {
+  USBTransport_Initialize(StreamDecoder_Process);
+  ConfigureDevice();
+  Logger_SetDataPendingFlag(false);
 
   // Send a lot of data, and make sure we set the truncated bit.
   const unsigned int big_payload_size = PAYLOAD_SIZE + 100;
   uint8_t large_payload[big_payload_size];  // NOLINT(runtime/arrays)
   memset(large_payload, 0, arraysize(large_payload));
-  iovec[0].base = large_payload;
-  iovec[0].length = big_payload_size;
 
-  uint8_t expected_message3[7 + PAYLOAD_SIZE + 1];
-  memset(expected_message3, 0, arraysize(expected_message3));
-  expected_message3[0] = 0x5a;
-  expected_message3[1] = 0x80;
-  expected_message3[2] = 0x0;
-  expected_message3[3] = 0x01;
-  expected_message3[4] = 0x02;
-  expected_message3[5] = RC_OK;
-  expected_message3[6] = 0x04;  // flags, truncated.
-  expected_message3[7 + PAYLOAD_SIZE] = 0xa5;
+  IOVec iovec { large_payload, big_payload_size};
 
-  expect_any(USB_DEVICE_EndpointWrite, usb_device);
-  expect_any(USB_DEVICE_EndpointWrite, transfer);
-  expect_value(USB_DEVICE_EndpointWrite, endpoint, 0x81);
-  expect_memory(USB_DEVICE_EndpointWrite, data, expected_message3,
-                arraysize(expected_message3));
-  expect_value(USB_DEVICE_EndpointWrite, size, 8 + PAYLOAD_SIZE);
-  expect_value(USB_DEVICE_EndpointWrite, flags,
-               USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE);
-  will_return(USB_DEVICE_EndpointWrite, USB_DEVICE_RESULT_OK);
+  uint8_t expected_message[7 + PAYLOAD_SIZE + 1];
+  memset(expected_message, 0, arraysize(expected_message));
+  expected_message[0] = 0x5a;
+  expected_message[1] = 0x80;
+  expected_message[2] = 0x0;
+  expected_message[3] = 0x01;
+  expected_message[4] = 0x02;
+  expected_message[5] = RC_OK;
+  expected_message[6] = 0x04;  // flags, truncated.
+  expected_message[7 + PAYLOAD_SIZE] = 0xa5;
 
-  assert_true(USBTransport_SendResponse(ECHO, RC_OK, iovec, 1));
-  CompleteWrite(event_handler);
+  EXPECT_CALL(
+      usb_mock,
+      EndpointWrite(dummy_device, _, 0x81, _, _,
+                    USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
+      .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
+      .WillOnce(Return(USB_DEVICE_RESULT_OK));
 
-  // Now try a test where there is a flag change pending
+  EXPECT_TRUE(USBTransport_SendResponse(ECHO, RC_OK, &iovec, 1));
+  EXPECT_TRUE(USBTransport_WritePending());
+
+  CompleteWrite();
+  EXPECT_FALSE(USBTransport_WritePending());
+}
+
+TEST_F(USBTransportTest, pendingFlags) {
+  USBTransport_Initialize(StreamDecoder_Process);
+  ConfigureDevice();
+  Logger_SetDataPendingFlag(false);
+
   Flags_SetTXDrop();
-  assert_true(Flags_HasChanged());
+  EXPECT_TRUE(Flags_HasChanged());
 
-  const uint8_t expected_message4[] = {
+  const uint8_t expected_message[] = {
     0x5a, 0x80, 0x00, 0x00, 0x00, 0x00, 0x02, 0xa5
   };
 
-  expect_any(USB_DEVICE_EndpointWrite, usb_device);
-  expect_any(USB_DEVICE_EndpointWrite, transfer);
-  expect_value(USB_DEVICE_EndpointWrite, endpoint, 0x81);
-  expect_memory(USB_DEVICE_EndpointWrite, data, expected_message4,
-                arraysize(expected_message4));
-  expect_value(USB_DEVICE_EndpointWrite, size, 8);
-  expect_value(USB_DEVICE_EndpointWrite, flags,
-               USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE);
-  will_return(USB_DEVICE_EndpointWrite, USB_DEVICE_RESULT_OK);
+  EXPECT_CALL(
+      usb_mock,
+      EndpointWrite(dummy_device, _, 0x81, _, _,
+                    USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
+      .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
+      .WillOnce(Return(USB_DEVICE_RESULT_OK));
 
-  assert_true(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
-
-  (void) state;
-}
-
-int main(void) {
-  const UnitTest tests[] = {
-    unit_test(testUninitializedDevice),
-    unit_test(testSendResponse),
-  };
-
-  return run_tests(tests);
+  EXPECT_TRUE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_TRUE(USBTransport_WritePending());
+  CompleteWrite();
+  EXPECT_FALSE(USBTransport_WritePending());
 }

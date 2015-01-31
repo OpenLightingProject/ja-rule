@@ -13,35 +13,25 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * LoggerMock.cpp
- * Mock of the Logger.
+ * StreamDecoderMock.cpp
+ * A mock stream decoder.
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "CMockaWrapper.h"
-#include "logger.h"
+#include "StreamDecoderMock.h"
 
-LoggerData g_logger;
+#include <gmock/gmock.h>
 
-void Logger_Initialize(TXFunction tx_cb, uint16_t max_payload_size) {
-  check_expected(tx_cb);
-  check_expected(max_payload_size);
+namespace {
+MockStreamDecoder *g_stream_decoder_mock = NULL;
 }
 
-void Logger_SetState(bool enabled) {
-  check_expected(enabled);
+void StreamDecoder_SetMock(MockStreamDecoder* mock) {
+  g_stream_decoder_mock = mock;
 }
 
-void Logger_Log(const char* str) {
-  check_expected(str);
-}
-
-void Logger_SendResponse() {}
-
-void Logger_SetDataPendingFlag(bool flag) {
-  g_logger.read = flag ? 0 : - 1;
-}
-
-void Logger_SetOverflowFlag(bool flag) {
-  g_logger.overflow = flag;
+void StreamDecoder_Process(const uint8_t* data, unsigned int size) {
+  if (g_stream_decoder_mock) {
+    g_stream_decoder_mock->Send(data, size);
+  }
 }

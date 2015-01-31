@@ -61,6 +61,11 @@ void USBTransport_Tasks();
 bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
                                unsigned int iov_count);
 
+/**
+ * @brief Check if there is a write in progress
+ */
+bool USBTransport_WritePending();
+
 #ifdef __cplusplus
 }
 #endif

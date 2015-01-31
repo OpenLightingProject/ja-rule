@@ -7,6 +7,7 @@ AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([config])
 AM_INIT_AUTOMAKE([subdir-objects foreign])
+AC_LANG_PUSH([C++])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -18,7 +19,6 @@ AC_PROG_LIBTOOL
 
 # Checks for header files.
 AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
-
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -41,23 +41,30 @@ DX_ENV_APPEND(PROJECT_NUMBER, $doxygen_project_number)
 
 DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
 
-# pkg-config
-PKG_PROG_PKG_CONFIG
-AS_IF([test -z "$PKG_CONFIG"],
-                  [AC_MSG_ERROR([Missing pkg-config, please install it])])
-
-
-# cmocka
-PKG_CHECK_MODULES(
-  [CMOCKA],
-  [cmocka >= 0.4.1],
-  [true],
-  [AC_MSG_ERROR([Please install cmocka >= 0.4.1])])
-
-# cppunit
+# gmock
 #####################################################
-AM_PATH_CPPUNIT([1.9.6], [],
-                [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
+AC_ARG_WITH([gmock],
+  [AS_HELP_STRING([--with-gmock=PATH], [The location of a built gmock)])],
+  [], [with_gmock=../googlemock-read-only])
+
+GMOCK_INCLUDES="-isystem $with_gmock/include"
+GMOCK_LIBS="$with_gmock/lib/libgmock.la $with_gmock/lib/libgmock_main.la"
+GTEST_INCLUDES="-isystem $with_gmock/gtest/include"
+GTEST_LIBS="$with_gmock/gtest/lib/libgtest.la $with_gmock/gtest/lib/libgtest_main.la"
+
+# save CPPFLAGS
+old_cppflags=$CPPFLAGS
+CPPFLAGS="$GMOCK_INCLUDES $GTEST_INCLUDES"
+
+AC_CHECK_HEADER([gmock/gmock.h], [], [AC_MSG_ERROR([Missing gmock/gmock.h])])
+
+# restore CPPFLAGS
+CPPFLAGS=$old_cppflags
+
+AC_SUBST([GMOCK_INCLUDES])
+AC_SUBST([GMOCK_LIBS])
+AC_SUBST([GTEST_INCLUDES])
+AC_SUBST([GTEST_LIBS])
 
 # Output
 #####################################################
