@@ -13,6 +13,7 @@
 #include "stream_decoder.h"
 #include "system_config.h"
 #include "system_definitions.h"
+#include "system_pipeline.h"
 #include "transport.h"
 
 typedef enum {
@@ -228,14 +229,12 @@ void USBTransport_Tasks() {
           //USB_DEVICE_EndpointStall(g_usb_transport_data.usb_device,
           //                         g_usb_transport_data.endpointRx);
           // schedule the next read
-          /*
           g_usb_transport_data.rx_in_progress = true;
           USB_DEVICE_EndpointRead(g_usb_transport_data.usb_device,
                                   &g_usb_transport_data.read_transfer,
                                   g_usb_transport_data.endpointRx,
                                   &receivedDataBuffer[0],
                                   sizeof (receivedDataBuffer));
-          */
         }
       }
       break;

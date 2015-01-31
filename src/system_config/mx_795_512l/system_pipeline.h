@@ -33,7 +33,7 @@ extern "C" {
  * This should either call a function of type MessageHandler or be undefined.
  */
 #define PIPELINE_HANDLE_MESSAGE(message) \
-  HandleMessage(message);
+  MessageHandler_HandleMessage(message);
 
 #ifdef __cplusplus
 }

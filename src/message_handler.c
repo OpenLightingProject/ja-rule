@@ -5,6 +5,7 @@
 #include "flags.h"
 #include "logger.h"
 #include "system_definitions.h"
+#include "system_pipeline.h"
 
 #ifndef PIPELINE_TRANSPORT_TX
 static TXFunction g_message_tx_cb;
