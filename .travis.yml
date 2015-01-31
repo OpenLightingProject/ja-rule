@@ -46,7 +46,6 @@ cache: apt
 before_install:
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
  - sudo apt-get update -qq
- - sudo apt-get install -qq libcppunit-dev libcppunit-1.12-1 cmake
 #g++-4.9 won't work on Ubuntu 12.04 that Travis currently uses
 #Coverity doesn't work with g++ 4.8, so don't bother with the upgrades for that
  - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
