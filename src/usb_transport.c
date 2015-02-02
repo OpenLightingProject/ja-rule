@@ -49,10 +49,10 @@ typedef struct {
 
 USBTransportData g_usb_transport_data;
 
-/* Receive data buffer */
+// Receive data buffer
 uint8_t receivedDataBuffer[USB_READ_BUFFER_SIZE] USB_MAKE_BUFFER_DMA_READY;
 
-/* Transmit data buffer */
+// Transmit data buffer
 uint8_t transmitDataBuffer[USB_READ_BUFFER_SIZE] USB_MAKE_BUFFER_DMA_READY;
 
 /**
@@ -96,36 +96,39 @@ void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
       break;
 
     case USB_DEVICE_EVENT_CONTROL_TRANSFER_SETUP_REQUEST:
-      /* This means we have received a setup packet */
+      // This means we have received a setup packet
       setupPacket = (USB_SETUP_PACKET*) event_data;
       if (setupPacket->bRequest == USB_REQUEST_SET_INTERFACE) {
         /* If we have got the SET_INTERFACE request, we just acknowledge
          for now. This demo has only one alternate setting which is already
          active. */
-        USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device, USB_DEVICE_CONTROL_STATUS_OK);
+        USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device,
+                                 USB_DEVICE_CONTROL_STATUS_OK);
       } else if (setupPacket->bRequest == USB_REQUEST_GET_INTERFACE) {
         /* We have only one alternate setting and this setting 0. So
          * we send this information to the host. */
-
-        USB_DEVICE_ControlSend(g_usb_transport_data.usb_device, &g_usb_transport_data.altSetting, 1);
+        USB_DEVICE_ControlSend(g_usb_transport_data.usb_device,
+                               &g_usb_transport_data.altSetting, 1);
       } else {
-        /* We have received a request that we cannot handle. Stall it*/
-        USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device, USB_DEVICE_CONTROL_STATUS_ERROR);
+        // We have received a request that we cannot handle. Stall it
+        USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device,
+                                 USB_DEVICE_CONTROL_STATUS_ERROR);
       }
       break;
 
     case USB_DEVICE_EVENT_ENDPOINT_READ_COMPLETE:
-      /* Endpoint read is complete */
+      // Endpoint read is complete
       g_usb_transport_data.rx_in_progress = false;
-      g_usb_transport_data.rx_data_size = ((USB_DEVICE_EVENT_DATA_ENDPOINT_WRITE_COMPLETE*) event_data)->length;
+      g_usb_transport_data.rx_data_size =
+          ((USB_DEVICE_EVENT_DATA_ENDPOINT_WRITE_COMPLETE*) event_data)->length;
       break;
 
     case USB_DEVICE_EVENT_ENDPOINT_WRITE_COMPLETE:
-      /* Endpoint write is complete */
+      // Endpoint write is complete
       g_usb_transport_data.tx_in_progress = false;
       break;
 
-      /* These events are not used in this demo. */
+    // These events are not used in this demo.
     case USB_DEVICE_EVENT_RESUMED:
     case USB_DEVICE_EVENT_ERROR:
     default:
@@ -174,26 +177,32 @@ void USBTransport_Tasks() {
           endpointSize = 512;
         }
         if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.endpointRx) == false) {
-          /* Enable Read Endpoint */
-          USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0, g_usb_transport_data.endpointRx,
+          // Enable Read Endpoint
+          USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0,
+                                    g_usb_transport_data.endpointRx,
                                     USB_TRANSFER_TYPE_BULK, endpointSize);
         }
         if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.endpointTx) == false) {
-          /* Enable Write Endpoint */
-          USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0, g_usb_transport_data.endpointTx,
+          // Enable Write Endpoint
+          USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0,
+                                    g_usb_transport_data.endpointTx,
                                     USB_TRANSFER_TYPE_BULK, endpointSize);
         }
-        /* Indicate that we are waiting for read */
+
+        // Indicate that we are waiting for read
         g_usb_transport_data.rx_in_progress = true;
 
-        /* Place a new read request. */
+        // Place a new read request.
         USB_DEVICE_RESULT result = USB_DEVICE_EndpointRead(
-                                                           g_usb_transport_data.usb_device, &g_usb_transport_data.read_transfer,
-                                                           g_usb_transport_data.endpointRx, &receivedDataBuffer[0], sizeof (receivedDataBuffer));
+            g_usb_transport_data.usb_device,
+            &g_usb_transport_data.read_transfer,
+            g_usb_transport_data.endpointRx,
+            &receivedDataBuffer[0],
+            sizeof(receivedDataBuffer));
 
         (void) result;
 
-        /* Device is ready to run the main task */
+        // Device is ready to run the main task
         g_usb_transport_data.state = USB_STATE_MAIN_TASK;
       }
       break;
@@ -225,7 +234,6 @@ void USBTransport_Tasks() {
           g_usb_transport_data.rx_cb(receivedDataBuffer,
                                      g_usb_transport_data.rx_data_size);
 #endif
-
           //USB_DEVICE_EndpointStall(g_usb_transport_data.usb_device,
           //                         g_usb_transport_data.endpointRx);
           // schedule the next read
