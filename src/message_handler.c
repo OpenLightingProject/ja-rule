@@ -8,10 +8,10 @@
 #include "system_pipeline.h"
 
 #ifndef PIPELINE_TRANSPORT_TX
-static TXFunction g_message_tx_cb;
+static TransportTxFunction g_message_tx_cb;
 #endif
 
-void MessageHandler_Initialize(TXFunction tx_cb) {
+void MessageHandler_Initialize(TransportTxFunction tx_cb) {
 #ifndef PIPELINE_TRANSPORT_TX
   g_message_tx_cb = tx_cb;
 #endif

@@ -23,7 +23,7 @@ static inline void SetLoggerIOVec(uint8_t index,
   *sum += length;
 }
 
-void Logger_Initialize(TXFunction tx_cb,
+void Logger_Initialize(TransportTxFunction tx_cb,
                         uint16_t max_payload_size) {
   g_logger.tx_cb = tx_cb;
   g_logger.read = -1;

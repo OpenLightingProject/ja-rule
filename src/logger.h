@@ -44,14 +44,14 @@ extern LoggerData g_logger;
  *   Logger_SendResponse() is called. This can be overridden, see the note
  *   below.
  * @param max_payload_size The maximum size of the payload to be passed to the
- *   TXFunction. Must be at least 2.
+ *   TransportTxFunction. Must be at least 2.
  *
  * A Logger starts off in the disabled state.
  *
  * If PIPELINE_TRANSPORT_TX is defined in system_pipeline.h, the macro
  * will override the tx_cb argument.
  */
-void Logger_Initialize(TXFunction tx_cb, uint16_t max_payload_size);
+void Logger_Initialize(TransportTxFunction tx_cb, uint16_t max_payload_size);
 
 /**
  * @brief Change the state of the logger.
@@ -97,8 +97,8 @@ void Logger_Log(const char* str);
 /**
  * @brief Send a Log message.
  *
- * This uses the TXFunction passed in Logger_Initialize() to transmit the
- * frame.
+ * This uses the TransportTxFunction passed in Logger_Initialize() to transmit
+ * the frame.
  */
 void Logger_SendResponse();
 

@@ -24,7 +24,7 @@ typedef enum {
 } USBTransportState;
 
 typedef struct {
-  RXFunction rx_cb;
+  TransportRxFunction rx_cb;
   USB_DEVICE_HANDLE usb_device;  //!< The USB Device layer handle.
   USBTransportState state;
   bool is_configured;  //!< Keep track of if the device is configured.
@@ -134,7 +134,7 @@ void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
   (void) context;
 }
 
-void USBTransport_Initialize(RXFunction rx_cb) {
+void USBTransport_Initialize(TransportRxFunction rx_cb) {
   g_usb_transport_data.rx_cb = rx_cb;
   g_usb_transport_data.state = USB_STATE_INIT;
   g_usb_transport_data.usb_device = USB_DEVICE_HANDLE_INVALID;

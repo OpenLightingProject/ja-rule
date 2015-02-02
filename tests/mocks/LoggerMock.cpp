@@ -32,7 +32,7 @@ void Logger_SetMock(MockLogger* mock) {
   g_logger_mock = mock;
 }
 
-void Logger_Initialize(TXFunction tx_cb, uint16_t max_payload_size) {
+void Logger_Initialize(TransportTxFunction tx_cb, uint16_t max_payload_size) {
   if (g_logger_mock) {
     g_logger_mock->Initialize(tx_cb, max_payload_size);
   }
