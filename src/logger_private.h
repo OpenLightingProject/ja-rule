@@ -1,5 +1,5 @@
 /*
- * File:   logger_private..h
+ * File:   logger_private.h
  * Author: Simon Newton
  */
 

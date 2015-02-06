@@ -105,7 +105,7 @@ void USBTransportTest::CompleteWrite() {
  * Check an uninitialized transport doesn't send anything.
  */
 TEST_F(USBTransportTest, uninitialized) {
-  // Even though we ca;;t USBTransport_Initialize() here, since we haven't
+  // Even though we call USBTransport_Initialize() here, since we haven't
   // called USBTransport_Tasks() the transport remains in an uninitialized
   // state.
   USBTransport_Initialize(nullptr);

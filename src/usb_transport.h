@@ -7,8 +7,8 @@
  * @defgroup usb_transport USB Transport
  * @brief A USB Transport.
  *
- * A implementation of the generic transport that uses USB. The PIC acts as a
- * custome USB device.
+ * A implementation of the generic transport that uses USB. The PIC acts as an
+ * custom USB device.
  *
  * @addtogroup usb_transport
  * @{

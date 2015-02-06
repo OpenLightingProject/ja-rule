@@ -54,7 +54,7 @@ static inline bool Flags_HasChanged() {
 }
 
 /**
- * @brief Set the Log overflow flag.
+ * @brief Set the log overflow flag.
  *
  * This indicates the Logger buffer overflowed and some messages were dropped.
  */

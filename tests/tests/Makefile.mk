@@ -1,12 +1,12 @@
 # TESTS
 ################################################
 TESTING_CFLAGS = -I system_config -I ../src -I include \
-                 $(WARNING_CFLAGS) $(CPPUNIT_CFLAGS)
+                 $(WARNING_CFLAGS)
 
 TESTING_CXXFLAGS = $(TESTING_CFLAGS) -std=c++11 $(WARNING_CXXFLAGS) \
                    $(GMOCK_INCLUDES) $(GTEST_INCLUDES) -I ./mocks
 
-TESTING_LIBS = $(CPPUNIT_LIBS) $(GMOCK_LIBS) $(GTEST_LIBS)
+TESTING_LIBS = $(GMOCK_LIBS) $(GTEST_LIBS)
 
 TESTS += tests/flags_test \
          tests/logger_test \

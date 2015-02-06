@@ -27,7 +27,7 @@ typedef struct {
   TransportRxFunction rx_cb;
   USB_DEVICE_HANDLE usb_device;  //!< The USB Device layer handle.
   USBTransportState state;
-  bool is_configured;  //!< Keep track of if the device is configured.
+  bool is_configured;  //!< Keep track of whether the device is configured.
 
   bool tx_in_progress;  //!< True if there is a TX in progress
   bool rx_in_progress;  //!< True if there is a RX in progress.
