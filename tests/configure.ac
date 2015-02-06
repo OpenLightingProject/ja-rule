@@ -25,6 +25,15 @@ AC_HEADER_STDBOOL
 AC_TYPE_UINT16_T
 AC_TYPE_UINT8_T
 
+# Enable gcov to produce coverage data.
+AC_ARG_ENABLE(
+  [gcov],
+  [AS_HELP_STRING([--enable-gcov], [Turn on code coverage analysis tools])])
+AS_IF([test "x$enable_gcov" = xyes],
+      [CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
+       CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage"
+       LIBS="$LIBS -lgcov"])
+
 # Doxygen
 #####################################################
 DX_PDF_FEATURE(OFF)
