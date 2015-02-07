@@ -60,7 +60,7 @@ before_install:
 
 after_success:
   - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/tests/cov-int/scm_log.txt; fi
-  - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-4.8 -b .  -e include -e mocks -e config.h -e system_config  -E '.*Test\.cpp$' --gcov-options '\-lp' > /dev/null; fi
+  - if [ "$TASK" = "coverage" ]; then cd tests && coveralls --gcov /usr/bin/gcov-4.8 -b . -e include -e mocks -e config.h -e system_config -E '.*Test\.cpp$' --gcov-options '\-lp' > /dev/null; fi
 
 #No notifications for now
 #notifications:
