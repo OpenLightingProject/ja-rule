@@ -6,6 +6,10 @@
 #ifndef SRC_DMX_H_
 #define SRC_DMX_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Initialize the DMX layer.
  */
@@ -28,6 +32,10 @@ void DMX_BeginFrame(uint8_t start_code, const uint8_t* data, unsigned int size);
  * @brief
  */
 void DMX_FinalizeFrame();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // SRC_DMX_H_
 

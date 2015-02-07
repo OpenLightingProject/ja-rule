@@ -56,17 +56,19 @@ typedef enum {
   ECHO = 0x80,
   TX_DMX = 0x81,
   GET_LOG = 0x82,
+  GET_FLAGS = 0x83
 } Command;
 
+typedef enum {
+  RC_OK = 0,
+  RC_UNKNOWN = 1,
+} ReturnCodes;
 
 // The Start of Message identifier.
 #define START_OF_MESSAGE_ID 0x5a
 
 // The End of Message Identifier.
 #define END_OF_MESSAGE_ID 0xa5
-
-// The OK return code.
-#define RC_OK 0
 
 // The maximum data payload size
 #define PAYLOAD_SIZE 513

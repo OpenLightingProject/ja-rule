@@ -3,8 +3,6 @@
  * Author: Simon Newton
  */
 
-#include "usb.h"
-
 #include <stdint.h>
 #include <stdlib.h>
 #include "constants.h"

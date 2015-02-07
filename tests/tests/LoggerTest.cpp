@@ -18,285 +18,192 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#include <cppunit/extensions/HelperMacros.h>
+#include <gtest/gtest.h>
 #include <string>
-#include <vector>
 
 #include "logger.h"
-#include "TestUtils.h"
+#include "Array.h"
+#include "TransportMock.h"
 
 using std::string;
+using ::testing::Args;
+using ::testing::StrictMock;
+using ::testing::Return;
+using ::testing::_;
 
-class LoggerTest *logger_test = nullptr;
-
-class LoggerTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(LoggerTest);
-  CPPUNIT_TEST(testDisabled);
-  CPPUNIT_TEST(testNullCallback);
-  CPPUNIT_TEST(testReset);
-  CPPUNIT_TEST(testLogAndFetch);
-  CPPUNIT_TEST(testOverflow);
-  CPPUNIT_TEST_SUITE_END();
-
+class LoggerTest : public testing::Test {
  public:
-  void setUp() {
-    logger_test = this;
+  void SetUp() {
+    Transport_SetMock(&transport_mock);
+    Logger_Initialize(Transport_Send, PAYLOAD_SIZE);
   }
 
-  void tearDown() {
-    logger_test = nullptr;
+  void TearDown() {
+    Transport_SetMock(nullptr);
   }
 
-  void testDisabled();
-  void testNullCallback();
-  void testReset();
-  void testLogAndFetch();
-  void testOverflow();
-
-  void Tx(Command command, uint8_t return_code, const IOVec* iov,
-          unsigned int iov_count) {
-    string payload;
-    for (unsigned int i = 0; i != iov_count; i++) {
-      payload.append(reinterpret_cast<char*>(iov[i].base), iov[i].length);
-    }
-
-    bool valid = !payload.empty();
-    bool overflow = valid ? (payload[0] & 0x01) : false;
-    string data = payload.size() > 1 ? payload.substr(1) : "";
-
-    Message message = {
-      .command = command,
-      .return_code = return_code,
-      .valid = valid,
-      .overflow = overflow,
-      .data = data
-    };
-    received_messages.push_back(message);
-  }
-
- private:
-  struct Message {
-    Command command;
-    uint8_t return_code;
-    bool valid;
-    bool overflow;
-    string data;
-  };
-
-  std::vector<Message> received_messages;
+  StrictMock<MockTransport> transport_mock;
 };
-
-CPPUNIT_TEST_SUITE_REGISTRATION(LoggerTest);
-
-/*
- * Called by the Logger code under test.
- */
-void TxFunction(Command command, uint8_t return_code, const IOVec* iov,
-                 unsigned int iov_count) {
-  if (logger_test) {
-    logger_test->Tx(command, return_code, iov, iov_count);
-  }
-}
 
 /*
  * Confirm when the logger is disabled, no writes occur.
  */
-void LoggerTest::testDisabled() {
-  Logging_Initialize(TxFunction, PAYLOAD_SIZE);
-
-  ASSERT_FALSE(Logging_IsEnabled());
+TEST_F(LoggerTest, disabled) {
+  EXPECT_FALSE(Logger_IsEnabled());
 
   string test("This is a test");
-  Logging_Log(test.c_str());
+  Logger_Log(test.c_str());
 
-  ASSERT_FALSE(Logging_DataPending());
-  ASSERT_FALSE(Logging_HasOverflowed());
+  EXPECT_FALSE(Logger_DataPending());
+  EXPECT_FALSE(Logger_HasOverflowed());
 
-  // Even when the logger is disabled, Logging_SendResponse() should still
+  // Even when the logger is disabled, Logger_SendResponse() should still
   // transmit an (empty) message.
-  Logging_SendResponse();
-  ASSERT_NOT_EMPTY(received_messages);
+  const uint8_t payload[] = {0};
+  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, 1))
+      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+      .WillOnce(Return(true));
 
-  const Message &message = received_messages[0];
-  ASSERT_TRUE(message.valid);
-  ASSERT_FALSE(message.overflow);
-  ASSERT_EQ(GET_LOG, message.command);
-  ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
-  ASSERT_EQ(string(""), message.data);
+  Logger_SendResponse();
 }
 
 /*
  * Confirm passing a nullptr callback doesn't crash.
  */
-void LoggerTest::testNullCallback() {
-  Logging_Initialize(nullptr, PAYLOAD_SIZE);
-  Logging_SetState(true);
+TEST_F(LoggerTest, nullCallback) {
+  Logger_Initialize(nullptr, PAYLOAD_SIZE);
+  Logger_SetState(true);
 
-  ASSERT_TRUE(Logging_IsEnabled());
+  EXPECT_TRUE(Logger_IsEnabled());
 
   string test("This is a test");
-  Logging_Log(test.c_str());
+  Logger_Log(test.c_str());
 
-  ASSERT_TRUE(Logging_DataPending());
-  ASSERT_FALSE(Logging_HasOverflowed());
+  EXPECT_TRUE(Logger_DataPending());
+  EXPECT_FALSE(Logger_HasOverflowed());
 
   // A nullptr callback means no messages.
-  Logging_SendResponse();
-  ASSERT_EMPTY(received_messages);
+  Logger_SendResponse();
 }
 
 /*
  * Confirm resetting the Logger causes the flags to be reset.
  */
-void LoggerTest::testReset() {
-  Logging_Initialize(TxFunction, PAYLOAD_SIZE);
-  Logging_SetState(true);
-  ASSERT_TRUE(Logging_IsEnabled());
+TEST_F(LoggerTest, reset) {
+  Logger_SetState(true);
+  EXPECT_TRUE(Logger_IsEnabled());
 
   string test(1000, 'x');
-  Logging_Log(test.c_str());
+  Logger_Log(test.c_str());
 
-  ASSERT_TRUE(Logging_DataPending());
-  ASSERT_TRUE(Logging_HasOverflowed());
-  ASSERT_EMPTY(received_messages);
+  EXPECT_TRUE(Logger_DataPending());
+  EXPECT_TRUE(Logger_HasOverflowed());
 
   // Now reset
-  Logging_SetState(false);
-  ASSERT_FALSE(Logging_IsEnabled());
-  ASSERT_FALSE(Logging_DataPending());
-  ASSERT_FALSE(Logging_HasOverflowed());
-  ASSERT_EMPTY(received_messages);
+  Logger_SetState(false);
+  EXPECT_FALSE(Logger_IsEnabled());
+  EXPECT_FALSE(Logger_DataPending());
+  EXPECT_FALSE(Logger_HasOverflowed());
 
   // Re-enable
-  Logging_SetState(true);
-  ASSERT_TRUE(Logging_IsEnabled());
-  ASSERT_FALSE(Logging_DataPending());
-  ASSERT_FALSE(Logging_HasOverflowed());
+  Logger_SetState(true);
+  EXPECT_TRUE(Logger_IsEnabled());
+  EXPECT_FALSE(Logger_DataPending());
+  EXPECT_FALSE(Logger_HasOverflowed());
 
   string test2(10, 'x');
-  Logging_Log(test2.c_str());
+  Logger_Log(test2.c_str());
 
-  ASSERT_TRUE(Logging_DataPending());
+  EXPECT_TRUE(Logger_DataPending());
 
-  Logging_SendResponse();
-  ASSERT_NOT_EMPTY(received_messages);
-  const Message &message = received_messages[0];
-  ASSERT_TRUE(message.valid);
-  ASSERT_EQ(GET_LOG, message.command);
-  ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
-  ASSERT_FALSE(message.overflow);
-  ASSERT_EQ(test2, message.data);
+  uint8_t payload[] = {0, 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'};
+  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
+      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+      .WillOnce(Return(true));
+
+  Logger_SendResponse();
 }
 
 /*
  * Check messages are correctly formed.
  */
-void LoggerTest::testLogAndFetch() {
-  // Set the payload size to something short so we can trigger the wrapping
-  // behavior.
-  Logging_Initialize(TxFunction, 100);
-  Logging_SetState(true);
-  Logging_Log(string(200, 'x').c_str());
+TEST_F(LoggerTest, logAndFetch) {
+  Logger_Initialize(Transport_Send, 100);
+  Logger_SetState(true);
+  Logger_Log(string(200, 'x').c_str());
 
-  ASSERT_TRUE(Logging_DataPending());
+  EXPECT_TRUE(Logger_DataPending());
 
-  Logging_SendResponse();
-  ASSERT_NOT_EMPTY(received_messages);
+  uint8_t payload1[100] = {0};
+  memset(payload1 + 1, 'x', 99);
 
-  {
-    const Message &message = received_messages[0];
-    ASSERT_TRUE(message.valid);
-    ASSERT_EQ(GET_LOG, message.command);
-    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
-    ASSERT_FALSE(message.overflow);
-    ASSERT_EQ(string(99, 'x'), message.data);
-  }
+  uint8_t payload2[100] = {1};
+  memset(payload2 + 1, 'x', 99);
 
-  received_messages.clear();
+  uint8_t payload3[100] = {0};
+  memset(payload3 + 1, 'x', 2);
+  memset(payload3 + 3, 'y', 97);
+
+  uint8_t payload4[59] = {0};
+  memset(payload4 + 1, 'y', 58);
+
+  uint8_t payload5[] = {0};
+
+  testing::InSequence seq;
+  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
+      .With(Args<2, 3>(PayloadIs(payload1, arraysize(payload1))))
+      .WillOnce(Return(true));
+  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
+      .With(Args<2, 3>(PayloadIs(payload2, arraysize(payload2))))
+      .WillOnce(Return(true));
+  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
+      .With(Args<2, 3>(PayloadIs(payload3, arraysize(payload3))))
+      .WillOnce(Return(true));
+  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
+      .With(Args<2, 3>(PayloadIs(payload4, arraysize(payload4))))
+      .WillOnce(Return(true));
+  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
+      .With(Args<2, 3>(PayloadIs(payload5, arraysize(payload5))))
+      .WillOnce(Return(true));
+
+  Logger_SendResponse();
 
   // Now write some more data
-  Logging_Log(string(200, 'y').c_str());
+  Logger_Log(string(200, 'y').c_str());
 
-  ASSERT_TRUE(Logging_DataPending());
-  ASSERT_TRUE(Logging_HasOverflowed());
+  EXPECT_TRUE(Logger_DataPending());
+  EXPECT_TRUE(Logger_HasOverflowed());
 
-  Logging_SendResponse();  // 99 'x'
-  Logging_SendResponse();  // 2 'x', 97 'y'
-  Logging_SendResponse();  // 58 'y'
-  Logging_SendResponse();  // Empty
-  ASSERT_EQ(static_cast<size_t>(4), received_messages.size());
-
-  {
-    const Message &message = received_messages[0];
-    ASSERT_TRUE(message.valid);
-    ASSERT_EQ(GET_LOG, message.command);
-    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
-    ASSERT_TRUE(message.overflow);
-    ASSERT_EQ(string(99, 'x'), message.data);
-  }
-
-  {
-    const Message &message = received_messages[1];
-    ASSERT_TRUE(message.valid);
-    ASSERT_EQ(GET_LOG, message.command);
-    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
-    ASSERT_FALSE(message.overflow);
-
-    const string expected = "xx" + string(97, 'y');
-    ASSERT_EQ(expected, message.data);
-  }
-
-  {
-    const Message &message = received_messages[2];
-    ASSERT_TRUE(message.valid);
-    ASSERT_EQ(GET_LOG, message.command);
-    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
-    ASSERT_FALSE(message.overflow);
-    ASSERT_EQ(string(58, 'y'), message.data);
-  }
-
-  {
-    const Message &message = received_messages[3];
-    ASSERT_TRUE(message.valid);
-    ASSERT_EQ(GET_LOG, message.command);
-    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
-    ASSERT_FALSE(message.overflow);
-    ASSERT_EQ(string(""), message.data);
-  }
+  Logger_SendResponse();  // 99 'x'
+  Logger_SendResponse();  // 2 'x', 97 'y'
+  Logger_SendResponse();  // 58 'y'
+  Logger_SendResponse();  // Empty
 }
 
-/**
+/*
  * Confirm the overflow flag is set correctly.
  */
-void LoggerTest::testOverflow() {
-  Logging_Initialize(TxFunction, PAYLOAD_SIZE);
-  Logging_SetState(true);
-  Logging_Log(string(1000, 'x').c_str());
+TEST_F(LoggerTest, overflow) {
+  Logger_SetState(true);
+  Logger_Log(string(1000, 'x').c_str());
 
-  ASSERT_TRUE(Logging_HasOverflowed());
+  EXPECT_TRUE(Logger_HasOverflowed());
 
-  Logging_SendResponse();
-  ASSERT_NOT_EMPTY(received_messages);
-  {
-    const Message &message = received_messages[0];
-    ASSERT_TRUE(message.valid);
-    ASSERT_EQ(GET_LOG, message.command);
-    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
-    ASSERT_TRUE(message.overflow);
-    ASSERT_EQ(string(256, 'x'), message.data);
-  }
+  uint8_t payload1[257] = {1};
+  memset(payload1 + 1, 'x', 256);
 
-  received_messages.clear();
+  uint8_t payload2[] = {0};
+
+  testing::InSequence seq;
+  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
+      .With(Args<2, 3>(PayloadIs(payload1, arraysize(payload1))))
+      .WillOnce(Return(true));
+  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
+      .With(Args<2, 3>(PayloadIs(payload2, arraysize(payload2))))
+      .WillOnce(Return(true));
+
+  Logger_SendResponse();
 
   // Now fetch the next message, the overflow flag must clear.
-  Logging_SendResponse();
-  ASSERT_NOT_EMPTY(received_messages);
-  {
-    const Message &message = received_messages[0];
-    ASSERT_TRUE(message.valid);
-    ASSERT_EQ(GET_LOG, message.command);
-    ASSERT_EQ(static_cast<uint8_t>(0), message.return_code);
-    ASSERT_FALSE(message.overflow);
-    ASSERT_EQ(string(""), message.data);
-  }
+  Logger_SendResponse();
 }

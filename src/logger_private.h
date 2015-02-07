@@ -1,12 +1,13 @@
-/* 
- * File:   loggerPrivate..h
+/*
+ * File:   logger_private.h
  * Author: Simon Newton
  */
 
-#ifndef SRC_LOGGERPRIVATE_H_
-#define SRC_LOGGERPRIVATE_H_
+#ifndef SRC_LOGGER_PRIVATE_H_
+#define SRC_LOGGER_PRIVATE_H_
 
 #include "constants.h"
+#include "transport.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,7 +18,7 @@ extern "C" {
 #define IOVEC_ARRAY_SIZE 3
 
 typedef struct {
-  TXFunction tx_cb;
+  TransportTxFunction tx_cb;
   int16_t read;  // next index to read from. Range -1 to LOG_BUFFER_SIZE -1
   int16_t write;  // next index to write to. Range 0 to LOG_BUFFER_SIZE - 1
   uint8_t enabled : 1;  // true if logging is enabled
@@ -32,4 +33,4 @@ typedef struct {
 }
 #endif
 
-#endif  // SRC_LOGGERPRIVATE_H_
+#endif  // SRC_LOGGER_PRIVATE_H_

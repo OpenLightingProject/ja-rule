@@ -5,54 +5,53 @@
 
 /**
  * @defgroup logger Logger
- * @brief The Logging Subsystem.
+ * @brief The Logger Subsystem.
  *
  * The Logger uses a ring buffer to store log messages. The messages can then be
  * retrieved by the host system with a GET_LOG comand, which would then call
- * Logging_SendResponse().
+ * Logger_SendResponse().
  *
  * An overflow occurs if there is more data than what would fit in the ring
  * buffer. In this case, as much data as possible is saved and
- * Logging_HasOverflowed() will return true. When the next call to
- * Logging_SendResponse() is made the overflow flag will be reset.
+ * Logger_HasOverflowed() will return true. When the next call to
+ * Logger_SendResponse() is made the overflow flag will be reset.
  *
  * @addtogroup logger
  * @{
  * @file logger.h
- * @brief The Logging Subsystem.
+ * @brief The Logger Subsystem.
  */
 
 #ifndef SRC_LOGGER_H_
 #define SRC_LOGGER_H_
 
+#include <stdbool.h>
+#include <stdint.h>
+#include "logger_private.h"
+#include "transport.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <stdbool.h>
-#include <stdint.h>
-#include "transport.h"
-#include "loggerPrivate.h"
 
 /// @cond INTERNAL
 extern LoggerData g_logger;
 /// @endcond
 
 /**
- * @brief Initialize the Logging sub-system.
+ * @brief Initialize the Logger sub-system.
  * @param tx_cb The callback to use for sending messages when
- *   Logging_SendResponse() is called. This can be overridden, see the note
+ *   Logger_SendResponse() is called. This can be overridden, see the note
  *   below.
  * @param max_payload_size The maximum size of the payload to be passed to the
- *   TXFunction. Must be at least 2.
+ *   TransportTxFunction. Must be at least 2.
  *
  * A Logger starts off in the disabled state.
  *
  * If PIPELINE_TRANSPORT_TX is defined in system_pipeline.h, the macro
  * will override the tx_cb argument.
  */
-void Logging_Initialize(TXFunction tx_cb,
-                        uint16_t max_payload_size);
+void Logger_Initialize(TransportTxFunction tx_cb, uint16_t max_payload_size);
 
 /**
  * @brief Change the state of the logger.
@@ -61,13 +60,13 @@ void Logging_Initialize(TXFunction tx_cb,
  * When disabled, all log output will be discarded. Disabling an enabled logger
  * will reset the pending and overflow flags.
  */
-void Logging_SetState(bool enabled);
+void Logger_SetState(bool enabled);
 
 /**
  * @brief Check if the logger is enabled.
  * @returns true if the logger is enabled, false otherwise.
  */
-extern inline bool Logging_IsEnabled() {
+static inline bool Logger_IsEnabled() {
   return g_logger.enabled;
 }
 
@@ -75,7 +74,7 @@ extern inline bool Logging_IsEnabled() {
  * @brief Check if there is log data pending.
  * @returns true if there is log data pending, false otherwise.
  */
-extern inline bool Logging_DataPending() {
+static inline bool Logger_DataPending() {
   return g_logger.read != -1;
 }
 
@@ -83,7 +82,7 @@ extern inline bool Logging_DataPending() {
  * @brief Check if the log buffer has overflowed
  * @returns true if the buffer has overflowed, false otherwise.
  */
-extern inline bool Logging_HasOverflowed() {
+static inline bool Logger_HasOverflowed() {
   return g_logger.overflow;
 }
 
@@ -91,17 +90,17 @@ extern inline bool Logging_HasOverflowed() {
  * @brief Log a message.
  * @param str The string to log.
  *
- * @note It's not safe to call Logging_Log from an ISR.
+ * @note It's not safe to call Logger_Log from an ISR.
  */
-void Logging_Log(const char* str);
+void Logger_Log(const char* str);
 
 /**
  * @brief Send a Log message.
  *
- * This uses the TXFunction passed in Logging_Initialize() to transmit the
- * frame.
+ * This uses the TransportTxFunction passed in Logger_Initialize() to transmit
+ * the frame.
  */
-void Logging_SendResponse();
+void Logger_SendResponse();
 
 #ifdef __cplusplus
 }
