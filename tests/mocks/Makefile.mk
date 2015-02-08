@@ -10,7 +10,7 @@ noinst_LTLIBRARIES += mocks/libdmxmock.la \
                       mocks/libtransportmock.la \
                       mocks/libusbmock.la
 
-MOCK_CXXFLAGS = -std=c++11 $(BUILD_FLAGS) $(GMOCK_INCLUDES) $(GTEST_INCLUDES)
+MOCK_CXXFLAGS = $(BUILD_FLAGS) $(GMOCK_INCLUDES) $(GTEST_INCLUDES)
 MOCK_LIBS = $(GMOCK_LIBS) $(GTEST_LIBS)
 
 mocks_libdmxmock_la_SOURCES = mocks/DMXMock.cpp
