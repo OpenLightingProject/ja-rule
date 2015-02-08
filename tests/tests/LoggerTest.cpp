@@ -116,7 +116,7 @@ TEST_F(LoggerTest, reset) {
 
   EXPECT_TRUE(Logger_DataPending());
 
-  uint8_t payload[] = {0, 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'};
+  uint8_t payload[] = {0, 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 0};
   EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
       .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
       .WillOnce(Return(true));
@@ -142,10 +142,12 @@ TEST_F(LoggerTest, logAndFetch) {
 
   uint8_t payload3[100] = {0};
   memset(payload3 + 1, 'x', 2);
-  memset(payload3 + 3, 'y', 97);
+  payload3[3] = 0;
+  memset(payload3 + 4, 'y', 96);
 
   uint8_t payload4[59] = {0};
   memset(payload4 + 1, 'y', 58);
+  payload4[58] = 0;
 
   uint8_t payload5[] = {0};
 
@@ -190,7 +192,8 @@ TEST_F(LoggerTest, overflow) {
   EXPECT_TRUE(Logger_HasOverflowed());
 
   uint8_t payload1[257] = {1};
-  memset(payload1 + 1, 'x', 256);
+  memset(payload1 + 1, 'x', 255);
+  payload1[256] = 0;
 
   uint8_t payload2[] = {0};
 
@@ -203,7 +206,37 @@ TEST_F(LoggerTest, overflow) {
       .WillOnce(Return(true));
 
   Logger_SendResponse();
+  EXPECT_FALSE(Logger_DataPending());
 
   // Now fetch the next message, the overflow flag must clear.
+  Logger_SendResponse();
+}
+
+/*
+ * Confirm writing raw data works.
+ */
+TEST_F(LoggerTest, write) {
+  Logger_SetState(true);
+
+  const string data1("test 1");
+  const string data2("test 2");
+
+  Logger_Write(reinterpret_cast<const uint8_t*>(data1.c_str()),
+               data1.size() + 1);
+  Logger_Write(reinterpret_cast<const uint8_t*>(data2.c_str()),
+               data2.size() + 1);
+
+  EXPECT_FALSE(Logger_HasOverflowed());
+
+  uint8_t payload1[] = {
+    0,
+    't', 'e', 's', 't', ' ', '1', 0,
+    't', 'e', 's', 't', ' ', '2', 0,
+  };
+
+  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
+      .With(Args<2, 3>(PayloadIs(payload1, arraysize(payload1))))
+      .WillOnce(Return(true));
+
   Logger_SendResponse();
 }

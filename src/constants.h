@@ -39,13 +39,6 @@
 #define NULL_START_CODE 0x00
 
 // *****************************************************************************
-// Logger constants
-// *****************************************************************************
-
-// The size of the log buffer. Range 0 to INT16_MAX.
-#define LOG_BUFFER_SIZE 256
-
-// *****************************************************************************
 // Protocol specific constants
 // *****************************************************************************
 
@@ -56,7 +49,8 @@ typedef enum {
   ECHO = 0x80,
   TX_DMX = 0x81,
   GET_LOG = 0x82,
-  GET_FLAGS = 0x83
+  GET_FLAGS = 0x83,
+  WRITE_LOG = 0x84
 } Command;
 
 typedef enum {

@@ -33,6 +33,14 @@ void MessageHandler_Echo(const Message *message) {
   SendMessage(ECHO, RC_OK, &iovec, 1);
 }
 
+void MessageHandler_WriteLog(const Message* message) {
+  Logger_Write(message->payload, message->length);
+  if (message->payload[message->length - 1]) {
+    // NULL terminate.
+    Logger_Log("");
+  }
+}
+
 void MessageHandler_HandleMessage(const Message *message) {
   switch (message->command) {
     case ECHO:
@@ -48,6 +56,10 @@ void MessageHandler_HandleMessage(const Message *message) {
       break;
     case GET_FLAGS:
       Flags_SendResponse();
+      break;
+    case WRITE_LOG:
+      MessageHandler_WriteLog(message);
+      SendMessage(WRITE_LOG, RC_OK, NULL, 0);
       break;
     default:
       // Just echo the command code back if we don't understand it.

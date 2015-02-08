@@ -31,6 +31,7 @@ class MockLogger {
                void(TransportTxFunction tx_cb, uint16_t max_payload_size));
   MOCK_METHOD1(SetState, void(bool enabled));
   MOCK_METHOD1(Log, void(const char* str));
+  MOCK_METHOD2(Write, void(const uint8_t* data, unsigned int length));
   MOCK_METHOD0(SendResponse, void());
 };
 

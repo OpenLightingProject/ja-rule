@@ -88,11 +88,21 @@ static inline bool Logger_HasOverflowed() {
 
 /**
  * @brief Log a message.
- * @param str The string to log.
+ * @param str The string to log. The string should be null terminated.
  *
  * @note It's not safe to call Logger_Log from an ISR.
  */
 void Logger_Log(const char* str);
+
+
+/**
+ * @brief Log raw data.
+ * @param str The string to log, does not need to be null terminated.
+ * @param length The length of the data.
+ *
+ * @note It's not safe to call Logger_Write from an ISR.
+ */
+void Logger_Write(const uint8_t* str, unsigned int length);
 
 /**
  * @brief Send a Log message.

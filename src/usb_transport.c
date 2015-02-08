@@ -291,7 +291,7 @@ bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
     }
   }
 
-  transmitDataBuffer[3] = offset & 0xf;
+  transmitDataBuffer[3] = offset & 0xff;
   transmitDataBuffer[4] = offset >> 8;
   transmitDataBuffer[7 + offset] = END_OF_MESSAGE_ID;
 
