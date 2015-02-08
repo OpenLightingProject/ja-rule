@@ -57,3 +57,9 @@ ja-rule.X/nbproject/private/*
 /tests/missing
 /tests/stamp-h1
 /tests/test-driver
+/tests/tests/.libs/
+/tests/tests/flags_test
+/tests/tests/logger_test
+/tests/tests/message_handler_test
+/tests/tests/stream_decoder_test
+/tests/tests/usb_transport_test
