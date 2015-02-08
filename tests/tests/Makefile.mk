@@ -3,7 +3,7 @@
 TESTING_CFLAGS = -I system_config -I ../src -I include \
                  $(WARNING_CFLAGS)
 
-TESTING_CXXFLAGS = $(TESTING_CFLAGS) -std=c++11 $(WARNING_CXXFLAGS) \
+TESTING_CXXFLAGS = $(TESTING_CFLAGS) $(WARNING_CXXFLAGS) \
                    $(GMOCK_INCLUDES) $(GTEST_INCLUDES) -I ./mocks
 
 TESTING_LIBS = $(GMOCK_LIBS) $(GTEST_LIBS)
