@@ -17,6 +17,9 @@ AC_PROG_CXX
 LT_INIT
 AC_PROG_LIBTOOL
 
+# Check we have -std=c++11 support
+AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
+
 # Checks for header files.
 AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
 
