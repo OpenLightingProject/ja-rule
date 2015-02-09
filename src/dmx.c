@@ -1,7 +1,9 @@
 /*
- * File:   dmx.h
+ * File:   dmx.c
  * Author: Simon Newton
  */
+
+#include "dmx.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -15,20 +17,20 @@
 typedef struct {
   int size;
   uint8_t data[DMX_FRAME_SIZE];
-} TxBuffer;
+} TXBuffer;
 
 typedef struct {
-  TxBuffer* tx; // The Buffer that is being transmitted now
-  TxBuffer* next; // The next buffer ready to be transmitted
-  TxBuffer* working; // The DMX buffer we're constructing
-  TxBuffer* free_list[NUMBER_OF_TX_BUFFERS];
+  TXBuffer* tx; // The Buffer that is being transmitted now
+  TXBuffer* next; // The next buffer ready to be transmitted
+  TXBuffer* working; // The DMX buffer we're constructing
+  TXBuffer* free_list[NUMBER_OF_TX_BUFFERS];
 
   // The number of items on the free list.
   // Must be > 0.
   uint8_t free_size;
 } DMXData;
 
-TxBuffer buffers[NUMBER_OF_TX_BUFFERS];
+TXBuffer buffers[NUMBER_OF_TX_BUFFERS];
 
 DMXData dmx_data;
 
