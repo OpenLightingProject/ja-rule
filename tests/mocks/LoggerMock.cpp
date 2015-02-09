@@ -50,6 +50,12 @@ void Logger_Log(const char* str) {
   }
 }
 
+void Logger_Write(const uint8_t* data, unsigned int length) {
+  if (g_logger_mock) {
+    g_logger_mock->Write(data, length);
+  }
+}
+
 void Logger_SendResponse() {
   if (g_logger_mock) {
     g_logger_mock->SendResponse();

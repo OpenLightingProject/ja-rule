@@ -46,8 +46,8 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 *******************************************************************************/
 // DOM-IGNORE-END
 
-#ifndef _SYSTEM_CONFIG_H
-#define _SYSTEM_CONFIG_H
+#ifndef SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_CONFIG_H_
+#define SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_CONFIG_H_
 
 /* This is a temporary workaround for an issue with the peripheral library "Exists"
    functions that causes superfluous warnings.  It "nulls" out the definition of
@@ -172,8 +172,17 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #define USB_MAKE_BUFFER_DMA_READY
 
 
+// *****************************************************************************
+// *****************************************************************************
+// Section: Logger Module Configuration
+// *****************************************************************************
+// *****************************************************************************
 
-#endif // _SYSTEM_CONFIG_H
+// The size of the log buffer. Range 0 to INT16_MAX.
+#define LOG_BUFFER_SIZE 1000
+
+
+#endif  // SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_CONFIG_H_
 /*******************************************************************************
  End of File
 */

@@ -38,6 +38,8 @@ extern "C" {
 /* Endpoint Transfer Queue Size combined for Read and write */
 #define USB_DEVICE_ENDPOINT_QUEUE_DEPTH_COMBINED    2
 
+#define LOG_BUFFER_SIZE 256
+
 #define USB_MAKE_BUFFER_DMA_READY
 
 #ifdef  __cplusplus

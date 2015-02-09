@@ -7,6 +7,7 @@
 #define SRC_LOGGER_PRIVATE_H_
 
 #include "constants.h"
+#include "system_config.h"
 #include "transport.h"
 
 #ifdef __cplusplus

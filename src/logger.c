@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "constants.h"
+#include "system_config.h"
 #include "system_pipeline.h"
 
 LoggerData g_logger;
@@ -50,15 +51,21 @@ void Logger_SetState(bool enabled) {
 
 inline void PutChar(char c) {
   if (g_logger.write == g_logger.read) {
-    // Buffer is full
-    g_logger.overflow = true;
     return;
   }
-  g_logger.log_buffer[g_logger.write] = c;
   if (g_logger.read < 0) {
     g_logger.read = g_logger.write;
   }
-  g_logger.write = (g_logger.write + 1) % LOG_BUFFER_SIZE;
+
+  int16_t next = (g_logger.write + 1) % LOG_BUFFER_SIZE;
+  if (next == g_logger.read) {
+    // This is the last byte, NULL terminate & set overflow flag.
+    g_logger.overflow = true;
+    g_logger.log_buffer[g_logger.write] = 0;
+  } else {
+    g_logger.log_buffer[g_logger.write] = c;
+  }
+  g_logger.write = next;
 }
 
 void Logger_Log(const char* str) {
@@ -69,7 +76,19 @@ void Logger_Log(const char* str) {
     PutChar(*str);
     str++;
   }
+  PutChar(0);
 }
+
+void Logger_Write(const uint8_t* str, unsigned int length) {
+  if (!g_logger.enabled) {
+    return;
+  }
+  unsigned int i;
+  for (i = 0; i < length; i++) {
+    PutChar(str[i]);
+  }
+}
+
 
 void _mon_putc(char c) {
   if (!(g_logger.enabled)) {
@@ -122,9 +141,10 @@ void Logger_SendResponse() {
                    g_logger.log_buffer + g_logger.read,
                    chunk_size, &payload_size);
 
-    g_logger.read += chunk_size;
+    g_logger.read = (g_logger.read + chunk_size) % LOG_BUFFER_SIZE;
     if (g_logger.read == g_logger.write) {
       g_logger.read = -1;
+      g_logger.write = 0;
     }
   }
 #ifdef PIPELINE_TRANSPORT_TX
