@@ -47,7 +47,7 @@ typedef enum {
  *   copied.
  * @param iov_count The number of IOVec structures in the array.
  */
-typedef bool (*TransportTxFunction)(Command, uint8_t, const IOVec*,
+typedef bool (*TransportTXFunction)(Command, uint8_t, const IOVec*,
                                     unsigned int);
 
 /**

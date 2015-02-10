@@ -19,7 +19,7 @@ extern "C" {
 #define IOVEC_ARRAY_SIZE 3
 
 typedef struct {
-  TransportTxFunction tx_cb;
+  TransportTXFunction tx_cb;
   int16_t read;  // next index to read from. Range -1 to LOG_BUFFER_SIZE -1
   int16_t write;  // next index to write to. Range 0 to LOG_BUFFER_SIZE - 1
   uint8_t enabled : 1;  // true if logging is enabled

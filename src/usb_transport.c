@@ -36,10 +36,10 @@ typedef struct {
   USB_DEVICE_TRANSFER_HANDLE read_transfer;
 
   /* The transmit endpoint address */
-  USB_ENDPOINT_ADDRESS endpointTx;
+  USB_ENDPOINT_ADDRESS tx_endpoint;
 
   /* The receive endpoint address */
-  USB_ENDPOINT_ADDRESS endpointRx;
+  USB_ENDPOINT_ADDRESS rx_endpoint;
 
   /* Tracks the alternate setting */
   uint8_t altSetting;
@@ -142,8 +142,8 @@ void USBTransport_Initialize(TransportRxFunction rx_cb) {
   g_usb_transport_data.state = USB_STATE_INIT;
   g_usb_transport_data.usb_device = USB_DEVICE_HANDLE_INVALID;
   g_usb_transport_data.is_configured = false;
-  g_usb_transport_data.endpointRx = 0x01;
-  g_usb_transport_data.endpointTx = 0x81;
+  g_usb_transport_data.rx_endpoint = 0x01;
+  g_usb_transport_data.tx_endpoint = 0x81;
   g_usb_transport_data.rx_in_progress = false;
   g_usb_transport_data.tx_in_progress = false;
   g_usb_transport_data.altSetting = 0;
@@ -176,16 +176,16 @@ void USBTransport_Tasks() {
         } else if (USB_DEVICE_ActiveSpeedGet(g_usb_transport_data.usb_device) == USB_SPEED_HIGH) {
           endpointSize = 512;
         }
-        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.endpointRx) == false) {
+        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.rx_endpoint) == false) {
           // Enable Read Endpoint
           USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0,
-                                    g_usb_transport_data.endpointRx,
+                                    g_usb_transport_data.rx_endpoint,
                                     USB_TRANSFER_TYPE_BULK, endpointSize);
         }
-        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.endpointTx) == false) {
+        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.tx_endpoint) == false) {
           // Enable Write Endpoint
           USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0,
-                                    g_usb_transport_data.endpointTx,
+                                    g_usb_transport_data.tx_endpoint,
                                     USB_TRANSFER_TYPE_BULK, endpointSize);
         }
 
@@ -196,7 +196,7 @@ void USBTransport_Tasks() {
         USB_DEVICE_RESULT result = USB_DEVICE_EndpointRead(
             g_usb_transport_data.usb_device,
             &g_usb_transport_data.read_transfer,
-            g_usb_transport_data.endpointRx,
+            g_usb_transport_data.rx_endpoint,
             &receivedDataBuffer[0],
             sizeof(receivedDataBuffer));
 
@@ -215,9 +215,9 @@ void USBTransport_Tasks() {
 
         // Disable the endpoints
         USB_DEVICE_EndpointDisable(g_usb_transport_data.usb_device,
-                                   g_usb_transport_data.endpointRx);
+                                   g_usb_transport_data.rx_endpoint);
         USB_DEVICE_EndpointDisable(g_usb_transport_data.usb_device,
-                                   g_usb_transport_data.endpointTx);
+                                   g_usb_transport_data.tx_endpoint);
         g_usb_transport_data.rx_in_progress = false;
         g_usb_transport_data.tx_in_progress = false;
       } else if (g_usb_transport_data.rx_in_progress == false) {
@@ -235,12 +235,12 @@ void USBTransport_Tasks() {
                                      g_usb_transport_data.rx_data_size);
 #endif
           //USB_DEVICE_EndpointStall(g_usb_transport_data.usb_device,
-          //                         g_usb_transport_data.endpointRx);
+          //                         g_usb_transport_data.rx_endpoint);
           // schedule the next read
           g_usb_transport_data.rx_in_progress = true;
           USB_DEVICE_EndpointRead(g_usb_transport_data.usb_device,
                                   &g_usb_transport_data.read_transfer,
-                                  g_usb_transport_data.endpointRx,
+                                  g_usb_transport_data.rx_endpoint,
                                   &receivedDataBuffer[0],
                                   sizeof (receivedDataBuffer));
         }
@@ -300,7 +300,7 @@ bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
   USB_DEVICE_RESULT result = USB_DEVICE_EndpointWrite(
       g_usb_transport_data.usb_device,
       &g_usb_transport_data.write_transfer,
-      g_usb_transport_data.endpointTx, transmitDataBuffer,
+      g_usb_transport_data.tx_endpoint, transmitDataBuffer,
       offset + 8,
       USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE);
   if (result != USB_DEVICE_RESULT_OK) {

@@ -30,7 +30,7 @@ extern "C" {
  * If PIPELINE_TRANSPORT_TX is defined in system_pipeline.h, the macro
  * will override the tx_cb argument.
  */
-void MessageHandler_Initialize(TransportTxFunction tx_cb);
+void MessageHandler_Initialize(TransportTXFunction tx_cb);
 
 /**
  * @brief Handle messages from the Host System
