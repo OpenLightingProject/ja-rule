@@ -47,14 +47,10 @@ before_install:
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
  - sudo apt-get update -qq
 #g++-4.9 won't work on Ubuntu 12.04 that Travis currently uses
-#Coverity doesn't work with g++ 4.8, so don't bother with the upgrades for that
- - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
- - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
-#ja-rule needs a newish g++, so install 4.7 instead
- - if [ "$TASK" = "coverity" ]; then sudo apt-get install -qq g++-4.7; fi
- - if [ "$TASK" = "coverity" ]; then export CXX="g++-4.7" CC="gcc-4.7"; fi
+ - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+ - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 #Remove the old g++/gcc to ensure we're using the latest ones
- - if [ "$CXX" = "g++-4.7" -o "$CXX" = "g++-4.8" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
+ - if [ "$CXX" = "g++-4.8" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
 #Install coveralls if required
  - if [ "$TASK" = "coverage" ]; then sudo pip install -qq cpp-coveralls; fi
 #Install doxygen if required
