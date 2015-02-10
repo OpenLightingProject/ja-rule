@@ -1,1 +1,1 @@
-../../src/usb_transport.c
+../../firmware/src/usb_transport.c

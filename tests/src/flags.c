@@ -1,1 +1,1 @@
-../../src/flags.c
+../../firmware/src/flags.c
