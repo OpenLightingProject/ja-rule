@@ -1,1 +1,1 @@
-../../src/message_handler.c
+../../firmware/src/message_handler.c

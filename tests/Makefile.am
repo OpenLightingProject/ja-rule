@@ -12,7 +12,7 @@ WARNING_CXXFLAGS = -fvisibility-inlines-hidden
 # Code Under Test
 ##################################################
 
-BUILD_FLAGS = -I system_config -I ../src $(WARNING_CFLAGS)
+BUILD_FLAGS = -I system_config -I ../firmware/src $(WARNING_CFLAGS)
 
 noinst_LTLIBRARIES = src/libflags.la \
                      src/liblogger.la \
