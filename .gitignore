@@ -18,6 +18,7 @@ ja-rule.X/nbproject/private/*
 *.zip
 .deps
 .dirstamp
+/googlemock-read-only/
 /tests/Makefile
 /tests/Makefile.in
 /tests/aclocal.m4
@@ -56,3 +57,5 @@ ja-rule.X/nbproject/private/*
 /tests/missing
 /tests/stamp-h1
 /tests/test-driver
+/tests/tests/.libs/
+/tests/tests/*_test

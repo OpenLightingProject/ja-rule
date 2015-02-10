@@ -30,7 +30,7 @@ void Flags_SetMock(MockFlags* mock) {
   g_flags_mock = mock;
 }
 
-void Flags_Initialize(TXFunction tx_cb) {
+void Flags_Initialize(TransportTXFunction tx_cb) {
   if (g_flags_mock) {
     g_flags_mock->Initialize(tx_cb);
   }

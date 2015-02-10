@@ -17,6 +17,9 @@ AC_PROG_CXX
 LT_INIT
 AC_PROG_LIBTOOL
 
+# Check we have -std=c++11 support
+AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
+
 # Checks for header files.
 AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
 
@@ -24,6 +27,15 @@ AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
 AC_HEADER_STDBOOL
 AC_TYPE_UINT16_T
 AC_TYPE_UINT8_T
+
+# Enable gcov to produce coverage data.
+AC_ARG_ENABLE(
+  [gcov],
+  [AS_HELP_STRING([--enable-gcov], [Turn on code coverage analysis tools])])
+AS_IF([test "x$enable_gcov" = xyes],
+      [CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
+       CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage"
+       LIBS="$LIBS -lgcov"])
 
 # Doxygen
 #####################################################

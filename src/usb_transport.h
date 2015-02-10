@@ -7,8 +7,8 @@
  * @defgroup usb_transport USB Transport
  * @brief A USB Transport.
  *
- * A implementation of the generic transport that uses USB. The PIC acts as a
- * custome USB device.
+ * A implementation of the generic transport that uses USB. The PIC acts as an
+ * custom USB device.
  *
  * @addtogroup usb_transport
  * @{
@@ -37,7 +37,7 @@ extern "C" {
  * If PIPELINE_TRANSPORT_RX is defined in system_pipeline.h, the macro
  * will override the rx_cb argument.
  */
-void USBTransport_Initialize(RXFunction rx_cb);
+void USBTransport_Initialize(TransportRxFunction rx_cb);
 
 /**
  * @brief Perform the periodic USB layer tasks.

@@ -44,14 +44,14 @@ extern LoggerData g_logger;
  *   Logger_SendResponse() is called. This can be overridden, see the note
  *   below.
  * @param max_payload_size The maximum size of the payload to be passed to the
- *   TXFunction. Must be at least 2.
+ *   TransportTXFunction. Must be at least 2.
  *
  * A Logger starts off in the disabled state.
  *
  * If PIPELINE_TRANSPORT_TX is defined in system_pipeline.h, the macro
  * will override the tx_cb argument.
  */
-void Logger_Initialize(TXFunction tx_cb, uint16_t max_payload_size);
+void Logger_Initialize(TransportTXFunction tx_cb, uint16_t max_payload_size);
 
 /**
  * @brief Change the state of the logger.
@@ -88,17 +88,27 @@ static inline bool Logger_HasOverflowed() {
 
 /**
  * @brief Log a message.
- * @param str The string to log.
+ * @param str The string to log. The string should be null terminated.
  *
  * @note It's not safe to call Logger_Log from an ISR.
  */
 void Logger_Log(const char* str);
 
+
+/**
+ * @brief Log raw data.
+ * @param str The string to log, does not need to be null terminated.
+ * @param length The length of the data.
+ *
+ * @note It's not safe to call Logger_Write from an ISR.
+ */
+void Logger_Write(const uint8_t* str, unsigned int length);
+
 /**
  * @brief Send a Log message.
  *
- * This uses the TXFunction passed in Logger_Initialize() to transmit the
- * frame.
+ * This uses the TransportTXFunction passed in Logger_Initialize() to transmit
+ * the frame.
  */
 void Logger_SendResponse();
 

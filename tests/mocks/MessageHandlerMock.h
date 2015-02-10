@@ -66,7 +66,7 @@ inline testing::Matcher<const Message*> MessageIs(uint16_t command,
 
 class MockMessageHandler {
  public:
-  MOCK_METHOD1(Initialize, void(TXFunction tx_cb));
+  MOCK_METHOD1(Initialize, void(TransportTXFunction tx_cb));
   MOCK_METHOD1(HandleMessage, void(const Message* message));
 };
 

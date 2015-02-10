@@ -43,7 +43,7 @@ extern FlagsData g_flags;
  * If PIPELINE_TRANSPORT_TX is defined in system_pipeline.h, the macro
  * will override the tx_cb argument.
  */
-void Flags_Initialize(TXFunction tx_cb);
+void Flags_Initialize(TransportTXFunction tx_cb);
 
 /**
  * @brief Check if the flags have changed since the last GET_FLAGS message.
@@ -54,7 +54,7 @@ static inline bool Flags_HasChanged() {
 }
 
 /**
- * @brief Set the Log overflow flag.
+ * @brief Set the log overflow flag.
  *
  * This indicates the Logger buffer overflowed and some messages were dropped.
  */
@@ -87,8 +87,8 @@ static inline void Flags_SetTXError() {
 /**
  * @brief Send a flags message.
  *
- * This uses the TXFunction passed in Flags_Initialize() to transmit the
- * frame.
+ * This uses the TransportTXFunction passed in Flags_Initialize() to transmit
+ * the frame.
  */
 void Flags_SendResponse();
 

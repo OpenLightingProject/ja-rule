@@ -47,15 +47,15 @@ typedef enum {
  *   copied.
  * @param iov_count The number of IOVec structures in the array.
  */
-typedef bool (*TXFunction)(Command, uint8_t, const IOVec*,
-                           unsigned int);
+typedef bool (*TransportTXFunction)(Command, uint8_t, const IOVec*,
+                                    unsigned int);
 
 /**
  * @brief A function pointer to call when data is received from the host.
  * @param data A pointer to the new data.
  * @param size The size of the data received.
  */
-typedef void (*RXFunction)(const uint8_t*, unsigned int);
+typedef void (*TransportRxFunction)(const uint8_t*, unsigned int);
 
 #endif  // SRC_TRANSPORT_H_
 

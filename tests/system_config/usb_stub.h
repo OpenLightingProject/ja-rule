@@ -1,5 +1,5 @@
 /*
- * This is the system_definitions.h used for the tests. It contains the bare
+ * This is the usb_stub.h used for the tests. It contains the bare
  * minimum required to implement the mock USB backend.
  */
 
@@ -25,7 +25,7 @@
  * CONSEQUENTIAL DAMAGES, LOST PROFITS OR LOST DATA, COST OF PROCUREMENT OF
  * SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
  * (INCLUDING BUT NOT LIMITED TO ANY DEFENSE THEREOF), OR OTHER SIMILAR COSTS.
- * *******************************************************************************/
+ ******************************************************************************/
 
 #ifndef TESTS_SYSTEM_CONFIG_USB_STUB_H_
 #define TESTS_SYSTEM_CONFIG_USB_STUB_H_

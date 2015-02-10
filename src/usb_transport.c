@@ -13,6 +13,7 @@
 #include "stream_decoder.h"
 #include "system_config.h"
 #include "system_definitions.h"
+#include "system_pipeline.h"
 #include "transport.h"
 
 typedef enum {
@@ -23,10 +24,10 @@ typedef enum {
 } USBTransportState;
 
 typedef struct {
-  RXFunction rx_cb;
+  TransportRxFunction rx_cb;
   USB_DEVICE_HANDLE usb_device;  //!< The USB Device layer handle.
   USBTransportState state;
-  bool is_configured;  //!< Keep track of if the device is configured.
+  bool is_configured;  //!< Keep track of whether the device is configured.
 
   bool tx_in_progress;  //!< True if there is a TX in progress
   bool rx_in_progress;  //!< True if there is a RX in progress.
@@ -35,10 +36,10 @@ typedef struct {
   USB_DEVICE_TRANSFER_HANDLE read_transfer;
 
   /* The transmit endpoint address */
-  USB_ENDPOINT_ADDRESS endpointTx;
+  USB_ENDPOINT_ADDRESS tx_endpoint;
 
   /* The receive endpoint address */
-  USB_ENDPOINT_ADDRESS endpointRx;
+  USB_ENDPOINT_ADDRESS rx_endpoint;
 
   /* Tracks the alternate setting */
   uint8_t altSetting;
@@ -48,10 +49,10 @@ typedef struct {
 
 USBTransportData g_usb_transport_data;
 
-/* Receive data buffer */
+// Receive data buffer
 uint8_t receivedDataBuffer[USB_READ_BUFFER_SIZE] USB_MAKE_BUFFER_DMA_READY;
 
-/* Transmit data buffer */
+// Transmit data buffer
 uint8_t transmitDataBuffer[USB_READ_BUFFER_SIZE] USB_MAKE_BUFFER_DMA_READY;
 
 /**
@@ -95,36 +96,39 @@ void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
       break;
 
     case USB_DEVICE_EVENT_CONTROL_TRANSFER_SETUP_REQUEST:
-      /* This means we have received a setup packet */
+      // This means we have received a setup packet
       setupPacket = (USB_SETUP_PACKET*) event_data;
       if (setupPacket->bRequest == USB_REQUEST_SET_INTERFACE) {
         /* If we have got the SET_INTERFACE request, we just acknowledge
          for now. This demo has only one alternate setting which is already
          active. */
-        USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device, USB_DEVICE_CONTROL_STATUS_OK);
+        USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device,
+                                 USB_DEVICE_CONTROL_STATUS_OK);
       } else if (setupPacket->bRequest == USB_REQUEST_GET_INTERFACE) {
         /* We have only one alternate setting and this setting 0. So
          * we send this information to the host. */
-
-        USB_DEVICE_ControlSend(g_usb_transport_data.usb_device, &g_usb_transport_data.altSetting, 1);
+        USB_DEVICE_ControlSend(g_usb_transport_data.usb_device,
+                               &g_usb_transport_data.altSetting, 1);
       } else {
-        /* We have received a request that we cannot handle. Stall it*/
-        USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device, USB_DEVICE_CONTROL_STATUS_ERROR);
+        // We have received a request that we cannot handle. Stall it
+        USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device,
+                                 USB_DEVICE_CONTROL_STATUS_ERROR);
       }
       break;
 
     case USB_DEVICE_EVENT_ENDPOINT_READ_COMPLETE:
-      /* Endpoint read is complete */
+      // Endpoint read is complete
       g_usb_transport_data.rx_in_progress = false;
-      g_usb_transport_data.rx_data_size = ((USB_DEVICE_EVENT_DATA_ENDPOINT_WRITE_COMPLETE*) event_data)->length;
+      g_usb_transport_data.rx_data_size =
+          ((USB_DEVICE_EVENT_DATA_ENDPOINT_WRITE_COMPLETE*) event_data)->length;
       break;
 
     case USB_DEVICE_EVENT_ENDPOINT_WRITE_COMPLETE:
-      /* Endpoint write is complete */
+      // Endpoint write is complete
       g_usb_transport_data.tx_in_progress = false;
       break;
 
-      /* These events are not used in this demo. */
+    // These events are not used in this demo.
     case USB_DEVICE_EVENT_RESUMED:
     case USB_DEVICE_EVENT_ERROR:
     default:
@@ -133,13 +137,13 @@ void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
   (void) context;
 }
 
-void USBTransport_Initialize(RXFunction rx_cb) {
+void USBTransport_Initialize(TransportRxFunction rx_cb) {
   g_usb_transport_data.rx_cb = rx_cb;
   g_usb_transport_data.state = USB_STATE_INIT;
   g_usb_transport_data.usb_device = USB_DEVICE_HANDLE_INVALID;
   g_usb_transport_data.is_configured = false;
-  g_usb_transport_data.endpointRx = 0x01;
-  g_usb_transport_data.endpointTx = 0x81;
+  g_usb_transport_data.rx_endpoint = 0x01;
+  g_usb_transport_data.tx_endpoint = 0x81;
   g_usb_transport_data.rx_in_progress = false;
   g_usb_transport_data.tx_in_progress = false;
   g_usb_transport_data.altSetting = 0;
@@ -172,27 +176,33 @@ void USBTransport_Tasks() {
         } else if (USB_DEVICE_ActiveSpeedGet(g_usb_transport_data.usb_device) == USB_SPEED_HIGH) {
           endpointSize = 512;
         }
-        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.endpointRx) == false) {
-          /* Enable Read Endpoint */
-          USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0, g_usb_transport_data.endpointRx,
+        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.rx_endpoint) == false) {
+          // Enable Read Endpoint
+          USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0,
+                                    g_usb_transport_data.rx_endpoint,
                                     USB_TRANSFER_TYPE_BULK, endpointSize);
         }
-        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.endpointTx) == false) {
-          /* Enable Write Endpoint */
-          USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0, g_usb_transport_data.endpointTx,
+        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.tx_endpoint) == false) {
+          // Enable Write Endpoint
+          USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0,
+                                    g_usb_transport_data.tx_endpoint,
                                     USB_TRANSFER_TYPE_BULK, endpointSize);
         }
-        /* Indicate that we are waiting for read */
+
+        // Indicate that we are waiting for read
         g_usb_transport_data.rx_in_progress = true;
 
-        /* Place a new read request. */
+        // Place a new read request.
         USB_DEVICE_RESULT result = USB_DEVICE_EndpointRead(
-                                                           g_usb_transport_data.usb_device, &g_usb_transport_data.read_transfer,
-                                                           g_usb_transport_data.endpointRx, &receivedDataBuffer[0], sizeof (receivedDataBuffer));
+            g_usb_transport_data.usb_device,
+            &g_usb_transport_data.read_transfer,
+            g_usb_transport_data.rx_endpoint,
+            &receivedDataBuffer[0],
+            sizeof(receivedDataBuffer));
 
         (void) result;
 
-        /* Device is ready to run the main task */
+        // Device is ready to run the main task
         g_usb_transport_data.state = USB_STATE_MAIN_TASK;
       }
       break;
@@ -205,9 +215,9 @@ void USBTransport_Tasks() {
 
         // Disable the endpoints
         USB_DEVICE_EndpointDisable(g_usb_transport_data.usb_device,
-                                   g_usb_transport_data.endpointRx);
+                                   g_usb_transport_data.rx_endpoint);
         USB_DEVICE_EndpointDisable(g_usb_transport_data.usb_device,
-                                   g_usb_transport_data.endpointTx);
+                                   g_usb_transport_data.tx_endpoint);
         g_usb_transport_data.rx_in_progress = false;
         g_usb_transport_data.tx_in_progress = false;
       } else if (g_usb_transport_data.rx_in_progress == false) {
@@ -224,18 +234,15 @@ void USBTransport_Tasks() {
           g_usb_transport_data.rx_cb(receivedDataBuffer,
                                      g_usb_transport_data.rx_data_size);
 #endif
-
           //USB_DEVICE_EndpointStall(g_usb_transport_data.usb_device,
-          //                         g_usb_transport_data.endpointRx);
+          //                         g_usb_transport_data.rx_endpoint);
           // schedule the next read
-          /*
           g_usb_transport_data.rx_in_progress = true;
           USB_DEVICE_EndpointRead(g_usb_transport_data.usb_device,
                                   &g_usb_transport_data.read_transfer,
-                                  g_usb_transport_data.endpointRx,
+                                  g_usb_transport_data.rx_endpoint,
                                   &receivedDataBuffer[0],
                                   sizeof (receivedDataBuffer));
-          */
         }
       }
       break;
@@ -284,7 +291,7 @@ bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
     }
   }
 
-  transmitDataBuffer[3] = offset & 0xf;
+  transmitDataBuffer[3] = offset & 0xff;
   transmitDataBuffer[4] = offset >> 8;
   transmitDataBuffer[7 + offset] = END_OF_MESSAGE_ID;
 
@@ -293,7 +300,7 @@ bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
   USB_DEVICE_RESULT result = USB_DEVICE_EndpointWrite(
       g_usb_transport_data.usb_device,
       &g_usb_transport_data.write_transfer,
-      g_usb_transport_data.endpointTx, transmitDataBuffer,
+      g_usb_transport_data.tx_endpoint, transmitDataBuffer,
       offset + 8,
       USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE);
   if (result != USB_DEVICE_RESULT_OK) {

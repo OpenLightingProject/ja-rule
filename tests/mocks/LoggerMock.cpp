@@ -32,7 +32,7 @@ void Logger_SetMock(MockLogger* mock) {
   g_logger_mock = mock;
 }
 
-void Logger_Initialize(TXFunction tx_cb, uint16_t max_payload_size) {
+void Logger_Initialize(TransportTXFunction tx_cb, uint16_t max_payload_size) {
   if (g_logger_mock) {
     g_logger_mock->Initialize(tx_cb, max_payload_size);
   }
@@ -47,6 +47,12 @@ void Logger_SetState(bool enabled) {
 void Logger_Log(const char* str) {
   if (g_logger_mock) {
     g_logger_mock->Log(str);
+  }
+}
+
+void Logger_Write(const uint8_t* data, unsigned int length) {
+  if (g_logger_mock) {
+    g_logger_mock->Write(data, length);
   }
 }
 

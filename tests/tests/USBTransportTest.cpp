@@ -105,7 +105,7 @@ void USBTransportTest::CompleteWrite() {
  * Check an uninitialized transport doesn't send anything.
  */
 TEST_F(USBTransportTest, uninitialized) {
-  // Even though we ca;;t USBTransport_Initialize() here, since we haven't
+  // Even though we call USBTransport_Initialize() here, since we haven't
   // called USBTransport_Tasks() the transport remains in an uninitialized
   // state.
   USBTransport_Initialize(nullptr);
@@ -174,8 +174,8 @@ TEST_F(USBTransportTest, sendResponseWithData) {
   ConfigureDevice();
   Logger_SetDataPendingFlag(true);
 
-  const uint8_t chunk1[] = {1, 2};
-  const uint8_t chunk2[] = {3, 4};
+  const uint8_t chunk1[] = {1, 2, 3, 4, 5, 6, 7, 8};
+  const uint8_t chunk2[] = {9, 0, 1, 2, 3, 4, 5, 6, 7, 8};
 
   IOVec iovec[2] = {
       { reinterpret_cast<const void*>(&chunk1), arraysize(chunk1) },
@@ -183,8 +183,9 @@ TEST_F(USBTransportTest, sendResponseWithData) {
   };
 
   const uint8_t expected_message[] = {
-    0x5a, 0x80, 0x00, 0x04, 0x00, 0x00, 0x01,
-    1, 2, 3, 4, 0xa5
+    0x5a, 0x80, 0x00, 0x12, 0x00, 0x00, 0x01,
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8,
+    0xa5
   };
 
   EXPECT_CALL(

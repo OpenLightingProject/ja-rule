@@ -77,10 +77,5 @@ int main(void) {
   }
 
   /* Execution should not come here during normal operation */
-  return ( EXIT_FAILURE);
+  return (EXIT_FAILURE);
 }
-
-/*******************************************************************************
- End of File
- */
-
