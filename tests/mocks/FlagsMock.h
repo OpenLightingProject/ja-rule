@@ -26,7 +26,7 @@
 
 class MockFlags {
  public:
-  MOCK_METHOD1(Initialize, void(TransportTxFunction tx_cb));
+  MOCK_METHOD1(Initialize, void(TransportTXFunction tx_cb));
   MOCK_METHOD0(SendResponse, void());
 };
 

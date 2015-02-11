@@ -1,6 +1,6 @@
 # TESTS
 ################################################
-TESTING_CFLAGS = -I system_config -I ../src -I include \
+TESTING_CFLAGS = -I system_config -I ../firmware/src -I include \
                  $(WARNING_CFLAGS)
 
 TESTING_CXXFLAGS = $(TESTING_CFLAGS) $(WARNING_CXXFLAGS) \

@@ -1,3 +1,8 @@
+/*
+ * File:   flags.c
+ * Author: Simon Newton
+ */
+
 #include "flags.h"
 
 #include <string.h>
@@ -8,10 +13,10 @@
 FlagsData g_flags;
 
 #ifndef PIPELINE_TRANSPORT_TX
-static TransportTxFunction g_flags_tx_cb;
+static TransportTXFunction g_flags_tx_cb;
 #endif
 
-void Flags_Initialize(TransportTxFunction tx_cb) {
+void Flags_Initialize(TransportTXFunction tx_cb) {
   g_flags.has_changed = false;
   memset(&g_flags.flags, 0, sizeof(g_flags.flags));
 #ifndef PIPELINE_TRANSPORT_TX

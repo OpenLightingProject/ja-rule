@@ -1,3 +1,8 @@
+/*
+ * File:   message_handler.c
+ * Author: Simon Newton
+ */
+
 #include "message_handler.h"
 
 #include "constants.h"
@@ -8,10 +13,10 @@
 #include "system_pipeline.h"
 
 #ifndef PIPELINE_TRANSPORT_TX
-static TransportTxFunction g_message_tx_cb;
+static TransportTXFunction g_message_tx_cb;
 #endif
 
-void MessageHandler_Initialize(TransportTxFunction tx_cb) {
+void MessageHandler_Initialize(TransportTXFunction tx_cb) {
 #ifndef PIPELINE_TRANSPORT_TX
   g_message_tx_cb = tx_cb;
 #endif

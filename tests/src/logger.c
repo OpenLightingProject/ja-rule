@@ -1,1 +1,1 @@
-../../src/logger.c
+../../firmware/src/logger.c

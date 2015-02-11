@@ -1,1 +1,1 @@
-../../src/stream_decoder.c
+../../firmware/src/stream_decoder.c
