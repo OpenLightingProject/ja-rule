@@ -63,7 +63,7 @@ bool PayloadMatcher::MatchAndExplain(
        << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
        << ")";
 
-    matched &= expected == actual;
+    matched &= (expected == actual);
     block_offset++;
     if (block_offset >= iovec->length) {
       block_offset = 0;

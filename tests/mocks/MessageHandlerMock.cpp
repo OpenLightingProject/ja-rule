@@ -64,7 +64,7 @@ bool MessageMatcher::MatchAndExplain(
        << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
        << ")";
 
-    matched &= expected == actual;
+    matched &= (expected == actual);
   }
   return matched;
 }
