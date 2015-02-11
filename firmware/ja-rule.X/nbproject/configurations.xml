@@ -211,7 +211,7 @@
         <platformTool>PKOBSKDEPlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
         <languageToolchainVersion>1.33</languageToolchainVersion>
-        <platform>2</platform>
+        <platform>4</platform>
       </toolsSet>
       <compileType>
         <linkerTool>
