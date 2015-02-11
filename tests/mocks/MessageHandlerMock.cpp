@@ -49,22 +49,30 @@ bool MessageMatcher::MatchAndExplain(
   }
 
   bool matched = true;
-  for (unsigned int i = 0; i < m_payload_size; i++) {
-    uint8_t actual = message->payload[i];
-    uint8_t expected = reinterpret_cast<const uint8_t*>(m_payload)[i];
+  if (listener->IsInterested()) {
+    std::ios::fmtflags ostream_flags(listener->stream()->flags());
+    for (unsigned int i = 0; i < m_payload_size; i++) {
+      uint8_t actual = message->payload[i];
+      uint8_t expected = reinterpret_cast<const uint8_t*>(m_payload)[i];
 
-    *listener
-       << "\n" << std::dec << i << ": 0x" << std::hex
-       << static_cast<int>(expected)
-       << (expected == actual ? " == " : " != ")
-       << "0x" << static_cast<int>(actual) << " ("
-       << ((expected >= '!' && expected <= '~') ? static_cast<char>(expected) :
-           ' ')
-       << (expected == actual ? " == " : " != ")
-       << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
-       << ")";
+      *listener
+         << "\n" << std::dec << i << ": 0x" << std::hex
+         << static_cast<int>(expected)
+         << (expected == actual ? " == " : " != ")
+         << "0x" << static_cast<int>(actual) << " ("
+         << ((expected >= '!' && expected <= '~') ?
+             static_cast<char>(expected) : ' ')
+         << (expected == actual ? " == " : " != ")
+         << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
+         << ")";
 
+<<<<<<< HEAD
     matched &= (expected == actual);
+=======
+      matched &= expected == actual;
+    }
+    listener->stream()->flags(ostream_flags);
+>>>>>>> 77a312ad5df13ced713ce368648436106fd3076d
   }
   return matched;
 }

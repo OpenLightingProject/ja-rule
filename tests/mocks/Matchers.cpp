@@ -22,14 +22,6 @@
 
 #include <gmock/gmock.h>
 
-/*
-bool DataMatcher::MatchAndExplain(
-    const ::testing::tuple<const uint8_t*, unsigned int>& args,
-    testing::MatchResultListener* listener) const {
-  return InternalMatchAndExplain(args, listener);
-}
-*/
-
 bool DataMatcher::MatchAndExplain(
     ::testing::tuple<const void*, unsigned int> args,
     testing::MatchResultListener* listener) const {
@@ -60,23 +52,26 @@ bool DataMatcher::InternalMatchAndExplain(
   }
 
   bool matched = true;
-  for (unsigned int i = 0; i < m_expected_size; i++) {
-    uint8_t actual = data[i];
-    uint8_t expected = reinterpret_cast<const uint8_t*>(m_expected_data)[i];
+  if (listener->IsInterested()) {
+    std::ios::fmtflags ostream_flags(listener->stream()->flags());
+    for (unsigned int i = 0; i < m_expected_size; i++) {
+      uint8_t actual = data[i];
+      uint8_t expected = reinterpret_cast<const uint8_t*>(m_expected_data)[i];
 
-    *listener
-       << "\n" << std::dec << i << ": 0x" << std::hex
-       << static_cast<int>(expected)
-       << (expected == actual ? " == " : " != ")
-       << "0x" << static_cast<int>(actual) << " ("
-       << ((expected >= '!' && expected <= '~') ? static_cast<char>(expected) :
-           ' ')
-       << (expected == actual ? " == " : " != ")
-       << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
-       << ")";
+      *listener
+         << "\n" << std::dec << i << ": 0x" << std::hex
+         << static_cast<int>(expected)
+         << (expected == actual ? " == " : " != ")
+         << "0x" << static_cast<int>(actual) << " ("
+         << ((expected >= '!' && expected <= '~') ?
+             static_cast<char>(expected) : ' ')
+         << (expected == actual ? " == " : " != ")
+         << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
+         << ")";
 
-    matched &= (expected == actual);
+      matched &= (expected == actual);
+    }
+    listener->stream()->flags(ostream_flags);
   }
-
   return matched;
 }
