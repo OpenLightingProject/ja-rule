@@ -102,10 +102,27 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 
 
-/*** Console System Service Configuration DISABLED ***/
 
-#define SYS_CONSOLE_MESSAGE(message)
-#define SYS_CONSOLE_PRINT(fmt, ...)
+
+
+/*** Timer System Service Configuration ***/
+#define SYS_TMR_POWER_STATE             SYS_MODULE_POWER_RUN_FULL
+#define SYS_TMR_DRIVER_INDEX            DRV_TMR_INDEX_0
+#define SYS_TMR_MAX_CLIENT_OBJECTS      5
+#define SYS_TMR_FREQUENCY               1000
+#define SYS_TMR_FREQUENCY_TOLERANCE     10
+#define SYS_TMR_UNIT_RESOLUTION         10000
+#define SYS_TMR_CLIENT_TOLERANCE        10
+#define SYS_TMR_INTERRUPT_NOTIFICATION  false
+
+/*** Console System Service Configuration ENABLED ***/
+
+#define SYS_CONSOLE_OVERRIDE_STDIO
+#define SYS_CONSOLE_DEVICE_MAX_INSTANCES        2
+#define SYS_CONSOLE_INSTANCES_NUMBER            1
+#define SYS_CONSOLE_USB_CDC_RD_QUEUE_DEPTH 1
+#define SYS_CONSOLE_USB_CDC_WR_QUEUE_DEPTH 128
+#define SYS_CONSOLE_BUFFER_DMA_READY
 
 
 /*** Command Processor System Service Configuration DISABLED ***/
@@ -122,6 +139,25 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // Section: Driver Configuration
 // *****************************************************************************
 // *****************************************************************************
+
+/*** Timer Driver Configuration ***/
+#define DRV_TMR_INSTANCES_NUMBER           1
+#define DRV_TMR_CLIENTS_NUMBER             1
+#define DRV_TMR_INTERRUPT_MODE             true
+
+/*** Timer Driver 0 Configuration ***/
+#define DRV_TMR_PERIPHERAL_ID_IDX0          TMR_ID_1
+#define DRV_TMR_INTERRUPT_SOURCE_IDX0       INT_SOURCE_TIMER_1
+#define DRV_TMR_INTERRUPT_VECTOR_IDX0       INT_VECTOR_T1
+#define DRV_TMR_ISR_VECTOR_IDX0             _TIMER_1_VECTOR
+#define DRV_TMR_INTERRUPT_PRIORITY_IDX0     INT_PRIORITY_LEVEL1
+#define DRV_TMR_INTERRUPT_SUB_PRIORITY_IDX0 INT_SUBPRIORITY_LEVEL0
+#define DRV_TMR_CLOCK_SOURCE_IDX0           DRV_TMR_CLKSOURCE_INTERNAL
+#define DRV_TMR_PRESCALE_IDX0               TMR_PRESCALE_VALUE_256
+#define DRV_TMR_OPERATION_MODE_IDX0         DRV_TMR_OPERATION_MODE_16_BIT
+#define DRV_TMR_ASYNC_WRITE_ENABLE_IDX0     false
+#define DRV_TMR_POWER_STATE_IDX0            SYS_MODULE_POWER_RUN_FULL
+
 
 // *****************************************************************************
 // *****************************************************************************
@@ -145,7 +181,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #define DRV_USB_INTERRUPT_MODE      true
 
 /* Number of Endpoints used */
-#define DRV_USB_ENDPOINTS_NUMBER    2
+#define DRV_USB_ENDPOINTS_NUMBER    5
 
 /*** USB Device Stack Configuration ***/
 
@@ -158,18 +194,12 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 
 
-/* Endpoint Transfer Queue Size combined for Read and write */
-#define USB_DEVICE_ENDPOINT_QUEUE_DEPTH_COMBINED    2
 
 
+/* Maximum instances of CDC function driver */
+#define USB_DEVICE_CDC_INSTANCES_NUMBER     1
 
-// *****************************************************************************
-// *****************************************************************************
-// Section: USB Module Configuration
-// *****************************************************************************
-// *****************************************************************************
 
-#define USB_MAKE_BUFFER_DMA_READY
 
 
 // *****************************************************************************
@@ -182,7 +212,23 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #define LOG_BUFFER_SIZE 1000
 
 
-#endif  // SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_CONFIG_H_
+
+
+
+/* CDC Transfer Queue Size for both read and
+   write. Applicable to all instances of the
+   function driver */
+#define USB_DEVICE_CDC_QUEUE_DEPTH_COMBINED 3
+
+/* Endpoint Transfer Queue Size combined for Read and write */
+#define USB_DEVICE_ENDPOINT_QUEUE_DEPTH_COMBINED    2
+
+
+
+
+
+
+#endif // _SYSTEM_CONFIG_H
 /*******************************************************************************
  End of File
 */

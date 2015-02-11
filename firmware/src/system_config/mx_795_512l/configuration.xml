@@ -4,16 +4,16 @@
   <ForceOptimization flag="true"/>
   <Files>
     <File>
-      <Name>drv_usb_device.c</Name>
-      <Path>/framework/driver/usb/usbfs/src/dynamic</Path>
+      <Name>driver.h</Name>
+      <Path>/framework/driver</Path>
+    </File>
+    <File>
+      <Name>sys_console.c</Name>
+      <Path>/framework/system/console/src</Path>
     </File>
     <File>
       <Name>bsp_sys_init.c</Name>
       <Path>/bsp/pic32mx_eth_sk2</Path>
-    </File>
-    <File>
-      <Name>usb_device.h</Name>
-      <Path>/framework/usb</Path>
     </File>
     <File>
       <Name>drv_usb.c</Name>
@@ -22,6 +22,46 @@
     <File>
       <Name>bsp_config.h</Name>
       <Path>/bsp/pic32mx_eth_sk2</Path>
+    </File>
+    <File>
+      <Name>sys_console_usb_cdc.c</Name>
+      <Path>/framework/system/console/src</Path>
+    </File>
+    <File>
+      <Name>usb_device.c</Name>
+      <Path>/framework/usb/src/dynamic</Path>
+    </File>
+    <File>
+      <Name>sys_int.h</Name>
+      <Path>/framework/system/int</Path>
+    </File>
+    <File>
+      <Name>usb_cdc.h</Name>
+      <Path>/framework/usb</Path>
+    </File>
+    <File>
+      <Name>usb_device_cdc_acm.c</Name>
+      <Path>/framework/usb/src/dynamic</Path>
+    </File>
+    <File>
+      <Name>usb_device_cdc.h</Name>
+      <Path>/framework/usb</Path>
+    </File>
+    <File>
+      <Name>drv_usb_device.c</Name>
+      <Path>/framework/driver/usb/usbfs/src/dynamic</Path>
+    </File>
+    <File>
+      <Name>sys_tmr.c</Name>
+      <Path>/framework/system/tmr/src</Path>
+    </File>
+    <File>
+      <Name>usb_device.h</Name>
+      <Path>/framework/usb</Path>
+    </File>
+    <File>
+      <Name>sys_tmr.h</Name>
+      <Path>/framework/system/tmr</Path>
     </File>
     <File>
       <Name>sys_devcon.h</Name>
@@ -36,19 +76,27 @@
       <Path>/framework/system/ports/src</Path>
     </File>
     <File>
+      <Name>drv_usb.h</Name>
+      <Path>/framework/driver/usb</Path>
+    </File>
+    <File>
       <Name>sys_ports.h</Name>
       <Path>/framework/system/ports</Path>
     </File>
     <File>
-      <Name>drv_usb.h</Name>
-      <Path>/framework/driver/usb</Path>
+      <Name>drv_tmr.c</Name>
+      <Path>/framework/driver/tmr/src/dynamic</Path>
     </File>
     <File>
       <Name>sys_devcon.c</Name>
       <Path>/framework/system/devcon/src</Path>
     </File>
     <File>
-      <Name>usb_device.c</Name>
+      <Name>sys_console_usb_cdc_local.h</Name>
+      <Path>/framework/system/console/src</Path>
+    </File>
+    <File>
+      <Name>usb_device_cdc.c</Name>
       <Path>/framework/usb/src/dynamic</Path>
     </File>
     <File>
@@ -56,16 +104,20 @@
       <Path>/framework/system/devcon/src</Path>
     </File>
     <File>
-      <Name>sys_int.h</Name>
-      <Path>/framework/system/int</Path>
+      <Name>drv_tmr.h</Name>
+      <Path>/framework/driver/tmr</Path>
+    </File>
+    <File>
+      <Name>system.h</Name>
+      <Path>/framework/system</Path>
     </File>
     <File>
       <Name>sys_common.h</Name>
       <Path>/framework/system/common</Path>
     </File>
     <File>
-      <Name>system.h</Name>
-      <Path>/framework/system</Path>
+      <Name>sys_console_local.h</Name>
+      <Path>/framework/system/console/src</Path>
     </File>
     <File>
       <Name>usb_device_endpoint_functions.c</Name>
@@ -75,12 +127,16 @@
       <Name>sys_int_pic32.c</Name>
       <Path>/framework/system/int/src</Path>
     </File>
+    <File>
+      <Name>sys_console.h</Name>
+      <Path>/framework/system/console</Path>
+    </File>
   </Files>
   <Templates>
     <Template>
       <Name>system_config.h</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>A2E6FC5F22F89501C26841EE43363B6C</Checksum>
+      <Checksum>DE49910E5F773719CAF9067FDCEAF16D</Checksum>
     </Template>
     <Template>
       <Name>app.c</Name>
@@ -89,7 +145,7 @@
     <Template>
       <Name>system_init.c</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>804C91C7714172DA629F9C1936AC0131</Checksum>
+      <Checksum>F363F9B63A3459EF5800E1F7D6ECCB43</Checksum>
     </Template>
     <Template>
       <Name>app.h</Name>
@@ -103,7 +159,7 @@
     <Template>
       <Name>system_tasks.c</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>0BEE6C40D29196D89B516A74D8798052</Checksum>
+      <Checksum>C1C8DBE82DA519EF5CDC7B314D3B4F35</Checksum>
     </Template>
     <Template>
       <Name>main.c</Name>
@@ -117,12 +173,12 @@
     <Template>
       <Name>system_interrupt.c</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>904BC56B47D5CCC0DCED63BE72010D32</Checksum>
+      <Checksum>8253A1490B0AFA11801D0A0CCC5083A0</Checksum>
     </Template>
     <Template>
       <Name>system_definitions.h</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>9B7C212BE9489BF0C0CC38C6930BCFF4</Checksum>
+      <Checksum>FBFB621871C10952B63003BB0B861D31</Checksum>
     </Template>
     <Template>
       <Name>sys_clk_static.h</Name>
@@ -132,10 +188,10 @@
   </Templates>
   <CompilerItems>
     <C32>
-      <Include value="/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
+      <Include value="../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
     </C32>
   </CompilerItems>
   <Libraries>
-    <Library value="/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a"/>
+    <Library value="../../../../../../opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a"/>
   </Libraries>
 </configuration>

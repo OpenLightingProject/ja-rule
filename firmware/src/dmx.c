@@ -65,7 +65,8 @@ void DMX_Tasks() {
   }
 }
 
-void DMX_BeginFrame(const uint8_t* data, unsigned int size) {
+void DMX_BeginFrame(uint8_t start_code, const uint8_t* data,
+                    unsigned int size) {
   if (dmx_data.working == NULL) {
     dmx_data.working = dmx_data.free_list[dmx_data.free_size - 1];
     dmx_data.free_size--;

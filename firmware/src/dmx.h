@@ -6,6 +6,8 @@
 #ifndef SRC_DMX_H_
 #define SRC_DMX_H_
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

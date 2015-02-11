@@ -50,10 +50,10 @@ typedef struct {
 USBTransportData g_usb_transport_data;
 
 // Receive data buffer
-uint8_t receivedDataBuffer[USB_READ_BUFFER_SIZE] USB_MAKE_BUFFER_DMA_READY;
+uint8_t receivedDataBuffer[USB_READ_BUFFER_SIZE];
 
 // Transmit data buffer
-uint8_t transmitDataBuffer[USB_READ_BUFFER_SIZE] USB_MAKE_BUFFER_DMA_READY;
+uint8_t transmitDataBuffer[USB_READ_BUFFER_SIZE];
 
 /**
  * @brief Called when device events occur.
