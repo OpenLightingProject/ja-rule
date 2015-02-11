@@ -66,13 +66,9 @@ bool MessageMatcher::MatchAndExplain(
          << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
          << ")";
 
-<<<<<<< HEAD
-    matched &= (expected == actual);
-=======
-      matched &= expected == actual;
+      matched &= (expected == actual);
     }
     listener->stream()->flags(ostream_flags);
->>>>>>> 77a312ad5df13ced713ce368648436106fd3076d
   }
   return matched;
 }
