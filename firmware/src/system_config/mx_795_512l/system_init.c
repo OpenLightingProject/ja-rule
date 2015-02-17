@@ -108,7 +108,8 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 /**************************************************
  * USB Device Function Driver Init Data
  **************************************************/
-const USB_DEVICE_CDC_INIT cdcInit0 = {
+    const USB_DEVICE_CDC_INIT cdcInit0 =
+    {
   .queueSizeRead = 1,
   .queueSizeWrite = 1,
   .queueSizeSerialStateNotification = 1
@@ -117,26 +118,27 @@ const USB_DEVICE_CDC_INIT cdcInit0 = {
  * USB Device Layer Function Driver Registration 
  * Table
  **************************************************/
-const USB_DEVICE_FUNCTION_REGISTRATION_TABLE funcRegistrationTable[2] = {
+const USB_DEVICE_FUNCTION_REGISTRATION_TABLE funcRegistrationTable[2] =
+{
   /* Function 1 */
   {
-    .configurationValue = 1, /* Configuration value */
-    .interfaceNumber = 0, /* First interfaceNumber of this function */
-    .numberOfInterfaces = 2, /* Number of interfaces */
-    .speed = USB_SPEED_FULL, /* Function Speed */
-    .funcDriverIndex = 0, /* Index of CDC Function Driver */
-    .driver = (void*) USB_DEVICE_CDC_FUNCTION_DRIVER, /* USB CDC function data exposed to device layer */
-    .funcDriverInit = (void*) &cdcInit0 /* Function driver init data */
+        .configurationValue = 1,    /* Configuration value */
+        .interfaceNumber = 0,       /* First interfaceNumber of this function */
+        .numberOfInterfaces = 2,    /* Number of interfaces */
+        .speed = USB_SPEED_FULL,    /* Function Speed */
+        .funcDriverIndex = 0,  /* Index of CDC Function Driver */
+        .driver = (void*)USB_DEVICE_CDC_FUNCTION_DRIVER,    /* USB CDC function data exposed to device layer */
+        .funcDriverInit = (void*)&cdcInit0    /* Function driver init data */
   },
   /* Function 2 */
   {
-    .configurationValue = 1, /* Configuration value */
-    .interfaceNumber = 2, /* First interfaceNumber of this function */
-    .numberOfInterfaces = 1, /* Number of interfaces */
-    .speed = USB_SPEED_FULL, /* Function Speed */
-    .funcDriverIndex = 0, /* Index of Vendor Driver */
-    .driver = NULL, /* No Function Driver data */
-    .funcDriverInit = NULL /* No Function Driver Init data */
+        .configurationValue = 1,    /* Configuration value */
+        .interfaceNumber = 2,       /* First interfaceNumber of this function */
+        .numberOfInterfaces = 1,    /* Number of interfaces */
+        .speed = USB_SPEED_FULL,    /* Function Speed */
+        .funcDriverIndex = 0,  /* Index of Vendor Driver */
+        .driver = NULL,            /* No Function Driver data */
+        .funcDriverInit = NULL     /* No Function Driver Init data */
   },
 };
 
@@ -386,10 +388,10 @@ uint8_t __attribute__((aligned(512))) endPointTable[USB_DEVICE_ENDPOINT_TABLE_SI
  * USB Device Layer Initialization Data
  ****************************************************/
 
-const USB_DEVICE_INIT usbDevInitData = {
+const USB_DEVICE_INIT usbDevInitData =
+{
   /* System module initialization */
-  .moduleInit =
-  {SYS_MODULE_POWER_RUN_FULL},
+    .moduleInit = {SYS_MODULE_POWER_RUN_FULL},
 
   /* Identifies peripheral (PLIB-level) ID */
   .usbID = USB_ID_1,
@@ -403,17 +405,17 @@ const USB_DEVICE_INIT usbDevInitData = {
   .interruptSource = INT_SOURCE_USB_1,
 
   /* Endpoint table */
-  .endpointTable = endPointTable,
+    .endpointTable= endPointTable,
 
   /* Number of function drivers registered to this instance of the
      USB device layer */
   .registeredFuncCount = 2,
 
   /* Function driver table registered to this instance of the USB device layer*/
-  .registeredFunctions = (USB_DEVICE_FUNCTION_REGISTRATION_TABLE*) funcRegistrationTable,
+    .registeredFunctions = (USB_DEVICE_FUNCTION_REGISTRATION_TABLE*)funcRegistrationTable,
 
   /* Pointer to USB Descriptor structure */
-  .usbMasterDescriptor = (USB_DEVICE_MASTER_DESCRIPTOR*) & usbMasterDescriptor,
+    .usbMasterDescriptor = (USB_DEVICE_MASTER_DESCRIPTOR*)&usbMasterDescriptor,
 
   /* USB Device Speed */
   .deviceSpeed = USB_SPEED_FULL,
@@ -422,7 +424,7 @@ const USB_DEVICE_INIT usbDevInitData = {
   .queueSizeEndpointRead = 1,
 
   /* Specify queue size for vendor endpoint write */
-  .queueSizeEndpointWrite = 1,
+    .queueSizeEndpointWrite= 1,
 };
 
 // </editor-fold>
@@ -434,30 +436,6 @@ const USB_DEVICE_INIT usbDevInitData = {
 // *****************************************************************************
 // *****************************************************************************
 
-//<editor-fold defaultstate="collapsed" desc="DRV_Timer Configuration">
-
-/*** TMR Driver Initialization Data ***/
-
-const DRV_TMR_INIT drvTmr0InitData = {
-  .moduleInit.sys.powerState = DRV_TMR_POWER_STATE_IDX0,
-  .tmrId = DRV_TMR_PERIPHERAL_ID_IDX0,
-  .clockSource = DRV_TMR_CLOCK_SOURCE_IDX0,
-  .prescale = DRV_TMR_PRESCALE_IDX0,
-  .mode = DRV_TMR_OPERATION_MODE_IDX0,
-  .interruptSource = DRV_TMR_INTERRUPT_SOURCE_IDX0,
-  .asyncWriteEnable = false,
-};
-// </editor-fold>
-//<editor-fold defaultstate="collapsed" desc="SYS_TMR Configuration">
-/*** TMR Service Initialization Data ***/
-const SYS_TMR_INIT sysTmrInitData = {
-  .moduleInit =
-  {SYS_MODULE_POWER_RUN_FULL},
-  .drvIndex = DRV_TMR_INDEX_0,
-  .tmrFreq = 1000,
-};
-
-// </editor-fold>
 
 // *****************************************************************************
 // *****************************************************************************
@@ -479,15 +457,10 @@ SYSTEM_OBJECTS sysObj;
 
 /*** System Device Control Initialization Data ***/
 
-const SYS_DEVCON_INIT sysDevconInit = {
-  .moduleInit =
-  {0},
+const SYS_DEVCON_INIT sysDevconInit =
+{
+    .moduleInit = {0},
 };
-// </editor-fold>
-//<editor-fold defaultstate="collapsed" desc="SYS_CONSOLE Configuration">
-/*** System Console Initialization Data ***/
-
-
 // </editor-fold>
 
 // *****************************************************************************
@@ -515,10 +488,11 @@ const SYS_DEVCON_INIT sysDevconInit = {
     See prototype in system/common/sys_module.h.
  */
 
-void SYS_Initialize(void* data) {
+void SYS_Initialize ( void* data )
+{
   /* Core Processor Initialization */
-  SYS_CLK_Initialize(NULL);
-  sysObj.sysDevcon = SYS_DEVCON_Initialize(SYS_DEVCON_INDEX_0, (SYS_MODULE_INIT*) & sysDevconInit);
+    SYS_CLK_Initialize( NULL );
+    sysObj.sysDevcon = SYS_DEVCON_Initialize(SYS_DEVCON_INDEX_0, (SYS_MODULE_INIT*)&sysDevconInit);
   SYS_DEVCON_PerformanceConfig(SYS_CLK_SystemFrequencyGet());
   SYS_DEVCON_JTAGDisable();
   SYS_PORTS_Initialize();
@@ -528,18 +502,8 @@ void SYS_Initialize(void* data) {
 
   /* Initialize Drivers */
 
-  sysObj.drvTmr0 = DRV_TMR_Initialize(DRV_TMR_INDEX_0, (SYS_MODULE_INIT *) & drvTmr0InitData);
-
-  SYS_INT_VectorPrioritySet(INT_VECTOR_T1, INT_PRIORITY_LEVEL1);
-  SYS_INT_VectorSubprioritySet(INT_VECTOR_T1, INT_SUBPRIORITY_LEVEL0);
-
-
-
   /* Initialize System Services */
   SYS_INT_Initialize();
-
-  /*** TMR Service Initialization Code ***/
-  sysObj.sysTmr = SYS_TMR_Initialize(SYS_TMR_INDEX_0, (const SYS_MODULE_INIT * const) &sysTmrInitData);
 
   /* Initialize Middleware */
   /* Set priority of USB interrupt source */
@@ -550,7 +514,7 @@ void SYS_Initialize(void* data) {
 
 
   /* Initialize the USB device layer */
-  sysObj.usbDevObject0 = USB_DEVICE_Initialize(USB_DEVICE_INDEX_0, (SYS_MODULE_INIT*) & usbDevInitData);
+    sysObj.usbDevObject0 = USB_DEVICE_Initialize (USB_DEVICE_INDEX_0 , ( SYS_MODULE_INIT* ) & usbDevInitData);
   /* Enable Global Interrupts */
   SYS_INT_Enable();
 

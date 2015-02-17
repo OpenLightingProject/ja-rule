@@ -46,8 +46,8 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 *******************************************************************************/
 // DOM-IGNORE-END
 
-#ifndef SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_CONFIG_H_
-#define SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_CONFIG_H_
+#ifndef _SYSTEM_CONFIG_H
+#define _SYSTEM_CONFIG_H
 
 /* This is a temporary workaround for an issue with the peripheral library "Exists"
    functions that causes superfluous warnings.  It "nulls" out the definition of
@@ -105,24 +105,12 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 
 
-/*** Timer System Service Configuration ***/
-#define SYS_TMR_POWER_STATE             SYS_MODULE_POWER_RUN_FULL
-#define SYS_TMR_DRIVER_INDEX            DRV_TMR_INDEX_0
-#define SYS_TMR_MAX_CLIENT_OBJECTS      5
-#define SYS_TMR_FREQUENCY               1000
-#define SYS_TMR_FREQUENCY_TOLERANCE     10
-#define SYS_TMR_UNIT_RESOLUTION         10000
-#define SYS_TMR_CLIENT_TOLERANCE        10
-#define SYS_TMR_INTERRUPT_NOTIFICATION  false
 
-/*** Console System Service Configuration ENABLED ***/
 
-#define SYS_CONSOLE_OVERRIDE_STDIO
-#define SYS_CONSOLE_DEVICE_MAX_INSTANCES        2
-#define SYS_CONSOLE_INSTANCES_NUMBER            1
-#define SYS_CONSOLE_USB_CDC_RD_QUEUE_DEPTH 1
-#define SYS_CONSOLE_USB_CDC_WR_QUEUE_DEPTH 128
-#define SYS_CONSOLE_BUFFER_DMA_READY
+/*** Console System Service Configuration DISABLED ***/
+
+#define SYS_CONSOLE_MESSAGE(message)
+#define SYS_CONSOLE_PRINT(fmt, ...)
 
 
 /*** Command Processor System Service Configuration DISABLED ***/
@@ -139,25 +127,6 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // Section: Driver Configuration
 // *****************************************************************************
 // *****************************************************************************
-
-/*** Timer Driver Configuration ***/
-#define DRV_TMR_INSTANCES_NUMBER           1
-#define DRV_TMR_CLIENTS_NUMBER             1
-#define DRV_TMR_INTERRUPT_MODE             true
-
-/*** Timer Driver 0 Configuration ***/
-#define DRV_TMR_PERIPHERAL_ID_IDX0          TMR_ID_1
-#define DRV_TMR_INTERRUPT_SOURCE_IDX0       INT_SOURCE_TIMER_1
-#define DRV_TMR_INTERRUPT_VECTOR_IDX0       INT_VECTOR_T1
-#define DRV_TMR_ISR_VECTOR_IDX0             _TIMER_1_VECTOR
-#define DRV_TMR_INTERRUPT_PRIORITY_IDX0     INT_PRIORITY_LEVEL1
-#define DRV_TMR_INTERRUPT_SUB_PRIORITY_IDX0 INT_SUBPRIORITY_LEVEL0
-#define DRV_TMR_CLOCK_SOURCE_IDX0           DRV_TMR_CLKSOURCE_INTERNAL
-#define DRV_TMR_PRESCALE_IDX0               TMR_PRESCALE_VALUE_256
-#define DRV_TMR_OPERATION_MODE_IDX0         DRV_TMR_OPERATION_MODE_16_BIT
-#define DRV_TMR_ASYNC_WRITE_ENABLE_IDX0     false
-#define DRV_TMR_POWER_STATE_IDX0            SYS_MODULE_POWER_RUN_FULL
-
 
 // *****************************************************************************
 // *****************************************************************************

@@ -54,9 +54,6 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #include "framework/system/clk/sys_clk_static.h"
 #include "system/devcon/sys_devcon.h"
 #include "system/int/sys_int.h"
-#include "system/console/sys_console.h"
-#include "system/tmr/sys_tmr.h"
-#include "driver/tmr/drv_tmr.h"
 #include "system/ports/sys_ports.h"
 #include "system/debug/sys_debug.h"
 #include "usb/usb_device.h"
@@ -87,11 +84,8 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 typedef struct
 {
     SYS_MODULE_OBJ  sysDevcon;
-    SYS_MODULE_OBJ  sysTmr;
-    SYS_MODULE_OBJ  drvTmr0;
 
 
-    SYS_MODULE_OBJ  sysConsole0;
 
     SYS_MODULE_OBJ  usbDevObject0;
 

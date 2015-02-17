@@ -4,14 +4,6 @@
   <ForceOptimization flag="true"/>
   <Files>
     <File>
-      <Name>driver.h</Name>
-      <Path>/framework/driver</Path>
-    </File>
-    <File>
-      <Name>sys_console.c</Name>
-      <Path>/framework/system/console/src</Path>
-    </File>
-    <File>
       <Name>bsp_sys_init.c</Name>
       <Path>/bsp/pic32mx_eth_sk2</Path>
     </File>
@@ -22,10 +14,6 @@
     <File>
       <Name>bsp_config.h</Name>
       <Path>/bsp/pic32mx_eth_sk2</Path>
-    </File>
-    <File>
-      <Name>sys_console_usb_cdc.c</Name>
-      <Path>/framework/system/console/src</Path>
     </File>
     <File>
       <Name>usb_device.c</Name>
@@ -52,16 +40,8 @@
       <Path>/framework/driver/usb/usbfs/src/dynamic</Path>
     </File>
     <File>
-      <Name>sys_tmr.c</Name>
-      <Path>/framework/system/tmr/src</Path>
-    </File>
-    <File>
       <Name>usb_device.h</Name>
       <Path>/framework/usb</Path>
-    </File>
-    <File>
-      <Name>sys_tmr.h</Name>
-      <Path>/framework/system/tmr</Path>
     </File>
     <File>
       <Name>sys_devcon.h</Name>
@@ -84,16 +64,8 @@
       <Path>/framework/system/ports</Path>
     </File>
     <File>
-      <Name>drv_tmr.c</Name>
-      <Path>/framework/driver/tmr/src/dynamic</Path>
-    </File>
-    <File>
       <Name>sys_devcon.c</Name>
       <Path>/framework/system/devcon/src</Path>
-    </File>
-    <File>
-      <Name>sys_console_usb_cdc_local.h</Name>
-      <Path>/framework/system/console/src</Path>
     </File>
     <File>
       <Name>usb_device_cdc.c</Name>
@@ -104,20 +76,12 @@
       <Path>/framework/system/devcon/src</Path>
     </File>
     <File>
-      <Name>drv_tmr.h</Name>
-      <Path>/framework/driver/tmr</Path>
-    </File>
-    <File>
       <Name>system.h</Name>
       <Path>/framework/system</Path>
     </File>
     <File>
       <Name>sys_common.h</Name>
       <Path>/framework/system/common</Path>
-    </File>
-    <File>
-      <Name>sys_console_local.h</Name>
-      <Path>/framework/system/console/src</Path>
     </File>
     <File>
       <Name>usb_device_endpoint_functions.c</Name>
@@ -127,16 +91,12 @@
       <Name>sys_int_pic32.c</Name>
       <Path>/framework/system/int/src</Path>
     </File>
-    <File>
-      <Name>sys_console.h</Name>
-      <Path>/framework/system/console</Path>
-    </File>
   </Files>
   <Templates>
     <Template>
       <Name>system_config.h</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>DE49910E5F773719CAF9067FDCEAF16D</Checksum>
+      <Checksum>DB19ED7C0CE933274AD1C73BBF39861D</Checksum>
     </Template>
     <Template>
       <Name>app.c</Name>
@@ -145,7 +105,7 @@
     <Template>
       <Name>system_init.c</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>F363F9B63A3459EF5800E1F7D6ECCB43</Checksum>
+      <Checksum>3F0B7B204E35131326DA29C3BD33B02F</Checksum>
     </Template>
     <Template>
       <Name>app.h</Name>
@@ -159,7 +119,7 @@
     <Template>
       <Name>system_tasks.c</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>C1C8DBE82DA519EF5CDC7B314D3B4F35</Checksum>
+      <Checksum>0BEE6C40D29196D89B516A74D8798052</Checksum>
     </Template>
     <Template>
       <Name>main.c</Name>
@@ -173,12 +133,12 @@
     <Template>
       <Name>system_interrupt.c</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>8253A1490B0AFA11801D0A0CCC5083A0</Checksum>
+      <Checksum>904BC56B47D5CCC0DCED63BE72010D32</Checksum>
     </Template>
     <Template>
       <Name>system_definitions.h</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>FBFB621871C10952B63003BB0B861D31</Checksum>
+      <Checksum>63BCE17795F732A4187E5ECCEC780D17</Checksum>
     </Template>
     <Template>
       <Name>sys_clk_static.h</Name>

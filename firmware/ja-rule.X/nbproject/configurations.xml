@@ -43,25 +43,14 @@
       </logicalFolder>
       <logicalFolder name="framework" displayName="framework" projectFiles="true">
         <logicalFolder name="driver" displayName="driver" projectFiles="true">
-          <logicalFolder name="tmr" displayName="tmr" projectFiles="true">
-            <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/driver/tmr/drv_tmr.h</itemPath>
-          </logicalFolder>
           <logicalFolder name="usb" displayName="usb" projectFiles="true">
             <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/driver/usb/drv_usb.h</itemPath>
           </logicalFolder>
-          <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/driver/driver.h</itemPath>
         </logicalFolder>
         <logicalFolder name="system" displayName="system" projectFiles="true">
           <logicalFolder name="common" displayName="common" projectFiles="true">
             <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/common/sys_common.h</itemPath>
             <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/common/sys_module.h</itemPath>
-          </logicalFolder>
-          <logicalFolder name="console" displayName="console" projectFiles="true">
-            <logicalFolder name="src" displayName="src" projectFiles="true">
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/console/src/sys_console_local.h</itemPath>
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/console/src/sys_console_usb_cdc_local.h</itemPath>
-            </logicalFolder>
-            <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/console/sys_console.h</itemPath>
           </logicalFolder>
           <logicalFolder name="devcon" displayName="devcon" projectFiles="true">
             <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/devcon/sys_devcon.h</itemPath>
@@ -71,9 +60,6 @@
           </logicalFolder>
           <logicalFolder name="ports" displayName="ports" projectFiles="true">
             <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/ports/sys_ports.h</itemPath>
-          </logicalFolder>
-          <logicalFolder name="tmr" displayName="tmr" projectFiles="true">
-            <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/tmr/sys_tmr.h</itemPath>
           </logicalFolder>
           <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/system.h</itemPath>
         </logicalFolder>
@@ -135,13 +121,6 @@
       </logicalFolder>
       <logicalFolder name="framework" displayName="framework" projectFiles="true">
         <logicalFolder name="driver" displayName="driver" projectFiles="true">
-          <logicalFolder name="tmr" displayName="tmr" projectFiles="true">
-            <logicalFolder name="src" displayName="src" projectFiles="true">
-              <logicalFolder name="dynamic" displayName="dynamic" projectFiles="true">
-                <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/driver/tmr/src/dynamic/drv_tmr.c</itemPath>
-              </logicalFolder>
-            </logicalFolder>
-          </logicalFolder>
           <logicalFolder name="usb" displayName="usb" projectFiles="true">
             <logicalFolder name="usbfs" displayName="usbfs" projectFiles="true">
               <logicalFolder name="src" displayName="src" projectFiles="true">
@@ -154,12 +133,6 @@
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="system" displayName="system" projectFiles="true">
-          <logicalFolder name="console" displayName="console" projectFiles="true">
-            <logicalFolder name="src" displayName="src" projectFiles="true">
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/console/src/sys_console.c</itemPath>
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/console/src/sys_console_usb_cdc.c</itemPath>
-            </logicalFolder>
-          </logicalFolder>
           <logicalFolder name="devcon" displayName="devcon" projectFiles="true">
             <logicalFolder name="src" displayName="src" projectFiles="true">
               <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/devcon/src/sys_devcon.c</itemPath>
@@ -174,11 +147,6 @@
           <logicalFolder name="ports" displayName="ports" projectFiles="true">
             <logicalFolder name="src" displayName="src" projectFiles="true">
               <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/ports/src/sys_ports.c</itemPath>
-            </logicalFolder>
-          </logicalFolder>
-          <logicalFolder name="tmr" displayName="tmr" projectFiles="true">
-            <logicalFolder name="src" displayName="src" projectFiles="true">
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/tmr/src/sys_tmr.c</itemPath>
             </logicalFolder>
           </logicalFolder>
         </logicalFolder>
@@ -214,7 +182,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PKOBSKDEPlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.33</languageToolchainVersion>
+        <languageToolchainVersion>1.34</languageToolchainVersion>
         <platform>4</platform>
       </toolsSet>
       <compileType>
@@ -285,7 +253,7 @@
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-cross-reference-file" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
-        <property key="heap-size" value="2048"/>
+        <property key="heap-size" value="0"/>
         <property key="input-libraries" value=""/>
         <property key="linker-symbols" value=""/>
         <property key="map-file" value="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map"/>
