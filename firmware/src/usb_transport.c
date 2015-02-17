@@ -312,3 +312,11 @@ bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
 bool USBTransport_WritePending() {
   return g_usb_transport_data.tx_in_progress;
 }
+
+USB_DEVICE_HANDLE USBTransport_GetHandle() {
+  return g_usb_transport_data.usb_device;
+}
+
+bool USBTransport_IsConfigured() {
+  return g_usb_transport_data.is_configured;
+}

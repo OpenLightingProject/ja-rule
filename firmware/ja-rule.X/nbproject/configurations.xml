@@ -31,6 +31,8 @@
         <itemPath>../src/logger_private.h</itemPath>
         <itemPath>../src/flags.h</itemPath>
         <itemPath>../src/usb_transport.h</itemPath>
+        <itemPath>../src/syslog.h</itemPath>
+        <itemPath>../src/usb_console.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -121,6 +123,8 @@
         <itemPath>../src/stream_decoder.c</itemPath>
         <itemPath>../src/flags.c</itemPath>
         <itemPath>../src/usb_transport.c</itemPath>
+        <itemPath>../src/syslog.c</itemPath>
+        <itemPath>../src/usb_console.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"

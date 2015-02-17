@@ -168,7 +168,7 @@ const uint8_t fullSpeedConfigurationDescriptor1[] = {
 
   0x09, // Size of this descriptor in bytes
   USB_DESCRIPTOR_CONFIGURATION, // CONFIGURATION descriptor type
-  0x62, 0x00, // Total length of data for this cfg
+  0x5a, 0x00, // Total length of data for this cfg
   3, // Number of interfaces in this cfg
   1, // Index value of this configuration
   0, // Configuration string index
@@ -176,7 +176,7 @@ const uint8_t fullSpeedConfigurationDescriptor1[] = {
   50, // Max power consumption (2X mA)
 
   /* Interface Association Descriptor: CDC Function 1*/
-
+/*
   0x08, // Size of this descriptor in bytes
   0x0B, // Interface assocication descriptor type
   0x00, // The first associated interface
@@ -185,6 +185,7 @@ const uint8_t fullSpeedConfigurationDescriptor1[] = {
   0x02, // bInterfaceSubclass of the first interface
   0x01, // bInterfaceProtocol of the first interface
   0x00, // Interface string index
+  */
 
   /* Interface Descriptor */
 
@@ -213,14 +214,14 @@ const uint8_t fullSpeedConfigurationDescriptor1[] = {
   sizeof(USB_CDC_UNION_FUNCTIONAL_DESCRIPTOR_HEADER) + 1, // Size of the descriptor
   USB_CDC_DESC_CS_INTERFACE, // CS_INTERFACE
   USB_CDC_FUNCTIONAL_UNION, // Type of functional descriptor
-  0x01, // Communication interface number
-  0x02, // Data Interface Number
+  0x00, // Communication interface number
+  0x01, // Data Interface Number
 
   sizeof(USB_CDC_CALL_MANAGEMENT_DESCRIPTOR), // Size of the descriptor
   USB_CDC_DESC_CS_INTERFACE, // CS_INTERFACE
   USB_CDC_FUNCTIONAL_CALL_MANAGEMENT, // Type of functional descriptor
   0x00, // bmCapabilities of CallManagement
-  0x02, // Data interface number
+  0x01, // Data interface number
 
   /* Interrupt Endpoint (IN)Descriptor */
 
@@ -486,16 +487,7 @@ const SYS_DEVCON_INIT sysDevconInit = {
 //<editor-fold defaultstate="collapsed" desc="SYS_CONSOLE Configuration">
 /*** System Console Initialization Data ***/
 
-SYS_MODULE_OBJ sysConsoleObjects[] = {SYS_MODULE_OBJ_INVALID};
 
-/* Declared in console device implementation (sys_console_usb_cdc.c) */
-extern SYS_CONSOLE_DEV_DESC consUsbCdcDevDesc;
-
-SYS_CONSOLE_INIT consUsbInit0 = {
-  .moduleInit =
-  {0},
-  .consDevDesc = &consUsbCdcDevDesc,
-};
 // </editor-fold>
 
 // *****************************************************************************
@@ -545,8 +537,6 @@ void SYS_Initialize(void* data) {
 
   /* Initialize System Services */
   SYS_INT_Initialize();
-  sysObj.sysConsole0 = SYS_CONSOLE_Initialize(SYS_CONSOLE_INDEX_0, (SYS_MODULE_INIT *) & consUsbInit0);
-
 
   /*** TMR Service Initialization Code ***/
   sysObj.sysTmr = SYS_TMR_Initialize(SYS_TMR_INDEX_0, (const SYS_MODULE_INIT * const) &sysTmrInitData);

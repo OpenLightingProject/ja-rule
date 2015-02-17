@@ -35,6 +35,10 @@ extern "C" {
 #define PIPELINE_HANDLE_MESSAGE(message) \
   MessageHandler_HandleMessage(message);
 
+
+#define PIPELINE_LOG_WRITE(message) \
+  USBConsole_Log(message);
+  
 #ifdef __cplusplus
 }
 #endif

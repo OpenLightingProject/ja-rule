@@ -16,14 +16,16 @@
  * @brief A USB Transport
  */
 
-#ifndef SRC_USB_TRANSPORT_H_
-#define SRC_USB_TRANSPORT_H_
+#ifndef FIRMWARE_SRC_USB_TRANSPORT_H_
+#define FIRMWARE_SRC_USB_TRANSPORT_H_
 
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "constants.h"
 #include "transport.h"
+#include "system_definitions.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -66,11 +68,23 @@ bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
  */
 bool USBTransport_WritePending();
 
+/**
+ * @brief Return the USB Device handle.
+ * @returns The device handle or USB_DEVICE_HANDLE_INVALID.
+ */
+USB_DEVICE_HANDLE USBTransport_GetHandle();
+
+/**
+ * @brief Check if the USB driver is configured.
+ * @returns true if the device if configured, false otherwise.
+ */
+bool USBTransport_IsConfigured();
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // SRC_USB_TRANSPORT_H_
+#endif  // FIRMWARE_SRC_USB_TRANSPORT_H_
 
 /**
  * @}
