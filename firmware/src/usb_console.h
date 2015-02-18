@@ -7,7 +7,7 @@
  * @addtogroup logging
  * @{
  * @file usb_console.h
- * @brief An logging transport that uses a USB serial console.
+ * @brief A logging transport that uses a USB serial console.
  *
  * This module is an implementation of the logging transport, that uses a CDC
  * USB device (serial console). This has the advantage of allowing users to

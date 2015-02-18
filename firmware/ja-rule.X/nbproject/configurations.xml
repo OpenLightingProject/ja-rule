@@ -38,35 +38,35 @@
         <logicalFolder name="pic32mx_eth_sk2"
                        displayName="pic32mx_eth_sk2"
                        projectFiles="true">
-          <itemPath>../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2/bsp_config.h</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2/bsp_config.h</itemPath>
         </logicalFolder>
       </logicalFolder>
       <logicalFolder name="framework" displayName="framework" projectFiles="true">
         <logicalFolder name="driver" displayName="driver" projectFiles="true">
           <logicalFolder name="usb" displayName="usb" projectFiles="true">
-            <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/driver/usb/drv_usb.h</itemPath>
+            <itemPath>/opt/microchip/harmony/v1_02/framework/driver/usb/drv_usb.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="system" displayName="system" projectFiles="true">
           <logicalFolder name="common" displayName="common" projectFiles="true">
-            <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/common/sys_common.h</itemPath>
-            <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/common/sys_module.h</itemPath>
+            <itemPath>/opt/microchip/harmony/v1_02/framework/system/common/sys_common.h</itemPath>
+            <itemPath>/opt/microchip/harmony/v1_02/framework/system/common/sys_module.h</itemPath>
           </logicalFolder>
           <logicalFolder name="devcon" displayName="devcon" projectFiles="true">
-            <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/devcon/sys_devcon.h</itemPath>
+            <itemPath>/opt/microchip/harmony/v1_02/framework/system/devcon/sys_devcon.h</itemPath>
           </logicalFolder>
           <logicalFolder name="int" displayName="int" projectFiles="true">
-            <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/int/sys_int.h</itemPath>
+            <itemPath>/opt/microchip/harmony/v1_02/framework/system/int/sys_int.h</itemPath>
           </logicalFolder>
           <logicalFolder name="ports" displayName="ports" projectFiles="true">
-            <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/ports/sys_ports.h</itemPath>
+            <itemPath>/opt/microchip/harmony/v1_02/framework/system/ports/sys_ports.h</itemPath>
           </logicalFolder>
-          <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/system.h</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_02/framework/system/system.h</itemPath>
         </logicalFolder>
         <logicalFolder name="usb" displayName="usb" projectFiles="true">
-          <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/usb/usb_device.h</itemPath>
-          <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/usb/usb_cdc.h</itemPath>
-          <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/usb/usb_device_cdc.h</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_02/framework/usb/usb_device.h</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_02/framework/usb/usb_cdc.h</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_02/framework/usb/usb_device_cdc.h</itemPath>
         </logicalFolder>
       </logicalFolder>
     </logicalFolder>
@@ -116,7 +116,7 @@
         <logicalFolder name="pic32mx_eth_sk2"
                        displayName="pic32mx_eth_sk2"
                        projectFiles="true">
-          <itemPath>../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2/bsp_sys_init.c</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2/bsp_sys_init.c</itemPath>
         </logicalFolder>
       </logicalFolder>
       <logicalFolder name="framework" displayName="framework" projectFiles="true">
@@ -125,8 +125,8 @@
             <logicalFolder name="usbfs" displayName="usbfs" projectFiles="true">
               <logicalFolder name="src" displayName="src" projectFiles="true">
                 <logicalFolder name="dynamic" displayName="dynamic" projectFiles="true">
-                  <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/driver/usb/usbfs/src/dynamic/drv_usb.c</itemPath>
-                  <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/driver/usb/usbfs/src/dynamic/drv_usb_device.c</itemPath>
+                  <itemPath>/opt/microchip/harmony/v1_02/framework/driver/usb/usbfs/src/dynamic/drv_usb.c</itemPath>
+                  <itemPath>/opt/microchip/harmony/v1_02/framework/driver/usb/usbfs/src/dynamic/drv_usb_device.c</itemPath>
                 </logicalFolder>
               </logicalFolder>
             </logicalFolder>
@@ -135,28 +135,28 @@
         <logicalFolder name="system" displayName="system" projectFiles="true">
           <logicalFolder name="devcon" displayName="devcon" projectFiles="true">
             <logicalFolder name="src" displayName="src" projectFiles="true">
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/devcon/src/sys_devcon.c</itemPath>
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/devcon/src/sys_devcon_pic32mx.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_02/framework/system/devcon/src/sys_devcon.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_02/framework/system/devcon/src/sys_devcon_pic32mx.c</itemPath>
             </logicalFolder>
           </logicalFolder>
           <logicalFolder name="int" displayName="int" projectFiles="true">
             <logicalFolder name="src" displayName="src" projectFiles="true">
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/int/src/sys_int_pic32.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_02/framework/system/int/src/sys_int_pic32.c</itemPath>
             </logicalFolder>
           </logicalFolder>
           <logicalFolder name="ports" displayName="ports" projectFiles="true">
             <logicalFolder name="src" displayName="src" projectFiles="true">
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/system/ports/src/sys_ports.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_02/framework/system/ports/src/sys_ports.c</itemPath>
             </logicalFolder>
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="usb" displayName="usb" projectFiles="true">
           <logicalFolder name="src" displayName="src" projectFiles="true">
             <logicalFolder name="dynamic" displayName="dynamic" projectFiles="true">
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device.c</itemPath>
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_cdc.c</itemPath>
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_cdc_acm.c</itemPath>
-              <itemPath>../../../../../../opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_endpoint_functions.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_cdc.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_cdc_acm.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_endpoint_functions.c</itemPath>
             </logicalFolder>
           </logicalFolder>
         </logicalFolder>
@@ -182,13 +182,13 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PKOBSKDEPlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.34</languageToolchainVersion>
+        <languageToolchainVersion>1.33</languageToolchainVersion>
         <platform>4</platform>
       </toolsSet>
       <compileType>
         <linkerTool>
           <linkerLibItems>
-            <linkerLibFileItem>../../../../../../opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
+            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -216,7 +216,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../src/system_config/mx_795_512l;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;../../../../../../opt/microchip/harmony/v1_02/framework;../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
+                  value="../src;../src/system_config/mx_795_512l;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>

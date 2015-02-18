@@ -14,6 +14,16 @@
 // The number of TX buffers we maintain for overlapping I/O
 #define NUMBER_OF_TX_BUFFERS 3
 
+typedef enum {
+  DMX_IDLE,
+  DMX_BREAK,
+  DMX_IN_BREAK,
+  DMX_MARK,
+  DMX_IN_MARK,
+  DMX_BEGIN_TX,
+  DMX_TX
+} DMXState;
+
 typedef struct {
   int size;
   uint8_t data[DMX_FRAME_SIZE];
@@ -28,38 +38,71 @@ typedef struct {
   // The number of items on the free list.
   // Must be > 0.
   uint8_t free_size;
+
+  DMXState state;
+
 } DMXData;
 
 TXBuffer buffers[NUMBER_OF_TX_BUFFERS];
 
-DMXData dmx_data;
+DMXData g_dmx;
 
 void DMX_Initialize() {
   int i;
-  dmx_data.tx = NULL;
-  dmx_data.next = NULL;
-  dmx_data.working = NULL;
+  g_dmx.tx = NULL;
+  g_dmx.next = NULL;
+  g_dmx.working = NULL;
   for (i = 0; i < NUMBER_OF_TX_BUFFERS; i++) {
-    dmx_data.free_list[i] = &buffers[i];
+    g_dmx.free_list[i] = &buffers[i];
   }
-  dmx_data.free_size = NUMBER_OF_TX_BUFFERS;
+  g_dmx.free_size = NUMBER_OF_TX_BUFFERS;
+
+  g_dmx.state = DMX_IDLE;
+
+  /*
+  // TX UART configuration
+  UARTConfigure(DMX_TX_UART, UART_ENABLE_PINS_TX_RX_ONLY);
+  // FPB = 80Mhz, Baud Rate = 250kHz. Low speed mode (16x) gives BRG = 19.0
+  UARTSetDataRate(DMX_TX_UART, pb_clock, DMX_FREQ);
+  UARTSetLineControl(DMX_TX_UART,
+                     UART_DATA_SIZE_8_BITS | UART_PARITY_NONE |
+                     UART_STOP_BITS_2);
+
+  INTSetVectorPriority(INT_VECTOR_UART(DMX_TX_UART), INT_PRIORITY_LEVEL_6);
+  INTSetVectorSubPriority(INT_VECTOR_UART(DMX_TX_UART), INT_SUB_PRIORITY_LEVEL_0);
+  UARTSetFifoMode(DMX_TX_UART,
+                  UART_INTERRUPT_ON_TX_BUFFER_EMPTY |
+                  UART_INTERRUPT_ON_RX_3_QUARTER_FULL);
+  INTClearFlag(INT_U1TX);
+  */
 }
 
 void DMX_Tasks() {
+  switch (g_dmx.state) {
+    case DMX_IDLE:
+    case DMX_BREAK:
+    case DMX_IN_BREAK:
+    case DMX_MARK:
+    case DMX_IN_MARK:
+    case DMX_BEGIN_TX:
+    case DMX_TX
+
+  }
+
   // Dummy implementation.
-  if (dmx_data.tx == NULL) {
+  if (g_dmx.tx == NULL) {
     // Move next to tx
     // 'Start sending'
-    if (dmx_data.next) {
-      dmx_data.tx = dmx_data.next;
-      dmx_data.next = NULL;
+    if (g_dmx.next) {
+      g_dmx.tx = g_dmx.next;
+      g_dmx.next = NULL;
       BSP_LEDToggle(BSP_LED_3);
     }
   } else {
     // 'complete sending'
-    dmx_data.free_list[dmx_data.free_size - 1] = dmx_data.tx;
-    dmx_data.free_size++;
-    dmx_data.tx = NULL;
+    g_dmx.free_list[g_dmx.free_size - 1] = g_dmx.tx;
+    g_dmx.free_size++;
+    g_dmx.tx = NULL;
     BSP_LEDToggle(BSP_LED_3);
 
   }
@@ -67,21 +110,21 @@ void DMX_Tasks() {
 
 void DMX_BeginFrame(uint8_t start_code, const uint8_t* data,
                     unsigned int size) {
-  if (dmx_data.working == NULL) {
-    dmx_data.working = dmx_data.free_list[dmx_data.free_size - 1];
-    dmx_data.free_size--;
+  if (g_dmx.working == NULL) {
+    g_dmx.working = g_dmx.free_list[g_dmx.free_size - 1];
+    g_dmx.free_size--;
   }
-  dmx_data.working->size = size;
-  memcpy(dmx_data.working->data, data, size);
+  g_dmx.working->size = size;
+  memcpy(g_dmx.working->data, data, size);
 }
 
 void DMX_FinalizeFrame() {
-  if (!dmx_data.working) {
+  if (!g_dmx.working) {
     return;
   }
 
-  if (dmx_data.next) {
-    dmx_data.free_list[dmx_data.free_size] = dmx_data.next;
+  if (g_dmx.next) {
+    g_dmx.free_list[g_dmx.free_size] = g_dmx.next;
   }
-  dmx_data.next = dmx_data.working;
+  g_dmx.next = g_dmx.working;
 }

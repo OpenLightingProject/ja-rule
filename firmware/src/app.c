@@ -15,6 +15,7 @@
 void APP_Initialize(void) {
   DMX_Initialize();
   Flags_Initialize();
+  // TODO: simon: remove this.
   Logger_Initialize(NULL, PAYLOAD_SIZE);
   SysLog_Initialize(NULL);
   MessageHandler_Initialize(NULL);
