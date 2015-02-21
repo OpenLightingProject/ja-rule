@@ -4,10 +4,6 @@
   <ForceOptimization flag="true"/>
   <Files>
     <File>
-      <Name>driver.h</Name>
-      <Path>/framework/driver</Path>
-    </File>
-    <File>
       <Name>bsp_sys_init.c</Name>
       <Path>/bsp/pic32mx_eth_sk2</Path>
     </File>
@@ -68,10 +64,6 @@
       <Path>/framework/system/ports</Path>
     </File>
     <File>
-      <Name>drv_tmr.c</Name>
-      <Path>/framework/driver/tmr/src/dynamic</Path>
-    </File>
-    <File>
       <Name>sys_devcon.c</Name>
       <Path>/framework/system/devcon/src</Path>
     </File>
@@ -82,10 +74,6 @@
     <File>
       <Name>sys_devcon_pic32mx.c</Name>
       <Path>/framework/system/devcon/src</Path>
-    </File>
-    <File>
-      <Name>drv_tmr.h</Name>
-      <Path>/framework/driver/tmr</Path>
     </File>
     <File>
       <Name>system.h</Name>
@@ -108,7 +96,7 @@
     <Template>
       <Name>system_config.h</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>151DA732D19A4D75A3DB0FADE6707CF0</Checksum>
+      <Checksum>DB19ED7C0CE933274AD1C73BBF39861D</Checksum>
     </Template>
     <Template>
       <Name>app.c</Name>
@@ -117,7 +105,7 @@
     <Template>
       <Name>system_init.c</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>D5397EB02DA58ED449E139EF682646B1</Checksum>
+      <Checksum>3F0B7B204E35131326DA29C3BD33B02F</Checksum>
     </Template>
     <Template>
       <Name>app.h</Name>
@@ -131,7 +119,7 @@
     <Template>
       <Name>system_tasks.c</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>713F3D21B4CC2CBDFA0E12E394FBA572</Checksum>
+      <Checksum>0BEE6C40D29196D89B516A74D8798052</Checksum>
     </Template>
     <Template>
       <Name>main.c</Name>
@@ -145,12 +133,12 @@
     <Template>
       <Name>system_interrupt.c</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>8253A1490B0AFA11801D0A0CCC5083A0</Checksum>
+      <Checksum>904BC56B47D5CCC0DCED63BE72010D32</Checksum>
     </Template>
     <Template>
       <Name>system_definitions.h</Name>
       <Path>/app/system_config/mx_795_512l</Path>
-      <Checksum>867282F7F94CB6417B17614D5A736186</Checksum>
+      <Checksum>63BCE17795F732A4187E5ECCEC780D17</Checksum>
     </Template>
     <Template>
       <Name>sys_clk_static.h</Name>

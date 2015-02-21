@@ -43,13 +43,9 @@
       </logicalFolder>
       <logicalFolder name="framework" displayName="framework" projectFiles="true">
         <logicalFolder name="driver" displayName="driver" projectFiles="true">
-          <logicalFolder name="tmr" displayName="tmr" projectFiles="true">
-            <itemPath>/opt/microchip/harmony/v1_02/framework/driver/tmr/drv_tmr.h</itemPath>
-          </logicalFolder>
           <logicalFolder name="usb" displayName="usb" projectFiles="true">
             <itemPath>/opt/microchip/harmony/v1_02/framework/driver/usb/drv_usb.h</itemPath>
           </logicalFolder>
-          <itemPath>/opt/microchip/harmony/v1_02/framework/driver/driver.h</itemPath>
         </logicalFolder>
         <logicalFolder name="system" displayName="system" projectFiles="true">
           <logicalFolder name="common" displayName="common" projectFiles="true">
@@ -125,13 +121,6 @@
       </logicalFolder>
       <logicalFolder name="framework" displayName="framework" projectFiles="true">
         <logicalFolder name="driver" displayName="driver" projectFiles="true">
-          <logicalFolder name="tmr" displayName="tmr" projectFiles="true">
-            <logicalFolder name="src" displayName="src" projectFiles="true">
-              <logicalFolder name="dynamic" displayName="dynamic" projectFiles="true">
-                <itemPath>/opt/microchip/harmony/v1_02/framework/driver/tmr/src/dynamic/drv_tmr.c</itemPath>
-              </logicalFolder>
-            </logicalFolder>
-          </logicalFolder>
           <logicalFolder name="usb" displayName="usb" projectFiles="true">
             <logicalFolder name="usbfs" displayName="usbfs" projectFiles="true">
               <logicalFolder name="src" displayName="src" projectFiles="true">
@@ -201,6 +190,7 @@
           <linkerLibItems>
             <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
             <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
+            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -228,7 +218,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../src/system_config/mx_795_512l;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
+                  value="../src;../src/system_config/mx_795_512l;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/framework;../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
