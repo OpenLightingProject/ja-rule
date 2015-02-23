@@ -3,8 +3,8 @@
  * Author: Simon Newton
  */
 
-#ifndef SRC_CONSTANTS_H_
-#define SRC_CONSTANTS_H_
+#ifndef FIRMWARE_SRC_CONSTANTS_H_
+#define FIRMWARE_SRC_CONSTANTS_H_
 
 // *****************************************************************************
 // USB specific constants
@@ -38,6 +38,15 @@
 // The Null Start Code (NSC).
 #define NULL_START_CODE 0x00
 
+// The Baud rate for DMX / RDM.
+#define DMX_BAUD 250000     // 250kHz
+
+// *****************************************************************************
+// RDM specific constants
+// *****************************************************************************
+
+#define RDM_START_CODE 0xcc
+
 // *****************************************************************************
 // Protocol specific constants
 // *****************************************************************************
@@ -50,7 +59,10 @@ typedef enum {
   TX_DMX = 0x81,
   GET_LOG = 0x82,
   GET_FLAGS = 0x83,
-  WRITE_LOG = 0x84
+  WRITE_LOG = 0x84,
+  COMMAND_RESET_DEVICE = 0x85,
+  COMMAND_RDM_DUB_REQUEST = 0x86,
+  COMMANE_RDM_REQUEST = 0x87
 } Command;
 
 typedef enum {
@@ -67,5 +79,5 @@ typedef enum {
 // The maximum data payload size
 #define PAYLOAD_SIZE 513
 
-#endif  // SRC_CONSTANTS_H_
+#endif  // FIRMWARE_SRC_CONSTANTS_H_
 

@@ -22,7 +22,7 @@ typedef struct {
 SysLogData g_syslog;
 
 void SysLog_Initialize(SysLogWriteFn write_fn) {
-  g_syslog.log_level = SYSLOG_WARN;
+  g_syslog.log_level = SYSLOG_INFO;
   g_syslog.write_fn = write_fn;
 }
 

@@ -11,6 +11,7 @@
 #include "logger.h"
 #include "system_definitions.h"
 #include "system_pipeline.h"
+#include "syslog.h"
 
 #ifndef PIPELINE_TRANSPORT_TX
 static TransportTXFunction g_message_tx_cb;
@@ -52,8 +53,7 @@ void MessageHandler_HandleMessage(const Message *message) {
       MessageHandler_Echo(message);
       break;
     case TX_DMX:
-      DMX_BeginFrame(NULL_START_CODE, message->payload, message->length);
-      DMX_FinalizeFrame();
+      DMX_QueueDMX(message->payload, message->length);
       SendMessage(TX_DMX, RC_OK, NULL, 0);
       break;
     case GET_LOG:
@@ -65,6 +65,20 @@ void MessageHandler_HandleMessage(const Message *message) {
     case WRITE_LOG:
       MessageHandler_WriteLog(message);
       SendMessage(WRITE_LOG, RC_OK, NULL, 0);
+      break;
+    case COMMAND_RESET_DEVICE:
+      APP_Reset();
+      SendMessage(COMMAND_RESET_DEVICE, RC_OK, NULL, 0);
+      break;
+    case COMMAND_RDM_DUB_REQUEST:
+      DMX_QueueDUB(message->payload, message->length);
+      // TODO(simon): Send the actual response here
+      SendMessage(COMMAND_RDM_DUB_REQUEST, RC_OK, NULL, 0);
+      break;
+    case COMMANE_RDM_REQUEST:
+      DMX_QueueRDMRequest(message->payload, message->length);
+      // TODO(simon): Send the actual response here
+      SendMessage(COMMANE_RDM_REQUEST, RC_OK, NULL, 0);
       break;
     default:
       // Just echo the command code back if we don't understand it.

@@ -3,8 +3,8 @@
  * Author: Simon Newton
  */
 
-#ifndef SRC_DMX_H_
-#define SRC_DMX_H_
+#ifndef FIRMWARE_SRC_DMX_H_
+#define FIRMWARE_SRC_DMX_H_
 
 #include <stdint.h>
 
@@ -28,16 +28,22 @@ void DMX_Tasks();
  * @param data The DMX data in the frame. May be partial data.
  * @param size The size o
  */
-void DMX_BeginFrame(uint8_t start_code, const uint8_t* data, unsigned int size);
+void DMX_QueueDMX(const uint8_t* data, unsigned int size);
+
+
+void DMX_QueueDUB(const uint8_t* data, unsigned int size);
+
+void DMX_QueueRDMRequest(const uint8_t* data, unsigned int size);
+
 
 /**
  * @brief
  */
-void DMX_FinalizeFrame();
+void DMX_Reset();
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // SRC_DMX_H_
+#endif  // FIRMWARE_SRC_DMX_H_
 
