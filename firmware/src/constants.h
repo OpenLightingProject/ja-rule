@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   constants.h
  * Author: Simon Newton
  */
@@ -39,7 +39,7 @@
 #define NULL_START_CODE 0x00
 
 // The Baud rate for DMX / RDM.
-#define DMX_BAUD 250000     // 250kHz
+#define DMX_BAUD 250000 // 250kHz
 
 // *****************************************************************************
 // RDM specific constants

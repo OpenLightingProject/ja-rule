@@ -19,10 +19,10 @@
             <itemPath>../src/system_config/mx_795_512l/system_pipeline.h</itemPath>
             <itemPath>../src/system_config/mx_795_512l/system_config.h</itemPath>
             <itemPath>../src/system_config/mx_795_512l/system_definitions.h</itemPath>
+            <itemPath>../src/system_config/mx_795_512l/system_settings.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../src/app.h</itemPath>
-        <itemPath>../src/dmx.h</itemPath>
         <itemPath>../src/constants.h</itemPath>
         <itemPath>../src/logger.h</itemPath>
         <itemPath>../src/message_handler.h</itemPath>
@@ -33,6 +33,7 @@
         <itemPath>../src/usb_transport.h</itemPath>
         <itemPath>../src/syslog.h</itemPath>
         <itemPath>../src/usb_console.h</itemPath>
+        <itemPath>../src/transceiver.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -103,7 +104,6 @@
         </logicalFolder>
         <itemPath>../src/app.c</itemPath>
         <itemPath>../src/main.c</itemPath>
-        <itemPath>../src/dmx.c</itemPath>
         <itemPath>../src/logger.c</itemPath>
         <itemPath>../src/message_handler.c</itemPath>
         <itemPath>../src/stream_decoder.c</itemPath>
@@ -111,6 +111,7 @@
         <itemPath>../src/usb_transport.c</itemPath>
         <itemPath>../src/syslog.c</itemPath>
         <itemPath>../src/usb_console.c</itemPath>
+        <itemPath>../src/transceiver.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"

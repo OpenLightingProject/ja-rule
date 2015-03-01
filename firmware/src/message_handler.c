@@ -6,12 +6,12 @@
 #include "message_handler.h"
 
 #include "constants.h"
-#include "dmx.h"
 #include "flags.h"
 #include "logger.h"
+#include "syslog.h"
 #include "system_definitions.h"
 #include "system_pipeline.h"
-#include "syslog.h"
+#include "transceiver.h"
 
 #ifndef PIPELINE_TRANSPORT_TX
 static TransportTXFunction g_message_tx_cb;
@@ -53,7 +53,7 @@ void MessageHandler_HandleMessage(const Message *message) {
       MessageHandler_Echo(message);
       break;
     case TX_DMX:
-      DMX_QueueDMX(message->payload, message->length);
+      Transceiver_QueueDMX(message->payload, message->length);
       SendMessage(TX_DMX, RC_OK, NULL, 0);
       break;
     case GET_LOG:
@@ -71,12 +71,12 @@ void MessageHandler_HandleMessage(const Message *message) {
       SendMessage(COMMAND_RESET_DEVICE, RC_OK, NULL, 0);
       break;
     case COMMAND_RDM_DUB_REQUEST:
-      DMX_QueueDUB(message->payload, message->length);
+      Transceiver_QueueDUB(message->payload, message->length);
       // TODO(simon): Send the actual response here
       SendMessage(COMMAND_RDM_DUB_REQUEST, RC_OK, NULL, 0);
       break;
     case COMMANE_RDM_REQUEST:
-      DMX_QueueRDMRequest(message->payload, message->length);
+      Transceiver_QueueRDMRequest(message->payload, message->length);
       // TODO(simon): Send the actual response here
       SendMessage(COMMANE_RDM_REQUEST, RC_OK, NULL, 0);
       break;
