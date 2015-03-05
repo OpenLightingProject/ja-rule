@@ -12,6 +12,8 @@
 #include "system_definitions.h"
 
 #define USB_CONSOLE_BUFFER_SIZE 1024
+//#define USB_CONSOLE_BUFFER_SIZE 70
+
 
 // USB Device CDC Read Buffer Size. This should be a multiple of the CDC
 // Bulk Endpoint size
@@ -269,7 +271,7 @@ void USBConsole_Tasks() {
       if (g_usb_console.write.read >= USB_CONSOLE_BUFFER_SIZE) {
         g_usb_console.write.read = 0;
       }
-      if (g_usb_console.write.write == g_usb_console.write.write) {
+      if (g_usb_console.write.read == g_usb_console.write.write) {
         g_usb_console.write.write = 0;
         g_usb_console.write.read = -1;
       }
