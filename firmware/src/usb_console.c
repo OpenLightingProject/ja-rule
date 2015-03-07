@@ -22,8 +22,14 @@
 // USB Device CDC Write Buffer Size.
 #define USB_CONSOLE_WRITE_BUFFER_SIZE 64
 
+// This needs to be a \r\n otherwise it doesn't display correctly in minicom on
+// Linux.
+static const char LOG_TERMINATOR[] = "\r\n";
+static const int LOG_TERMINATOR_SIZE = sizeof(LOG_TERMINATOR) - 1;
+
 typedef enum {
   READ_STATE_WAIT_FOR_CONFIGURATION,
+  READ_STATE_WAIT_FOR_CARRIER,
   READ_STATE_SCHEDULE_READ,
   READ_STATE_WAIT_FOR_READ_COMPLETE,
   READ_STATE_READ_COMPLETE,
@@ -32,6 +38,7 @@ typedef enum {
 
 typedef enum {
   WRITE_STATE_WAIT_FOR_CONFIGURATION,
+  WRITE_STATE_WAIT_FOR_CARRIER,
   WRITE_STATE_WAIT_FOR_DATA,
   WRITE_STATE_WAIT_FOR_WRITE_COMPLETE,
   WRITE_STATE_WRITE_COMPLETE,
@@ -66,10 +73,33 @@ typedef struct {
   USB_DEVICE_CDC_TRANSFER_HANDLE write_handle;
   CircularBuffer write;
   // The size of the last CDC write.
-  uint8_t write_size;
+  unsigned int write_size;
 } USBConsoleData;
 
 USBConsoleData g_usb_console;
+
+static uint16_t USBConsole_SpaceRemaining() {
+  int16_t remaining = USB_CONSOLE_BUFFER_SIZE;
+  if (g_usb_console.write.read != -1) {
+    if (g_usb_console.write.read < g_usb_console.write.write) {
+      remaining -= (g_usb_console.write.write - g_usb_console.write.read);
+    } else {
+      remaining -= (g_usb_console.write.write + g_usb_console.write.read);
+    }
+  }
+  return remaining;
+}
+
+void USBConsole_AbortTransfers() {
+  // TODO(simon): Fix this. There seems to be some internal state that isn't
+  // reset correctly. Re-enumerating the USB works but cancelling the IRPs
+  // doesn't that isn't reset correctly. Re-enumerating the USB works but
+  // cancelling the IRPs doesn't
+  USB_DEVICE_IRPCancelAll(USBTransport_GetHandle(), 0x03);
+  USB_DEVICE_IRPCancelAll(USBTransport_GetHandle(), 0x83);
+  g_usb_console.write.read = -1;
+  g_usb_console.write.write = 0;
+}
 
 /*
  * @brief This is called by the Harmony CDC module when CDC events occur.
@@ -83,7 +113,7 @@ USB_DEVICE_CDC_EVENT_RESPONSE USBConsole_CDCEventHandler(
     return USB_DEVICE_CDC_EVENT_RESPONSE_NONE;
   }
 
-  USB_CDC_CONTROL_LINE_STATE * control_line_state;
+  USB_CDC_CONTROL_LINE_STATE* line_state;
   switch (event) {
     case USB_DEVICE_CDC_EVENT_GET_LINE_CODING:
       // The host wants to know the current line coding. This is a control
@@ -102,9 +132,22 @@ USB_DEVICE_CDC_EVENT_RESPONSE USBConsole_CDCEventHandler(
 
     case USB_DEVICE_CDC_EVENT_SET_CONTROL_LINE_STATE:
       // This means the host is setting the control line state.
-      control_line_state = (USB_CDC_CONTROL_LINE_STATE *) event_data;
-      g_usb_console.control_line_state.dtr = control_line_state->dtr;
-      g_usb_console.control_line_state.carrier = control_line_state->carrier;
+      line_state = (USB_CDC_CONTROL_LINE_STATE *) event_data;
+      g_usb_console.control_line_state.dtr = line_state->dtr;
+      if (g_usb_console.control_line_state.carrier != line_state->carrier) {
+        // The carrier state changed.
+        if (line_state->carrier) {
+          // Host connect
+          g_usb_console.write_state = WRITE_STATE_WAIT_FOR_DATA;
+          g_usb_console.read_state = READ_STATE_SCHEDULE_READ;
+        } else {
+          // Host disconnect
+          // USBConsole_AbortTransfers();
+          g_usb_console.write_state = WRITE_STATE_WAIT_FOR_CARRIER;
+          g_usb_console.read_state = READ_STATE_WAIT_FOR_CARRIER;
+        }
+        g_usb_console.control_line_state.carrier = line_state->carrier;
+      }
       USB_DEVICE_ControlStatus(USBTransport_GetHandle(),
                                USB_DEVICE_CONTROL_STATUS_OK);
       break;
@@ -117,6 +160,7 @@ USB_DEVICE_CDC_EVENT_RESPONSE USBConsole_CDCEventHandler(
       g_usb_console.read_state = READ_STATE_READ_COMPLETE;
       g_usb_console.read_length =
           ((USB_DEVICE_CDC_EVENT_DATA_READ_COMPLETE *) event_data)->length;
+      g_usb_console.read_handle = USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID;
       break;
 
     case USB_DEVICE_CDC_EVENT_CONTROL_TRANSFER_DATA_RECEIVED:
@@ -132,8 +176,11 @@ USB_DEVICE_CDC_EVENT_RESPONSE USBConsole_CDCEventHandler(
 
     case USB_DEVICE_CDC_EVENT_WRITE_COMPLETE:
       g_usb_console.write_state = WRITE_STATE_WRITE_COMPLETE;
+      g_usb_console.write_handle = USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID;
       break;
 
+    case USB_DEVICE_CDC_EVENT_CONTROL_TRANSFER_ABORTED:
+      break;
     default:
       break;
   }
@@ -161,6 +208,7 @@ void USBConsole_Initialize() {
   g_usb_console.line_coding.bParityType = 0;
   g_usb_console.line_coding.bParityType = 0;
   g_usb_console.line_coding.bDataBits = 8;
+  g_usb_console.control_line_state.carrier = 0;
 
   g_usb_console.read_state = READ_STATE_WAIT_FOR_CONFIGURATION;
   g_usb_console.read_handle = USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID;
@@ -170,23 +218,39 @@ void USBConsole_Initialize() {
   g_usb_console.write_handle = USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID;
   g_usb_console.write.read = -1;
   g_usb_console.write.write = 0;
-  g_usb_console.write_state = 0;
 
   USB_DEVICE_CDC_EventHandlerSet(USB_DEVICE_CDC_INDEX_0,
                                  USBConsole_CDCEventHandler, NULL);
 }
 
+/**
+ *
+ * @pre str is NULL terminated and has at least one non-NULL character.
+ * @pre There is at least 1 byte of space in the buffer.
+ */
+void USBConsole_LogRaw(const char* str) {
+  const char* c = str;
+  while (*c) {
+    if (g_usb_console.write.write == g_usb_console.write.read && c != str) {
+      return;
+    }
+
+    g_usb_console.write.buffer[g_usb_console.write.write++] = *c++;
+    if (g_usb_console.write.write == USB_CONSOLE_BUFFER_SIZE) {
+      g_usb_console.write.write = 0;
+    }
+  }
+}
 void USBConsole_Log(const char* message) {
-  if (!USBTransport_IsConfigured()) {
+  if (g_usb_console.control_line_state.carrier == 0 || *message == 0) {
     return;
   }
 
-  if (g_usb_console.write.write == g_usb_console.write.read) {
-    // Buffer is full
+  int16_t remaining = USBConsole_SpaceRemaining();
+  if (remaining < LOG_TERMINATOR_SIZE) {
+    // There isn't enough room for the terminator characters.
     return;
   }
-  // Include the NULL since we'll need to replace it with a \n
-  unsigned int length = strlen(message) + 1;
 
   if (g_usb_console.write.read < 0) {
     // If the buffer is empty, set the read index, otherwise don't change it.
@@ -194,36 +258,18 @@ void USBConsole_Log(const char* message) {
     g_usb_console.write.write = 0;
   }
 
-  unsigned int dest_size = USB_CONSOLE_BUFFER_SIZE - g_usb_console.write.write;
-  if (dest_size > length) {
-    dest_size = length;
-  }
-  memcpy(g_usb_console.write.buffer + g_usb_console.write.write,
-         message, dest_size);
+  USBConsole_LogRaw(message);
 
-  if (g_usb_console.write.write + dest_size < USB_CONSOLE_BUFFER_SIZE) {
-    g_usb_console.write.write += dest_size;
-    g_usb_console.write.buffer[g_usb_console.write.write - 1] = '\n';
-    return;
+  // We need to terminate with \r\n
+  remaining = USBConsole_SpaceRemaining();
+  if (remaining < LOG_TERMINATOR_SIZE) {
+    g_usb_console.write.write -= LOG_TERMINATOR_SIZE;
+    if (g_usb_console.write.write < 0) {
+      g_usb_console.write.write += USB_CONSOLE_BUFFER_SIZE;
+    }
   }
-
-  // We reached the end of the buffer.
-  if (g_usb_console.write.read == 0) {
-    // No more room, \n terminate.
-    g_usb_console.write.buffer[USB_CONSOLE_BUFFER_SIZE - 1] = '\n';
-    g_usb_console.write.write = 0;
-    return;
-  }
-
-  // Write to the start of the buffer.
-  unsigned int offset = dest_size;
-  dest_size = length - dest_size;
-  if (dest_size > g_usb_console.write.read) {
-    dest_size = g_usb_console.write.read;
-  }
-  memcpy(g_usb_console.write.buffer, message + offset, dest_size);
-  g_usb_console.write.write = dest_size;
-  g_usb_console.write.buffer[g_usb_console.write.write - 1] = '\n';
+  USBConsole_LogRaw(LOG_TERMINATOR);
+  return;
 }
 
 void USBConsole_Tasks() {
@@ -237,8 +283,11 @@ void USBConsole_Tasks() {
       if (!USBTransport_IsConfigured()) {
         break;
       }
-      g_usb_console.write_state = WRITE_STATE_WAIT_FOR_DATA;
-      // Fall through
+      g_usb_console.write_state = WRITE_STATE_WAIT_FOR_CARRIER;
+      break;
+    case WRITE_STATE_WAIT_FOR_CARRIER:
+      // Noop
+      break;
     case WRITE_STATE_WAIT_FOR_DATA:
       if (g_usb_console.write.read != -1) {
         g_usb_console.write_handle = USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID;
@@ -253,14 +302,16 @@ void USBConsole_Tasks() {
         if (g_usb_console.write_size > USB_CONSOLE_WRITE_BUFFER_SIZE) {
           g_usb_console.write_size = USB_CONSOLE_WRITE_BUFFER_SIZE;
         }
-
-        USB_DEVICE_CDC_Write(
+        USB_DEVICE_CDC_RESULT res = USB_DEVICE_CDC_Write(
             USB_DEVICE_CDC_INDEX_0,
             &g_usb_console.write_handle,
             g_usb_console.write.buffer + g_usb_console.write.read,
             g_usb_console.write_size,
             USB_DEVICE_CDC_TRANSFER_FLAGS_DATA_COMPLETE);
-        g_usb_console.write_state = WRITE_STATE_WAIT_FOR_WRITE_COMPLETE;
+        // If there was an error, try again later.
+        if (res == USB_DEVICE_CDC_RESULT_OK) {
+          g_usb_console.write_state = WRITE_STATE_WAIT_FOR_WRITE_COMPLETE;
+        }
       }
       break;
     case WRITE_STATE_WAIT_FOR_WRITE_COMPLETE:
@@ -285,8 +336,11 @@ void USBConsole_Tasks() {
       if (!USBTransport_IsConfigured()) {
         break;
       }
-      g_usb_console.read_state = READ_STATE_SCHEDULE_READ;
-      // Fall through
+      g_usb_console.read_state = READ_STATE_WAIT_FOR_CARRIER;
+      break;
+    case READ_STATE_WAIT_FOR_CARRIER:
+      // Noop
+      break;
     case READ_STATE_SCHEDULE_READ:
       g_usb_console.read_state = READ_STATE_WAIT_FOR_READ_COMPLETE;
       g_usb_console.read_handle = USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID;
