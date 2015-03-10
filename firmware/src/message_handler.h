@@ -17,6 +17,7 @@
 #define SRC_MESSAGE_HANDLER_H_
 
 #include "stream_decoder.h"
+#include "transceiver.h"
 #include "transport.h"
 
 #ifdef __cplusplus
@@ -38,6 +39,11 @@ void MessageHandler_Initialize(TransportTXFunction tx_cb);
  *   Invalidated once the call completes.
  */
 void MessageHandler_HandleMessage(const Message* message);
+
+void MessageHandler_FrameResponse(TransceiverFrameType type,
+                                  TransceiverResult result,
+                                  const uint8_t* data,
+                                  unsigned int length);
 
 #ifdef __cplusplus
 }

@@ -41,9 +41,19 @@ extern "C" {
 #define PIPELINE_HANDLE_MESSAGE(message) \
   MessageHandler_HandleMessage(message);
 
-
+/**
+ * @brief Specifies the function to call to log messages.
+ */
 #define PIPELINE_LOG_WRITE(message) \
   USBConsole_Log(message);
+
+/**
+ * @brief Specifies the function to call when data is received,
+ *
+ * This should either call a function of type TransceiverCallback or undefined.
+ */
+#define PIPELINE_HANDLE_FRAME(type, rc, data, length) \
+  MessageHandler_FrameResponse(type, rc, data, length);
 
 #ifdef __cplusplus
 }
