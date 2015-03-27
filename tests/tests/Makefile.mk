@@ -56,7 +56,7 @@ tests_message_handler_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
 tests_transceiver_test_SOURCES = tests/TransceiverTest.cpp
 tests_transceiver_test_CXXFLAGS = $(TESTING_CXXFLAGS)
 tests_transceiver_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
+                               src/libtransceiver.la \
                                harmony/mocks/libharmonymock.la \
-                               mocks/libsyslogmock.la \
-                               src/libtransceiver.la
+                               mocks/libsyslogmock.la
 
