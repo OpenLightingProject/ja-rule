@@ -45,13 +45,13 @@ tests_usb_transport_test_LDADD = $(TESTING_LIBS) \
 tests_message_handler_test_SOURCES = tests/MessageHandlerTest.cpp
 tests_message_handler_test_CXXFLAGS = $(TESTING_CXXFLAGS)
 tests_message_handler_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
+                                   src/libmessagehandler.la \
                                    mocks/libappmock.la \
                                    mocks/libflagsmock.la \
                                    mocks/libloggermock.la \
                                    mocks/libsyslogmock.la \
                                    mocks/libtransceivermock.la \
-                                   mocks/libtransportmock.la \
-                                   src/libmessagehandler.la
+                                   mocks/libtransportmock.la
 
 tests_transceiver_test_SOURCES = tests/TransceiverTest.cpp
 tests_transceiver_test_CXXFLAGS = $(TESTING_CXXFLAGS)

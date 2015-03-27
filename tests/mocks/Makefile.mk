@@ -1,7 +1,7 @@
 # Mocks
 ##################################################
 
-noinst_LTLIBRARIES += mocks/libappmock.la\
+noinst_LTLIBRARIES += mocks/libappmock.la \
                       mocks/libflagsmock.la \
                       mocks/libloggermock.la \
                       mocks/libmatchers.la \
