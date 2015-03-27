@@ -13,28 +13,29 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DMXMock.h
- * The Mock DMX Engine.
+ * SysLogMock.h
+ * A mock SysLog module.
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef TESTS_MOCKS_DMXMOCK_H_
-#define TESTS_MOCKS_DMXMOCK_H_
+#ifndef TESTS_MOCKS_SYSLOGMOCK_H_
+#define TESTS_MOCKS_SYSLOGMOCK_H_
 
 #include <gmock/gmock.h>
-#include <stdint.h>
 
-#include "dmx.h"
+#include "syslog.h"
 
-class MockDMX {
+class MockSysLog {
  public:
-  MOCK_METHOD0(Initialize, void());
-  MOCK_METHOD0(Tasks, void());
-  MOCK_METHOD3(BeginFrame, void(uint8_t start_code, const uint8_t* data,
-                                unsigned int size));
-  MOCK_METHOD0(FinalizeFrame, void());
+  MOCK_METHOD1(Initialize, void(SysLogWriteFn write_fn));
+  MOCK_METHOD2(Message, void(SysLogLevel level, const char* msg));
+  MOCK_METHOD0(GetLevel, SysLogLevel());
+  MOCK_METHOD1(SetLevel, void(SysLogLevel level));
+  MOCK_METHOD0(Increment, void());
+  MOCK_METHOD0(Decrement, void());
+  MOCK_METHOD1(LevelToString, const char*(SysLogLevel level));
 };
 
-void DMX_SetMock(MockDMX* mock);
+void SysLog_SetMock(MockSysLog* mock);
 
-#endif  // TESTS_MOCKS_DMXMOCK_H_
+#endif  // TESTS_MOCKS_SYSLOGMOCK_H_

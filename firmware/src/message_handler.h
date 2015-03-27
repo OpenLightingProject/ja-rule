@@ -13,8 +13,8 @@
  * @brief Handle messages from the Host.
  */
 
-#ifndef SRC_MESSAGE_HANDLER_H_
-#define SRC_MESSAGE_HANDLER_H_
+#ifndef FIRMWARE_SRC_MESSAGE_HANDLER_H_
+#define FIRMWARE_SRC_MESSAGE_HANDLER_H_
 
 #include "stream_decoder.h"
 #include "transceiver.h"
@@ -40,16 +40,21 @@ void MessageHandler_Initialize(TransportTXFunction tx_cb);
  */
 void MessageHandler_HandleMessage(const Message* message);
 
-void MessageHandler_FrameResponse(TransceiverFrameType type,
-                                  TransceiverResult result,
-                                  const uint8_t* data,
-                                  unsigned int length);
+/**
+ * @brief Handle notifications when the transceiver operations complete.
+ * @sa TransceiverEventCallback.
+ */
+void MessageHandler_TransceiverEvent(uint8_t token,
+                                     TransceiverOperation type,
+                                     TransceiverResult result,
+                                     const uint8_t* data,
+                                     unsigned int length);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // SRC_MESSAGE_HANDLER_H_
+#endif  // FIRMWARE_SRC_MESSAGE_HANDLER_H_
 
 /**
  * @}

@@ -9,8 +9,8 @@
  * @brief The compile time pipeline for the device.
  */
 
-#ifndef SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_PIPELINE_H_
-#define SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_PIPELINE_H_
+#ifndef FIRMWARE_SRC_SYSTEM_CONFIG_DEFAULT_SYSTEM_PIPELINE_H_
+#define FIRMWARE_SRC_SYSTEM_CONFIG_DEFAULT_SYSTEM_PIPELINE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,12 +48,14 @@ extern "C" {
   USBConsole_Log(message);
 
 /**
- * @brief Specifies the function to call when data is received,
+ * @brief Specifies the function to call when a transceiver event occurs.
+ * @sa TransceiverEventCallback.
  *
- * This should either call a function of type TransceiverCallback or undefined.
+ * This should either call a function of type TransceiverEventCallback or
+ * undefined.
  */
-#define PIPELINE_HANDLE_FRAME(type, rc, data, length) \
-  MessageHandler_FrameResponse(type, rc, data, length);
+#define PIPELINE_TRANSCEIVER_EVENT(token, operation, rc, data, length) \
+  MessageHandler_TransceiverEvent(token, operation, rc, data, length);
 
 #ifdef __cplusplus
 }
@@ -63,5 +65,4 @@ extern "C" {
  * @}
  */
 
-#endif  // SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_PIPELINE_H_
-
+#endif  // FIRMWARE_SRC_SYSTEM_CONFIG_DEFAULT_SYSTEM_PIPELINE_H_

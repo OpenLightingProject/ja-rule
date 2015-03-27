@@ -5,6 +5,7 @@
 
 #include "message_handler.h"
 
+#include "app.h"
 #include "constants.h"
 #include "flags.h"
 #include "logger.h"
@@ -156,7 +157,7 @@ void MessageHandler_HandleMessage(const Message *message) {
       SendMessage(message->command, RC_OK, NULL, 0);
       break;
     case COMMAND_RDM_DUB_REQUEST:
-      if (!Transceiver_QueueDUB(0, message->payload, message->length)) {
+      if (!Transceiver_QueueRDMDUB(0, message->payload, message->length)) {
         SendMessage(message->command, RC_BUFFER_FULL, NULL, 0);
       }
       break;
@@ -196,10 +197,11 @@ void MessageHandler_HandleMessage(const Message *message) {
   }
 }
 
-void MessageHandler_FrameResponse(TransceiverFrameType type,
-                                  TransceiverResult result,
-                                  const uint8_t* data,
-                                  unsigned int length) {
+void MessageHandler_TransceiverEvent(uint8_t token,
+                                     TransceiverOperation type,
+                                     TransceiverResult result,
+                                     const uint8_t* data,
+                                     unsigned int length) {
   SysLog_Print(SYSLOG_INFO, "Result was %d, size %d", result, length);
   IOVec iovec;
   iovec.base = data;
@@ -217,4 +219,5 @@ void MessageHandler_FrameResponse(TransceiverFrameType type,
     }
     SendMessage(COMMAND_RDM_REQUEST, rc, &iovec, 1);
   }
+  (void) token;
 }

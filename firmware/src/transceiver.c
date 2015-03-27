@@ -7,7 +7,10 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <sys/attribs.h>
+#include <string.h>
+#include "sys/attribs.h"
+#include "system/int/sys_int.h"
+#include "system/clk/sys_clk.h"
 
 #include "constants.h"
 #include "syslog.h"
@@ -40,7 +43,7 @@ typedef enum {
 
 typedef struct {
   int size;
-  TransceiverFrameType type;
+  TransceiverOperation type;
   uint8_t token;
   uint8_t data[DMX_FRAME_SIZE + 1];
 } TransceiverBuffer;
@@ -178,10 +181,12 @@ static inline void Transceiver_FrameComplete() {
   }
 
 #ifdef PIPELINE_HANDLE_FRAME
-  PIPELINE_HANDLE_FRAME(g_transceiver.active->type, rc, data, length);
+  PIPELINE_HANDLE_FRAME(g_transceiver.active->token, g_transceiver.active->type,
+                        rc, data, length);
 #else
   if (g_transceiver.settings.callback) {
-    g_transceiver.settings.callback(g_transceiver.active->type, rc, data,
+    g_transceiver.settings.callback(g_transceiver.active->token,
+                                    g_transceiver.active->type, rc, data,
                                     length);
   }
 #endif
@@ -227,7 +232,6 @@ void Transceiver_InitializeSettings() {
  */
 void __ISR(_TIMER_1_VECTOR, ipl6) Transceiver_TimerEvent() {
   // Switch uses more instructions than a simple if
-  BSP_LEDToggle(BSP_LED_2);
   if (g_transceiver.state == TRANSCEIVER_IN_BREAK) {
     // Transition to MAB.
     Transceiver_SetMark();
@@ -300,7 +304,7 @@ void Transceiver_RXBytes() {
  *  - A USART RX error has occurred.
  */
 void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
-  BSP_LEDToggle(BSP_LED_1);
+  // BSP_LEDToggle(BSP_LED_1);
   if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_TRANSMIT)) {
     if (g_transceiver.state == TRANSCEIVER_TX_BUFFER_EMPTY) {
       // The last byte has been transmitted
@@ -340,7 +344,6 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
     }
     SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
   } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_RECEIVE)) {
-    BSP_LEDToggle(BSP_LED_3);
     if (g_transceiver.active->type == RDM_DUB) {
       if (g_transceiver.data_index == 0) {
         // TODO(simon): Do we need a timeout here, or can the receiver trickle
@@ -360,7 +363,6 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
     }
     SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
   } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_ERROR)) {
-    BSP_LEDToggle(BSP_LED_2);
     if (g_transceiver.state == TRANSCEIVER_RECEIVING) {
       if (g_transceiver.active->type == RDM_DUB) {
         // End of the response
@@ -368,7 +370,6 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         Transceiver_ResetToMark();
         g_transceiver.state = TRANSCEIVER_COMPLETE;
       } else if (g_transceiver.active->type == RDM_WITH_RESPONSE) {
-        BSP_LEDToggle(BSP_LED_3);
         if (g_transceiver.rx_got_break) {
           // End of the response
           PLIB_USART_ReceiverDisable(g_transceiver.settings.usart);
@@ -376,14 +377,12 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
           g_transceiver.state = TRANSCEIVER_COMPLETE;
         } else {
           // In break, stop the timer
-          BSP_LEDToggle(BSP_LED_3);
           PLIB_TMR_Stop(TMR_ID_1);
           g_transceiver.rx_got_break = true;
         }
       }
     }
     SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_ERROR);
-    BSP_LEDToggle(BSP_LED_1);
   }
 }
 
@@ -440,7 +439,6 @@ void Transceiver_Initialize(const Transceiver_Settings* settings) {
 }
 
 void Transceiver_Tasks() {
-  int i;
   Transceiver_LogStateChange();
 
   switch (g_transceiver.state) {
@@ -503,7 +501,7 @@ void Transceiver_Tasks() {
 }
 
 bool Transceiver_QueueFrame(uint8_t token, uint8_t start_code,
-                            TransceiverFrameType type, const uint8_t* data,
+                            TransceiverOperation type, const uint8_t* data,
                             unsigned int size) {
   if (g_transceiver.free_size == 0) {
     return false;
@@ -521,6 +519,7 @@ bool Transceiver_QueueFrame(uint8_t token, uint8_t start_code,
   g_transceiver.next->data[0] = start_code;
   SysLog_Print(SYSLOG_INFO, "Start code %d", start_code);
   memcpy(&g_transceiver.next->data[1], data, size);
+  return true;
 }
 
 bool Transceiver_QueueDMX(uint8_t token, const uint8_t* data,
@@ -529,8 +528,14 @@ bool Transceiver_QueueDMX(uint8_t token, const uint8_t* data,
                                 data, size);
 }
 
-bool Transceiver_QueueDUB(uint8_t token, const uint8_t* data,
-                          unsigned int size) {
+bool Transceiver_QueueASC(uint8_t token, uint8_t start_code,
+                          const uint8_t* data, unsigned int size) {
+  return Transceiver_QueueFrame(token, start_code, TRANSCEIVER_NO_RESPONSE,
+                                data, size);
+}
+
+bool Transceiver_QueueRDMDUB(uint8_t token, const uint8_t* data,
+                             unsigned int size) {
   return Transceiver_QueueFrame(token, RDM_START_CODE, RDM_DUB, data, size);
 }
 
@@ -588,9 +593,10 @@ uint16_t Transceiver_GetMarkTime() {
 }
 
 bool Transceiver_SetRDMBroadcastListen(uint16_t delay) {
-  if (delay < 10 || delay > 50) {
+  if (delay > 50) {
     return false;
   }
+  // TODO(simon): actually implement this.
   g_transceiver.rdm_broadcast_listen = delay;
   SysLog_Print(SYSLOG_INFO, "Bcast listen is %d",
                g_transceiver.rdm_broadcast_listen);

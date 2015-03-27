@@ -22,8 +22,8 @@ extern "C" {
 #define PIPELINE_LOG_WRITE(message) \
   USBConsole_Log(message);
 
-#define PIPELINE_HANDLE_FRAME(type, rc, data, length) \
-  MessageHandler_FrameResponse(type, rc, data, length);
+#define PIPELINE_TRANSCEIVER_EVENT(operation, rc, data, length) \
+  MessageHandler_TransceiverEvent(operation, rc, data, length);
 
 #ifdef __cplusplus
 }
