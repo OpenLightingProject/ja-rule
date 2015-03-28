@@ -18,10 +18,10 @@ If this is not the case on your system you have two options:
 
 A bulk-in transfer with a full 512 bytes of DMX data takes < 1ms on my mac
 laptop. Given this, I felt that a simple request / response model with a double
-buffer would suffice,
+buffer would suffice.
 
 For DMX / RDM messages, the response message is sent when the transceiver
-completes the transaction.
+completes the transaction, so the host received positive acknowledgement.
 
 
 ## TODO:

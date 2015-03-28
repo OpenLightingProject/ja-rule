@@ -25,7 +25,7 @@ namespace {
 MockApp *g_app_mock = NULL;
 }
 
-void App_SetMock(MockApp* mock) {
+void APP_SetMock(MockApp* mock) {
   g_app_mock = mock;
 }
 

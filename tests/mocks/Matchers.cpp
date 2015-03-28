@@ -75,3 +75,55 @@ bool DataMatcher::InternalMatchAndExplain(
   }
   return matched;
 }
+
+bool PayloadMatcher::MatchAndExplain(
+    IOVecTuple args,
+    testing::MatchResultListener* listener) const {
+  const IOVec* iovec = ::testing::get<0>(args);
+  unsigned int iov_count = ::testing::get<1>(args);
+
+  unsigned int data_size = 0;
+  for (unsigned int i = 0; i < iov_count; i++) {
+    data_size += iovec[i].length;
+  }
+  if (data_size != m_expected_size) {
+    *listener << "payload size was " << data_size;
+    return false;
+  }
+
+  if (m_expected_data == NULL) {
+    return true;
+  }
+
+  bool matched = true;
+  if (listener->IsInterested()) {
+    unsigned int block_offset = 0;
+    std::ios::fmtflags ostream_flags(listener->stream()->flags());
+    for (unsigned int i = 0; i < m_expected_size; i++) {
+      uint8_t actual = reinterpret_cast<const uint8_t*>(
+          iovec->base)[block_offset];
+      uint8_t expected = m_expected_data[i];
+
+      *listener
+         << "\n" << std::dec << i << ": 0x" << std::hex
+         << static_cast<int>(expected)
+         << (expected == actual ? " == " : " != ")
+         << "0x" << static_cast<int>(actual) << " ("
+         << ((expected >= '!' && expected <= '~') ?
+             static_cast<char>(expected) : ' ')
+         << (expected == actual ? " == " : " != ")
+         << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
+         << ")";
+
+      matched &= (expected == actual);
+      block_offset++;
+      if (block_offset >= iovec->length) {
+        block_offset = 0;
+        iovec++;
+      }
+    }
+    listener->stream()->flags(ostream_flags);
+  }
+  return matched;
+}
+

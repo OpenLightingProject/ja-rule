@@ -22,6 +22,7 @@
 
 #include "flags.h"
 #include "Array.h"
+#include "Matchers.h"
 #include "TransportMock.h"
 
 using ::testing::Args;

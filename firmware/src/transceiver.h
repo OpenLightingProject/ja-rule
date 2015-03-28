@@ -37,18 +37,18 @@ extern "C" {
  * and the latter require a break.
  */
 typedef enum {
-  TRANSCEIVER_NO_RESPONSE,  //!< No response (DMX512) or ASC.
-  RDM_DUB,  //!< An RDM Discovery Unique Branch
-  RDM_WITH_RESPONSE  //!< A RDM Get / Set Request.
+  T_OP_TRANSCEIVER_NO_RESPONSE,  //!< No response (DMX512) or ASC.
+  T_OP_RDM_DUB,  //!< An RDM Discovery Unique Branch
+  T_OP_RDM_WITH_RESPONSE  //!< A RDM Get / Set Request.
 } TransceiverOperation;
 
 /**
  * @brief The result of the transceiver operation.
  */
 typedef enum {
-  COMPLETED_OK,  //!< The operation completed sucessfully.
-  TX_ERROR,  //!< A TX error occurred.
-  RX_TIMEOUT  //!< Non response was received within the RDM wait time.
+  T_RC_COMPLETED_OK,  //!< The operation completed sucessfully.
+  T_RC_TX_ERROR,  //!< A TX error occurred.
+  T_RC_RX_TIMEOUT  //!< Non response was received within the RDM wait time.
 } TransceiverResult;
 
 /**

@@ -16,19 +16,12 @@
  * @brief The Host <-> Device communication transport.
  */
 
-#ifndef SRC_TRANSPORT_H_
-#define SRC_TRANSPORT_H_
+#ifndef FIRMWARE_SRC_TRANSPORT_H_
+#define FIRMWARE_SRC_TRANSPORT_H_
 
 #include <stdint.h>
 #include "constants.h"
-
-/**
- * @brief An IOVector, with a pointer to memory and a length attribute.
- */
-typedef struct {
-  const void* base;   //!< A pointer to the data
-  unsigned int length;  //!< The size of the data
-} IOVec;
+#include "iovec.h"
 
 /**
  * @brief Flags use in a response message.
@@ -57,7 +50,7 @@ typedef bool (*TransportTXFunction)(Command, uint8_t, const IOVec*,
  */
 typedef void (*TransportRxFunction)(const uint8_t*, unsigned int);
 
-#endif  // SRC_TRANSPORT_H_
+#endif  // FIRMWARE_SRC_TRANSPORT_H_
 
 /**
  * @}
