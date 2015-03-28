@@ -46,8 +46,8 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 *******************************************************************************/
 // DOM-IGNORE-END
 
-#ifndef SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_CONFIG_H_
-#define SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_CONFIG_H_
+#ifndef _SYSTEM_CONFIG_H
+#define _SYSTEM_CONFIG_H
 
 /* This is a temporary workaround for an issue with the peripheral library "Exists"
    functions that causes superfluous warnings.  It "nulls" out the definition of
@@ -102,6 +102,11 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 
 
+
+
+
+
+
 /*** Console System Service Configuration DISABLED ***/
 
 #define SYS_CONSOLE_MESSAGE(message)
@@ -145,7 +150,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #define DRV_USB_INTERRUPT_MODE      true
 
 /* Number of Endpoints used */
-#define DRV_USB_ENDPOINTS_NUMBER    2
+#define DRV_USB_ENDPOINTS_NUMBER    5
 
 /*** USB Device Stack Configuration ***/
 
@@ -158,18 +163,10 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 
 
-/* Endpoint Transfer Queue Size combined for Read and write */
-#define USB_DEVICE_ENDPOINT_QUEUE_DEPTH_COMBINED    2
 
 
-
-// *****************************************************************************
-// *****************************************************************************
-// Section: USB Module Configuration
-// *****************************************************************************
-// *****************************************************************************
-
-#define USB_MAKE_BUFFER_DMA_READY
+/* Maximum instances of CDC function driver */
+#define USB_DEVICE_CDC_INSTANCES_NUMBER     1
 
 
 // *****************************************************************************
@@ -182,7 +179,25 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #define LOG_BUFFER_SIZE 1000
 
 
-#endif  // SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_CONFIG_H_
+
+
+
+
+
+/* CDC Transfer Queue Size for both read and
+   write. Applicable to all instances of the
+   function driver */
+#define USB_DEVICE_CDC_QUEUE_DEPTH_COMBINED 3
+
+/* Endpoint Transfer Queue Size combined for Read and write */
+#define USB_DEVICE_ENDPOINT_QUEUE_DEPTH_COMBINED    2
+
+
+
+
+
+
+#endif // _SYSTEM_CONFIG_H
 /*******************************************************************************
  End of File
 */

@@ -50,10 +50,10 @@ typedef struct {
 USBTransportData g_usb_transport_data;
 
 // Receive data buffer
-uint8_t receivedDataBuffer[USB_READ_BUFFER_SIZE] USB_MAKE_BUFFER_DMA_READY;
+uint8_t receivedDataBuffer[USB_READ_BUFFER_SIZE];
 
 // Transmit data buffer
-uint8_t transmitDataBuffer[USB_READ_BUFFER_SIZE] USB_MAKE_BUFFER_DMA_READY;
+uint8_t transmitDataBuffer[USB_READ_BUFFER_SIZE];
 
 /**
  * @brief Called when device events occur.
@@ -221,13 +221,10 @@ void USBTransport_Tasks() {
         g_usb_transport_data.rx_in_progress = false;
         g_usb_transport_data.tx_in_progress = false;
       } else if (g_usb_transport_data.rx_in_progress == false) {
-        /* Look at the data the host sent, to see what kind of
-         * application specific command it sent. */
-
-
+        // We have received data.
         if (g_usb_transport_data.tx_in_progress == false) {
           // we only go ahead and process the data if we can respond.
-#ifdef PIPELINE_TRANSPORT_TX
+#ifdef PIPELINE_TRANSPORT_RX
           PIPELINE_TRANSPORT_RX(receivedDataBuffer,
                                 g_usb_transport_data.rx_data_size);
 #else
@@ -311,4 +308,12 @@ bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
 
 bool USBTransport_WritePending() {
   return g_usb_transport_data.tx_in_progress;
+}
+
+USB_DEVICE_HANDLE USBTransport_GetHandle() {
+  return g_usb_transport_data.usb_device;
+}
+
+bool USBTransport_IsConfigured() {
+  return g_usb_transport_data.is_configured;
 }

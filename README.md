@@ -13,3 +13,17 @@ This project is set up to assume Harmony 1.02 is installed in /opt/microchip/har
 If this is not the case on your system you have two options:
 * Add a symlink from /opt/microchip/harmony/v1_02 pointing to the installation path on your system.
 * Edit all the project configurations files to fix the path. I don't recommend this option as it will result in large diffs when you try to merge your changes later.
+
+## Dev Notes
+
+A bulk-in transfer with a full 512 bytes of DMX data takes < 1ms on my mac
+laptop. Given this, I felt that a simple request / response model with a double
+buffer would suffice,
+
+For DMX / RDM messages, the response message is sent when the transceiver
+completes the transaction.
+
+
+## TODO:
+
+- Implement reset sequence

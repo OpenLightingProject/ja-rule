@@ -9,6 +9,10 @@
 extern "C" {
 #endif
 
+/* Clock System Service Configuration Options */
+
+#define SYS_CLK_FREQ 80000000ul
+
 /*** USB Driver Configuration ***/
 
 /* Enables Device Support */

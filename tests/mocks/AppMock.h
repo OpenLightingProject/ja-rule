@@ -13,42 +13,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * DMXMock.cpp
- * Mock DMX Engine.
+ * AppMock.h
+ * A mock app module.
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "DMXMock.h"
+#ifndef TESTS_MOCKS_APPMOCK_H_
+#define TESTS_MOCKS_APPMOCK_H_
 
-namespace {
-MockDMX *g_dmx_mock = NULL;
-}
+#include <gmock/gmock.h>
 
-void DMX_SetMock(MockDMX* mock) {
-  g_dmx_mock = mock;
-}
+class MockApp {
+ public:
+  MOCK_METHOD0(Reset, void());
+};
 
-void DMX_Initialize() {
-  if (g_dmx_mock) {
-    g_dmx_mock->Initialize();
-  }
-}
+void APP_SetMock(MockApp* mock);
 
-void DMX_Tasks() {
-  if (g_dmx_mock) {
-    g_dmx_mock->Tasks();
-  }
-}
-
-void DMX_BeginFrame(uint8_t start_code, const uint8_t* data,
-                    unsigned int size) {
-  if (g_dmx_mock) {
-    g_dmx_mock->BeginFrame(start_code, data, size);
-  }
-}
-
-void DMX_FinalizeFrame() {
-  if (g_dmx_mock) {
-    g_dmx_mock->FinalizeFrame();
-  }
-}
+#endif  // TESTS_MOCKS_APPMOCK_H_

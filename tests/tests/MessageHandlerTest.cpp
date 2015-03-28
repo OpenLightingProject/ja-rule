@@ -21,12 +21,12 @@
 #include <gtest/gtest.h>
 
 #include "Array.h"
-#include "message_handler.h"
-#include "constants.h"
-#include "DMXMock.h"
 #include "FlagsMock.h"
 #include "LoggerMock.h"
+#include "TransceiverMock.h"
 #include "TransportMock.h"
+#include "constants.h"
+#include "message_handler.h"
 
 using ::testing::Args;
 using ::testing::Return;
@@ -35,7 +35,7 @@ using ::testing::_;
 class MessageHandlerTest : public testing::Test {
  public:
   void TearDown() {
-    DMX_SetMock(nullptr);
+    Transceiver_SetMock(nullptr);
     Flags_SetMock(nullptr);
     Logger_SetMock(nullptr);
     Transport_SetMock(nullptr);
@@ -61,19 +61,23 @@ TEST_F(MessageHandlerTest, testEcho) {
 TEST_F(MessageHandlerTest, testDMX) {
   MockTransport transport_mock;
   Transport_SetMock(&transport_mock);
-  MockDMX dmx_mock;
-  DMX_SetMock(&dmx_mock);
+  MockTransceiver transceiver_mock;
+  Transceiver_SetMock(&transceiver_mock);
 
   const uint8_t dmx_data[] = {1, 2, 3, 4};
 
-  EXPECT_CALL(dmx_mock, BeginFrame(NULL_START_CODE, _, arraysize(dmx_data)));
-  EXPECT_CALL(dmx_mock, FinalizeFrame());
-  EXPECT_CALL(transport_mock, Send(TX_DMX, RC_OK, _, 0))
+  testing::InSequence seq;
+  EXPECT_CALL(transceiver_mock, QueueDMX(_, _, arraysize(dmx_data)))
+      .WillOnce(Return(true));
+  EXPECT_CALL(transceiver_mock, QueueDMX(_, _, arraysize(dmx_data)))
+      .WillOnce(Return(false));
+  EXPECT_CALL(transport_mock, Send(TX_DMX, RC_BUFFER_FULL, NULL, 0))
       .WillOnce(Return(true));
 
   MessageHandler_Initialize(Transport_Send);
 
   Message message = { TX_DMX, arraysize(dmx_data), &dmx_data[0] };
+  MessageHandler_HandleMessage(&message);
   MessageHandler_HandleMessage(&message);
 }
 

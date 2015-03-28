@@ -16,13 +16,13 @@
                 </logicalFolder>
               </logicalFolder>
             </logicalFolder>
+            <itemPath>../src/system_config/mx_795_512l/system_pipeline.h</itemPath>
             <itemPath>../src/system_config/mx_795_512l/system_config.h</itemPath>
             <itemPath>../src/system_config/mx_795_512l/system_definitions.h</itemPath>
-            <itemPath>../src/system_config/mx_795_512l/system_pipeline.h</itemPath>
+            <itemPath>../src/system_config/mx_795_512l/system_settings.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../src/app.h</itemPath>
-        <itemPath>../src/dmx.h</itemPath>
         <itemPath>../src/constants.h</itemPath>
         <itemPath>../src/logger.h</itemPath>
         <itemPath>../src/message_handler.h</itemPath>
@@ -31,6 +31,9 @@
         <itemPath>../src/logger_private.h</itemPath>
         <itemPath>../src/flags.h</itemPath>
         <itemPath>../src/usb_transport.h</itemPath>
+        <itemPath>../src/syslog.h</itemPath>
+        <itemPath>../src/usb_console.h</itemPath>
+        <itemPath>../src/transceiver.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -63,6 +66,8 @@
         </logicalFolder>
         <logicalFolder name="usb" displayName="usb" projectFiles="true">
           <itemPath>/opt/microchip/harmony/v1_02/framework/usb/usb_device.h</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_02/framework/usb/usb_cdc.h</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_02/framework/usb/usb_device_cdc.h</itemPath>
         </logicalFolder>
       </logicalFolder>
     </logicalFolder>
@@ -99,12 +104,14 @@
         </logicalFolder>
         <itemPath>../src/app.c</itemPath>
         <itemPath>../src/main.c</itemPath>
-        <itemPath>../src/dmx.c</itemPath>
         <itemPath>../src/logger.c</itemPath>
         <itemPath>../src/message_handler.c</itemPath>
         <itemPath>../src/stream_decoder.c</itemPath>
         <itemPath>../src/flags.c</itemPath>
         <itemPath>../src/usb_transport.c</itemPath>
+        <itemPath>../src/syslog.c</itemPath>
+        <itemPath>../src/usb_console.c</itemPath>
+        <itemPath>../src/transceiver.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -148,6 +155,8 @@
           <logicalFolder name="src" displayName="src" projectFiles="true">
             <logicalFolder name="dynamic" displayName="dynamic" projectFiles="true">
               <itemPath>/opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_cdc.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_cdc_acm.c</itemPath>
               <itemPath>/opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_endpoint_functions.c</itemPath>
             </logicalFolder>
           </logicalFolder>
@@ -181,13 +190,15 @@
         <linkerTool>
           <linkerLibItems>
             <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
+            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
+            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
         </archiverTool>
         <loading>
           <useAlternateLoadableFile>false</useAlternateLoadableFile>
-          <parseOnProdLoad>false</parseOnProdLoad>
+          <parseOnProdLoad>true</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
       </compileType>
@@ -208,7 +219,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../src/system_config/mx_795_512l;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
+                  value="../src;../src/system_config/mx_795_512l;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/framework;../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -295,7 +306,30 @@
         <property key="wpo-lto" value="false"/>
       </C32Global>
       <PKOBSKDEPlatformTool>
-        <property key="firmware.download.all" value="false"/>
+        <property key="AutoSelectMemRanges" value="auto"/>
+        <property key="SecureSegment.SegmentProgramming" value="FullChipProgramming"/>
+        <property key="ToolFirmwareFilePath"
+                  value="Press to browse for a specific firmware version"/>
+        <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
+        <property key="memories.configurationmemory" value="true"/>
+        <property key="memories.dataflash" value="true"/>
+        <property key="memories.eeprom" value="true"/>
+        <property key="memories.id" value="true"/>
+        <property key="memories.programmemory" value="true"/>
+        <property key="memories.programmemory.end" value="0x1d07ffff"/>
+        <property key="memories.programmemory.start" value="0x1d000000"/>
+        <property key="memories.userotp" value="true"/>
+        <property key="poweroptions.powerenable" value="false"/>
+        <property key="programoptions.donoteraseauxmem" value="false"/>
+        <property key="programoptions.eraseb4program" value="true"/>
+        <property key="programoptions.preservedataflash" value="false"/>
+        <property key="programoptions.preserveeeprom" value="false"/>
+        <property key="programoptions.preserveprogramrange" value="false"/>
+        <property key="programoptions.preserveprogramrange.end" value="0x1d0001ff"/>
+        <property key="programoptions.preserveprogramrange.start" value="0x1d000000"/>
+        <property key="programoptions.usehighvoltageonmclr" value="false"/>
+        <property key="programoptions.uselvpprogramming" value="false"/>
+        <property key="voltagevalue" value="3.25"/>
       </PKOBSKDEPlatformTool>
     </conf>
   </confs>

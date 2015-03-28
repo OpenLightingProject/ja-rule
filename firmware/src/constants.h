@@ -1,10 +1,10 @@
-/* 
+/*
  * File:   constants.h
  * Author: Simon Newton
  */
 
-#ifndef SRC_CONSTANTS_H_
-#define SRC_CONSTANTS_H_
+#ifndef FIRMWARE_SRC_CONSTANTS_H_
+#define FIRMWARE_SRC_CONSTANTS_H_
 
 // *****************************************************************************
 // USB specific constants
@@ -32,11 +32,20 @@
 // DMX512 specific constants
 // *****************************************************************************
 
-// The maximum size of a DMX frame, include the start code.
-#define DMX_FRAME_SIZE 513
+// The maximum size of a DMX frame, excluding the start code.
+#define DMX_FRAME_SIZE 512
 
 // The Null Start Code (NSC).
 #define NULL_START_CODE 0x00
+
+// The Baud rate for DMX / RDM.
+#define DMX_BAUD 250000 // 250kHz
+
+// *****************************************************************************
+// RDM specific constants
+// *****************************************************************************
+
+#define RDM_START_CODE 0xcc
 
 // *****************************************************************************
 // Protocol specific constants
@@ -50,12 +59,27 @@ typedef enum {
   TX_DMX = 0x81,
   GET_LOG = 0x82,
   GET_FLAGS = 0x83,
-  WRITE_LOG = 0x84
+  WRITE_LOG = 0x84,
+  COMMAND_RESET_DEVICE = 0x85,
+  COMMAND_RDM_DUB_REQUEST = 0x86,
+  COMMAND_RDM_REQUEST = 0x87,
+  SET_BREAK_TIME = 0x88,
+  GET_BREAK_TIME = 0x89,
+  SET_MAB_TIME = 0x90,
+  GET_MAB_TIME = 0x91,
+  SET_RDM_BROADCAST_LISTEN = 0x92,
+  GET_RDM_BROADCAST_LISTEN = 0x93,
+  SET_RDM_WAIT_TIME = 0x94,
+  GET_RDM_WAIT_TIME = 0x95
 } Command;
 
 typedef enum {
-  RC_OK = 0,
-  RC_UNKNOWN = 1,
+  RC_OK,
+  RC_UNKNOWN,
+  RC_BUFFER_FULL,
+  RC_BAD_PARAM,
+  RC_TX_ERROR,
+  RC_RX_TIMEOUT
 } ReturnCodes;
 
 // The Start of Message identifier.
@@ -67,5 +91,20 @@ typedef enum {
 // The maximum data payload size
 #define PAYLOAD_SIZE 513
 
-#endif  // SRC_CONSTANTS_H_
+// The default break time in microseconds.
+#define DEFAULT_BREAK_TIME 176
+
+// The default mark time in microseconds.
+#define DEFAULT_MARK_TIME 12
+
+// The default time to listen for a response after sending an RDM broadcast
+// message.
+// Value is in 10ths of a millisecond.
+#define DEFAULT_RDM_BROADCAST_LISTEN 28
+
+// The default time to wait after sending an RDM message.
+// Value is in 10ths of a millisecond.
+#define DEFAULT_RDM_WAIT_TIME 28
+
+#endif  // FIRMWARE_SRC_CONSTANTS_H_
 

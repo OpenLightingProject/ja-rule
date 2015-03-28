@@ -1,7 +1,6 @@
 # TESTS
 ################################################
-TESTING_CFLAGS = -I system_config -I ../firmware/src -I include \
-                 $(WARNING_CFLAGS)
+TESTING_CFLAGS = $(BUILD_FLAGS) -I include
 
 TESTING_CXXFLAGS = $(TESTING_CFLAGS) $(WARNING_CXXFLAGS) \
                    $(GMOCK_INCLUDES) $(GTEST_INCLUDES) -I ./mocks
@@ -12,6 +11,7 @@ TESTS += tests/flags_test \
          tests/logger_test \
          tests/message_handler_test \
          tests/stream_decoder_test \
+         tests/transceiver_test \
          tests/usb_transport_test
 
 tests_flags_test_SOURCES = tests/FlagsTest.cpp
@@ -45,8 +45,18 @@ tests_usb_transport_test_LDADD = $(TESTING_LIBS) \
 tests_message_handler_test_SOURCES = tests/MessageHandlerTest.cpp
 tests_message_handler_test_CXXFLAGS = $(TESTING_CXXFLAGS)
 tests_message_handler_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
-                                   mocks/libdmxmock.la \
+                                   src/libmessagehandler.la \
+                                   mocks/libappmock.la \
                                    mocks/libflagsmock.la \
                                    mocks/libloggermock.la \
-                                   mocks/libtransportmock.la \
-                                   src/libmessagehandler.la
+                                   mocks/libsyslogmock.la \
+                                   mocks/libtransceivermock.la \
+                                   mocks/libtransportmock.la
+
+tests_transceiver_test_SOURCES = tests/TransceiverTest.cpp
+tests_transceiver_test_CXXFLAGS = $(TESTING_CXXFLAGS)
+tests_transceiver_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
+                               src/libtransceiver.la \
+                               harmony/mocks/libharmonymock.la \
+                               mocks/libsyslogmock.la
+

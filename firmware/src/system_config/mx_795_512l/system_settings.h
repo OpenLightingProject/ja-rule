@@ -1,0 +1,27 @@
+/*
+ * File:   system_settings.h
+ * Author: simonn
+ */
+
+#ifndef FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
+#define FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define TRANSCEIVER_TX_UART USART_ID_1
+#define TRANSCEIVER_PORT PORT_CHANNEL_F
+#define TRANSCEIVER_PORT_BIT PORTS_BIT_POS_8
+#define TRANSCEIVER_TX_ENABLE PORTS_BIT_POS_0
+#define TRANSCEIVER_RX_ENABLE PORTS_BIT_POS_1
+
+#ifdef __cplusplus
+}
+#endif
+
+/**
+ * @}
+ */
+
+#endif  // FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
