@@ -47,6 +47,8 @@
 
 #define RDM_START_CODE 0xcc
 
+#define RDM_SUB_START_CODE 0x01
+
 // *****************************************************************************
 // Protocol specific constants
 // *****************************************************************************
@@ -104,7 +106,21 @@ typedef enum {
 
 // The default time to wait after sending an RDM message.
 // Value is in 10ths of a millisecond.
+// Comes from Line 1 & 3, Table 3-2, E1.20.
+// Responders only have 2ms, and then in line proxies can introduce up to 704uS
+// of delay. This rounds to 2.8 ms.
 #define DEFAULT_RDM_WAIT_TIME 28
+
+// The default time a RDM DUB can take.
+// Value is in 10ths of a millisecond.
+// Line 3, Table 3-3, E1.20.
+#define DEFAULT_RDM_DUB_RESPONSE_TIME 29
+
+// The maximum time for a break when receiving a RDM response.
+// We wait at least this amount of time - actual time is longer since we only
+// start when the framing errors occurs, which is around 60uS from the start of
+// the break. Value is in microseconds.
+#define DEFAULT_RDM_RESPONSE_MAX_BREAK_TIME 352
 
 #endif  // FIRMWARE_SRC_CONSTANTS_H_
 

@@ -54,6 +54,8 @@ typedef struct {
   int data_index;  //!< The index into the TransceiverBuffer's data, for transmit or receiving.
   bool rx_timeout;  //!< If an RX timeout occured.
   bool rx_got_break;  //!< If we've seen the break for a RDM response.
+  uint8_t expected_length;  //!< If we're receiving a RDM response, this is the decoded length.
+  bool found_expected_length;  //!< If expected_length is valid.
 
   TransceiverBuffer* active;  //!< The buffer current used for transmit / receive.
   TransceiverBuffer* next;  //!< The next buffer ready to be transmitted
@@ -70,6 +72,9 @@ typedef struct {
   uint16_t rdm_broadcast_listen_ticks;
   uint16_t rdm_wait_time;
   uint16_t rdm_wait_time_ticks;
+  uint16_t rdm_dub_response_time;
+  uint16_t rdm_dub_response_ticks;
+  uint16_t rdm_response_max_break_ticks;
 } TransceiverData;
 
 TransceiverBuffer buffers[NUMBER_OF_BUFFERS];
@@ -82,13 +87,14 @@ TransceiverData g_transceiver;
 static inline uint16_t Transceiver_MicroSecondsToTicks(uint16_t micro_seconds) {
   return micro_seconds * (SYS_CLK_FREQ / 1000000);
 }
+
 /*
  * @brief Convert 10ths of a millisecond to ticks.
+ * @param time A value between 0 and 650 (6.5mS).
  */
 static inline uint16_t Transceiver_TenthOfMilliSecondsToTicks(uint16_t time) {
   return 100 * time * (SYS_CLK_FREQ / 1000000 / 8);
 }
-
 
 /*
  * @brief Enable TX.
@@ -176,7 +182,7 @@ static inline void Transceiver_FrameComplete() {
     } else if (g_transceiver.data_index) {
       // We actually got some data.
       data = g_transceiver.active->data;
-      length = g_transceiver.data_index - 1;
+      length = g_transceiver.data_index;
     }
   }
 
@@ -226,6 +232,9 @@ void Transceiver_InitializeSettings() {
   Transceiver_SetMarkTime(DEFAULT_MARK_TIME);
   Transceiver_SetRDMBroadcastListen(DEFAULT_RDM_BROADCAST_LISTEN);
   Transceiver_SetRDMWaitTime(DEFAULT_RDM_WAIT_TIME);
+  Transceiver_SetRDMDUBResponseTime(DEFAULT_RDM_DUB_RESPONSE_TIME);
+  g_transceiver.rdm_response_max_break_ticks = Transceiver_MicroSecondsToTicks(
+      DEFAULT_RDM_RESPONSE_MAX_BREAK_TIME);
 }
 
 /*
@@ -256,11 +265,15 @@ void __ISR(_TIMER_1_VECTOR, ipl6) Transceiver_TimerEvent() {
     SYS_INT_SourceEnable(INT_SOURCE_USART_1_TRANSMIT);
     PLIB_TMR_Stop(TMR_ID_1);
   } else if (g_transceiver.state == TRANSCEIVER_RECEIVING) {
+    // BSP_LEDToggle(BSP_LED_2);
     // Timeout
+    // TODO(simon): move this into Transceiver_ResetToMark() and clear the
+    // interupts to avoid the race.
+    PLIB_USART_ReceiverDisable(g_transceiver.settings.usart);
     Transceiver_ResetToMark();
     PLIB_TMR_Stop(TMR_ID_1);
     g_transceiver.state = TRANSCEIVER_COMPLETE;
-    g_transceiver.rx_timeout = true;
+    g_transceiver.rx_timeout = g_transceiver.data_index == 0;
   }
   SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_1);
 }
@@ -289,8 +302,28 @@ void Transceiver_FlushRX() {
 void Transceiver_RXBytes() {
   while (PLIB_USART_ReceiverDataIsAvailable(g_transceiver.settings.usart) &&
          g_transceiver.data_index != DMX_FRAME_SIZE) {
+    // BSP_LEDToggle(BSP_LED_1);
     g_transceiver.active->data[g_transceiver.data_index++] =
       PLIB_USART_ReceiverByteReceive(g_transceiver.settings.usart);
+  }
+  if (g_transceiver.active->type == T_OP_RDM_WITH_RESPONSE) {
+    if (g_transceiver.found_expected_length) {
+      if (g_transceiver.data_index == g_transceiver.expected_length) {
+        // We've got enough data to move on
+        PLIB_USART_ReceiverDisable(g_transceiver.settings.usart);
+        Transceiver_ResetToMark();
+        g_transceiver.state = TRANSCEIVER_COMPLETE;
+      }
+    } else {
+      if (g_transceiver.data_index >= 3) {
+        if (g_transceiver.active->data[0] == RDM_START_CODE &&
+            g_transceiver.active->data[1] == RDM_SUB_START_CODE) {
+          g_transceiver.found_expected_length = true;
+          // Add two bytes for the checksum
+          g_transceiver.expected_length = g_transceiver.active->data[2] + 2;
+        }
+      }
+    }
   }
   // TODO(simon): if we've hit the buffer size here, we need to reset and
   // return an error.
@@ -345,15 +378,19 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
     }
     SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
   } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_RECEIVE)) {
+    // BSP_LEDToggle(BSP_LED_2);
     if (g_transceiver.active->type == T_OP_RDM_DUB) {
       if (g_transceiver.data_index == 0) {
-        // TODO(simon): Do we need a timeout here, or can the receiver trickle
-        // data back to us?
-        PLIB_TMR_Stop(TMR_ID_1);
+        Transceiver_StartTimer(g_transceiver.rdm_dub_response_ticks);
+        PLIB_TMR_Start(TMR_ID_1);
       }
       Transceiver_RXBytes();
     } else if (g_transceiver.active->type == T_OP_RDM_WITH_RESPONSE) {
       if (g_transceiver.rx_got_break) {
+        if (g_transceiver.data_index == 0) {
+          // Stop the break timer.
+          PLIB_TMR_Stop(TMR_ID_1);
+        }
         Transceiver_RXBytes();
       } else {
         // Discard any data until we get a break.
@@ -366,7 +403,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
   } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_ERROR)) {
     if (g_transceiver.state == TRANSCEIVER_RECEIVING) {
       if (g_transceiver.active->type == T_OP_RDM_DUB) {
-        // End of the response
+        // End of the response.
         PLIB_USART_ReceiverDisable(g_transceiver.settings.usart);
         Transceiver_ResetToMark();
         g_transceiver.state = TRANSCEIVER_COMPLETE;
@@ -377,8 +414,11 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
           Transceiver_ResetToMark();
           g_transceiver.state = TRANSCEIVER_COMPLETE;
         } else {
-          // In break, stop the timer
-          PLIB_TMR_Stop(TMR_ID_1);
+          // In break, stop the timer, and start a max-break timer.
+          PLIB_TMR_PrescaleSelect(TMR_ID_1 , TMR_PRESCALE_VALUE_1);
+          PLIB_TMR_Period16BitSet(TMR_ID_1,
+                                  g_transceiver.rdm_response_max_break_ticks);
+          // BSP_LEDToggle(BSP_LED_3);
           g_transceiver.rx_got_break = true;
         }
       }
@@ -454,6 +494,8 @@ void Transceiver_Tasks() {
       g_transceiver.next = NULL;
       g_transceiver.state = TRANSCEIVER_BREAK;
       g_transceiver.data_index = 0;
+      g_transceiver.found_expected_length = false;
+      g_transceiver.expected_length = 0;
       // Fall through
     case TRANSCEIVER_BREAK:
       PLIB_USART_Disable(g_transceiver.settings.usart);
@@ -623,4 +665,20 @@ bool Transceiver_SetRDMWaitTime(uint16_t wait_time) {
 
 uint16_t Transceiver_GetRDMWaitTime() {
   return g_transceiver.rdm_wait_time;
+}
+
+bool Transceiver_SetRDMDUBResponseTime(uint16_t wait_time) {
+  if (wait_time < 10 || wait_time > 50) {
+    return false;
+  }
+  g_transceiver.rdm_dub_response_time = wait_time;
+  g_transceiver.rdm_dub_response_ticks = Transceiver_TenthOfMilliSecondsToTicks(
+      wait_time);
+  SysLog_Print(SYSLOG_INFO, "DUB Response ticks is %d",
+               g_transceiver.rdm_dub_response_ticks);
+  return true;
+}
+
+uint16_t Transceiver_GetRDMDUBResponseTime() {
+  return g_transceiver.rdm_dub_response_time;
 }

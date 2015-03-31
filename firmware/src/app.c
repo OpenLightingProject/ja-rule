@@ -21,7 +21,7 @@ void APP_Initialize(void) {
 
   // Initialize the DMX / RDM Transceiver
   Transceiver_Settings transceiver_settings = {
-    .usart = TRANSCEIVER_TX_UART,
+    .usart = TRANSCEIVER_UART,
     .port = TRANSCEIVER_PORT,
     .break_bit = TRANSCEIVER_PORT_BIT,
     .rx_enable_bit = TRANSCEIVER_TX_ENABLE,
@@ -56,4 +56,5 @@ void APP_Tasks(void) {
 void APP_Reset() {
   Transceiver_Reset();
   SysLog_Message(SYSLOG_INFO, "Reset Device");
+  USBTransport_SoftReset();
 }

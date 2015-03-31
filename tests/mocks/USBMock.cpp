@@ -148,6 +148,17 @@ USB_DEVICE_RESULT USB_DEVICE_EndpointWrite(
   return USB_DEVICE_RESULT_ERROR;
 }
 
+USB_DEVICE_RESULT USB_DEVICE_EndpointTransferCancel(
+    USB_DEVICE_HANDLE usbDeviceHandle,
+    USB_ENDPOINT_ADDRESS endpoint,
+    USB_DEVICE_TRANSFER_HANDLE transferHandle) {
+  if (g_usb_mock) {
+    return g_usb_mock->EndpointTransferCancel(usbDeviceHandle, endpoint,
+                                              transferHandle);
+  }
+  return USB_DEVICE_RESULT_ERROR;
+}
+
 void USB_SetMock(MockUSB* mock) {
   g_usb_mock = mock;
 }

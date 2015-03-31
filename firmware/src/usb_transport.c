@@ -317,3 +317,13 @@ USB_DEVICE_HANDLE USBTransport_GetHandle() {
 bool USBTransport_IsConfigured() {
   return g_usb_transport_data.is_configured;
 }
+
+
+void USBTransport_SoftReset() {
+  if (g_usb_transport_data.tx_in_progress) {
+    USB_DEVICE_EndpointTransferCancel(
+        g_usb_transport_data.usb_device,
+        g_usb_transport_data.tx_endpoint,
+        g_usb_transport_data.write_transfer);
+  }
+}
