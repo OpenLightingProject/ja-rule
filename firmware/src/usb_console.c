@@ -93,8 +93,7 @@ static uint16_t USBConsole_SpaceRemaining() {
 void USBConsole_AbortTransfers() {
   // TODO(simon): Fix this. There seems to be some internal state that isn't
   // reset correctly. Re-enumerating the USB works but cancelling the IRPs
-  // doesn't that isn't reset correctly. Re-enumerating the USB works but
-  // cancelling the IRPs doesn't
+  // doesn't.
   USB_DEVICE_IRPCancelAll(USBTransport_GetHandle(), 0x03);
   USB_DEVICE_IRPCancelAll(USBTransport_GetHandle(), 0x83);
   g_usb_console.write.read = -1;

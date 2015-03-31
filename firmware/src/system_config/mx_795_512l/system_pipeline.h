@@ -3,8 +3,8 @@
  * Author: simonn
  */
 
-#ifndef SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_PIPELINE_H_
-#define SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_PIPELINE_H_
+#ifndef FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_PIPELINE_H_
+#define FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_PIPELINE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,12 +22,11 @@ extern "C" {
 #define PIPELINE_LOG_WRITE(message) \
   USBConsole_Log(message);
 
-#define PIPELINE_TRANSCEIVER_EVENT(operation, rc, data, length) \
-  MessageHandler_TransceiverEvent(operation, rc, data, length);
+#define PIPELINE_TRANSCEIVER_EVENT(token, operation, rc, data, length) \
+  MessageHandler_TransceiverEvent(token, operation, rc, data, length);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_PIPELINE_H_
-
+#endif  // FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_PIPELINE_H_

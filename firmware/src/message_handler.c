@@ -203,21 +203,46 @@ void MessageHandler_TransceiverEvent(uint8_t token,
                                      const uint8_t* data,
                                      unsigned int length) {
   SysLog_Print(SYSLOG_INFO, "Result was %d, size %d", result, length);
-  IOVec iovec;
-  iovec.base = data;
-  iovec.length = length;
-  if (type == TRANSCEIVER_NO_RESPONSE) {
-    SendMessage(TX_DMX, result == COMPLETED_OK ? RC_OK : RC_UNKNOWN, &iovec, 1);
-  } else if (type == RDM_DUB) {
-    SendMessage(COMMAND_RDM_DUB_REQUEST,
-                result == COMPLETED_OK ? RC_OK : RC_UNKNOWN,
-                &iovec, 1);
-  } else {
-    uint8_t rc = RC_OK;
-    if (result == RX_TIMEOUT) {
-      rc = RC_RX_TIMEOUT;
-    }
-    SendMessage(COMMAND_RDM_REQUEST, rc, &iovec, 1);
+  uint8_t vector_size = 1;
+  IOVec iovec[2];
+  iovec[0].base = &token;
+  iovec[0].length = sizeof(token);
+
+  if (data && length > 0) {
+    iovec[1].base = data;
+    iovec[1].length = length;
+    vector_size++;
   }
-  (void) token;
+
+  Command command;
+  ReturnCode rc;
+  switch (result) {
+    case T_RC_COMPLETED_OK:
+      rc = RC_OK;
+      break;
+    case T_RC_TX_ERROR:
+      rc = RC_TX_ERROR;
+      break;
+    case T_RC_RX_TIMEOUT:
+      rc = RC_RX_TIMEOUT;
+      break;
+    default:
+      rc = RC_UNKNOWN;
+  }
+
+  switch (type) {
+    case T_OP_TRANSCEIVER_NO_RESPONSE:
+      command = TX_DMX;
+      break;
+    case T_OP_RDM_DUB:
+      command = COMMAND_RDM_DUB_REQUEST;
+      break;
+    case T_OP_RDM_WITH_RESPONSE:
+      command = COMMAND_RDM_REQUEST;
+      break;
+    default:
+      SysLog_Print(SYSLOG_INFO, "Unknown Transceiver event %d", type);
+      return;
+  }
+  SendMessage(command, rc, (IOVec*) &iovec, vector_size);
 }

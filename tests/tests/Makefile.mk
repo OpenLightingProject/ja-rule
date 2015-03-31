@@ -18,12 +18,14 @@ tests_flags_test_SOURCES = tests/FlagsTest.cpp
 tests_flags_test_CXXFLAGS = $(TESTING_CXXFLAGS)
 tests_flags_test_LDADD = $(TESTING_LIBS) \
                          src/libflags.la \
+                         mocks/libmatchers.la \
                          mocks/libtransportmock.la
 
 tests_logger_test_SOURCES = tests/LoggerTest.cpp
 tests_logger_test_CXXFLAGS = $(TESTING_CXXFLAGS)
 tests_logger_test_LDADD = $(TESTING_LIBS) \
                           src/liblogger.la \
+                          mocks/libmatchers.la \
                           mocks/libtransportmock.la
 
 tests_stream_decoder_test_SOURCES = tests/StreamDecoderTest.cpp
@@ -49,6 +51,7 @@ tests_message_handler_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
                                    mocks/libappmock.la \
                                    mocks/libflagsmock.la \
                                    mocks/libloggermock.la \
+                                   mocks/libmatchers.la \
                                    mocks/libsyslogmock.la \
                                    mocks/libtransceivermock.la \
                                    mocks/libtransportmock.la

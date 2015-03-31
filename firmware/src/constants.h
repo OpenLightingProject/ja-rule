@@ -39,7 +39,7 @@
 #define NULL_START_CODE 0x00
 
 // The Baud rate for DMX / RDM.
-#define DMX_BAUD 250000 // 250kHz
+#define DMX_BAUD 250000  // 250kHz
 
 // *****************************************************************************
 // RDM specific constants
@@ -80,7 +80,7 @@ typedef enum {
   RC_BAD_PARAM,
   RC_TX_ERROR,
   RC_RX_TIMEOUT
-} ReturnCodes;
+} ReturnCode;
 
 // The Start of Message identifier.
 #define START_OF_MESSAGE_ID 0x5a

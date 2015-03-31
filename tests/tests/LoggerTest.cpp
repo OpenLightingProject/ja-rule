@@ -23,6 +23,7 @@
 
 #include "logger.h"
 #include "Array.h"
+#include "Matchers.h"
 #include "TransportMock.h"
 
 using std::string;

@@ -170,9 +170,9 @@ static inline void Transceiver_FrameComplete() {
   uint8_t rc = RC_OK;
   const uint8_t* data = NULL;
   unsigned int length = 0;
-  if (g_transceiver.active->type != TRANSCEIVER_NO_RESPONSE) {
+  if (g_transceiver.active->type != T_OP_TRANSCEIVER_NO_RESPONSE) {
     if (g_transceiver.rx_timeout) {
-      rc = RC_RX_TIMEOUT;
+      rc = T_RC_RX_TIMEOUT;
     } else if (g_transceiver.data_index) {
       // We actually got some data.
       data = g_transceiver.active->data;
@@ -180,9 +180,10 @@ static inline void Transceiver_FrameComplete() {
     }
   }
 
-#ifdef PIPELINE_HANDLE_FRAME
-  PIPELINE_HANDLE_FRAME(g_transceiver.active->token, g_transceiver.active->type,
-                        rc, data, length);
+#ifdef PIPELINE_TRANSCEIVER_EVENT
+  PIPELINE_TRANSCEIVER_EVENT(g_transceiver.active->token,
+                             g_transceiver.active->type,
+                             rc, data, length);
 #else
   if (g_transceiver.settings.callback) {
     g_transceiver.settings.callback(g_transceiver.active->token,
@@ -309,7 +310,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
     if (g_transceiver.state == TRANSCEIVER_TX_BUFFER_EMPTY) {
       // The last byte has been transmitted
       SYS_INT_SourceDisable(INT_SOURCE_USART_1_TRANSMIT);
-      if (g_transceiver.active->type == TRANSCEIVER_NO_RESPONSE) {
+      if (g_transceiver.active->type == T_OP_TRANSCEIVER_NO_RESPONSE) {
         PLIB_USART_TransmitterDisable(g_transceiver.settings.usart);
         Transceiver_SetMark();
         g_transceiver.state = TRANSCEIVER_COMPLETE;
@@ -344,14 +345,14 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
     }
     SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
   } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_RECEIVE)) {
-    if (g_transceiver.active->type == RDM_DUB) {
+    if (g_transceiver.active->type == T_OP_RDM_DUB) {
       if (g_transceiver.data_index == 0) {
         // TODO(simon): Do we need a timeout here, or can the receiver trickle
         // data back to us?
         PLIB_TMR_Stop(TMR_ID_1);
       }
       Transceiver_RXBytes();
-    } else if (g_transceiver.active->type == RDM_WITH_RESPONSE) {
+    } else if (g_transceiver.active->type == T_OP_RDM_WITH_RESPONSE) {
       if (g_transceiver.rx_got_break) {
         Transceiver_RXBytes();
       } else {
@@ -364,12 +365,12 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
     SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
   } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_ERROR)) {
     if (g_transceiver.state == TRANSCEIVER_RECEIVING) {
-      if (g_transceiver.active->type == RDM_DUB) {
+      if (g_transceiver.active->type == T_OP_RDM_DUB) {
         // End of the response
         PLIB_USART_ReceiverDisable(g_transceiver.settings.usart);
         Transceiver_ResetToMark();
         g_transceiver.state = TRANSCEIVER_COMPLETE;
-      } else if (g_transceiver.active->type == RDM_WITH_RESPONSE) {
+      } else if (g_transceiver.active->type == T_OP_RDM_WITH_RESPONSE) {
         if (g_transceiver.rx_got_break) {
           // End of the response
           PLIB_USART_ReceiverDisable(g_transceiver.settings.usart);
@@ -524,25 +525,26 @@ bool Transceiver_QueueFrame(uint8_t token, uint8_t start_code,
 
 bool Transceiver_QueueDMX(uint8_t token, const uint8_t* data,
                           unsigned int size) {
-  return Transceiver_QueueFrame(token, NULL_START_CODE, TRANSCEIVER_NO_RESPONSE,
-                                data, size);
+  return Transceiver_QueueFrame(
+      token, NULL_START_CODE, T_OP_TRANSCEIVER_NO_RESPONSE, data, size);
 }
 
 bool Transceiver_QueueASC(uint8_t token, uint8_t start_code,
                           const uint8_t* data, unsigned int size) {
-  return Transceiver_QueueFrame(token, start_code, TRANSCEIVER_NO_RESPONSE,
-                                data, size);
+  return Transceiver_QueueFrame(
+      token, start_code, T_OP_TRANSCEIVER_NO_RESPONSE, data, size);
 }
 
 bool Transceiver_QueueRDMDUB(uint8_t token, const uint8_t* data,
                              unsigned int size) {
-  return Transceiver_QueueFrame(token, RDM_START_CODE, RDM_DUB, data, size);
+  return Transceiver_QueueFrame(
+      token, RDM_START_CODE, T_OP_RDM_DUB, data, size);
 }
 
 bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
                                  unsigned int size) {
-  return Transceiver_QueueFrame(token, RDM_START_CODE, RDM_WITH_RESPONSE, data,
-                                size);
+  return Transceiver_QueueFrame(
+      token, RDM_START_CODE, T_OP_RDM_WITH_RESPONSE, data, size);
 }
 
 void Transceiver_Reset() {

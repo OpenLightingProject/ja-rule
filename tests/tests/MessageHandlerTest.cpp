@@ -20,9 +20,11 @@
 
 #include <gtest/gtest.h>
 
+#include "AppMock.h"
 #include "Array.h"
 #include "FlagsMock.h"
 #include "LoggerMock.h"
+#include "Matchers.h"
 #include "TransceiverMock.h"
 #include "TransportMock.h"
 #include "constants.h"
@@ -105,6 +107,21 @@ TEST_F(MessageHandlerTest, testFlags) {
   MessageHandler_HandleMessage(&message);
 }
 
+TEST_F(MessageHandlerTest, testReset) {
+  MockApp app_mock;
+  APP_SetMock(&app_mock);
+  MockTransport transport_mock;
+  Transport_SetMock(&transport_mock);
+
+  EXPECT_CALL(app_mock, Reset());
+  EXPECT_CALL(transport_mock, Send(COMMAND_RESET_DEVICE, RC_OK, NULL, 0))
+      .WillOnce(Return(true));
+
+  MessageHandler_Initialize(Transport_Send);
+  Message message = { COMMAND_RESET_DEVICE, 0, NULL };
+  MessageHandler_HandleMessage(&message);
+}
+
 TEST_F(MessageHandlerTest, testUnknownMessage) {
   MockTransport transport_mock;
   Transport_SetMock(&transport_mock);
@@ -116,4 +133,66 @@ TEST_F(MessageHandlerTest, testUnknownMessage) {
 
   Message message = { (Command) 0, 0, NULL };
   MessageHandler_HandleMessage(&message);
+}
+
+TEST_F(MessageHandlerTest, transceiverDMXEvent) {
+  MockTransport transport_mock;
+  Transport_SetMock(&transport_mock);
+
+  const uint8_t frame_reply1[] = {0};
+  const uint8_t frame_reply2[] = {1};
+
+  EXPECT_CALL(transport_mock, Send(TX_DMX, RC_OK, _, _))
+      .With(Args<2, 3>(PayloadIs(
+              reinterpret_cast<const uint8_t*>(&frame_reply1),
+              arraysize(frame_reply1))))
+      .WillOnce(Return(true));
+  EXPECT_CALL(transport_mock, Send(TX_DMX, RC_TX_ERROR, _, _))
+      .With(Args<2, 3>(PayloadIs(
+          reinterpret_cast<const uint8_t*>(&frame_reply2),
+          arraysize(frame_reply2))))
+      .WillOnce(Return(true));
+
+  MessageHandler_Initialize(Transport_Send);
+  MessageHandler_TransceiverEvent(0, T_OP_TRANSCEIVER_NO_RESPONSE,
+                                  T_RC_COMPLETED_OK, NULL, 0);
+  MessageHandler_TransceiverEvent(1, T_OP_TRANSCEIVER_NO_RESPONSE,
+                                  T_RC_TX_ERROR, NULL, 0);
+}
+
+TEST_F(MessageHandlerTest, transceiverRDMEvent) {
+  MockTransport transport_mock;
+  Transport_SetMock(&transport_mock);
+
+  // Any data, doesn't have to be valid RDM
+  const uint8_t rdm_reply[] = {1, 2, 3, 4, 5};
+
+  const uint8_t frame_reply1[] = {0, 1, 2, 3, 4, 5};
+  const uint8_t frame_reply2[] = {1};
+  const uint8_t frame_reply3[] = {2};
+
+  EXPECT_CALL(transport_mock, Send(COMMAND_RDM_REQUEST, RC_OK, _, _))
+      .With(Args<2, 3>(PayloadIs(
+              reinterpret_cast<const uint8_t*>(&frame_reply1),
+              arraysize(frame_reply1))))
+      .WillOnce(Return(true));
+  EXPECT_CALL(transport_mock, Send(COMMAND_RDM_REQUEST, RC_TX_ERROR, _, _))
+      .With(Args<2, 3>(PayloadIs(
+          reinterpret_cast<const uint8_t*>(&frame_reply2),
+          arraysize(frame_reply2))))
+      .WillOnce(Return(true));
+  EXPECT_CALL(transport_mock, Send(COMMAND_RDM_REQUEST, RC_RX_TIMEOUT, _, _))
+      .With(Args<2, 3>(PayloadIs(
+          reinterpret_cast<const uint8_t*>(&frame_reply3),
+          arraysize(frame_reply3))))
+      .WillOnce(Return(true));
+
+  MessageHandler_Initialize(Transport_Send);
+  MessageHandler_TransceiverEvent(0, T_OP_RDM_WITH_RESPONSE, T_RC_COMPLETED_OK,
+                                  static_cast<const uint8_t*>(rdm_reply),
+                                  arraysize(rdm_reply));
+  MessageHandler_TransceiverEvent(1, T_OP_RDM_WITH_RESPONSE, T_RC_TX_ERROR,
+                                  NULL, 0);
+  MessageHandler_TransceiverEvent(2, T_OP_RDM_WITH_RESPONSE, T_RC_RX_TIMEOUT,
+                                  NULL, 0);
 }
