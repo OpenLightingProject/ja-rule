@@ -449,8 +449,8 @@ void Transceiver_Initialize(const Transceiver_Settings* settings) {
   Transceiver_ResetToMark();
 
   // Setup the timer
-  PLIB_TMR_ClockSourceSelect (TMR_ID_1, TMR_CLOCK_SOURCE_PERIPHERAL_CLOCK );
-  PLIB_TMR_PrescaleSelect(TMR_ID_1 , TMR_PRESCALE_VALUE_1);
+  PLIB_TMR_ClockSourceSelect(TMR_ID_1, TMR_CLOCK_SOURCE_PERIPHERAL_CLOCK);
+  PLIB_TMR_PrescaleSelect(TMR_ID_1, TMR_PRESCALE_VALUE_1);
   PLIB_TMR_Mode16BitEnable(TMR_ID_1);
   PLIB_TMR_CounterAsyncWriteDisable(TMR_ID_1);
   SYS_INT_VectorPrioritySet(INT_VECTOR_T1, INT_PRIORITY_LEVEL1);

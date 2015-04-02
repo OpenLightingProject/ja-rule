@@ -237,7 +237,7 @@ uint16_t Transceiver_GetRDMWaitTime();
 
 /**
  * @brief Configure the maximum time that a RDM DUB response packet can take.
- * @param packet_time the time to wait from the start of the DUB response until
+ * @param wait_time the time to wait from the start of the DUB response until
  * the end, in 10ths of a millisecond. Valid values are 10 - 50 (1 - 5ms).
  * Values < 28 are outside the specification but may be used for testing.
  * @returns true if time was updated, false if the value was out of range.
@@ -259,9 +259,10 @@ uint16_t Transceiver_GetRDMDUBResponseTime();
 /**
  * @brief Configure the maximum time that a RDM response packet (non-DUB) can
  *   take.
- * @param packet_time the time to wait from the start of the break in the
- * response, until the end, in 10ths of a millisecond. Valid values are 10 - 50 (1 - 5ms).
- * Values < 28 are outside the specification but may be used for testing.
+ * @param wait_time the time to wait from the start of the break in the
+ *   response, until the end, in 10ths of a millisecond. Valid values are 10 - 50
+ *   (1 - 5ms). Values < 28 are outside the specification but may be used for
+ *   testing.
  * @returns true if time was updated, false if the value was out of range.
  *
  * The default value is 29 (2.9mS), see Line 3, Table 3-3, E1.20.

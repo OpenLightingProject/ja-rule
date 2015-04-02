@@ -177,14 +177,14 @@ typedef union __attribute__((packed)) {
     uint16_t wValue;
     uint16_t wIndex;
     uint16_t wLength;
-  }
+  };
   struct __attribute__((packed)) {
     unsigned :8;
     unsigned :8;
     USB_WORD_VAL W_Value;
     USB_WORD_VAL W_Index;
     USB_WORD_VAL W_Length;
-  }
+  };
   struct __attribute__((packed)) {
     unsigned Recipient:5;
     unsigned RequestType:2;
@@ -196,7 +196,7 @@ typedef union __attribute__((packed)) {
     unsigned :8;
     unsigned :8;
     unsigned :8;
-  }
+  };
   struct __attribute__((packed)) {
     union {
       uint8_t bmRequestType;
@@ -206,7 +206,7 @@ typedef union __attribute__((packed)) {
         uint8_t    direction:  1;
       };
     } requestInfo;
-  }
+  };
   struct __attribute__((packed)) {
     unsigned :8;
     unsigned :8;
@@ -215,7 +215,7 @@ typedef union __attribute__((packed)) {
     uint16_t wLangID;
     unsigned :8;
     unsigned :8;
-  }
+  };
   struct __attribute__((packed)) {
     unsigned :8;
     unsigned :8;
@@ -225,7 +225,7 @@ typedef union __attribute__((packed)) {
     unsigned :8;
     unsigned :8;
     unsigned :8;
-  }
+  };
   struct __attribute__((packed)) {
     unsigned :8;
     unsigned :8;
@@ -235,7 +235,7 @@ typedef union __attribute__((packed)) {
     unsigned :8;
     unsigned :8;
     unsigned :8;
-  }
+  };
   struct __attribute__((packed)) {
     unsigned :8;
     unsigned :8;
@@ -245,7 +245,7 @@ typedef union __attribute__((packed)) {
     uint8_t bIntfID_H;
     unsigned :8;
     unsigned :8;
-  }
+  };
   struct __attribute__((packed)) {
     unsigned :8;
     unsigned :8;
@@ -255,7 +255,7 @@ typedef union __attribute__((packed)) {
     uint8_t bEPID_H;
     unsigned :8;
     unsigned :8;
-  }
+  };
   struct __attribute__((packed)) {
     unsigned :8;
     unsigned :8;
@@ -267,7 +267,7 @@ typedef union __attribute__((packed)) {
     unsigned :8;
     unsigned :8;
     unsigned :8;
-  }
+  };
 } USB_SETUP_PACKET;
 
 // Types
