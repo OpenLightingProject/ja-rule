@@ -13,6 +13,7 @@
 #include "system/clk/sys_clk.h"
 
 #include "constants.h"
+#include "coarse_timer.h"
 #include "syslog.h"
 #include "system_definitions.h"
 #include "system_pipeline.h"
@@ -28,7 +29,7 @@
 
 typedef enum {
   TRANSCEIVER_UNINITIALIZED,
-  TRANSCEIVER_IDLE,
+  TRANSCEIVER_READY,
   TRANSCEIVER_BREAK,
   TRANSCEIVER_IN_BREAK,
   TRANSCEIVER_IN_MARK,
@@ -37,6 +38,7 @@ typedef enum {
   TRANSCEIVER_TX_BUFFER_EMPTY,
   TRANSCEIVER_RECEIVING,
   TRANSCEIVER_COMPLETE,
+  TRANSCEIVER_IDLE,
   TRANSCEIVER_ERROR,
   TRANSCEIVER_RESET
 } TransceiverState;
@@ -51,6 +53,7 @@ typedef struct {
 typedef struct {
   Transceiver_Settings settings;  //!< The transceiver hardware settings.
   TransceiverState state;  //!< The current state of the transceiver.
+  CoarseTimer_Value last_break_time;
   int data_index;  //!< The index into the TransceiverBuffer's data, for transmit or receiving.
   bool rx_timeout;  //!< If an RX timeout occured.
   bool rx_got_break;  //!< If we've seen the break for a RDM response.
@@ -349,6 +352,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         g_transceiver.state = TRANSCEIVER_COMPLETE;
       } else {
         // Switch to RX Mode.
+        g_transceiver.last_break_time = CoarseTimer_GetTime();
         Transceiver_DisableTX();
         PLIB_USART_TransmitterDisable(g_transceiver.settings.usart);
         Transceiver_EnableRX();
@@ -484,9 +488,9 @@ void Transceiver_Tasks() {
 
   switch (g_transceiver.state) {
     case TRANSCEIVER_UNINITIALIZED:
-      g_transceiver.state = TRANSCEIVER_IDLE;
+      g_transceiver.state = TRANSCEIVER_READY;
       break;
-    case TRANSCEIVER_IDLE:
+    case TRANSCEIVER_READY:
       if (!g_transceiver.next) {
         return;
       }
@@ -527,10 +531,16 @@ void Transceiver_Tasks() {
       g_transceiver.free_size++;
       g_transceiver.active = NULL;
       g_transceiver.state = TRANSCEIVER_IDLE;
+      // Fall through
+    case TRANSCEIVER_IDLE:
       // TODO(simon): The break for the next frame can start immediately,
       // but the catch is the break-to-break time can't be less than 1.204ms
       // This means we may need to add a delay here if the frame is less than a
       // certain size.
+      // TODO(simon): This is setup for RDM DUB right now. Fix me
+      if (CoarseTimer_HasElapsed(g_transceiver.last_break_time, 58)) {
+        g_transceiver.state = TRANSCEIVER_READY;
+      }
       break;
     case TRANSCEIVER_ERROR:
       // This isn't used yet.

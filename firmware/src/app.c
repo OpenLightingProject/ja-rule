@@ -25,7 +25,7 @@ void APP_Initialize(void) {
     .timer_id = TMR_ID_2,
     .interrupt_source = INT_SOURCE_TIMER_2
   };
-
+  SYS_INT_VectorPrioritySet(INT_VECTOR_T2, INT_PRIORITY_LEVEL6);
   CoarseTimer_Initialize(&timer_settings);
 
   // Initialize the Logging system, bottom up
