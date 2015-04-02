@@ -80,6 +80,11 @@ USB_DEVICE_HANDLE USBTransport_GetHandle();
  */
 bool USBTransport_IsConfigured();
 
+/**
+ * @brief Perform a soft reset. This aborts any outbound (write) transfers
+ */
+void USBTransport_SoftReset();
+
 #ifdef __cplusplus
 }
 #endif

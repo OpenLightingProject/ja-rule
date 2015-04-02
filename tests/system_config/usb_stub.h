@@ -364,6 +364,11 @@ USB_DEVICE_RESULT USB_DEVICE_EndpointWrite(
     size_t size,
     USB_DEVICE_TRANSFER_FLAGS flags);
 
+USB_DEVICE_RESULT USB_DEVICE_EndpointTransferCancel(
+    USB_DEVICE_HANDLE usbDeviceHandle,
+    USB_ENDPOINT_ADDRESS endpoint,
+    USB_DEVICE_TRANSFER_HANDLE transferHandle);
+
 #ifdef  __cplusplus
 }
 #endif

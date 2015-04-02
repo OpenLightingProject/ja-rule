@@ -69,6 +69,11 @@ class MockUSB {
                                  const void* data,
                                  size_t size,
                                  USB_DEVICE_TRANSFER_FLAGS flags));
+
+  MOCK_METHOD3(EndpointTransferCancel,
+               USB_DEVICE_RESULT(USB_DEVICE_HANDLE usb_device,
+                                 USB_ENDPOINT_ADDRESS endpoint,
+                                 USB_DEVICE_TRANSFER_HANDLE transfer));
 };
 
 void USB_SetMock(MockUSB* mock);
