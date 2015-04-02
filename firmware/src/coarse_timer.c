@@ -7,7 +7,7 @@
 
 typedef struct {
   CoarseTimer_Settings settings;
-  uint32_t timer_count;
+  volatile uint32_t timer_count;
 } CoarseTimer_Data;
 
 CoarseTimer_Data g_coarse_timer;
