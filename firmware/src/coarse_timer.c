@@ -36,11 +36,14 @@ void CoarseTimer_Initialize(const CoarseTimer_Settings *settings) {
   SYS_INT_SourceEnable(settings->interrupt_source);
 }
 
-uint32_t CoarseTimer_GetTime() {
-  return g_coarse_timer.timer_count;
+CoarseTimer_Value CoarseTimer_GetTime() {
+  SYS_INT_SourceDisable(g_coarse_timer.settings.interrupt_source);
+  CoarseTimer_Value value = g_coarse_timer.timer_count;
+  SYS_INT_SourceEnable(g_coarse_timer.settings.interrupt_source);
+  return value;
 }
 
-uint32_t CoarseTimer_ElapsedTime(uint32_t start_time) {
+uint32_t CoarseTimer_ElapsedTime(CoarseTimer_Value start_time) {
   // This works because of unsigned int math.
   return g_coarse_timer.timer_count - start_time;
 }
