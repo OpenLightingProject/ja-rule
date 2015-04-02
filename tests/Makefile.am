@@ -15,6 +15,7 @@ WARNING_CXXFLAGS = -fvisibility-inlines-hidden
 BUILD_FLAGS = -I system_config -I harmony/include -I ../firmware/src $(WARNING_CFLAGS)
 
 noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
+                     src/libcoarsetimer.la \
                      src/libflags.la \
                      src/liblogger.la \
                      src/libmessagehandler.la \
@@ -36,6 +37,9 @@ harmony_mocks_libharmonymock_la_SOURCES = \
 harmony_mocks_libharmonymock_la_CXXFLAGS = \
    -I harmony/include $(GMOCK_INCLUDES) $(GTEST_INCLUDES) $(WARNING_CFLAGS)
 harmony_mocks_libharmonymock_la_LIBADD = $(GMOCK_LIBS) $(GTEST_LIBS)
+
+src_libcoarsetimer_la_SOURCES = src/coarse_timer.c
+src_libcoarsetimer_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libflags_la_SOURCES = src/flags.c
 src_libflags_la_CFLAGS = $(BUILD_FLAGS)
