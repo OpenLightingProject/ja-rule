@@ -4,6 +4,9 @@
  */
 #include "app.h"
 
+#include "sys/attribs.h"
+
+#include "coarse_timer.h"
 #include "logger.h"
 #include "message_handler.h"
 #include "stream_decoder.h"
@@ -13,7 +16,18 @@
 #include "transceiver.h"
 #include "usb_transport.h"
 
+void __ISR(_TIMER_2_VECTOR, ipl6) TimerEvent() {
+  CoarseTimer_TimerEvent();
+}
+
 void APP_Initialize(void) {
+  CoarseTimer_Settings timer_settings = {
+    .timer_id = TMR_ID_2,
+    .interrupt_source = INT_SOURCE_TIMER_2
+  };
+
+  CoarseTimer_Initialize(&timer_settings);
+
   // Initialize the Logging system, bottom up
   USBTransport_Initialize(NULL);
   USBConsole_Initialize();
@@ -48,8 +62,8 @@ void APP_Tasks(void) {
   USBConsole_Tasks();
 
   i++;
-  if (i % 1000 == 0) {
-    //SysLog_Print(SYSLOG_INFO, "this is a very very long line and it has many many characters %d", i / 100);
+  if (i % 10000 == 0) {
+    // SysLog_Print(SYSLOG_INFO, "timer is %d", CoarseTimer_GetTime());
   }
 }
 

@@ -7,12 +7,19 @@ TESTING_CXXFLAGS = $(TESTING_CFLAGS) $(WARNING_CXXFLAGS) \
 
 TESTING_LIBS = $(GMOCK_LIBS) $(GTEST_LIBS)
 
-TESTS += tests/flags_test \
+TESTS += tests/coarse_timer_test \
+         tests/flags_test \
          tests/logger_test \
          tests/message_handler_test \
          tests/stream_decoder_test \
          tests/transceiver_test \
          tests/usb_transport_test
+
+tests_coarse_timer_test_SOURCES = tests/CoarseTimerTest.cpp
+tests_coarse_timer_test_CXXFLAGS = $(TESTING_CXXFLAGS)
+tests_coarse_timer_test_LDADD = $(TESTING_LIBS) \
+                         src/libcoarsetimer.la \
+                         harmony/mocks/libharmonymock.la
 
 tests_flags_test_SOURCES = tests/FlagsTest.cpp
 tests_flags_test_CXXFLAGS = $(TESTING_CXXFLAGS)
