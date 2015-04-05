@@ -36,8 +36,8 @@ class MockTransceiver {
                               const uint8_t* data, unsigned int size));
   MOCK_METHOD3(QueueRDMDUB, bool(uint8_t token, const uint8_t* data,
                                  unsigned int size));
-  MOCK_METHOD3(QueueRDMRequest, bool(uint8_t token, const uint8_t* data,
-                                     unsigned int size));
+  MOCK_METHOD4(QueueRDMRequest, bool(uint8_t token, const uint8_t* data,
+                                     unsigned int size, bool is_broadcast));
   MOCK_METHOD0(Transceiver_Reset, void());
   MOCK_METHOD1(SetBreakTime, bool(uint16_t break_time_us));
   MOCK_METHOD0(GetBreakTime, uint16_t());

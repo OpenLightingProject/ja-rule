@@ -66,9 +66,9 @@ bool Transceiver_QueueRDMDUB(uint8_t token, const uint8_t* data,
 }
 
 bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
-                                 unsigned int size) {
+                                 unsigned int size, bool is_broadcast) {
   if (g_transceiver_mock) {
-    return g_transceiver_mock->QueueRDMRequest(token, data, size);
+    return g_transceiver_mock->QueueRDMRequest(token, data, size, is_broadcast);
   }
   return true;
 }

@@ -162,7 +162,8 @@ void MessageHandler_HandleMessage(const Message *message) {
       }
       break;
     case COMMAND_RDM_REQUEST:
-      if (!Transceiver_QueueRDMRequest(0, message->payload, message->length)) {
+      if (!Transceiver_QueueRDMRequest(0, message->payload, message->length,
+                                       false)) {
         SendMessage(message->command, RC_BUFFER_FULL, NULL, 0);
       }
       break;
@@ -189,6 +190,12 @@ void MessageHandler_HandleMessage(const Message *message) {
       break;
     case GET_RDM_WAIT_TIME:
       MessageHandler_ReturnRDMWaitTime();
+      break;
+    case COMMAND_RDM_BROADCAST_REQUEST:
+      if (!Transceiver_QueueRDMRequest(0, message->payload, message->length,
+                                       true)) {
+        SendMessage(message->command, RC_BUFFER_FULL, NULL, 0);
+      }
       break;
 
     default:
@@ -240,9 +247,13 @@ void MessageHandler_TransceiverEvent(uint8_t token,
     case T_OP_RDM_WITH_RESPONSE:
       command = COMMAND_RDM_REQUEST;
       break;
+    case T_OP_RDM_BROADCAST:
+      command = COMMAND_RDM_BROADCAST_REQUEST;
+      break;
     default:
       SysLog_Print(SYSLOG_INFO, "Unknown Transceiver event %d", type);
       return;
   }
+  SysLog_Print(SYSLOG_INFO, "Op %d, result: %d, Command is %d", type, result, command);
   SendMessage(command, rc, (IOVec*) &iovec, vector_size);
 }
