@@ -13,6 +13,7 @@
 #include "system/clk/sys_clk.h"
 
 #include "constants.h"
+#include "coarse_timer.h"
 #include "syslog.h"
 #include "system_definitions.h"
 #include "system_pipeline.h"
@@ -28,7 +29,7 @@
 
 typedef enum {
   TRANSCEIVER_UNINITIALIZED,
-  TRANSCEIVER_IDLE,
+  TRANSCEIVER_READY,
   TRANSCEIVER_BREAK,
   TRANSCEIVER_IN_BREAK,
   TRANSCEIVER_IN_MARK,
@@ -37,6 +38,7 @@ typedef enum {
   TRANSCEIVER_TX_BUFFER_EMPTY,
   TRANSCEIVER_RECEIVING,
   TRANSCEIVER_COMPLETE,
+  TRANSCEIVER_IDLE,
   TRANSCEIVER_ERROR,
   TRANSCEIVER_RESET
 } TransceiverState;
@@ -51,6 +53,7 @@ typedef struct {
 typedef struct {
   Transceiver_Settings settings;  //!< The transceiver hardware settings.
   TransceiverState state;  //!< The current state of the transceiver.
+  CoarseTimer_Value last_break_time;
   int data_index;  //!< The index into the TransceiverBuffer's data, for transmit or receiving.
   bool rx_timeout;  //!< If an RX timeout occured.
   bool rx_got_break;  //!< If we've seen the break for a RDM response.
@@ -265,7 +268,7 @@ void __ISR(_TIMER_1_VECTOR, ipl6) Transceiver_TimerEvent() {
     SYS_INT_SourceEnable(INT_SOURCE_USART_1_TRANSMIT);
     PLIB_TMR_Stop(TMR_ID_1);
   } else if (g_transceiver.state == TRANSCEIVER_RECEIVING) {
-    // BSP_LEDToggle(BSP_LED_2);
+    // BSP_LEDToggle(BSP_LED_1);
     // Timeout
     // TODO(simon): move this into Transceiver_ResetToMark() and clear the
     // interupts to avoid the race.
@@ -306,7 +309,8 @@ void Transceiver_RXBytes() {
     g_transceiver.active->data[g_transceiver.data_index++] =
       PLIB_USART_ReceiverByteReceive(g_transceiver.settings.usart);
   }
-  if (g_transceiver.active->type == T_OP_RDM_WITH_RESPONSE) {
+  if (g_transceiver.active->type == T_OP_RDM_WITH_RESPONSE ||
+      g_transceiver.active->type == T_OP_RDM_BROADCAST) {
     if (g_transceiver.found_expected_length) {
       if (g_transceiver.data_index == g_transceiver.expected_length) {
         // We've got enough data to move on
@@ -349,6 +353,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         g_transceiver.state = TRANSCEIVER_COMPLETE;
       } else {
         // Switch to RX Mode.
+        g_transceiver.last_break_time = CoarseTimer_GetTime();
         Transceiver_DisableTX();
         PLIB_USART_TransmitterDisable(g_transceiver.settings.usart);
         Transceiver_EnableRX();
@@ -385,7 +390,8 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         PLIB_TMR_Start(TMR_ID_1);
       }
       Transceiver_RXBytes();
-    } else if (g_transceiver.active->type == T_OP_RDM_WITH_RESPONSE) {
+    } else if (g_transceiver.active->type == T_OP_RDM_WITH_RESPONSE ||
+               g_transceiver.active->type == T_OP_RDM_BROADCAST) {
       if (g_transceiver.rx_got_break) {
         if (g_transceiver.data_index == 0) {
           // Stop the break timer.
@@ -401,6 +407,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
     }
     SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
   } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_ERROR)) {
+    // BSP_LEDToggle(BSP_LED_3);
     if (g_transceiver.state == TRANSCEIVER_RECEIVING) {
       if (g_transceiver.active->type == T_OP_RDM_DUB) {
         // End of the response.
@@ -415,10 +422,13 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
           g_transceiver.state = TRANSCEIVER_COMPLETE;
         } else {
           // In break, stop the timer, and start a max-break timer.
+          PLIB_TMR_Stop(TMR_ID_1);
+          PLIB_TMR_Counter16BitClear(TMR_ID_1);
           PLIB_TMR_PrescaleSelect(TMR_ID_1 , TMR_PRESCALE_VALUE_1);
           PLIB_TMR_Period16BitSet(TMR_ID_1,
                                   g_transceiver.rdm_response_max_break_ticks);
-          // BSP_LEDToggle(BSP_LED_3);
+          PLIB_TMR_Start(TMR_ID_1);
+          // BSP_LEDToggle(BSP_LED_1);
           g_transceiver.rx_got_break = true;
         }
       }
@@ -484,9 +494,9 @@ void Transceiver_Tasks() {
 
   switch (g_transceiver.state) {
     case TRANSCEIVER_UNINITIALIZED:
-      g_transceiver.state = TRANSCEIVER_IDLE;
+      g_transceiver.state = TRANSCEIVER_READY;
       break;
-    case TRANSCEIVER_IDLE:
+    case TRANSCEIVER_READY:
       if (!g_transceiver.next) {
         return;
       }
@@ -527,10 +537,16 @@ void Transceiver_Tasks() {
       g_transceiver.free_size++;
       g_transceiver.active = NULL;
       g_transceiver.state = TRANSCEIVER_IDLE;
+      // Fall through
+    case TRANSCEIVER_IDLE:
       // TODO(simon): The break for the next frame can start immediately,
       // but the catch is the break-to-break time can't be less than 1.204ms
       // This means we may need to add a delay here if the frame is less than a
       // certain size.
+      // TODO(simon): This is setup for RDM DUB right now. Fix me
+      if (CoarseTimer_HasElapsed(g_transceiver.last_break_time, 58)) {
+        g_transceiver.state = TRANSCEIVER_READY;
+      }
       break;
     case TRANSCEIVER_ERROR:
       // This isn't used yet.
@@ -580,13 +596,16 @@ bool Transceiver_QueueASC(uint8_t token, uint8_t start_code,
 bool Transceiver_QueueRDMDUB(uint8_t token, const uint8_t* data,
                              unsigned int size) {
   return Transceiver_QueueFrame(
-      token, RDM_START_CODE, T_OP_RDM_DUB, data, size);
+      token, RDM_START_CODE, T_OP_RDM_DUB,
+      data, size);
 }
 
 bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
-                                 unsigned int size) {
+                                 unsigned int size, bool is_broadcast) {
   return Transceiver_QueueFrame(
-      token, RDM_START_CODE, T_OP_RDM_WITH_RESPONSE, data, size);
+      token, RDM_START_CODE,
+      is_broadcast ? T_OP_RDM_BROADCAST : T_OP_RDM_WITH_RESPONSE,
+      data, size);
 }
 
 void Transceiver_Reset() {

@@ -39,6 +39,7 @@ extern "C" {
 typedef enum {
   T_OP_TRANSCEIVER_NO_RESPONSE,  //!< No response (DMX512) or ASC.
   T_OP_RDM_DUB,  //!< An RDM Discovery Unique Branch
+  T_OP_RDM_BROADCAST,  //!< A broadcast Get / Set Request.
   T_OP_RDM_WITH_RESPONSE  //!< A RDM Get / Set Request.
 } TransceiverOperation;
 
@@ -139,11 +140,12 @@ bool Transceiver_QueueRDMDUB(uint8_t token, const uint8_t* data,
  * @param token The token for this operation.
  * @param data The RDM data, excluding the start code.
  * @param size The size of the RDM data, excluding the start code.
+ * @param is_broadcast True if this is a broadcast request.
  * @returns true if the frame was accepted and buffered, false if the transmit
  *   buffer is full.
  */
 bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
-                                 unsigned int size);
+                                 unsigned int size, bool is_broadcast);
 
 /**
  * @brief Reset the transceiver state.

@@ -68,5 +68,6 @@ tests_transceiver_test_CXXFLAGS = $(TESTING_CXXFLAGS)
 tests_transceiver_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
                                src/libtransceiver.la \
                                harmony/mocks/libharmonymock.la \
+                               mocks/libcoarsetimermock.la \
                                mocks/libsyslogmock.la
 
