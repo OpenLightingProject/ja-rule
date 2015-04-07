@@ -51,7 +51,8 @@ typedef struct {
 typedef struct {
   Transceiver_Settings settings;  //!< The transceiver hardware settings.
   TransceiverState state;  //!< The current state of the transceiver.
-  CoarseTimer_Value last_break_time;
+  CoarseTimer_Value start_of_frame_time;
+  CoarseTimer_Value end_of_frame_time;
   int data_index;  //!< The index into the TransceiverBuffer's data, for transmit or receiving.
   bool rx_timeout;  //!< If an RX timeout occured.
   bool rx_got_break;  //!< If we've seen the break for a RDM response.
@@ -251,6 +252,10 @@ void __ISR(_TIMER_1_VECTOR, ipl6) Transceiver_TimerEvent() {
       PLIB_TMR_Period16BitSet(TMR_ID_1, g_transceiver.mark_ticks);
       break;
     case TRANSCEIVER_IN_MARK:
+      // Stop the timer.
+      SYS_INT_SourceDisable(INT_SOURCE_TIMER_1);
+      PLIB_TMR_Stop(TMR_ID_1);
+
       // Transition to sending the data.
       // Only push a single byte into the TX queue at the begining, otherwise
       // we blow our timing budget.
@@ -265,7 +270,6 @@ void __ISR(_TIMER_1_VECTOR, ipl6) Transceiver_TimerEvent() {
       g_transceiver.state = TRANSCEIVER_TX_DATA;
       SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
       SYS_INT_SourceEnable(INT_SOURCE_USART_1_TRANSMIT);
-      PLIB_TMR_Stop(TMR_ID_1);
       break;
     case TRANSCEIVER_RECEIVING:
     // other cases here
@@ -353,15 +357,16 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
     } else if (g_transceiver.state == TRANSCEIVER_TX_DATA_BUFFER_EMPTY) {
       // The last byte has been transmitted
       SYS_INT_SourceDisable(INT_SOURCE_USART_1_TRANSMIT);
+      PLIB_USART_TransmitterDisable(g_transceiver.settings.usart);
+
       if (g_transceiver.active->type == T_OP_TRANSCEIVER_NO_RESPONSE) {
-        PLIB_USART_TransmitterDisable(g_transceiver.settings.usart);
+        PLIB_USART_Disable(g_transceiver.settings.usart);
         Transceiver_SetMark();
         g_transceiver.state = TRANSCEIVER_COMPLETE;
       } else {
         // Switch to RX Mode.
-        g_transceiver.last_break_time = CoarseTimer_GetTime();
+        g_transceiver.end_of_frame_time = CoarseTimer_GetTime();
         Transceiver_DisableTX();
-        PLIB_USART_TransmitterDisable(g_transceiver.settings.usart);
         Transceiver_EnableRX();
         g_transceiver.state = TRANSCEIVER_RECEIVING;
         g_transceiver.data_index = 0;
@@ -488,6 +493,7 @@ void Transceiver_Initialize(const Transceiver_Settings* settings) {
 }
 
 void Transceiver_Tasks() {
+  bool ok;
   Transceiver_LogStateChange();
 
   switch (g_transceiver.state) {
@@ -526,6 +532,7 @@ void Transceiver_Tasks() {
       // Set break and start timer.
       g_transceiver.state = TRANSCEIVER_IN_BREAK;
       PLIB_TMR_PrescaleSelect(TMR_ID_1 , TMR_PRESCALE_VALUE_1);
+      g_transceiver.start_of_frame_time = CoarseTimer_GetTime();
       Transceiver_SetTimer(g_transceiver.break_ticks);
       Transceiver_SetBreak();
       PLIB_TMR_Start(TMR_ID_1);
@@ -549,12 +556,32 @@ void Transceiver_Tasks() {
       g_transceiver.state = TRANSCEIVER_BACKOFF;
       // Fall through
     case TRANSCEIVER_BACKOFF:
-      // TODO(simon): The break for the next frame can start immediately,
-      // but the catch is the break-to-break time can't be less than 1.204ms
-      // This means we may need to add a delay here if the frame is less than a
-      // certain size.
-      // TODO(simon): This is setup for RDM DUB right now. Fix me
-      if (CoarseTimer_HasElapsed(g_transceiver.last_break_time, 58)) {
+      // From E1.11, the min break-to-break time is 1.204ms.
+      //
+      // From E1.20:
+      //  - If DUB, the min EOF to break is 5.8ms
+      //  - If bcast, the min EOF to break is 0.176ms
+      //  - If lost response, the min EOF to break is 3.0ms
+      ok = CoarseTimer_HasElapsed(g_transceiver.start_of_frame_time, 12);
+
+      switch (g_transceiver.active->type) {
+        case T_OP_TRANSCEIVER_NO_RESPONSE:
+          break;
+        case T_OP_RDM_DUB:
+          ok |= CoarseTimer_HasElapsed(g_transceiver.end_of_frame_time, 58);
+          break;
+        case T_OP_RDM_BROADCAST:
+          ok |= CoarseTimer_HasElapsed(g_transceiver.end_of_frame_time, 2);
+          break;
+        case T_OP_RDM_WITH_RESPONSE:
+          // TODO(simon): We can probably make this faster, since the 3ms only
+          // applies for no responses. If we do get a response, then it's only
+          // a 0.176ms delay, from the end of the responder frame.
+          ok |= CoarseTimer_HasElapsed(g_transceiver.end_of_frame_time, 30);
+          break;
+      }
+
+      if (ok) {
         g_transceiver.state = TRANSCEIVER_TX_READY;
       }
       break;
