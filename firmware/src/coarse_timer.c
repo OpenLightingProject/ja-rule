@@ -24,7 +24,7 @@ void CoarseTimer_Initialize(const CoarseTimer_Settings *settings) {
   PLIB_TMR_Stop(settings->timer_id);
   PLIB_TMR_ClockSourceSelect(settings->timer_id,
                              TMR_CLOCK_SOURCE_PERIPHERAL_CLOCK);
-  PLIB_TMR_PrescaleSelect(settings->timer_id , TMR_PRESCALE_VALUE_1);
+  PLIB_TMR_PrescaleSelect(settings->timer_id, TMR_PRESCALE_VALUE_1);
   PLIB_TMR_Mode16BitEnable(settings->timer_id);
   PLIB_TMR_CounterAsyncWriteDisable(settings->timer_id);
 

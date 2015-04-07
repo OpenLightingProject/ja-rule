@@ -29,16 +29,14 @@
 
 typedef enum {
   TRANSCEIVER_UNINITIALIZED,
-  TRANSCEIVER_READY,
-  TRANSCEIVER_BREAK,
-  TRANSCEIVER_IN_BREAK,
-  TRANSCEIVER_IN_MARK,
-  TRANSCEIVER_BEGIN_TX,
-  TRANSCEIVER_TX,
-  TRANSCEIVER_TX_BUFFER_EMPTY,
+  TRANSCEIVER_TX_READY,  //!< Wait for a pending frame
+  TRANSCEIVER_IN_BREAK,  //!< In the Break
+  TRANSCEIVER_IN_MARK,  //!< In the Mark-after-break
+  TRANSCEIVER_TX_DATA,  //!< Transmitting data
+  TRANSCEIVER_TX_DATA_BUFFER_EMPTY,  //!< Last byte has been queued
   TRANSCEIVER_RECEIVING,
   TRANSCEIVER_COMPLETE,
-  TRANSCEIVER_IDLE,
+  TRANSCEIVER_BACKOFF,
   TRANSCEIVER_ERROR,
   TRANSCEIVER_RESET
 } TransceiverState;
@@ -107,7 +105,6 @@ static inline void Transceiver_EnableTX() {
                     g_transceiver.settings.port,
                     g_transceiver.settings.tx_enable_bit);
 }
-
 
 /*
  * @brief Disable TX.
@@ -206,7 +203,7 @@ static inline void Transceiver_FrameComplete() {
  * @brief Start a period timer.
  * @param ticks The number of ticks.
  */
-static inline void Transceiver_StartTimer(unsigned int ticks) {
+static inline void Transceiver_SetTimer(unsigned int ticks) {
   PLIB_TMR_Counter16BitClear(TMR_ID_1);
   PLIB_TMR_Period16BitSet(TMR_ID_1, ticks);
   SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_1);
@@ -245,38 +242,41 @@ void Transceiver_InitializeSettings() {
  */
 void __ISR(_TIMER_1_VECTOR, ipl6) Transceiver_TimerEvent() {
   // Switch uses more instructions than a simple if
-  if (g_transceiver.state == TRANSCEIVER_IN_BREAK) {
-    // Transition to MAB.
-    Transceiver_SetMark();
-    g_transceiver.state = TRANSCEIVER_IN_MARK;
-    PLIB_TMR_Counter16BitClear(TMR_ID_1);
-    PLIB_TMR_Period16BitSet(TMR_ID_1, g_transceiver.mark_ticks);
-  } else if (g_transceiver.state == TRANSCEIVER_IN_MARK) {
-    // Transition to sending the data.
-    // Only push a single byte into the TX queue at the begining, otherwise
-    // we blow our timing budget.
-    if (!PLIB_USART_TransmitterBufferIsFull(g_transceiver.settings.usart) &&
-         g_transceiver.data_index != g_transceiver.active->size) {
-      PLIB_USART_TransmitterByteSend(
-          g_transceiver.settings.usart,
-          g_transceiver.active->data[g_transceiver.data_index++]);
-    }
-    PLIB_USART_Enable(g_transceiver.settings.usart);
-    PLIB_USART_TransmitterEnable(g_transceiver.settings.usart);
-    g_transceiver.state = TRANSCEIVER_TX;
-    SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
-    SYS_INT_SourceEnable(INT_SOURCE_USART_1_TRANSMIT);
-    PLIB_TMR_Stop(TMR_ID_1);
-  } else if (g_transceiver.state == TRANSCEIVER_RECEIVING) {
-    // BSP_LEDToggle(BSP_LED_1);
-    // Timeout
-    // TODO(simon): move this into Transceiver_ResetToMark() and clear the
-    // interupts to avoid the race.
-    PLIB_USART_ReceiverDisable(g_transceiver.settings.usart);
-    Transceiver_ResetToMark();
-    PLIB_TMR_Stop(TMR_ID_1);
-    g_transceiver.state = TRANSCEIVER_COMPLETE;
-    g_transceiver.rx_timeout = g_transceiver.data_index == 0;
+  switch (g_transceiver.state) {
+    case TRANSCEIVER_IN_BREAK:
+      // Transition to MAB.
+      Transceiver_SetMark();
+      g_transceiver.state = TRANSCEIVER_IN_MARK;
+      PLIB_TMR_Counter16BitClear(TMR_ID_1);
+      PLIB_TMR_Period16BitSet(TMR_ID_1, g_transceiver.mark_ticks);
+      break;
+    case TRANSCEIVER_IN_MARK:
+      // Transition to sending the data.
+      // Only push a single byte into the TX queue at the begining, otherwise
+      // we blow our timing budget.
+      if (!PLIB_USART_TransmitterBufferIsFull(g_transceiver.settings.usart) &&
+           g_transceiver.data_index != g_transceiver.active->size) {
+        PLIB_USART_TransmitterByteSend(
+            g_transceiver.settings.usart,
+            g_transceiver.active->data[g_transceiver.data_index++]);
+      }
+      PLIB_USART_Enable(g_transceiver.settings.usart);
+      PLIB_USART_TransmitterEnable(g_transceiver.settings.usart);
+      g_transceiver.state = TRANSCEIVER_TX_DATA;
+      SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
+      SYS_INT_SourceEnable(INT_SOURCE_USART_1_TRANSMIT);
+      PLIB_TMR_Stop(TMR_ID_1);
+      break;
+    case TRANSCEIVER_RECEIVING:
+    // other cases here
+      // Timeout
+      // TODO(simon): move this into Transceiver_ResetToMark() and clear the
+      // interupts to avoid the race.
+      PLIB_USART_ReceiverDisable(g_transceiver.settings.usart);
+      Transceiver_ResetToMark();
+      PLIB_TMR_Stop(TMR_ID_1);
+      g_transceiver.state = TRANSCEIVER_COMPLETE;
+      g_transceiver.rx_timeout = g_transceiver.data_index == 0;
   }
   SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_1);
 }
@@ -342,9 +342,15 @@ void Transceiver_RXBytes() {
  *  - A USART RX error has occurred.
  */
 void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
-  // BSP_LEDToggle(BSP_LED_1);
   if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_TRANSMIT)) {
-    if (g_transceiver.state == TRANSCEIVER_TX_BUFFER_EMPTY) {
+    if (g_transceiver.state == TRANSCEIVER_TX_DATA) {
+      Transceiver_TXBytes();
+      if (g_transceiver.data_index == g_transceiver.active->size) {
+        PLIB_USART_TransmitterInterruptModeSelect(
+            g_transceiver.settings.usart, USART_TRANSMIT_FIFO_IDLE);
+        g_transceiver.state = TRANSCEIVER_TX_DATA_BUFFER_EMPTY;
+      }
+    } else if (g_transceiver.state == TRANSCEIVER_TX_DATA_BUFFER_EMPTY) {
       // The last byte has been transmitted
       SYS_INT_SourceDisable(INT_SOURCE_USART_1_TRANSMIT);
       if (g_transceiver.active->type == T_OP_TRANSCEIVER_NO_RESPONSE) {
@@ -370,23 +376,15 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
 
         // Setup RX timer
         PLIB_TMR_PrescaleSelect(TMR_ID_1, TMR_PRESCALE_VALUE_8);
-        Transceiver_StartTimer(g_transceiver.rdm_wait_time_ticks);
+        Transceiver_SetTimer(g_transceiver.rdm_wait_time_ticks);
         PLIB_TMR_Start(TMR_ID_1);
-      }
-    } else if (g_transceiver.state == TRANSCEIVER_TX) {
-      Transceiver_TXBytes();
-      if (g_transceiver.data_index == g_transceiver.active->size) {
-        PLIB_USART_TransmitterInterruptModeSelect(
-            g_transceiver.settings.usart, USART_TRANSMIT_FIFO_IDLE);
-        g_transceiver.state = TRANSCEIVER_TX_BUFFER_EMPTY;
       }
     }
     SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
   } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_RECEIVE)) {
-    // BSP_LEDToggle(BSP_LED_2);
     if (g_transceiver.active->type == T_OP_RDM_DUB) {
       if (g_transceiver.data_index == 0) {
-        Transceiver_StartTimer(g_transceiver.rdm_dub_response_ticks);
+        Transceiver_SetTimer(g_transceiver.rdm_dub_response_ticks);
         PLIB_TMR_Start(TMR_ID_1);
       }
       Transceiver_RXBytes();
@@ -494,38 +492,50 @@ void Transceiver_Tasks() {
 
   switch (g_transceiver.state) {
     case TRANSCEIVER_UNINITIALIZED:
-      g_transceiver.state = TRANSCEIVER_READY;
+      g_transceiver.state = TRANSCEIVER_TX_READY;
+      PLIB_USART_Disable(g_transceiver.settings.usart);
+      Transceiver_EnableTX();
+      // TODO(simon): Reset to mark here?
       break;
-    case TRANSCEIVER_READY:
+    case TRANSCEIVER_TX_READY:
       if (!g_transceiver.next) {
         return;
       }
+      // TODO(simon): confirm this is all true
+      // @pre Timer is not running.
+      // @pre UART is disabled
+      // @pre TX is enabled.
+      // @pre RX is disabled.
+      // @pre RX CN is disabled.
+      // @pre line in marking state
+
+      // Dequeue frame and set break.
       g_transceiver.active = g_transceiver.next;
       g_transceiver.next = NULL;
-      g_transceiver.state = TRANSCEIVER_BREAK;
+
+      // Reset params
       g_transceiver.data_index = 0;
       g_transceiver.found_expected_length = false;
       g_transceiver.expected_length = 0;
-      // Fall through
-    case TRANSCEIVER_BREAK:
-      PLIB_USART_Disable(g_transceiver.settings.usart);
+
+      // Prepare the UART
       // Set UART Interrupts when the buffer is empty.
       PLIB_USART_TransmitterInterruptModeSelect(g_transceiver.settings.usart,
                                                 USART_TRANSMIT_FIFO_EMPTY);
-      Transceiver_EnableTX();
+
+      // Set break and start timer.
       g_transceiver.state = TRANSCEIVER_IN_BREAK;
       PLIB_TMR_PrescaleSelect(TMR_ID_1 , TMR_PRESCALE_VALUE_1);
-      Transceiver_StartTimer(g_transceiver.break_ticks);
+      Transceiver_SetTimer(g_transceiver.break_ticks);
       Transceiver_SetBreak();
       PLIB_TMR_Start(TMR_ID_1);
-      break;
+
     case TRANSCEIVER_IN_BREAK:
     case TRANSCEIVER_IN_MARK:
       // Noop, wait for timer event
       break;
-    case TRANSCEIVER_BEGIN_TX:
-    case TRANSCEIVER_TX:
-    case TRANSCEIVER_TX_BUFFER_EMPTY:
+    case TRANSCEIVER_TX_DATA:
+    case TRANSCEIVER_TX_DATA_BUFFER_EMPTY:
       // Noop, wait TX to complete.
       break;
     case TRANSCEIVER_RECEIVING:
@@ -536,16 +546,16 @@ void Transceiver_Tasks() {
       g_transceiver.free_list[g_transceiver.free_size] = g_transceiver.active;
       g_transceiver.free_size++;
       g_transceiver.active = NULL;
-      g_transceiver.state = TRANSCEIVER_IDLE;
+      g_transceiver.state = TRANSCEIVER_BACKOFF;
       // Fall through
-    case TRANSCEIVER_IDLE:
+    case TRANSCEIVER_BACKOFF:
       // TODO(simon): The break for the next frame can start immediately,
       // but the catch is the break-to-break time can't be less than 1.204ms
       // This means we may need to add a delay here if the frame is less than a
       // certain size.
       // TODO(simon): This is setup for RDM DUB right now. Fix me
       if (CoarseTimer_HasElapsed(g_transceiver.last_break_time, 58)) {
-        g_transceiver.state = TRANSCEIVER_READY;
+        g_transceiver.state = TRANSCEIVER_TX_READY;
       }
       break;
     case TRANSCEIVER_ERROR:
