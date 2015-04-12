@@ -11,9 +11,18 @@ if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   wget -O cpplint.py $CPP_LINT_URL;
   chmod u+x cpplint.py;
+  # We can only do limited lint on the C firmware, as it's not C++
+  ./cpplint.py \
+    --filter=-legal/copyright,-build/include,-readability/casting \
+    --extentions=c \
+    firmware/src/*.c
+  if [[ $? -ne 0 ]]; then
+    exit 1;
+  fi;
+  # Check everything else, including the firmware headers, more thoroughly
   ./cpplint.py \
     --filter=-legal/copyright,-build/include \
-    firmware/src/*.{h,c} tests/{include,lib,tests}/*.{h,cpp}
+    firmware/src/*.h tests/{include,lib,tests}/*.{h,cpp}
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
