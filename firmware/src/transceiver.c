@@ -31,7 +31,6 @@
 #define INPUT_CAPTURE_MODULE IC_ID_2
 
 typedef enum {
-  STATE_UNINITIALIZED,
   STATE_TX_READY,  //!< Wait for a pending frame
   STATE_IN_BREAK,  //!< In the Break
   STATE_IN_MARK,  //!< In the Mark-after-break
@@ -183,7 +182,7 @@ static inline void Transceiver_ResetToMark() {
 }
 
 static inline void Transceiver_LogStateChange() {
-  static TransceiverState last_state = STATE_UNINITIALIZED;
+  static TransceiverState last_state = STATE_TX_READY;
 
   if (g_transceiver.state != last_state) {
     SysLog_Print(SYSLOG_INFO, "Changed to %d", g_transceiver.state);
@@ -275,7 +274,7 @@ void Transceiver_InitializeBuffers() {
 /*
  * @brief Reset the settings to their default values.
  */
-void Transceiver_InitializeSettings() {
+void Transceiver_ResetTimingSettings() {
   Transceiver_SetBreakTime(DEFAULT_BREAK_TIME);
   Transceiver_SetMarkTime(DEFAULT_MARK_TIME);
   Transceiver_SetRDMBroadcastListen(DEFAULT_RDM_BROADCAST_LISTEN);
@@ -327,7 +326,6 @@ void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
         g_transceiver.state = STATE_RX_DATA;
       }
       break;
-    case STATE_UNINITIALIZED:
     case STATE_TX_READY:
     case STATE_IN_BREAK:
     case STATE_IN_MARK:
@@ -382,7 +380,6 @@ void __ISR(_TIMER_3_VECTOR, ipl6) Transceiver_TimerEvent() {
       SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
       SYS_INT_SourceEnable(INT_SOURCE_USART_1_TRANSMIT);
       break;
-    case STATE_UNINITIALIZED:
     case STATE_TX_READY:
     case STATE_TX_DATA:
     case STATE_TX_DATA_BUFFER_EMPTY:
@@ -565,7 +562,6 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         Transceiver_ResetToMark();
         g_transceiver.state = STATE_COMPLETE;
         break;
-      case STATE_UNINITIALIZED:
       case STATE_TX_READY:
       case STATE_IN_BREAK:
       case STATE_IN_MARK:
@@ -589,11 +585,11 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
                             TransceiverEventCallback callback) {
   g_hw_settings = *settings;
   g_event_callback = callback;
-  g_transceiver.state = STATE_UNINITIALIZED;
+  g_transceiver.state = STATE_TX_READY;
   g_transceiver.data_index = 0;
 
   Transceiver_InitializeBuffers();
-  Transceiver_InitializeSettings();
+  Transceiver_ResetTimingSettings();
 
   // Setup the Break, TX Enable & RX Enable I/O Pins
   PLIB_PORTS_PinDirectionOutputSet(PORTS_ID_0,
@@ -652,22 +648,10 @@ void Transceiver_Tasks() {
   Transceiver_LogStateChange();
 
   switch (g_transceiver.state) {
-    case STATE_UNINITIALIZED:
-      // Reset TMR
-      SYS_INT_SourceDisable(INT_SOURCE_TIMER_3);
-      SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
-      PLIB_TMR_Stop(TMR_ID_3);
-
-      g_transceiver.state = STATE_TX_READY;
-      PLIB_USART_Disable(g_hw_settings.usart);
-      Transceiver_ResetToMark();
-      // TODO(simon): Reset to mark here?
-      break;
     case STATE_TX_READY:
       if (!g_transceiver.next) {
         return;
       }
-      // TODO(simon): confirm this is all true
       // @pre Timer is not running.
       // @pre UART is disabled
       // @pre TX is enabled.
@@ -843,16 +827,23 @@ void Transceiver_Tasks() {
         g_transceiver.free_list[g_transceiver.free_size] = g_transceiver.active;
         g_transceiver.free_size++;
         g_transceiver.active = NULL;
-        // Reset sequence
-        PLIB_TMR_PrescaleSelect(TMR_ID_3, TMR_PRESCALE_VALUE_1);
         g_transceiver.state = STATE_TX_READY;
       }
       break;
     case STATE_RESET:
-      g_transceiver.state = STATE_UNINITIALIZED;
+      g_transceiver.state = STATE_TX_READY;
   }
 }
 
+/*
+ * Queue an operation.
+ * @param token The token for this operation.
+ * @param start_code The start code for the outgoing frame.
+ * @param type The type of operation.
+ * @param data The frame's slot data.
+ * @param size The number of slots.
+ * @returns true if the operation was queued, false if the buffer was full.
+ */
 bool Transceiver_QueueFrame(uint8_t token, uint8_t start_code,
                             TransceiverOperation type, const uint8_t* data,
                             unsigned int size) {
@@ -902,21 +893,45 @@ bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
       data, size);
 }
 
+/*
+ *  This is called by the MessageHandler, so we know we're not in _Tasks or an
+ *  ISR.
+ */
 void Transceiver_Reset() {
+  // Disable & clear all interrupts.
   SYS_INT_SourceDisable(INT_SOURCE_USART_1_TRANSMIT);
+  SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
   SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
+  SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
   SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
+  SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_ERROR);
+
+  // Reset Timer
   SYS_INT_SourceDisable(INT_SOURCE_TIMER_3);
+  SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
+  PLIB_TMR_Stop(TMR_ID_3);
 
-  Transceiver_InitializeBuffers();
+  // Reset IC
+  SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
+  SYS_INT_SourceStatusClear(INT_SOURCE_INPUT_CAPTURE_2);
+  PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
 
-  // Set us back into the TX Mark state.
+  // Reset UART
   PLIB_USART_ReceiverDisable(g_hw_settings.usart);
   PLIB_USART_TransmitterDisable(g_hw_settings.usart);
-  Transceiver_ResetToMark();
-  Transceiver_InitializeSettings();
+  PLIB_USART_Disable(g_hw_settings.usart);
 
-  g_transceiver.state = STATE_RESET;
+  // Reset buffers in case we got into a weird state.
+  Transceiver_InitializeBuffers();
+
+  // Reset all timing configuration.
+  Transceiver_ResetTimingSettings();
+
+  // Set us back into the TX Mark state.
+  Transceiver_ResetToMark();
+
+  g_transceiver.state = STATE_TX_READY;
+  SysLog_Print(SYSLOG_INFO, "Reset complete");
 }
 
 bool Transceiver_SetBreakTime(uint16_t break_time_us) {
