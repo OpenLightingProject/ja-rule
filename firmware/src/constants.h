@@ -2,6 +2,9 @@
  * @{
  * @file constants.h
  * @brief Various constants.
+ *
+ * This file defines constants that are not expected to change. Constants that
+ * are board specific should be placed in the system_config/ directory.
  */
 
 #ifndef FIRMWARE_SRC_CONSTANTS_H_
@@ -11,43 +14,70 @@
 // USB specific constants
 // *****************************************************************************
 
-// The USB Vendor ID.
+/**
+ * @brief The USB Vendor ID.
+ */
 #define USB_DEVICE_VENDOR_ID 0x04D8
 
-// The USB Product ID.
+/**
+ * @brief The USB Product ID.
+ *
+ * @todo Apply for a product ID.
+ */
 #define USB_DEVICE_PRODUCT_ID 0x0053
 
-// The maximum size of a USB packet to / from the bulk endpoint.
-// 64 is the highest value a full speed, bulk endpoint can use.
+/**
+ * @brief The maximum size of a USB packet to / from the bulk endpoint.
+ *
+ * 64 bytes is the highest value a full speed, bulk endpoint can use.
+ */
 #define USB_MAX_PACKET_SIZE 64
 
-// The maximum transfer size of a USB command, this should be a multiple of
-// USB_MAX_PACKET_SIZE.
+/**
+ * @brief The maximum transfer size of a Ja Rule USB command.
+ *
+ * This should be a multiple of USB_MAX_PACKET_SIZE.
+ */
 #define USB_READ_BUFFER_SIZE 576
 
-// The polling interval for the bulk endpoint in milliseconds.
-// 1ms is the shortest polling interval
+/**
+ * @brief The polling interval for the bulk endpoint in milliseconds.
+ *
+ * 1ms is the shortest polling interval USB allows.
+ */
 #define USB_POLLING_INTERVAL 1
 
 // *****************************************************************************
 // DMX512 specific constants
 // *****************************************************************************
 
-// The maximum size of a DMX frame, excluding the start code.
+/**
+ * @brief The maximum size of a DMX frame, excluding the start code.
+ */
 #define DMX_FRAME_SIZE 512
 
-// The Null Start Code (NSC).
+/**
+ * @brief The Null Start Code (NSC).
+ */
 #define NULL_START_CODE 0x00
 
-// The Baud rate for DMX / RDM.
+/**
+ * @brief The Baud rate for DMX / RDM.
+ */
 #define DMX_BAUD 250000  // 250kHz
 
 // *****************************************************************************
 // RDM specific constants
 // *****************************************************************************
 
+/**
+ * @brief The RDM Start Code.
+ */
 #define RDM_START_CODE 0xcc
 
+/**
+ * @brief The RDM Sub-start Code.
+ */
 #define RDM_SUB_START_CODE 0x01
 
 // *****************************************************************************
@@ -55,7 +85,7 @@
 // *****************************************************************************
 
 /**
- * @brief
+ * @brief The Ja Rule message commands.
  */
 typedef enum {
   ECHO = 0x80,
@@ -77,6 +107,9 @@ typedef enum {
   COMMAND_RDM_BROADCAST_REQUEST = 0x96
 } Command;
 
+/**
+ * @brief JaRule message return codes.
+ */
 typedef enum {
   RC_OK,
   RC_UNKNOWN,
@@ -88,36 +121,54 @@ typedef enum {
   RC_RX_INVALID_RESPONSE,
 } ReturnCode;
 
-// The Start of Message identifier.
+/**
+ * @brief The Start of Message identifier.
+ */
 #define START_OF_MESSAGE_ID 0x5a
 
-// The End of Message Identifier.
+/**
+ * @brief The End of Message Identifier.
+ */
 #define END_OF_MESSAGE_ID 0xa5
 
-// The maximum data payload size
+/**
+ * @brief The maximum payload size in a message.
+ */
 #define PAYLOAD_SIZE 513
 
-// The default break time in microseconds.
+/**
+ * @brief The break time in microseconds.
+ */
 #define DEFAULT_BREAK_TIME 176
 
-// The default mark time in microseconds.
+/**
+ * @brief The mark time in microseconds.
+ */
 #define DEFAULT_MARK_TIME 12
 
-// The default time to listen for a response after sending an RDM broadcast
-// message.
-// Value is in 10ths of a millisecond.
+/**
+ * @brief The time to listen for a response after sending an RDM broadcast.
+ *
+ * Measured in 10ths of a millisecond. This can be 0, since we don't expect
+ * responses from broadcast messages, however by waiting we can detect bad
+ * responders, so we set this the same as DEFAULT_RDM_WAIT_TIME.
+ */
 #define DEFAULT_RDM_BROADCAST_LISTEN 28
 
-// The default time to wait after sending an RDM message.
-// Value is in 10ths of a millisecond.
-// Comes from Line 1 & 3, Table 3-2, E1.20.
-// Responders only have 2ms, and then in line proxies can introduce up to 704uS
-// of delay. This rounds to 2.8 ms.
+/**
+ * @brief The default time to wait for a response after sending an RDM message.
+ *
+ * Measured is in 10ths of a millisecond, from Line 1 & 3, Table 3-2, E1.20.
+ * Responders have 2ms (see Table 3-4), and then in line proxies can introduce
+ * up to 704uS of delay. This rounds to 2.8 ms.
+ */
 #define DEFAULT_RDM_WAIT_TIME 28
 
-// The default time a RDM DUB can take.
-// Value is in 10ths of a millisecond.
-// Line 3, Table 3-3, E1.20.
+/**
+ * @brief The default time a RDM DUB response can take.
+ *
+ * Measured in in 10ths of a millisecond. From Line 3, Table 3-3, E1.20.
+ */
 #define DEFAULT_RDM_DUB_RESPONSE_TIME 29
 
 /**
