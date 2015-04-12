@@ -13,7 +13,7 @@ if [[ $TASK = 'lint' ]]; then
   chmod u+x cpplint.py;
   ./cpplint.py \
     --filter=-legal/copyright,-build/include \
-    src/*.{h,c} tests/{include,lib,tests}/*.{h,cpp}
+    firmware/src/*.{h,c} tests/{include,lib,tests}/*.{h,cpp}
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
