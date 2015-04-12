@@ -14,7 +14,7 @@ if [[ $TASK = 'lint' ]]; then
   # We can only do limited lint on the C firmware, as it's not C++
   ./cpplint.py \
     --filter=-legal/copyright,-build/include,-readability/casting \
-    --extentions=c \
+    --extensions=c \
     firmware/src/*.c
   if [[ $? -ne 0 ]]; then
     exit 1;
