@@ -421,8 +421,9 @@ void Transceiver_FlushRX() {
 
 /*
  * @brief Pull data out the UART RX queue.
+ * @returns true if the RX buffer is now full.
  */
-void Transceiver_RXBytes() {
+bool Transceiver_RXBytes() {
   while (PLIB_USART_ReceiverDataIsAvailable(g_hw_settings.usart) &&
          g_transceiver.data_index != DMX_FRAME_SIZE) {
     g_transceiver.active->data[g_transceiver.data_index++] =
@@ -448,8 +449,7 @@ void Transceiver_RXBytes() {
       }
     }
   }
-  // TODO(simon): if we've hit the buffer size here, we need to reset and
-  // return an error.
+  return g_transceiver.data_index >= DMX_FRAME_SIZE;
 }
 
 /*
@@ -539,7 +539,16 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
   } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_RECEIVE)) {
     if (g_transceiver.state == STATE_RX_IN_DUB ||
         g_transceiver.state == STATE_RX_DATA) {
-      Transceiver_RXBytes();
+      if (Transceiver_RXBytes()) {
+        // RX buffer is full.
+        PLIB_TMR_Stop(TMR_ID_3);
+        SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
+        SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
+        PLIB_USART_ReceiverDisable(g_hw_settings.usart);
+        Transceiver_ResetToMark();
+        g_transceiver.invalid_response = true;
+        g_transceiver.state = STATE_COMPLETE;
+      }
     }
     SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
   } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_ERROR)) {
@@ -644,9 +653,14 @@ void Transceiver_Tasks() {
 
   switch (g_transceiver.state) {
     case STATE_UNINITIALIZED:
+      // Reset TMR
+      SYS_INT_SourceDisable(INT_SOURCE_TIMER_3);
+      SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
+      PLIB_TMR_Stop(TMR_ID_3);
+
       g_transceiver.state = STATE_TX_READY;
       PLIB_USART_Disable(g_hw_settings.usart);
-      Transceiver_EnableTX();
+      Transceiver_ResetToMark();
       // TODO(simon): Reset to mark here?
       break;
     case STATE_TX_READY:
@@ -715,10 +729,13 @@ void Transceiver_Tasks() {
       // Disable interupts so we don't race
       SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
       if (g_transceiver.state == STATE_RX_WAIT_FOR_MARK &&
-          PLIB_TMR_Counter16BitGet(TMR_ID_3) -
-            g_timing.get_set_response.break_time > CONTROLLER_RX_BREAK_TIME_MAX) {
-        SysLog_Message(SYSLOG_INFO, "Break timeout");
-        // TODO(simon): write me
+          (PLIB_TMR_Counter16BitGet(TMR_ID_3) -
+            g_timing.get_set_response.break_time >
+            CONTROLLER_RX_BREAK_TIME_MAX)) {
+        g_transceiver.invalid_response = true;
+        PLIB_TMR_Stop(TMR_ID_3);
+        Transceiver_ResetToMark();
+        g_transceiver.state = STATE_COMPLETE;
       } else {
         SYS_INT_SourceEnable(INT_SOURCE_INPUT_CAPTURE_2);
       }
@@ -812,7 +829,7 @@ void Transceiver_Tasks() {
           ok &= CoarseTimer_HasElapsed(g_transceiver.tx_frame_end, 2);
           break;
         case T_OP_RDM_WITH_RESPONSE:
-          // TODO(simon): We can probably make this faster, since the 3ms only
+          // We can probably make this faster, since the 3ms only
           // applies for no responses. If we do get a response, then it's only
           // a 0.176ms delay, from the end of the responder frame.
           ok &= CoarseTimer_HasElapsed(g_transceiver.tx_frame_end, 30);
