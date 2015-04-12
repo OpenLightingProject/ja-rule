@@ -42,13 +42,10 @@ void MessageHandler_HandleMessage(const Message* message);
 
 /**
  * @brief Handle notifications when the transceiver operations complete.
+ * @param event the TransceiverEvent.
  * @sa TransceiverEventCallback.
  */
-void MessageHandler_TransceiverEvent(uint8_t token,
-                                     TransceiverOperation type,
-                                     TransceiverResult result,
-                                     const uint8_t* data,
-                                     unsigned int length);
+void MessageHandler_TransceiverEvent(const TransceiverEvent *event);
 
 #ifdef __cplusplus
 }

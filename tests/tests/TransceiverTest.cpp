@@ -37,37 +37,26 @@ class TransceiverTest : public testing::Test {
   void TearDown() {
   }
 
-  Transceiver_Settings DefaultSettings() const {
-    Transceiver_Settings settings = {
+  TransceiverHardwareSettings DefaultSettings() const {
+    TransceiverHardwareSettings settings = {
       .usart = USART_ID_1,
       .port = PORT_CHANNEL_F,
       .break_bit = PORTS_BIT_POS_8,
       .rx_enable_bit = PORTS_BIT_POS_0,
       .tx_enable_bit = PORTS_BIT_POS_1,
-      .callback = nullptr
     };
     return settings;
   }
 };
 
 TEST_F(TransceiverTest, testUnsetTransceiver) {
-  Transceiver_Settings settings = DefaultSettings();
-  Transceiver_Initialize(&settings);
-  /*
-  const uint8_t payload[] = {0};
-
-  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
-      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
-      .WillOnce(Return(true));
-
-  Transceiver_SendResponse();
-  EXPECT_FALSE(Transceiver_HasChanged());
-  */
+  TransceiverHardwareSettings settings = DefaultSettings();
+  Transceiver_Initialize(&settings, NULL);
 }
 
 TEST_F(TransceiverTest, testSetBreakTime) {
-  Transceiver_Settings settings = DefaultSettings();
-  Transceiver_Initialize(&settings);
+  TransceiverHardwareSettings settings = DefaultSettings();
+  Transceiver_Initialize(&settings, NULL);
 
   EXPECT_EQ(176, Transceiver_GetBreakTime());
   EXPECT_FALSE(Transceiver_SetBreakTime(43));
@@ -81,8 +70,8 @@ TEST_F(TransceiverTest, testSetBreakTime) {
 }
 
 TEST_F(TransceiverTest, testSetMarkTime) {
-  Transceiver_Settings settings = DefaultSettings();
-  Transceiver_Initialize(&settings);
+  TransceiverHardwareSettings settings = DefaultSettings();
+  Transceiver_Initialize(&settings, NULL);
 
   EXPECT_EQ(12, Transceiver_GetMarkTime());
   EXPECT_FALSE(Transceiver_SetMarkTime(3));
@@ -96,8 +85,8 @@ TEST_F(TransceiverTest, testSetMarkTime) {
 }
 
 TEST_F(TransceiverTest, testSetRDMBroadcastListen) {
-  Transceiver_Settings settings = DefaultSettings();
-  Transceiver_Initialize(&settings);
+  TransceiverHardwareSettings settings = DefaultSettings();
+  Transceiver_Initialize(&settings, NULL);
 
   EXPECT_EQ(28, Transceiver_GetRDMBroadcastListen());
   EXPECT_TRUE(Transceiver_SetRDMBroadcastListen(1));
@@ -109,8 +98,8 @@ TEST_F(TransceiverTest, testSetRDMBroadcastListen) {
 }
 
 TEST_F(TransceiverTest, testSetRDMWaitTime) {
-  Transceiver_Settings settings = DefaultSettings();
-  Transceiver_Initialize(&settings);
+  TransceiverHardwareSettings settings = DefaultSettings();
+  Transceiver_Initialize(&settings, NULL);
 
   EXPECT_EQ(28, Transceiver_GetRDMWaitTime());
   EXPECT_FALSE(Transceiver_SetRDMWaitTime(9));
@@ -121,4 +110,19 @@ TEST_F(TransceiverTest, testSetRDMWaitTime) {
   EXPECT_EQ(50, Transceiver_GetRDMWaitTime());
   EXPECT_FALSE(Transceiver_SetRDMWaitTime(51));
   EXPECT_EQ(50, Transceiver_GetRDMWaitTime());
+}
+
+TEST_F(TransceiverTest, testSetDUBResponseTime) {
+  TransceiverHardwareSettings settings = DefaultSettings();
+  Transceiver_Initialize(&settings, NULL);
+
+  EXPECT_EQ(29, Transceiver_GetRDMDUBResponseTime());
+  EXPECT_FALSE(Transceiver_SetRDMDUBResponseTime(9));
+  EXPECT_EQ(29, Transceiver_GetRDMDUBResponseTime());
+  EXPECT_TRUE(Transceiver_SetRDMDUBResponseTime(10));
+  EXPECT_EQ(10, Transceiver_GetRDMDUBResponseTime());
+  EXPECT_TRUE(Transceiver_SetRDMDUBResponseTime(50));
+  EXPECT_EQ(50, Transceiver_GetRDMDUBResponseTime());
+  EXPECT_FALSE(Transceiver_SetRDMDUBResponseTime(51));
+  EXPECT_EQ(50, Transceiver_GetRDMDUBResponseTime());
 }

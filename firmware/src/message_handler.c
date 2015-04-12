@@ -204,41 +204,42 @@ void MessageHandler_HandleMessage(const Message *message) {
   }
 }
 
-void MessageHandler_TransceiverEvent(uint8_t token,
-                                     TransceiverOperation type,
-                                     TransceiverResult result,
-                                     const uint8_t* data,
-                                     unsigned int length) {
-  SysLog_Print(SYSLOG_INFO, "Result was %d, size %d", result, length);
+void MessageHandler_TransceiverEvent(const TransceiverEvent *event) {
   uint8_t vector_size = 1;
   IOVec iovec[2];
-  iovec[0].base = &token;
-  iovec[0].length = sizeof(token);
+  iovec[0].base = &event->token;
+  iovec[0].length = sizeof(event->token);
 
-  if (data && length > 0) {
-    iovec[1].base = data;
-    iovec[1].length = length;
+  if (event->data && event->length > 0) {
+    iovec[1].base = event->data;
+    iovec[1].length = event->length;
     vector_size++;
   }
 
   Command command;
   ReturnCode rc;
-  switch (result) {
-    case T_RC_COMPLETED_OK:
+  switch (event->event_type) {
+    case T_EVENT_TX_OK:
       rc = RC_OK;
       break;
-    case T_RC_TX_ERROR:
+    case T_EVENT_TX_ERROR:
       rc = RC_TX_ERROR;
       break;
-    case T_RC_RX_TIMEOUT:
+    case T_EVENT_RX_DATA:
+      rc = event->op == T_OP_RDM_BROADCAST ? RC_RX_BCAST_RESPONSE : RC_OK;
+      break;
+    case T_EVENT_RX_TIMEOUT:
       rc = RC_RX_TIMEOUT;
+      break;
+    case T_EVENT_RX_INVALID:
+      rc = RC_RX_INVALID_RESPONSE;
       break;
     default:
       rc = RC_UNKNOWN;
   }
 
-  switch (type) {
-    case T_OP_TRANSCEIVER_NO_RESPONSE:
+  switch (event->op) {
+    case T_OP_TX_ONLY:
       command = TX_DMX;
       break;
     case T_OP_RDM_DUB:
@@ -251,9 +252,10 @@ void MessageHandler_TransceiverEvent(uint8_t token,
       command = COMMAND_RDM_BROADCAST_REQUEST;
       break;
     default:
-      SysLog_Print(SYSLOG_INFO, "Unknown Transceiver event %d", type);
+      SysLog_Print(SYSLOG_INFO, "Unknown Transceiver event %d", event->op);
       return;
   }
-  SysLog_Print(SYSLOG_INFO, "Op %d, result: %d, Command is %d", type, result, command);
+  SysLog_Print(SYSLOG_INFO, "Op %d, result: %d, Command is %d",
+               event->op, event->event_type, command);
   SendMessage(command, rc, (IOVec*) &iovec, vector_size);
 }

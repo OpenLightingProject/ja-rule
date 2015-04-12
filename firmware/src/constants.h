@@ -1,6 +1,7 @@
-/*
- * File:   constants.h
- * Author: Simon Newton
+/**
+ * @{
+ * @file constants.h
+ * @brief Various constants.
  */
 
 #ifndef FIRMWARE_SRC_CONSTANTS_H_
@@ -82,7 +83,9 @@ typedef enum {
   RC_BUFFER_FULL,
   RC_BAD_PARAM,
   RC_TX_ERROR,
-  RC_RX_TIMEOUT
+  RC_RX_TIMEOUT,
+  RC_RX_BCAST_RESPONSE,
+  RC_RX_INVALID_RESPONSE,
 } ReturnCode;
 
 // The Start of Message identifier.
@@ -117,11 +120,24 @@ typedef enum {
 // Line 3, Table 3-3, E1.20.
 #define DEFAULT_RDM_DUB_RESPONSE_TIME 29
 
-// The maximum time for a break when receiving a RDM response.
-// We wait at least this amount of time - actual time is longer since we only
-// start when the framing errors occurs, which is around 60uS from the start of
-// the break. Value is in microseconds.
-#define DEFAULT_RDM_RESPONSE_MAX_BREAK_TIME 352
+/**
+ * @brief The minimum break time for controllers to receive.
+ *
+ * Measured in 10ths of a microsecond. The value is from line 2 of Table 3-1
+ * in E1.20.
+ */
+#define CONTROLLER_RX_BREAK_TIME_MIN 880
+
+/**
+ * @brief The maximum break time for controllers to receive.
+ *
+ * Measured in 10ths of a microsecond. The value is from line 2 of Table 3-1
+ * in E1.20.
+ */
+#define CONTROLLER_RX_BREAK_TIME_MAX 3520
 
 #endif  // FIRMWARE_SRC_CONSTANTS_H_
 
+/**
+ * @}
+ */

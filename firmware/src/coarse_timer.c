@@ -54,6 +54,9 @@ uint32_t CoarseTimer_Delta(CoarseTimer_Value start_time,
 }
 
 bool CoarseTimer_HasElapsed(uint32_t start_time, uint32_t duration) {
+  if (duration == 0) {
+    return true;
+  }
   // This works because of unsigned int math.
   uint32_t diff = g_coarse_timer.timer_count - start_time;
   // The diff needs to be more than duration, since we don't want to fire an

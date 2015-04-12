@@ -30,6 +30,9 @@ class MockCoarseTimer {
   MOCK_METHOD0(TimerEvent, void());
   MOCK_METHOD0(GetTime, CoarseTimer_Value());
   MOCK_METHOD1(ElapsedTime, uint32_t(CoarseTimer_Value start_time));
+  MOCK_METHOD2(Delta,
+               uint32_t(CoarseTimer_Value start_time,
+                        CoarseTimer_Value end_time));
   MOCK_METHOD2(HasElapsed,
                bool(CoarseTimer_Value start_time, uint32_t interval));
   MOCK_METHOD1(SetCounter, void(uint32_t count));

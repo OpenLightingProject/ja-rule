@@ -141,7 +141,6 @@ USB_DEVICE_CDC_EVENT_RESPONSE USBConsole_CDCEventHandler(
           g_usb_console.read_state = READ_STATE_SCHEDULE_READ;
         } else {
           // Host disconnect
-          // USBConsole_AbortTransfers();
           g_usb_console.write_state = WRITE_STATE_WAIT_FOR_CARRIER;
           g_usb_console.read_state = READ_STATE_WAIT_FOR_CARRIER;
         }
@@ -222,8 +221,8 @@ void USBConsole_Initialize() {
                                  USBConsole_CDCEventHandler, NULL);
 }
 
-/**
- *
+/*
+ * @brief Log raw data to the console.
  * @pre str is NULL terminated and has at least one non-NULL character.
  * @pre There is at least 1 byte of space in the buffer.
  */
