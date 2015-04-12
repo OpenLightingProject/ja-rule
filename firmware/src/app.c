@@ -49,7 +49,7 @@ void APP_Initialize(void) {
   StreamDecoder_Initialize(NULL);
 
   Flags_Initialize();
-  // TODO: simon: remove this.
+  // TODO(simon): remove this.
   Logger_Initialize(NULL, PAYLOAD_SIZE);
   Logger_SetState(true);
 }

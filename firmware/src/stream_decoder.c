@@ -14,7 +14,7 @@
 // Microchip defines this macro in stdlib.h but it's non standard.
 // We define it here so that the unit tests work.
 #ifndef min
-#define min(a,b) (((a) < (b)) ? (a) : (b))
+#define min(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
 // The state indicates the next byte we expect

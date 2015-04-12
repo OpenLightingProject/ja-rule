@@ -254,6 +254,7 @@ void MessageHandler_TransceiverEvent(uint8_t token,
       SysLog_Print(SYSLOG_INFO, "Unknown Transceiver event %d", type);
       return;
   }
-  SysLog_Print(SYSLOG_INFO, "Op %d, result: %d, Command is %d", type, result, command);
+  SysLog_Print(SYSLOG_INFO, "Op %d, result: %d, Command is %d",
+               type, result, command);
   SendMessage(command, rc, (IOVec*) &iovec, vector_size);
 }
