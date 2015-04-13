@@ -171,18 +171,24 @@ void USBTransport_Tasks() {
 
     case USB_STATE_WAIT_FOR_CONFIGURATION:
       if (g_usb_transport_data.is_configured == true) {
-        if (USB_DEVICE_ActiveSpeedGet(g_usb_transport_data.usb_device) == USB_SPEED_FULL) {
+        if (USB_DEVICE_ActiveSpeedGet(g_usb_transport_data.usb_device)
+             == USB_SPEED_FULL) {
           endpointSize = 64;
-        } else if (USB_DEVICE_ActiveSpeedGet(g_usb_transport_data.usb_device) == USB_SPEED_HIGH) {
+        } else if (USB_DEVICE_ActiveSpeedGet(g_usb_transport_data.usb_device)
+                   == USB_SPEED_HIGH) {
           endpointSize = 512;
         }
-        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.rx_endpoint) == false) {
+        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device,
+                                         g_usb_transport_data.rx_endpoint)
+            == false) {
           // Enable Read Endpoint
           USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0,
                                     g_usb_transport_data.rx_endpoint,
                                     USB_TRANSFER_TYPE_BULK, endpointSize);
         }
-        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device, g_usb_transport_data.tx_endpoint) == false) {
+        if (USB_DEVICE_EndpointIsEnabled(g_usb_transport_data.usb_device,
+                                         g_usb_transport_data.tx_endpoint)
+            == false) {
           // Enable Write Endpoint
           USB_DEVICE_EndpointEnable(g_usb_transport_data.usb_device, 0,
                                     g_usb_transport_data.tx_endpoint,
@@ -231,8 +237,8 @@ void USBTransport_Tasks() {
           g_usb_transport_data.rx_cb(receivedDataBuffer,
                                      g_usb_transport_data.rx_data_size);
 #endif
-          //USB_DEVICE_EndpointStall(g_usb_transport_data.usb_device,
-          //                         g_usb_transport_data.rx_endpoint);
+          // USB_DEVICE_EndpointStall(g_usb_transport_data.usb_device,
+          //                          g_usb_transport_data.rx_endpoint);
           // schedule the next read
           g_usb_transport_data.rx_in_progress = true;
           USB_DEVICE_EndpointRead(g_usb_transport_data.usb_device,

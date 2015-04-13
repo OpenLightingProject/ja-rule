@@ -54,13 +54,23 @@ typedef struct {
   Transceiver_Settings settings;  //!< The transceiver hardware settings.
   TransceiverState state;  //!< The current state of the transceiver.
   CoarseTimer_Value last_break_time;
-  int data_index;  //!< The index into the TransceiverBuffer's data, for transmit or receiving.
+  /**
+   * @brief The index into the TransceiverBuffer's data, for transmit or
+   * receiving.
+   */
+  int data_index;
   bool rx_timeout;  //!< If an RX timeout occured.
   bool rx_got_break;  //!< If we've seen the break for a RDM response.
-  uint8_t expected_length;  //!< If we're receiving a RDM response, this is the decoded length.
+  /**
+   * @brief If we're receiving a RDM response, this is the decoded length.
+   */
+  uint8_t expected_length;
   bool found_expected_length;  //!< If expected_length is valid.
 
-  TransceiverBuffer* active;  //!< The buffer current used for transmit / receive.
+  /**
+   * @brief The buffer current used for transmit / receive.
+   */
+  TransceiverBuffer* active;
   TransceiverBuffer* next;  //!< The next buffer ready to be transmitted
 
   TransceiverBuffer* free_list[NUMBER_OF_BUFFERS];
@@ -400,7 +410,8 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         Transceiver_RXBytes();
       } else {
         // Discard any data until we get a break.
-        while (PLIB_USART_ReceiverDataIsAvailable(g_transceiver.settings.usart)) {
+        while (PLIB_USART_ReceiverDataIsAvailable(
+                   g_transceiver.settings.usart)) {
           PLIB_USART_ReceiverByteReceive(g_transceiver.settings.usart);
         }
       }
