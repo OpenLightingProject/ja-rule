@@ -280,59 +280,60 @@ void Transceiver_ResetTimingSettings() {
  * @brief Called when an input capture event occurs.
  */
 void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
-  switch (g_transceiver.state) {
-    case STATE_RX_WAIT_FOR_DUB:
-      g_timing.dub_response.start = PLIB_IC_Buffer16BitGet(IC_ID_2);
-      g_transceiver.state = STATE_RX_IN_DUB;
-      break;
-    case STATE_RX_IN_DUB:
-      while (!PLIB_IC_BufferIsEmpty(IC_ID_2)) {
-        g_timing.dub_response.end = PLIB_IC_Buffer16BitGet(IC_ID_2);
-      }
-      break;
-    case STATE_RX_WAIT_FOR_BREAK:
-      g_timing.get_set_response.break_time = PLIB_IC_Buffer16BitGet(IC_ID_2);
-      g_transceiver.state = STATE_RX_WAIT_FOR_MARK;
-      break;
-    case STATE_RX_WAIT_FOR_MARK:
-      g_timing.get_set_response.mark_time = PLIB_IC_Buffer16BitGet(IC_ID_2);
-      SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
-      PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
-
-      if (g_timing.get_set_response.mark_time -
-          g_timing.get_set_response.break_time < CONTROLLER_RX_BREAK_TIME_MIN) {
-        // The break was too short.
-        g_transceiver.result = T_RESULT_RX_INVALID;
-        PLIB_TMR_Stop(TMR_ID_3);
-        Transceiver_ResetToMark();
-        g_transceiver.state = STATE_COMPLETE;
-      } else {
-        // Break was good, enable UART
-        SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
-        SYS_INT_SourceEnable(INT_SOURCE_USART_1_RECEIVE);
-        SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_ERROR);
-        SYS_INT_SourceEnable(INT_SOURCE_USART_1_ERROR);
-        PLIB_USART_ReceiverEnable(g_hw_settings.usart);
-        g_transceiver.state = STATE_RX_DATA;
-      }
-      break;
-    case STATE_TX_READY:
-    case STATE_IN_BREAK:
-    case STATE_IN_MARK:
-    case STATE_TX_DATA:
-    case STATE_TX_DATA_BUFFER_EMPTY:
-    case STATE_RX_DATA:
-    case STATE_RX_TIMEOUT:
-    case STATE_COMPLETE:
-    case STATE_BACKOFF:
-    case STATE_RESET:
-      // Should never happen.
-      {};
-  }
-
-  // Discard IC data for now.
   while (!PLIB_IC_BufferIsEmpty(IC_ID_2)) {
-    PLIB_IC_Buffer16BitGet(IC_ID_2);
+    uint16_t value = PLIB_IC_Buffer16BitGet(IC_ID_2);
+    switch (g_transceiver.state) {
+      case STATE_RX_WAIT_FOR_DUB:
+        g_timing.dub_response.start = value;
+        g_transceiver.state = STATE_RX_IN_DUB;
+        break;
+      case STATE_RX_IN_DUB:
+        g_timing.dub_response.end = value;
+        break;
+      case STATE_RX_WAIT_FOR_BREAK:
+        g_timing.get_set_response.break_start = value;
+        g_transceiver.state = STATE_RX_WAIT_FOR_MARK;
+        break;
+      case STATE_RX_WAIT_FOR_MARK:
+        g_timing.get_set_response.mark_start = value;
+        // SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
+        // PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
+
+        if (g_timing.get_set_response.mark_start -
+            g_timing.get_set_response.break_start <
+            CONTROLLER_RX_BREAK_TIME_MIN) {
+          // The break was too short.
+          g_transceiver.result = T_RESULT_RX_INVALID;
+          PLIB_TMR_Stop(TMR_ID_3);
+          Transceiver_ResetToMark();
+          g_transceiver.state = STATE_COMPLETE;
+        } else {
+          // Break was good, enable UART
+          SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
+          SYS_INT_SourceEnable(INT_SOURCE_USART_1_RECEIVE);
+          SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_ERROR);
+          SYS_INT_SourceEnable(INT_SOURCE_USART_1_ERROR);
+          PLIB_USART_ReceiverEnable(g_hw_settings.usart);
+          g_transceiver.state = STATE_RX_DATA;
+        }
+        break;
+      case STATE_RX_DATA:
+        g_timing.get_set_response.mark_end = value;
+        SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
+        PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
+        break;
+      case STATE_TX_READY:
+      case STATE_IN_BREAK:
+      case STATE_IN_MARK:
+      case STATE_TX_DATA:
+      case STATE_TX_DATA_BUFFER_EMPTY:
+      case STATE_RX_TIMEOUT:
+      case STATE_COMPLETE:
+      case STATE_BACKOFF:
+      case STATE_RESET:
+        // Should never happen.
+        {};
+    }
   }
   SYS_INT_SourceStatusClear(INT_SOURCE_INPUT_CAPTURE_2);
 }
@@ -704,7 +705,7 @@ void Transceiver_Tasks() {
       SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
       if (g_transceiver.state == STATE_RX_WAIT_FOR_MARK &&
           (PLIB_TMR_Counter16BitGet(TMR_ID_3) -
-            g_timing.get_set_response.break_time >
+            g_timing.get_set_response.break_start >
             CONTROLLER_RX_BREAK_TIME_MAX)) {
         // Break was too long
         g_transceiver.result = T_RESULT_RX_INVALID;
@@ -767,12 +768,16 @@ void Transceiver_Tasks() {
       }
       if (g_transceiver.active->type == T_OP_RDM_WITH_RESPONSE) {
         SysLog_Print(SYSLOG_INFO, "break: %d",
-                     g_timing.get_set_response.break_time);
-        SysLog_Print(SYSLOG_INFO, "mark: %d",
-                     g_timing.get_set_response.mark_time);
-        SysLog_Print(SYSLOG_INFO, "Break Len: %d",
-                     g_timing.get_set_response.mark_time -
-                     g_timing.get_set_response.break_time);
+                     g_timing.get_set_response.break_start);
+        SysLog_Print(SYSLOG_INFO, "mark start: %d, end: %d",
+                     g_timing.get_set_response.mark_start,
+                     g_timing.get_set_response.mark_end);
+        SysLog_Print(SYSLOG_INFO, "Break: %d, Mark: %d",
+                     (g_timing.get_set_response.mark_start -
+                      g_timing.get_set_response.break_start),
+                     (g_timing.get_set_response.mark_end -
+                      g_timing.get_set_response.mark_start)
+                     );
       }
       Transceiver_FrameComplete();
       g_transceiver.state = STATE_BACKOFF;
@@ -784,10 +789,13 @@ void Transceiver_Tasks() {
       //  - If DUB, the min EOF to break is 5.8ms
       //  - If bcast, the min EOF to break is 0.176ms
       //  - If lost response, the min EOF to break is 3.0ms
+      //  - Any other packet, min EOF to break is 176uS.
       ok = CoarseTimer_HasElapsed(g_transceiver.tx_frame_start, 13);
 
       switch (g_transceiver.active->type) {
         case T_OP_TX_ONLY:
+          // 176uS min, rounds to 0.2ms.
+          ok &= CoarseTimer_HasElapsed(g_transceiver.tx_frame_end, 2);
           break;
         case T_OP_RDM_DUB:
           // It would be nice to be able to reduce this if we didn't get a
@@ -798,6 +806,7 @@ void Transceiver_Tasks() {
           ok &= CoarseTimer_HasElapsed(g_transceiver.tx_frame_end, 2);
           break;
         case T_OP_RDM_WITH_RESPONSE:
+          // TODO(simon):
           // We can probably make this faster, since the 3ms only
           // applies for no responses. If we do get a response, then it's only
           // a 0.176ms delay, from the end of the responder frame.

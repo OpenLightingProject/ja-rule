@@ -100,9 +100,9 @@ typedef union {
    * frame.
    */
   struct {
-    uint16_t response_delay;  //!< The delay until the break.
-    uint16_t break_time;  //!< The break time in 10ths of a uS
-    uint16_t mark_time;  //!< The mark time in 10ths of a uS.
+    uint16_t break_start;  //!< The start of the break.
+    uint16_t mark_start;  //!< The start of the mark / end of the break.
+    uint16_t mark_end;  //!< The end of the mark.
   } get_set_response;
 
   /**
