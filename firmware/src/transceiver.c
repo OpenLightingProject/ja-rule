@@ -776,8 +776,7 @@ void Transceiver_Tasks() {
                      (g_timing.get_set_response.mark_start -
                       g_timing.get_set_response.break_start),
                      (g_timing.get_set_response.mark_end -
-                      g_timing.get_set_response.mark_start)
-                     );
+                      g_timing.get_set_response.mark_start));
       }
       Transceiver_FrameComplete();
       g_transceiver.state = STATE_BACKOFF;
