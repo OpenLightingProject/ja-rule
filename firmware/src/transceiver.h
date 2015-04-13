@@ -63,20 +63,20 @@ typedef enum {
 } TransceiverOperation;
 
 /**
- * @brief The event type.
+ * @brief The result of an operation.
  */
 typedef enum {
   /**
    * @brief The frame was sent sucessfully and no response was expected.
    */
-  T_EVENT_TX_OK,
-  T_EVENT_TX_ERROR,  //!< A TX error occurred.
-  T_EVENT_RX_DATA,  //!< Data was received.
-  T_EVENT_RX_TIMEOUT,  //!< No response was received within the RDM wait time.
-  T_EVENT_RX_INVALID,  //!< Invalid data received.
+  T_RESULT_TX_OK,
+  T_RESULT_TX_ERROR,  //!< A TX error occurred.
+  T_RESULT_RX_DATA,  //!< Data was received.
+  T_RESULT_RX_TIMEOUT,  //!< No response was received within the RDM wait time.
+  T_RESULT_RX_INVALID,  //!< Invalid data received.
 
-  T_EVENT_RX_FRAME  //!< A frame was received
-} TransceiverEventType;
+  T_RESULT_RX_FRAME  //!< A frame was received
+} TransceiverOperationResult;
 
 /**
  * @brief The timing measurements for an operation.
@@ -146,9 +146,9 @@ typedef struct {
   TransceiverOperation op;
 
   /**
-   * @brief The event type.
+   * @brief The result of the operation.
    */
-  TransceiverEventType event_type;
+  TransceiverOperationResult result;
 
   /**
    * @brief The received data. May be null.

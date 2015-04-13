@@ -44,12 +44,12 @@ class MessageHandlerTest : public testing::Test {
   }
 
   void SendEvent(uint8_t token, TransceiverOperation op,
-                 TransceiverEventType event_type, const uint8_t *data,
+                 TransceiverOperationResult result, const uint8_t *data,
                  unsigned int length) {
     TransceiverEvent event {
       .token = token,
       .op = op,
-      .event_type = event_type,
+      .result = result,
       .data = data,
       .length = length,
       .timing = NULL
@@ -175,8 +175,8 @@ TEST_F(MessageHandlerTest, transceiverDMXEvent) {
       .WillOnce(Return(true));
 
   MessageHandler_Initialize(Transport_Send);
-  SendEvent(0, T_OP_TX_ONLY, T_EVENT_TX_OK, NULL, 0);
-  SendEvent(1, T_OP_TX_ONLY, T_EVENT_TX_ERROR, NULL, 0);
+  SendEvent(0, T_OP_TX_ONLY, T_RESULT_TX_OK, NULL, 0);
+  SendEvent(1, T_OP_TX_ONLY, T_RESULT_TX_ERROR, NULL, 0);
 }
 
 TEST_F(MessageHandlerTest, transceiverRDMDiscoveruRequest) {
@@ -208,11 +208,11 @@ TEST_F(MessageHandlerTest, transceiverRDMDiscoveruRequest) {
       .WillOnce(Return(true));
 
   MessageHandler_Initialize(Transport_Send);
-  SendEvent(0, T_OP_RDM_DUB, T_EVENT_TX_ERROR, NULL, 0);
-  SendEvent(1, T_OP_RDM_DUB, T_EVENT_RX_DATA,
+  SendEvent(0, T_OP_RDM_DUB, T_RESULT_TX_ERROR, NULL, 0);
+  SendEvent(1, T_OP_RDM_DUB, T_RESULT_RX_DATA,
             static_cast<const uint8_t*>(rdm_reply),
             arraysize(rdm_reply));
-  SendEvent(2, T_OP_RDM_DUB, T_EVENT_RX_TIMEOUT, NULL, 0);
+  SendEvent(2, T_OP_RDM_DUB, T_RESULT_RX_TIMEOUT, NULL, 0);
 }
 
 TEST_F(MessageHandlerTest, transceiverRDMBroadcastRequest) {
@@ -249,12 +249,12 @@ TEST_F(MessageHandlerTest, transceiverRDMBroadcastRequest) {
       .WillOnce(Return(true));
 
   MessageHandler_Initialize(Transport_Send);
-  SendEvent(0, T_OP_RDM_BROADCAST, T_EVENT_TX_ERROR, NULL, 0);
-  SendEvent(1, T_OP_RDM_BROADCAST, T_EVENT_RX_DATA,
+  SendEvent(0, T_OP_RDM_BROADCAST, T_RESULT_TX_ERROR, NULL, 0);
+  SendEvent(1, T_OP_RDM_BROADCAST, T_RESULT_RX_DATA,
             static_cast<const uint8_t*>(rdm_reply),
             arraysize(rdm_reply));
-  SendEvent(2, T_OP_RDM_BROADCAST, T_EVENT_RX_TIMEOUT, NULL, 0);
-  SendEvent(3, T_OP_RDM_BROADCAST, T_EVENT_RX_INVALID, NULL, 0);
+  SendEvent(2, T_OP_RDM_BROADCAST, T_RESULT_RX_TIMEOUT, NULL, 0);
+  SendEvent(3, T_OP_RDM_BROADCAST, T_RESULT_RX_INVALID, NULL, 0);
 }
 
 TEST_F(MessageHandlerTest, transceiverRDMRequestWithResponse) {
@@ -288,10 +288,10 @@ TEST_F(MessageHandlerTest, transceiverRDMRequestWithResponse) {
       .WillOnce(Return(true));
 
   MessageHandler_Initialize(Transport_Send);
-  SendEvent(0, T_OP_RDM_WITH_RESPONSE, T_EVENT_TX_ERROR, NULL, 0);
-  SendEvent(1, T_OP_RDM_WITH_RESPONSE, T_EVENT_RX_DATA,
+  SendEvent(0, T_OP_RDM_WITH_RESPONSE, T_RESULT_TX_ERROR, NULL, 0);
+  SendEvent(1, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_DATA,
             static_cast<const uint8_t*>(rdm_reply),
             arraysize(rdm_reply));
-  SendEvent(2, T_OP_RDM_WITH_RESPONSE, T_EVENT_RX_TIMEOUT, NULL, 0);
-  SendEvent(3, T_OP_RDM_WITH_RESPONSE, T_EVENT_RX_INVALID, NULL, 0);
+  SendEvent(2, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_TIMEOUT, NULL, 0);
+  SendEvent(3, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_INVALID, NULL, 0);
 }

@@ -69,9 +69,9 @@ typedef struct {
   uint16_t rdm_wait_time;
 
   int data_index;  //!< The index into the TransceiverBuffer's data, for transmit or receiving.
-  // TODO(simon): can we avoid this by reusing index?
-  bool rx_timeout;  //!< If an RX timeout occured.
-  bool invalid_response;  //!< True if the response was invalid.
+
+  TransceiverOperationResult result;
+
   uint8_t expected_length;  //!< If we're receiving a RDM response, this is the decoded length.
   bool found_expected_length;  //!< If expected_length is valid.
 
@@ -194,44 +194,21 @@ static inline void Transceiver_LogStateChange() {
  * @brief Run the completion callback.
  */
 static inline void Transceiver_FrameComplete() {
-  TransceiverEventType event_type = T_EVENT_TX_OK;
   const uint8_t* data = NULL;
   unsigned int length = 0;
-
-  switch (g_transceiver.active->type) {
-    case T_OP_TX_ONLY:
-      // Default to T_EVENT_TX_OK.
-      break;
-    case T_OP_RDM_DUB:
-    case T_OP_RDM_WITH_RESPONSE:
-      event_type = (g_transceiver.rx_timeout ? T_EVENT_RX_TIMEOUT :
-                    T_EVENT_RX_DATA);
-      if (g_transceiver.data_index) {
-        // We actually got some data.
-        data = g_transceiver.active->data;
-        length = g_transceiver.data_index;
-      }
-      break;
-    case T_OP_RDM_BROADCAST:
-      event_type = (g_transceiver.rx_timeout ? T_EVENT_RX_TIMEOUT :
-                    T_EVENT_RX_DATA);
-      if (g_transceiver.data_index) {
-        // We actually got some data.
-        data = g_transceiver.active->data;
-        length = g_transceiver.data_index;
-      }
-      break;
-    case T_OP_RX:
-      {}
-  }
-  if (g_transceiver.invalid_response) {
-    event_type = T_EVENT_RX_INVALID;
+  if (g_transceiver.active->type != T_OP_TX_ONLY) {
+    if (g_transceiver.data_index) {
+      // We actually got some data.
+      data = g_transceiver.active->data;
+      length = g_transceiver.data_index;
+      g_transceiver.result = T_RESULT_RX_DATA;
+    }
   }
 
   TransceiverEvent event = {
     g_transceiver.active->token,
     g_transceiver.active->type,
-    event_type,
+    g_transceiver.result,
     data,
     length,
     &g_timing
@@ -312,7 +289,7 @@ void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
       if (g_timing.get_set_response.mark_time -
           g_timing.get_set_response.break_time < CONTROLLER_RX_BREAK_TIME_MIN) {
         // The break was too short.
-        g_transceiver.invalid_response = true;
+        g_transceiver.result = T_RESULT_RX_INVALID;
         PLIB_TMR_Stop(TMR_ID_3);
         Transceiver_ResetToMark();
         g_transceiver.state = STATE_COMPLETE;
@@ -543,7 +520,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
         Transceiver_ResetToMark();
-        g_transceiver.invalid_response = true;
+        g_transceiver.result = T_RESULT_RX_INVALID;
         g_transceiver.state = STATE_COMPLETE;
       }
     }
@@ -663,12 +640,11 @@ void Transceiver_Tasks() {
       g_transceiver.active = g_transceiver.next;
       g_transceiver.next = NULL;
 
-      // Reset params
+      // Reset state
       g_transceiver.data_index = 0;
       g_transceiver.found_expected_length = false;
       g_transceiver.expected_length = 0;
-      g_transceiver.rx_timeout = false;
-      g_transceiver.invalid_response = false;
+      g_transceiver.result = T_RESULT_TX_OK;
       memset(&g_timing, 0, sizeof(g_timing));
 
       // Prepare the UART
@@ -716,7 +692,8 @@ void Transceiver_Tasks() {
           (PLIB_TMR_Counter16BitGet(TMR_ID_3) -
             g_timing.get_set_response.break_time >
             CONTROLLER_RX_BREAK_TIME_MAX)) {
-        g_transceiver.invalid_response = true;
+        // Break was too long
+        g_transceiver.result = T_RESULT_RX_INVALID;
         PLIB_TMR_Stop(TMR_ID_3);
         Transceiver_ResetToMark();
         g_transceiver.state = STATE_COMPLETE;
@@ -767,7 +744,7 @@ void Transceiver_Tasks() {
     case STATE_RX_TIMEOUT:
       SysLog_Message(SYSLOG_INFO, "RX timeout");
       g_transceiver.state = STATE_COMPLETE;
-      g_transceiver.rx_timeout = true;
+      g_transceiver.result = T_RESULT_RX_TIMEOUT;
       break;
     case STATE_COMPLETE:
       SysLog_Print(SYSLOG_INFO, "TX: %d",
