@@ -62,7 +62,7 @@ before_install:
 #Install coveralls if required
  - if [ "$TASK" = "coverage" ]; then sudo pip install -qq cpp-coveralls; fi
 #Install doxygen if required
- - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen; fi
+ - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen graphviz; fi
  - if [ "$TASK" = "compile" -o "$TASK" = "doxygen" -o "$TASK" = "coverage" -o "$TASK" = "coverity" ]; then ./install-gmock.sh; fi
 
 after_success:
