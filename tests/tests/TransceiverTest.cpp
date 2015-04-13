@@ -116,13 +116,13 @@ TEST_F(TransceiverTest, testSetDUBResponseTime) {
   TransceiverHardwareSettings settings = DefaultSettings();
   Transceiver_Initialize(&settings, NULL);
 
-  EXPECT_EQ(29, Transceiver_GetRDMDUBResponseTime());
-  EXPECT_FALSE(Transceiver_SetRDMDUBResponseTime(9));
-  EXPECT_EQ(29, Transceiver_GetRDMDUBResponseTime());
-  EXPECT_TRUE(Transceiver_SetRDMDUBResponseTime(10));
-  EXPECT_EQ(10, Transceiver_GetRDMDUBResponseTime());
-  EXPECT_TRUE(Transceiver_SetRDMDUBResponseTime(50));
-  EXPECT_EQ(50, Transceiver_GetRDMDUBResponseTime());
-  EXPECT_FALSE(Transceiver_SetRDMDUBResponseTime(51));
-  EXPECT_EQ(50, Transceiver_GetRDMDUBResponseTime());
+  EXPECT_EQ(29000, Transceiver_GetRDMDUBResponseTime());
+  EXPECT_FALSE(Transceiver_SetRDMDUBResponseTime(9999));
+  EXPECT_EQ(29000, Transceiver_GetRDMDUBResponseTime());
+  EXPECT_TRUE(Transceiver_SetRDMDUBResponseTime(10000));
+  EXPECT_EQ(10000, Transceiver_GetRDMDUBResponseTime());
+  EXPECT_TRUE(Transceiver_SetRDMDUBResponseTime(35000));
+  EXPECT_EQ(35000, Transceiver_GetRDMDUBResponseTime());
+  EXPECT_FALSE(Transceiver_SetRDMDUBResponseTime(35001));
+  EXPECT_EQ(35000, Transceiver_GetRDMDUBResponseTime());
 }

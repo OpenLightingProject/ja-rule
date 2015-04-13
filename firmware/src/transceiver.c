@@ -39,7 +39,7 @@ typedef enum {
   STATE_RX_WAIT_FOR_BREAK,  //!< Waiting for RX break
   STATE_RX_WAIT_FOR_MARK,  //!< Waiting for RX mark
   STATE_RX_DATA,  //!< Receiving data.
-  STATE_RX_WAIT_FOR_DUB, //!< Waiting for DUB response
+  STATE_RX_WAIT_FOR_DUB,  //!< Waiting for DUB response
   STATE_RX_IN_DUB,  //!< In DUB response
   STATE_RX_TIMEOUT,  //!< A RX timeout occured.
   STATE_COMPLETE,  //!< Running the completion handler.
@@ -483,7 +483,8 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
           Transceiver_EnableRX();
           Transceiver_FlushRX();
 
-          PLIB_IC_ModeSelect(INPUT_CAPTURE_MODULE, IC_INPUT_CAPTURE_EVERY_EDGE_MODE);
+          PLIB_IC_ModeSelect(INPUT_CAPTURE_MODULE,
+                             IC_INPUT_CAPTURE_EVERY_EDGE_MODE);
           PLIB_IC_FirstCaptureEdgeSelect(INPUT_CAPTURE_MODULE, IC_EDGE_FALLING);
           PLIB_IC_Enable(INPUT_CAPTURE_MODULE);
           SYS_INT_SourceStatusClear(INT_SOURCE_INPUT_CAPTURE_2);
