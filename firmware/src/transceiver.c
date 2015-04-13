@@ -56,9 +56,16 @@ typedef struct {
 
 typedef struct {
   TransceiverState state;  //!< The current state of the transceiver.
+
+  /**
+   * @brief Stores the approximate time of the start of the outgoing frame.
+   */
   CoarseTimer_Value tx_frame_start;
+
+  /**
+   * @brief Stores the approximate time of the end of the outgoing frame.
+   */
   CoarseTimer_Value tx_frame_end;
-  CoarseTimer_Value rx_frame_start;
 
   /**
    * @brief The time to wait for the RDM response.
@@ -275,9 +282,6 @@ void Transceiver_ResetTimingSettings() {
 void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
   switch (g_transceiver.state) {
     case STATE_RX_WAIT_FOR_DUB:
-      // TODO(simon): can we remove this now?
-      g_transceiver.rx_frame_start = CoarseTimer_GetTime();
-
       g_timing.dub_response.start = PLIB_IC_Buffer16BitGet(IC_ID_2);
       g_transceiver.state = STATE_RX_IN_DUB;
       break;
@@ -288,7 +292,6 @@ void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
       break;
     case STATE_RX_WAIT_FOR_BREAK:
       g_timing.get_set_response.break_time = PLIB_IC_Buffer16BitGet(IC_ID_2);
-      g_transceiver.rx_frame_start = CoarseTimer_GetTime();
       g_transceiver.state = STATE_RX_WAIT_FOR_MARK;
       break;
     case STATE_RX_WAIT_FOR_MARK:
@@ -734,8 +737,8 @@ void Transceiver_Tasks() {
       }
       break;
     case STATE_RX_IN_DUB:
-      if (CoarseTimer_HasElapsed(g_transceiver.rx_frame_start,
-                                 g_timing_settings.rdm_dub_response_time)) {
+      if ((PLIB_TMR_Counter16BitGet(TMR_ID_3) - g_timing.dub_response.start >
+           g_timing_settings.rdm_dub_response_time)) {
         // The UART Error interupt may have fired, putting us into
         // STATE_COMPLETE, already.
         SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
@@ -757,12 +760,6 @@ void Transceiver_Tasks() {
       g_transceiver.result = T_RESULT_RX_TIMEOUT;
       break;
     case STATE_COMPLETE:
-      SysLog_Print(SYSLOG_INFO, "TX: %d",
-                   CoarseTimer_Delta(g_transceiver.tx_frame_start,
-                                     g_transceiver.tx_frame_end));
-      SysLog_Print(SYSLOG_INFO, "Diff: %d",
-                   CoarseTimer_Delta(g_transceiver.tx_frame_end,
-                                     g_transceiver.rx_frame_start));
       if (g_transceiver.active->type == T_OP_RDM_DUB) {
         SysLog_Print(SYSLOG_INFO, "First DUB: %d", g_timing.dub_response.start);
         SysLog_Print(SYSLOG_INFO, "Last DUB: %d", g_timing.dub_response.end);
@@ -978,7 +975,7 @@ uint16_t Transceiver_GetRDMWaitTime() {
 }
 
 bool Transceiver_SetRDMDUBResponseTime(uint16_t wait_time) {
-  if (wait_time < 10 || wait_time > 50) {
+  if (wait_time < 10000 || wait_time > 35000) {
     return false;
   }
   g_timing_settings.rdm_dub_response_time = wait_time;

@@ -167,9 +167,9 @@ typedef enum {
 /**
  * @brief The default time a RDM DUB response can take.
  *
- * Measured in in 10ths of a millisecond. From Line 3, Table 3-3, E1.20.
+ * Measured in in 10ths of a microsecond. From Line 3, Table 3-3, E1.20.
  */
-#define DEFAULT_RDM_DUB_RESPONSE_TIME 29
+#define DEFAULT_RDM_DUB_RESPONSE_TIME 29000
 
 /**
  * @brief The minimum break time for controllers to receive.
