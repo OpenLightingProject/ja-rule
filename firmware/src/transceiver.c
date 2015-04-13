@@ -56,7 +56,6 @@ typedef struct {
 
 typedef struct {
   TransceiverState state;  //!< The current state of the transceiver.
-<<<<<<< HEAD
   CoarseTimer_Value tx_frame_start;
   CoarseTimer_Value tx_frame_end;
   CoarseTimer_Value rx_frame_start;
