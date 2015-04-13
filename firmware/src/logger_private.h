@@ -3,8 +3,8 @@
  * Author: Simon Newton
  */
 
-#ifndef SRC_LOGGER_PRIVATE_H_
-#define SRC_LOGGER_PRIVATE_H_
+#ifndef FIRMWARE_SRC_LOGGER_PRIVATE_H_
+#define FIRMWARE_SRC_LOGGER_PRIVATE_H_
 
 #include "constants.h"
 #include "system_config.h"
@@ -34,4 +34,4 @@ typedef struct {
 }
 #endif
 
-#endif  // SRC_LOGGER_PRIVATE_H_
+#endif  // FIRMWARE_SRC_LOGGER_PRIVATE_H_

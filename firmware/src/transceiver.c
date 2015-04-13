@@ -56,6 +56,7 @@ typedef struct {
 
 typedef struct {
   TransceiverState state;  //!< The current state of the transceiver.
+<<<<<<< HEAD
   CoarseTimer_Value tx_frame_start;
   CoarseTimer_Value tx_frame_end;
   CoarseTimer_Value rx_frame_start;
@@ -68,14 +69,24 @@ typedef struct {
    */
   uint16_t rdm_wait_time;
 
-  int data_index;  //!< The index into the TransceiverBuffer's data, for transmit or receiving.
+  /**
+   * @brief The index into the TransceiverBuffer's data, for transmit or
+   * receiving.
+   */
+  int data_index;
 
   TransceiverOperationResult result;
 
-  uint8_t expected_length;  //!< If we're receiving a RDM response, this is the decoded length.
+  /**
+   * @brief If we're receiving a RDM response, this is the decoded length.
+   */
+  uint8_t expected_length;
   bool found_expected_length;  //!< If expected_length is valid.
 
-  TransceiverBuffer* active;  //!< The buffer current used for transmit / receive.
+  /**
+   * @brief The buffer current used for transmit / receive.
+   */
+  TransceiverBuffer* active;
   TransceiverBuffer* next;  //!< The next buffer ready to be transmitted
 
   TransceiverBuffer* free_list[NUMBER_OF_BUFFERS];

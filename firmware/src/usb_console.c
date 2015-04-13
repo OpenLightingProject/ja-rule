@@ -12,7 +12,7 @@
 #include "system_definitions.h"
 
 #define USB_CONSOLE_BUFFER_SIZE 1024
-//#define USB_CONSOLE_BUFFER_SIZE 70
+// #define USB_CONSOLE_BUFFER_SIZE 70
 
 
 // USB Device CDC Read Buffer Size. This should be a multiple of the CDC
@@ -104,10 +104,10 @@ void USBConsole_AbortTransfers() {
  * @brief This is called by the Harmony CDC module when CDC events occur.
  */
 USB_DEVICE_CDC_EVENT_RESPONSE USBConsole_CDCEventHandler(
-   USB_DEVICE_CDC_INDEX index,
-   USB_DEVICE_CDC_EVENT event,
-   void* event_data,
-   uintptr_t unused_user_data) {
+    USB_DEVICE_CDC_INDEX index,
+    USB_DEVICE_CDC_EVENT event,
+    void* event_data,
+    uintptr_t unused_user_data) {
   if (index != USB_DEVICE_CDC_INDEX_0) {
     return USB_DEVICE_CDC_EVENT_RESPONSE_NONE;
   }

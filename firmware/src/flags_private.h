@@ -3,8 +3,8 @@
  * Author: Simon Newton
  */
 
-#ifndef SRC_FLAGS_PRIVATE_H_
-#define SRC_FLAGS_PRIVATE_H_
+#ifndef FIRMWARE_SRC_FLAGS_PRIVATE_H_
+#define FIRMWARE_SRC_FLAGS_PRIVATE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,4 +29,4 @@ typedef struct {
 }
 #endif
 
-#endif  // SRC_FLAGS_PRIVATE_H_
+#endif  // FIRMWARE_SRC_FLAGS_PRIVATE_H_
