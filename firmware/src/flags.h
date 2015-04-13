@@ -20,8 +20,8 @@
  * @brief The Flags Module.
  */
 
-#ifndef SRC_FLAGS_H_
-#define SRC_FLAGS_H_
+#ifndef FIRMWARE_SRC_FLAGS_H_
+#define FIRMWARE_SRC_FLAGS_H_
 
 #include "flags_private.h"
 #include "transport.h"
@@ -100,4 +100,4 @@ void Flags_SendResponse();
  * @}
  */
 
-#endif  // SRC_FLAGS_H_
+#endif  // FIRMWARE_SRC_FLAGS_H_

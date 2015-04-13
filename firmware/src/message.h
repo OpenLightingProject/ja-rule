@@ -10,8 +10,8 @@
  * @brief The host to device message data structure.
  */
 
-#ifndef SRC_MESSAGE_H_
-#define SRC_MESSAGE_H_
+#ifndef FIRMWARE_SRC_MESSAGE_H_
+#define FIRMWARE_SRC_MESSAGE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,7 +39,7 @@ typedef void (*MessageHandler)(const Message*);
 }
 #endif
 
-#endif  // SRC_MESSAGE_H_
+#endif  // FIRMWARE_SRC_MESSAGE_H_
 
 /**
  * @}

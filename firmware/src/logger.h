@@ -22,8 +22,8 @@
  * @brief The Logger Subsystem.
  */
 
-#ifndef SRC_LOGGER_H_
-#define SRC_LOGGER_H_
+#ifndef FIRMWARE_SRC_LOGGER_H_
+#define FIRMWARE_SRC_LOGGER_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -120,5 +120,5 @@ void Logger_SendResponse();
  * @}
  */
 
-#endif  // SRC_LOGGER_H_
+#endif  // FIRMWARE_SRC_LOGGER_H_
 

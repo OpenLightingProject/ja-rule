@@ -13,8 +13,8 @@
  * @brief Unpack messages from the host.
  */
 
-#ifndef SRC_STREAM_DECODER_H_
-#define SRC_STREAM_DECODER_H_
+#ifndef FIRMWARE_SRC_STREAM_DECODER_H_
+#define FIRMWARE_SRC_STREAM_DECODER_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,7 +76,7 @@ void StreamDecoder_Process(const uint8_t* data, unsigned int size);
 }
 #endif
 
-#endif  // SRC_STREAM_DECODER_H_
+#endif  // FIRMWARE_SRC_STREAM_DECODER_H_
 
 /**
  * @}
