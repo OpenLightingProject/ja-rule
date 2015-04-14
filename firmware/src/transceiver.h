@@ -351,8 +351,8 @@ uint16_t Transceiver_GetRDMWaitTime();
  * The default value is 29000 (2.9mS), see Line 3, Table 3-3, E1.20.
  *
  * By setting the value less than 29000, we can cause responders that are at the
- * limits of the specification to fail. By setting the value more than 29000, we
- * can support responders that are out-of-spec.
+ * limits of the specification to fail. By setting the value to more than 29000,
+ * we can support responders that are out-of-spec.
  */
 bool Transceiver_SetRDMDUBResponseTime(uint16_t wait_time);
 
