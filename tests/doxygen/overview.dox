@@ -5,10 +5,19 @@
  *
  * @section sec_Overview Overview
  *
- * Ja Rule provides an open source DMX / RDM stack for PIC32 MCUs.
+ * Ja Rule is an open source DMX / RDM stack for PIC32 MCUs.
  *
- * @section sec_Features Features
+ * @section sec_Features Current Features
  *
+ *  - Configurable transmit timing parameters, including:
+ *    - Break duration
+ *    - Mark duration
+ *    - Listen-after-broadcasts
+ *  - Response timing information, including:
+ *    - Response delay
+ *    - Break time
+ *    - Mark time
+ *  - USB Logging, with adjustable log levels.
  *
  * @section sec_Platforms Supported Platforms
  *

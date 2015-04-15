@@ -1,0 +1,74 @@
+/**
+ * @page frame Host <-> Device Communication
+ * @brief The structure of messages between the Host and Device.
+ *
+ * [TOC]
+ *
+ * @section frame_overview Overview
+ *
+ * The Host and Device communicate by exchanging messages in the form of
+ * frames. Each frame represents an operation or command. All communication is
+ * initiated by the Host and the Device sends a single reply per command.
+ *
+ * Messages sent from the Host to the Device are *Requests*, messages sent from
+ * the Device to the Host are *replies*.
+ *
+ * @section frame_endian Byte Ordering
+ *
+ * All multi-byte fields are sent little engian (LSB first)
+ *
+ * @section frame_format Frame Format
+ *
+ * @subsection frame_format_request Request
+ *
+ * Each request frame begins with a common header, 0 or more byte of data
+ * (payload), an end-of-frame marker and then 0 or more bytes of padding. The
+ * total frame size must not exceed USB_READ_BUFFER_SIZE.
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |      SOF      |     Token     |            Command            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |            Length             |        Data (if any)          \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   /                                                               /
+ *   \                         Data (if any)                         \
+ *   /                                                               /
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |      EOF      |               Padding (if any)                \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param SOF The start of frame identifier: 0x5a
+ *
+ * @param Token A token for the command. The same token will be returned in the
+ * command response. Typically the host will increment the token with each
+ * request.
+ *
+ * @param Command The command ID.
+ *
+ * @param Length The length of the data included in the command. The valid
+ * range is 0 - 
+ *
+ * @param Data The data associated with the command. The 
+
+ *
+ * @section frame_commands Commands
+ *
+ * @subsection frame_cmd_echo Echo (0x80)
+ *
+ * Echo data from the device.
+ * @param foo bar
+ *
+ * @section frame_transport Transport Considerations
+ * @subsection frame_transport_usb USB
+ *
+ * The maxPacketSize for the USB device is be 64 bytes. This is the largest
+ * packet size for a full speed, bulk endpoint. The RX buffer must be a
+ * multiple of the maxPacketSize. Since the largest data size is 513 bytes,
+ * we'll set the RX buffer size to 640 (64 * 10). 
+ *
+ *
+ */

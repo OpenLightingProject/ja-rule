@@ -21,16 +21,24 @@
 #include <gtest/gtest.h>
 
 #include "coarse_timer.h"
+#include "sys_int_mock.h"
 
 class CoarseTimerTest : public ::testing::TestWithParam<uint32_t> {
  public:
   void SetUp() {
+    SYS_INT_SetMock(&m_sys_int_mock);
     CoarseTimer_Settings timer_settings = {
       .timer_id = TMR_ID_2,
       .interrupt_source = INT_SOURCE_TIMER_2
     };
     CoarseTimer_Initialize(&timer_settings);
   }
+
+  void TearDown() {
+    SYS_INT_SetMock(NULL);
+  }
+
+  testing::NiceMock<MockSysInt> m_sys_int_mock;
 };
 
 TEST_P(CoarseTimerTest, TimerWorks) {
@@ -67,3 +75,8 @@ TEST_P(CoarseTimerTest, TimerWorks) {
 INSTANTIATE_TEST_CASE_P(InstantiationName,
                         CoarseTimerTest,
                         ::testing::Values(0, 1, 52, 0xfffffffe, 0xffffffff));
+
+TEST_F(CoarseTimerTest, interruptClear) {
+  EXPECT_CALL(m_sys_int_mock, SourceStatusClear(INT_SOURCE_TIMER_2));
+  CoarseTimer_TimerEvent();
+}

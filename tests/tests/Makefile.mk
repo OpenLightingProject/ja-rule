@@ -3,7 +3,8 @@
 TESTING_CFLAGS = $(BUILD_FLAGS) -I include
 
 TESTING_CXXFLAGS = $(TESTING_CFLAGS) $(WARNING_CXXFLAGS) \
-                   $(GMOCK_INCLUDES) $(GTEST_INCLUDES) -I ./mocks
+                   $(GMOCK_INCLUDES) $(GTEST_INCLUDES) -I ./mocks \
+                   -I ./harmony/mocks
 
 TESTING_LIBS = $(GMOCK_LIBS) $(GTEST_LIBS)
 

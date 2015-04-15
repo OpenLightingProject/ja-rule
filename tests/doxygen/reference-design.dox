@@ -1,0 +1,40 @@
+/**
+ * @page reference_design Reference Hardware Design
+ * @brief A reference hardware design.
+ *
+ * [TOC]
+ *
+ * @section ref_overview Overview
+ *
+ * The reference design is based on the <a
+ * href="http://www.microchipdirect.com/ProductSearch.aspx?Keywords=DM320004-2">
+ * PIC 32 Ethernet Starter Kit (DM320004-2)</a> which uses a MX795F512L MCU.
+ * The <a
+ * href="http://www.microchipdirect.com/ProductSearch.aspx?Keywords=DM320003-3">
+ * PIC32 USB Starter Kit III (DM320003-3)</a> is cheaper and should also work.
+ * The latter uses a MX470F512L MCU so you may need to change some settings.
+ *
+ * You'll also need an I/O breakout board: <a
+ * href="http://www.microchipdirect.com/ProductSearch.aspx?keywords=DM320002">
+ * PIC32 I/O Expansion Board (DM320002)</a>
+ *
+ * @section ref_transceiver Transceiver Hardware
+ *
+ * To build a basic DMX / RDM Transceiver module, you'll need:
+ *
+ *  - 1 x
+ *    <a href="http://datasheets.maximintegrated.com/en/ds/MAX1487-MAX491.pdf">
+ *    MAX481CPA</a>
+ *  - 2 x 562 &Omega; resistor
+ *  - 1 x 133 &Omega; resistor
+ *  - 1 x 0.1 &mu;F capacitor
+ *  - 1 x 5 pin XLR connector
+ *  - 1 x Breakout baord connector, or another means to attaching to J11 on the
+ *  I/O expansion board.
+ *
+ * @note This transceiver is not isolated.
+ *
+ * @image html transceiver.png "The DMX / RDM Transceiver module"
+
+ *
+ */
