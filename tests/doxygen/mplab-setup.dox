@@ -48,6 +48,6 @@
  * <a
  * href="http://ww1.microchip.com/downloads/en/DeviceDoc/50002027C.pdf">MPLAB X
  * Getting Started Guide</a>. From within MPLAB X, choose File -> Open Project,
- * and then select the firmware/ja-rule.X file. Once the project has loaded, 
+ * and then select the firmware/ja-rule.X file. Once the project has loaded,
  * you can perform a build (Run -> Build Project) and program your device.
  */

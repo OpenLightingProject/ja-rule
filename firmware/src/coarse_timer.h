@@ -7,7 +7,7 @@
  * @defgroup timer Timer
  * @brief A coarse global timer that can be used to track time intervals.
  *
- * The timer is accurate down to the 10th of a millisecond.
+ * The timer is accurate to 10ths of a millisecond.
  *
  * @addtogroup timer
  * @{

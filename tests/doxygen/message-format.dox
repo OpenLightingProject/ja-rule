@@ -21,9 +21,9 @@
  *
  * @subsection frame_format_request Request
  *
- * Each request frame begins with a common header, 0 or more byte of data
- * (payload), an end-of-frame marker and then 0 or more bytes of padding. The
- * total frame size must not exceed USB_READ_BUFFER_SIZE.
+ * Each request frame begins with a common header, 0 or more byte of payload
+ * data, an end-of-frame marker and then 0 or more bytes of padding. The
+ * total frame size must not exceed \ref USB_READ_BUFFER_SIZE.
  *
  * <pre>
  *    0                   1                   2                   3
@@ -31,44 +31,169 @@
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *   |      SOF      |     Token     |            Command            |
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   |            Length             |        Data (if any)          \
+ *   |            Length             |       Payload (if any)        \
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *   /                                                               /
- *   \                         Data (if any)                         \
+ *   \                        Payload (if any)                       \
  *   /                                                               /
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *   |      EOF      |               Padding (if any)                \
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * </pre>
  *
- * @param SOF The start of frame identifier: 0x5a
- *
+ * @param SOF The start of frame identifier: \ref START_OF_MESSAGE_ID
  * @param Token A token for the command. The same token will be returned in the
  * command response. Typically the host will increment the token with each
  * request.
- *
  * @param Command The command ID.
- *
  * @param Length The length of the data included in the command. The valid
- * range is 0 - 
+ * range is 0 - 579 bytes.
+ * @param Payload The payload data associated with the command. See each
+ * command type below for the specific format of the payload data.
+ * @param EOF The end of frame identifier: \ref END_OF_MESSAGE_ID
+ * @param Padding Extra padding, the Host should set this to 0. Padding should
+ * not cause the total frame to exceed \ref USB_READ_BUFFER_SIZE.
  *
- * @param Data The data associated with the command. The 
-
+ * @subsection frame_format_reply Reply
+ *
+ * replies use the same header as Requests, with an additional 2 bytes to
+ * indicate the return code and status flags.
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |      SOF      |     Token     |            Command            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |            Length             |  Return_Code   |     Status   |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   /                                                               /
+ *   \                        Payload (if any)                       \
+ *   /                                                               /
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |      EOF      |               Padding (if any)                \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param SOF The start of frame identifier: \ref START_OF_MESSAGE_ID
+ * @param Token A token for the command. The same token will be returned in the
+ * command response. Typically the host will increment the token with each
+ * request.
+ * @param Command The command ID.
+ * @param Return_Code The \ref ReturnCode of the command.
+ * @param Status The status bitfield.
+ * @param Length The length of the data included in the command. The valid
+ * range is 0 - 579 bytes.
+ * @param Payload The payload data associated with the command. See each
+ * command type below for the specific format of the payload data.
+ * @param EOF The end of frame identifier: \ref END_OF_MESSAGE_ID
+ * @param Padding Extra padding, the Host should set this to 0. Padding should
+ * not cause the total frame to exceed \ref USB_READ_BUFFER_SIZE.
  *
  * @section frame_commands Commands
  *
- * @subsection frame_cmd_echo Echo (0x80)
+ * @subsection frame_cmd_echo Echo
+ * Echo data back from the device. This serves as a basic test that Host to
+ * Device communications are working correctly.
  *
- * Echo data from the device.
- * @param foo bar
+ * @subsubsection frame_cmd_echo_req Request Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                         Data (if any)                         \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param data 0 or more bytes of data.
+ *
+ * @subsubsection frame_cmd_echo_res Response Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                         Data (if any)                         \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param data 0 or more bytes of data, to match what was provided in the
+ * request.
+ * @returns \ref RC_OK.
+ *
+ * @subsection frame_cmd_getbreak Get Break Time
+ *
+ * Gets the current break time for outgoing DMX512 / RDM frames.
+ *
+ * @subsubsection frame_cmd_getbreak_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection frame_cmd_getbreak_res Response Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |         Break_time            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Break_time The current break time in microseconds.
+ * @returns \ref RC_OK.
+ *
+ * @subsection frame_cmd_setbreak Set Break Time
+ *
+ * Sets the break time for outgoing DMX512 / RDM frames.
+ *
+ * @subsubsection frame_cmd_setbreak_req Request Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |         Break_time            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Break_time The new break time. See Transceiver_SetBreakTime().
+ *
+ * @subsubsection frame_cmd_setbreak_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns \ref RC_OK or \ref RC_BAD_PARAM if the value was out of range.
+ *
+ *
+ *
+ *
+ *
+ *
+ * @subsection frame_cmd_unknown Unrecognised Commands
+ *
+ * If the device receives a command ID that is doesn't recognize it will return
+ * \ref RC_UNKNOWN.
  *
  * @section frame_transport Transport Considerations
  * @subsection frame_transport_usb USB
  *
+ * Comunication with the Ja Rule device happens over a custom endpoint.
+ *
  * The maxPacketSize for the USB device is be 64 bytes. This is the largest
  * packet size for a full speed, bulk endpoint. The RX buffer must be a
- * multiple of the maxPacketSize. Since the largest data size is 513 bytes,
- * we'll set the RX buffer size to 640 (64 * 10). 
+ * multiple of the maxPacketSize. Since the largest payload data size is 513
+ * bytes, we'll set the RX buffer size to 640 (64 * 10).
  *
+ * On the Microchip RX side, the USB_DEVICE_EVENT_ENDPOINT_READ_COMPLETE event
+ * will be triggered if either:
+ *  - the host sends less than maxPacketSize data in any transaction
+ *  - the host sends maxPacketSize data, and the total size matches the rx
+ *    buffer size.
  *
+ * libusb on Linux supports a Zero Length Packet (ZLP) flag, which will
+ * automatically sends a zero length packet if a transfer ends on a
+ * wMaxPacketSize boundary. Other host OS's don't seem to support this, so the
+ * host side will need to manually pad the message to trigger the
+ * USB_DEVICE_EVENT_ENDPOINT_READ_COMPLETE event.
  */

@@ -17,7 +17,7 @@
  *    - Response delay
  *    - Break time
  *    - Mark time
- *  - USB Logging, with adjustable log levels.
+ *  - \ref usb_logger, with adjustable log levels.
  *
  * @section sec_Platforms Supported Platforms
  *
@@ -42,6 +42,10 @@
  * </dl>
  *
  * @section sec_GettingStarted Getting Started
+ *
+ * See the \ref reference_design for the necessary hardware. Once you have the
+ * hardware, the \ref development_env page explains how to get started building
+ * the firmware.
  *
  * @section sec_Licensing Licensing
  *

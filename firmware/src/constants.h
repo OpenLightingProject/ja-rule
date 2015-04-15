@@ -88,37 +88,48 @@
  * @brief The Ja Rule message commands.
  */
 typedef enum {
-  ECHO = 0x80,
-  TX_DMX = 0x81,
-  GET_LOG = 0x82,
-  GET_FLAGS = 0x83,
+  ECHO = 0x80,  //!< Echo the data back
+  TX_DMX = 0x81,  //!< Transmit a DMX frame
+  GET_LOG = 0x82,  //!< Fetch more log data
+  GET_FLAGS = 0x83,  //!< Get the flags state
   WRITE_LOG = 0x84,
   COMMAND_RESET_DEVICE = 0x85,
-  COMMAND_RDM_DUB_REQUEST = 0x86,
-  COMMAND_RDM_REQUEST = 0x87,
-  SET_BREAK_TIME = 0x88,
-  GET_BREAK_TIME = 0x89,
-  SET_MAB_TIME = 0x90,
-  GET_MAB_TIME = 0x91,
+
+  COMMAND_RDM_DUB_REQUEST = 0x86,  //!< Send a RDM DUB command
+  COMMAND_RDM_REQUEST = 0x87,  //!< Send a RDM Get / Set command
+
+  SET_BREAK_TIME = 0x88,  //!< Set the break time of the transceiver.
+  GET_BREAK_TIME = 0x89,  //!< Fetch the current transceiver break time.
+  SET_MAB_TIME = 0x90,  //!< Set the MAB time of the transceiver
+  GET_MAB_TIME = 0x91,  //!< Fetch the current transceiver MAB time
   SET_RDM_BROADCAST_LISTEN = 0x92,
   GET_RDM_BROADCAST_LISTEN = 0x93,
   SET_RDM_WAIT_TIME = 0x94,
   GET_RDM_WAIT_TIME = 0x95,
-  COMMAND_RDM_BROADCAST_REQUEST = 0x96
+  COMMAND_RDM_BROADCAST_REQUEST = 0x96  //!< Send a broadcast RDM command
 } Command;
 
 /**
- * @brief JaRule message return codes.
+ * @brief JaRule command return codes.
  */
 typedef enum {
-  RC_OK,
-  RC_UNKNOWN,
+  RC_OK,  //!< The command completed successfully.
+  RC_UNKNOWN,  //!< Unknown command
+  /**
+   * @brief The command could not be completed due to a full memory buffer
+   */
   RC_BUFFER_FULL,
-  RC_BAD_PARAM,
-  RC_TX_ERROR,
-  RC_RX_TIMEOUT,
-  RC_RX_BCAST_RESPONSE,
-  RC_RX_INVALID_RESPONSE,
+  RC_BAD_PARAM,  //!< The command was malformed.
+  RC_TX_ERROR,  //!< The was an error during transceiver transmit.
+  RC_RDM_TIMEOUT,  //!< No response was received to RDM command.
+
+  /**
+   * @brief Data was received in response to a broadcast RDM command.
+   *
+   * This usually indicates a broken responder.
+   */
+  RC_RDM_BCAST_RESPONSE,
+  RC_RDM_INVALID_RESPONSE,  //!< An invalid RDM response was received.
 } ReturnCode;
 
 /**
