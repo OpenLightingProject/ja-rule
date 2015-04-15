@@ -9,6 +9,24 @@
  *
  * This module handles communications on the RS485 line.
  *
+ * The transceiver can be in either controller or responder mode.
+ *
+ * @par Controller Mode
+ *
+ * In controller mode, operations can be triggered by calling one of:
+ *  - Transceiver_QueueDMX();
+ *  - Transceiver_QueueASC();
+ *  - Transceiver_QueueRDMDUB();
+ *  - Transceiver_QueueRDMRequest();
+ *
+ * When the operation completes, the TransceiverEventCallback will be run, with
+ * the result of the operation.
+ *
+ * @par Responder Mode
+ *
+ * In responder mode, the TransceiverEventCallback will be run when a frame is
+ *   received.
+ *
  * @addtogroup transceiver
  * @{
  * @file transceiver.h
@@ -33,40 +51,129 @@ extern "C" {
  * @brief Identifies the type of transceiver operation.
  *
  * Certain start-codes such as RDM may result in bi-directional communication.
- * Also there is a difference between DUB response and normal GET/SET responses
- * and the latter require a break.
+ * There is also a difference between DUB response and normal GET/SET responses
+ * as the latter require a break.
  */
 typedef enum {
-  T_OP_TRANSCEIVER_NO_RESPONSE,  //!< No response (DMX512) or ASC.
+  T_OP_TX_ONLY,  //!< No response (DMX512) or ASC.
   T_OP_RDM_DUB,  //!< An RDM Discovery Unique Branch
   T_OP_RDM_BROADCAST,  //!< A broadcast Get / Set Request.
-  T_OP_RDM_WITH_RESPONSE  //!< A RDM Get / Set Request.
+  T_OP_RDM_WITH_RESPONSE,  //!< A RDM Get / Set Request.
+  T_OP_RX  //!< Receive mode.
 } TransceiverOperation;
 
 /**
- * @brief The result of the transceiver operation.
+ * @brief The result of an operation.
  */
 typedef enum {
-  T_RC_COMPLETED_OK,  //!< The operation completed sucessfully.
-  T_RC_TX_ERROR,  //!< A TX error occurred.
-  T_RC_RX_TIMEOUT  //!< Non response was received within the RDM wait time.
-} TransceiverResult;
+  /**
+   * @brief The frame was sent sucessfully and no response was expected.
+   */
+  T_RESULT_TX_OK,
+  T_RESULT_TX_ERROR,  //!< A TX error occurred.
+  T_RESULT_RX_DATA,  //!< Data was received.
+  T_RESULT_RX_TIMEOUT,  //!< No response was received within the RDM wait time.
+  T_RESULT_RX_INVALID,  //!< Invalid data received.
+
+  T_RESULT_RX_FRAME  //!< A frame was received
+} TransceiverOperationResult;
 
 /**
- * @brief The callback run when a frame transaction completes.
- * @param token The token associated with this operation. If the operation was
- *   not initiated by this device (i.e. we're operating as a receiver), the
- *   token will be 0.
- * @param operation The type of frame that was sent.
- * @param result The result of the operation.
- * @param data The received data, may be NULL if there was no response.
- * @param length The size of the received data.
+ * @brief The timing measurements for an operation.
  */
-typedef bool (*TransceiverEventCallback)(uint8_t token,
-                                         TransceiverOperation,
-                                         TransceiverResult,
-                                         const uint8_t*,
-                                         unsigned int);
+typedef union {
+  /**
+   * @brief The timing measurments for a DUB transaction.
+   *
+   * All times are measured in 10ths of a microsecond from the end of the DUB
+   * frame.
+   */
+  struct {
+    uint16_t start;  //!< The start of the discovery response.
+    uint16_t end;  //!< The end of the discovery response.
+  } dub_response;
+
+  /**
+   * @brief The timing measurments for a Get / Set transaction.
+   *
+   * All times are measured in 10ths of a microsecond from the end of the DUB
+   * frame.
+   */
+  struct {
+    uint16_t break_start;  //!< The start of the break.
+    uint16_t mark_start;  //!< The start of the mark / end of the break.
+    uint16_t mark_end;  //!< The end of the mark.
+  } get_set_response;
+
+  /**
+   * @brief The timing measurements for an incoming frame.
+   *
+   * This may be a DMX frame, a RDM frame or an ASC frame.
+   */
+  struct {
+    uint16_t break_time;  //!< The break time in 10ths of a uS
+    uint16_t mark_time;  //!< The mark time in 10ths of a uS.
+  } request;
+} TransceiverTiming;
+
+/**
+ * @brief A transceiver event.
+ *
+ * In controller mode an event occurs when:
+ *  - A DMX frame has been completely sent.
+ *  - A TX error occured.
+ *  - A RDM frame has been broadcast.
+ *  - A RDM response (either DUB or Get/Set) has been received.
+ *  - A RDM timeout has occured.
+ *
+ * In responder mode, events occur when a frame is received.
+ */
+typedef struct {
+  /**
+   * @brief The Token associated with the operation.
+   *
+   * This will match the token passed in to Transceiver_QueueDMX(),
+   * Transceiver_QueueASC(), Transceiver_QueueRDMDUB() or
+   * Transceiver_QueueRDMRequest().
+   *
+   * In responder mode, the token will be 0.
+   */
+  uint8_t token;
+
+  /**
+   * @brief The type of operation that triggered the event.
+   */
+  TransceiverOperation op;
+
+  /**
+   * @brief The result of the operation.
+   */
+  TransceiverOperationResult result;
+
+  /**
+   * @brief The received data. May be null.
+   */
+  const uint8_t *data;
+
+  /**
+   * @brief The length of the received data.
+   */
+  unsigned int length;
+
+  /**
+   * @brief The timing parameters associated with the operation.
+   *
+   * This may be NULL, if no timing information was available.
+   */
+  TransceiverTiming *timing;
+} TransceiverEvent;
+
+/**
+ * @brief The callback run when a transceiver event occurs.
+ *
+ * The pointer is valid for the lifetime of the function call.
+ */
+typedef bool (*TransceiverEventCallback)(const TransceiverEvent *event);
 
 /**
  * @brief The hardware settings to use for the Transceiver.
@@ -77,27 +184,23 @@ typedef struct {
   PORTS_BIT_POS break_bit;  //!< The port bit to use to generate breaks.
   PORTS_BIT_POS rx_enable_bit;  //!< The RX Enable bit.
   PORTS_BIT_POS tx_enable_bit;  //!< The TX Enable bit.
-
-  /**
-   * @brief The callback to run when a transceiver event occurs.
-   *
-   * If PIPELINE_TRANSCEIVER_EVENT is defined in system_pipeline.h, the macro
-   * will override this value.
-   */
-  TransceiverEventCallback callback;
-} Transceiver_Settings;
-
+} TransceiverHardwareSettings;
 
 /**
  * @brief Initialize the transceiver.
  * @param settings The settings to use for the transceiver.
+ * @param callback The callback to run when a transceiver event occurs.
+ *
+ * If PIPELINE_TRANSCEIVER_EVENT is defined in system_pipeline.h, the macro
+ * will override this value.
  */
-void Transceiver_Initialize(const Transceiver_Settings* settings);
+void Transceiver_Initialize(const TransceiverHardwareSettings *settings,
+                            TransceiverEventCallback callback);
 
 /**
  * @brief Perform the periodic transceiver tasks.
  *
- * This should be called periodically.
+ * This should be called in the main event loop.
  */
 void Transceiver_Tasks();
 
@@ -113,7 +216,7 @@ bool Transceiver_QueueDMX(uint8_t token, const uint8_t* data,
                           unsigned int size);
 
 /**
- * @brief Queue a alternate start code (ASC) frame for transmission.
+ * @brief Queue an alternate start code (ASC) frame for transmission.
  * @param token The token for this operation.
  * @param start_code the alternate start code.
  * @param data The ASC data, excluding the start code.
@@ -156,7 +259,7 @@ bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
 void Transceiver_Reset();
 
 /**
- * @brief Set the Break (space) time.
+ * @brief Set the break (space) time.
  * @param break_time_us the break time in micro-seconds, values are 44 to 800
  *   inclusive.
  * @returns true if the break time was updated, false if the value was out of
@@ -170,7 +273,7 @@ void Transceiver_Reset();
 bool Transceiver_SetBreakTime(uint16_t break_time_us);
 
 /**
- * @brief Return the current configured Break time.
+ * @brief Return the current configured break time.
  * @returns The break time in micro-seconds.
  */
 uint16_t Transceiver_GetBreakTime();
@@ -225,7 +328,7 @@ uint16_t Transceiver_GetRDMBroadcastListen();
  *
  * The default value is 28 (2.8mS), see Lines 1 & 3, Table 3-2, E1.20.
  *
- * By setting the value less than 28, we can cause responsers that are at the
+ * By setting the value less than 28, we can cause responders that are at the
  * limits of the specification to fail. By setting the value more than 28, we
  * can support responders that are out-of-spec.
  */
@@ -240,47 +343,24 @@ uint16_t Transceiver_GetRDMWaitTime();
 /**
  * @brief Configure the maximum time that a RDM DUB response packet can take.
  * @param wait_time the time to wait from the start of the DUB response until
- * the end, in 10ths of a millisecond. Valid values are 10 - 50 (1 - 5ms).
- * Values < 28 are outside the specification but may be used for testing.
+ * the end, in 10ths of a microseconds. Valid values are 10000 - 35000
+ * (1 - 3.5ms). Values < 28000 are outside the specification but may be used
+ * for testing.
  * @returns true if time was updated, false if the value was out of range.
  *
- * The default value is 29 (2.9mS), see Line 3, Table 3-3, E1.20.
+ * The default value is 29000 (2.9mS), see Line 3, Table 3-3, E1.20.
  *
- * By setting the value less than 28, we can cause responsers that are at the
- * limits of the specification to fail. By setting the value more than 28, we
- * can support responders that are out-of-spec.
+ * By setting the value less than 29000, we can cause responders that are at the
+ * limits of the specification to fail. By setting the value to more than 29000,
+ * we can support responders that are out-of-spec.
  */
 bool Transceiver_SetRDMDUBResponseTime(uint16_t wait_time);
 
 /**
  * @brief Return the RDM RX packet
- * @returns The RDM wait time in 10ths of a millisecond.
+ * @returns The RDM wait time in 10ths of a microsecond.
  */
 uint16_t Transceiver_GetRDMDUBResponseTime();
-
-/**
- * @brief Configure the maximum time that a RDM response packet (non-DUB) can
- *   take.
- * @param wait_time the time to wait from the start of the break in the
- *   response, until the end, in 10ths of a millisecond. Valid values are 10 - 50
- *   (1 - 5ms). Values < 28 are outside the specification but may be used for
- *   testing.
- * @returns true if time was updated, false if the value was out of range.
- *
- * The default value is 29 (2.9mS), see Line 3, Table 3-3, E1.20.
- *
- * By setting the value less than 28, we can cause responsers that are at the
- * limits of the specification to fail. By setting the value more than 28, we
- * can support responders that are out-of-spec.
- */
-bool Transceiver_SetRDMDUBResponseTime(uint16_t wait_time);
-
-/**
- * @brief Return the RDM RX packet
- * @returns The RDM wait time in 10ths of a millisecond.
- */
-uint16_t Transceiver_GetRDMDUBResponseTime();
-
 
 #ifdef __cplusplus
 }

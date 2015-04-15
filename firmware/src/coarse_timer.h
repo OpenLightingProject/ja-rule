@@ -92,8 +92,26 @@ CoarseTimer_Value CoarseTimer_GetTime();
  * @brief Return the interval since the start_time.
  * @param start_time The time to measure from.
  * @returns The time since the start_time, measured in 10ths of a millisecond.
+ *
+ * Accuracy is to within 10ths of a millisecond. Be careful if using this to
+ * trigger events. as the events may then trigger up to 0.1ms before they were
+ * supposed to.
  */
 uint32_t CoarseTimer_ElapsedTime(CoarseTimer_Value start_time);
+
+/**
+ * @brief Return the interval between two times.
+ * @param start_time The time to measure from.
+ * @param end_time The time to measure to.
+ * @returns The time between the start and end time, measured in 10ths of a
+ *   millisecond.
+ *
+ * Accuracy is to within 10ths of a millisecond. Be careful if using this to
+ * trigger events. as the events may then trigger up to 0.1ms before they were
+ * supposed to.
+ */
+uint32_t CoarseTimer_Delta(CoarseTimer_Value start_time,
+                           CoarseTimer_Value end_time);
 
 /**
  * @brief Check if a time interval has passed.

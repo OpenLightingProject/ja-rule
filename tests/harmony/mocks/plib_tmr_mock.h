@@ -7,6 +7,7 @@
 class MockPeripheralTimer {
  public:
   MOCK_METHOD2(Counter16BitSet, void(TMR_MODULE_ID index, uint16_t value));
+  MOCK_METHOD1(Counter16BitGet, uint16_t(TMR_MODULE_ID index));
   MOCK_METHOD2(Period16BitSet, void(TMR_MODULE_ID index, uint16_t period));
   MOCK_METHOD1(Counter16BitClear, void(TMR_MODULE_ID index));
   MOCK_METHOD1(Stop, void(TMR_MODULE_ID index));

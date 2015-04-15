@@ -34,15 +34,14 @@ void APP_Initialize(void) {
   SysLog_Initialize(NULL);
 
   // Initialize the DMX / RDM Transceiver
-  Transceiver_Settings transceiver_settings = {
+  TransceiverHardwareSettings transceiver_settings = {
     .usart = TRANSCEIVER_UART,
     .port = TRANSCEIVER_PORT,
     .break_bit = TRANSCEIVER_PORT_BIT,
     .rx_enable_bit = TRANSCEIVER_TX_ENABLE,
     .tx_enable_bit = TRANSCEIVER_RX_ENABLE,
-    .callback = NULL  // PIPELINE_HANDLE_FRAME is set.
   };
-  Transceiver_Initialize(&transceiver_settings);
+  Transceiver_Initialize(&transceiver_settings, NULL);
 
   // Initialize the Host message layers.
   MessageHandler_Initialize(NULL);
@@ -55,16 +54,9 @@ void APP_Initialize(void) {
 }
 
 void APP_Tasks(void) {
-  static unsigned int i = 0;
-
   USBTransport_Tasks();
   Transceiver_Tasks();
   USBConsole_Tasks();
-
-  i++;
-  if (i % 10000 == 0) {
-    // SysLog_Print(SYSLOG_INFO, "timer is %d", CoarseTimer_GetTime());
-  }
 }
 
 void APP_Reset() {

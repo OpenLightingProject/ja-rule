@@ -14,7 +14,7 @@ a copy.
 Once that is complete, in this test directory run:
 
 ```
-autoreconfig -i
+autoreconf -i
 ./configure
 make
 make check

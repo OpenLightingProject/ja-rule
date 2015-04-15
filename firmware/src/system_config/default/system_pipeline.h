@@ -54,8 +54,8 @@ extern "C" {
  * This should either call a function of type TransceiverEventCallback or
  * undefined.
  */
-#define PIPELINE_TRANSCEIVER_EVENT(token, operation, rc, data, length) \
-  MessageHandler_TransceiverEvent(token, operation, rc, data, length);
+#define PIPELINE_TRANSCEIVER_EVENT(event) \
+  MessageHandler_TransceiverEvent(event);
 
 #ifdef __cplusplus
 }

@@ -54,6 +54,14 @@ uint32_t CoarseTimer_ElapsedTime(CoarseTimer_Value start_time) {
   return 0;
 }
 
+uint32_t CoarseTimer_Delta(CoarseTimer_Value start_time,
+                           CoarseTimer_Value end_time) {
+  if (g_coarse_timer_mock) {
+    return g_coarse_timer_mock->Delta(start_time, end_time);
+  }
+  return end_time - start_time;
+}
+
 bool CoarseTimer_HasElapsed(CoarseTimer_Value start_time, uint32_t interval) {
   if (g_coarse_timer_mock) {
     return g_coarse_timer_mock->HasElapsed(start_time, interval);
