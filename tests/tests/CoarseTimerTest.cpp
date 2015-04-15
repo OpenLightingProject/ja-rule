@@ -57,6 +57,13 @@ TEST_P(CoarseTimerTest, TimerWorks) {
   CoarseTimer_TimerEvent();
 
   EXPECT_EQ(1, CoarseTimer_ElapsedTime(start));
+  // See comments in CoarseTimer_HasElapsed.
+  EXPECT_TRUE(CoarseTimer_HasElapsed(start, 0));
+  EXPECT_FALSE(CoarseTimer_HasElapsed(start, 1));
+  EXPECT_FALSE(CoarseTimer_HasElapsed(start, 2));
+  EXPECT_FALSE(CoarseTimer_HasElapsed(start, 10));
+
+  CoarseTimer_TimerEvent();
   EXPECT_TRUE(CoarseTimer_HasElapsed(start, 0));
   EXPECT_TRUE(CoarseTimer_HasElapsed(start, 1));
   EXPECT_FALSE(CoarseTimer_HasElapsed(start, 2));
@@ -68,7 +75,7 @@ TEST_P(CoarseTimerTest, TimerWorks) {
     timer_events++;
     CoarseTimer_TimerEvent();
   }
-  EXPECT_EQ(100, CoarseTimer_ElapsedTime(start));
+  EXPECT_EQ(101, CoarseTimer_ElapsedTime(start));
   EXPECT_EQ(99, timer_events);
 }
 

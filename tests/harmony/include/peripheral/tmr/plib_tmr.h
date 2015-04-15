@@ -37,6 +37,8 @@ typedef enum {
 
 void PLIB_TMR_Counter16BitSet(TMR_MODULE_ID index, uint16_t value);
 
+uint16_t PLIB_TMR_Counter16BitGet(TMR_MODULE_ID index);
+
 void PLIB_TMR_Period16BitSet(TMR_MODULE_ID index, uint16_t period);
 
 void PLIB_TMR_Counter16BitClear(TMR_MODULE_ID index);

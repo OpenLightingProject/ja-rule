@@ -24,6 +24,8 @@ noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
                      src/libusbtransport.la
 
 harmony_mocks_libharmonymock_la_SOURCES = \
+    harmony/mocks/plib_ic_mock.cpp \
+    harmony/mocks/plib_ic_mock.h \
     harmony/mocks/plib_ports_mock.cpp \
     harmony/mocks/plib_ports_mock.h \
     harmony/mocks/plib_tmr_mock.cpp \

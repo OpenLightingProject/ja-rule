@@ -29,7 +29,7 @@ void Transceiver_SetMock(MockTransceiver* mock) {
 }
 
 
-void Transceiver_Initialize(const Transceiver_Settings* settings) {
+void Transceiver_Initialize(const TransceiverHardwareSettings* settings) {
   if (g_transceiver_mock) {
     return g_transceiver_mock->Initialize(settings);
   }
