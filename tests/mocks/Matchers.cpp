@@ -25,9 +25,6 @@
 // DataMatcher
 // ----------------------------------------------------------------------------
 
-/*
- * @brief Check that a {pointer, length} tuple matches the expected data.
- */
 class DataMatcher :
     public testing::MatcherInterface< ::testing::tuple<const void*,
                                                        unsigned int> > {
@@ -122,8 +119,6 @@ testing::Matcher< ::testing::tuple<const void*, unsigned int> > DataIs(
 // PayloadMatcher
 // ----------------------------------------------------------------------------
 
-// A tuple matcher that checks a {iovec pointer, iovec size} tuple matches the
-// expected data.
 class PayloadMatcher : public testing::MatcherInterface<IOVecTuple> {
  public:
   PayloadMatcher(const uint8_t* expected_data, unsigned int expected_size)

@@ -15,7 +15,7 @@
  *
  * @section frame_endian Byte Ordering
  *
- * All multi-byte fields are sent little engian (LSB first)
+ * All multi-byte fields are sent little endian (LSB first)
  *
  * @section frame_format Frame Format
  *
@@ -106,7 +106,7 @@
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * </pre>
  *
- * @param data 0 or more bytes of data.
+ * @param Data 0 or more bytes of data.
  *
  * @subsubsection frame_cmd_echo_res Response Payload
  *
@@ -118,7 +118,7 @@
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * </pre>
  *
- * @param data 0 or more bytes of data, to match what was provided in the
+ * @param Data 0 or more bytes of data, to match what was provided in the
  * request.
  * @returns \ref RC_OK.
  *
@@ -136,11 +136,11 @@
  *    0                   1
  *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   |         Break_time            |
+ *   |         Break_Time            |
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * </pre>
  *
- * @param Break_time The current break time in microseconds.
+ * @param Break_Time The current break time in microseconds.
  * @returns \ref RC_OK.
  *
  * @subsection frame_cmd_setbreak Set Break Time
@@ -153,11 +153,11 @@
  *    0                   1
  *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   |         Break_time            |
+ *   |         Break_Time            |
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * </pre>
  *
- * @param Break_time The new break time. See Transceiver_SetBreakTime().
+ * @param Break_Time The new break time. See Transceiver_SetBreakTime().
  *
  * @subsubsection frame_cmd_setbreak_res Response Payload
  *
@@ -178,12 +178,12 @@
  * @section frame_transport Transport Considerations
  * @subsection frame_transport_usb USB
  *
- * Comunication with the Ja Rule device happens over a custom endpoint.
+ * Communication with the Ja Rule device happens over a custom endpoint.
  *
- * The maxPacketSize for the USB device is be 64 bytes. This is the largest
- * packet size for a full speed, bulk endpoint. The RX buffer must be a
- * multiple of the maxPacketSize. Since the largest payload data size is 513
- * bytes, we'll set the RX buffer size to 640 (64 * 10).
+ * The maximum packet size (wMaxPacketSize) for the USB device is 64 bytes.
+ * This is the largest packet size for a full speed, bulk endpoint. The RX
+ * buffer must be a multiple of the maxPacketSize. Since the largest payload
+ * data size is 513 bytes, we'll set the RX buffer size to 640 (64 * 10).
  *
  * On the Microchip RX side, the USB_DEVICE_EVENT_ENDPOINT_READ_COMPLETE event
  * will be triggered if either:
@@ -192,7 +192,7 @@
  *    buffer size.
  *
  * libusb on Linux supports a Zero Length Packet (ZLP) flag, which will
- * automatically sends a zero length packet if a transfer ends on a
+ * automatically send a zero length packet if a transfer ends on a
  * wMaxPacketSize boundary. Other host OS's don't seem to support this, so the
  * host side will need to manually pad the message to trigger the
  * USB_DEVICE_EVENT_ENDPOINT_READ_COMPLETE event.

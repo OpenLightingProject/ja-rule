@@ -29,7 +29,7 @@
  *  - 1 x 133 &Omega; resistor
  *  - 1 x 0.1 &mu;F capacitor
  *  - 1 x 5 pin XLR connector
- *  - 1 x Breakout baord connector, or another means to attaching to J11 on the
+ *  - 1 x Breakout board connector, or another means of attaching to J11 on the
  *  I/O expansion board.
  *
  * @note This transceiver is not isolated.

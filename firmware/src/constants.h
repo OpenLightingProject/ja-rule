@@ -120,8 +120,8 @@ typedef enum {
    */
   RC_BUFFER_FULL,
   RC_BAD_PARAM,  //!< The command was malformed.
-  RC_TX_ERROR,  //!< The was an error during transceiver transmit.
-  RC_RDM_TIMEOUT,  //!< No response was received to RDM command.
+  RC_TX_ERROR,  //!< There was an error during transceiver transmit.
+  RC_RDM_TIMEOUT,  //!< No response was received.
 
   /**
    * @brief Data was received in response to a broadcast RDM command.
