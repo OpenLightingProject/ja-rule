@@ -434,7 +434,7 @@ doxygen_version_minor=`expr $doxygen_version : '[[0-9]]*\.\([[0-9]]*\)'`
 doxygen_version_micro=`expr $doxygen_version : '[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)'`
 WANT_DOXYGEN_VERSION=`expr $doxygen_version_req_major \* 100000 \+ $doxygen_version_req_minor \* 100 \+ $doxygen_version_req_micro`
 FOUND_DOXYGEN_VERSION=`expr $doxygen_version_major \* 100000 \+ $doxygen_version_minor \* 100 \+ $doxygen_version_micro`
-if test $WANT_DOXYGEN_VERSION >= $FOUND_DOXYGEN_VERSION; then
+if test $WANT_DOXYGEN_VERSION -le $FOUND_DOXYGEN_VERSION; then
     DOXYGEN_VERSION=$FOUND_DOXYGEN_VERSION
 else
     # Required Doxygen not found
