@@ -438,7 +438,7 @@ if test $WANT_DOXYGEN_VERSION >= $FOUND_DOXYGEN_VERSION; then
     DOXYGEN_VERSION=$FOUND_DOXYGEN_VERSION
 else
     # Required Doxygen not found
-    AC_MSG_ERROR([Doxygen $FOUND_DOXYGEN_VERSION found! Required version is $WANTED_DOXYGEN_VERSION])
+    AC_MSG_ERROR([Doxygen $FOUND_DOXYGEN_VERSION found! Required version is $WANT_DOXYGEN_VERSION])
 fi
 
 # Dot for graphics:
