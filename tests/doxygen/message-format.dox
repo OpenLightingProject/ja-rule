@@ -375,6 +375,50 @@
  *  - \ref RC_TX_ERROR if a transmit error occurred.
  *  - \ref RC_RDM_BCAST_RESPONSE if a response was received.
  *
+ * @subsection message_cmd_rdm Transmit RDM Get / Set
+ *
+ * Send a RDM Get / Set command and listen for a response. If a response is
+ * received, it will be returned in the response payload.
+ *
+ * @subsubsection message_cmd_rdm_req Request Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                        RDM_Command                            \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param RDM_Command The RDM Get / Set command, excluding the start
+ * code.
+ *
+ * @subsubsection message_cmd_rdm_res Response Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |          Break_Start           |           Break_End          |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |           Mark_End             | RDM_Response (variable size) \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                 RDM_Response (variable size)                  \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Break_Start the time from the end of the transmitted RDM frame to
+ * the start of the break, in 10ths of a microsecond.
+ * @param Break_End the time from the end of the transmitted RDM frame to
+ * the end of the break / start of the mark, in 10ths of a microsecond.
+ * @param Mark_End the time from the end of the transmitted RDM frame to
+ * the start of the mark, in 10ths of a microsecond.
+ * @param RDM_Response The RDM response, if any was received.
+ * @returns
+ *  - \ref RC_OK if the frame was sent correctly and a response was received.
+ *  - \ref RC_BUFFER_FULL if the transmit buffer is full.
+ *  - \ref RC_TX_ERROR if a transmit error occurred.
+ *  - \ref RC_RDM_TIMEOUT if no response was received.
  *
  * @subsection message_cmd_unknown Unrecognised Commands
  *
