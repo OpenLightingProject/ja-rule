@@ -1,35 +1,36 @@
 /**
- * @page frame Host <-> Device Communication
+ * @page message Host <-> Device Communication
  * @brief The structure of messages between the Host and Device.
  *
  * [TOC]
  *
- * @section frame_overview Overview
+ * @section message_overview Overview
  *
- * The Host and Device communicate by exchanging messages in the form of
- * frames. Each frame represents an operation or command. All communication is
- * initiated by the Host and the Device sends a single reply per command.
+ * The Host and Device communicate by exchanging messages. Each message
+ * represents an operation or command. All communication is
+ * initiated by the Host and the Device sends a single message in reply to
+ * each command.
  *
  * Messages sent from the Host to the Device are *Requests*, messages sent from
  * the Device to the Host are *replies*.
  *
- * @section frame_endian Byte Ordering
+ * @section message_endian Byte Ordering
  *
  * All multi-byte fields are sent little endian (LSB first)
  *
- * @section frame_format Frame Format
+ * @section message_format Message Format
  *
- * @subsection frame_format_request Request
+ * @subsection message_format_request Request
  *
- * Each request frame begins with a common header, 0 or more byte of payload
- * data, an end-of-frame marker and then 0 or more bytes of padding. The
- * total frame size must not exceed \ref USB_READ_BUFFER_SIZE.
+ * Each request message begins with a common header, 0 or more byte of payload
+ * data, an end-of-message marker and then 0 or more bytes of padding. The
+ * total message size must not exceed \ref USB_READ_BUFFER_SIZE.
  *
  * <pre>
  *    0                   1                   2                   3
  *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   |      SOF      |     Token     |            Command            |
+ *   |      SOM      |     Token     |            Command            |
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *   |            Length             |       Payload (if any)        \
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -37,11 +38,11 @@
  *   \                        Payload (if any)                       \
  *   /                                                               /
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   |      EOF      |               Padding (if any)                \
+ *   |      EOM      |               Padding (if any)                \
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * </pre>
  *
- * @param SOF The start of frame identifier: \ref START_OF_MESSAGE_ID
+ * @param SOM The start of message identifier: \ref START_OF_MESSAGE_ID
  * @param Token A token for the command. The same token will be returned in the
  * command response. Typically the host will increment the token with each
  * request.
@@ -50,11 +51,11 @@
  * range is 0 - 579 bytes.
  * @param Payload The payload data associated with the command. See each
  * command type below for the specific format of the payload data.
- * @param EOF The end of frame identifier: \ref END_OF_MESSAGE_ID
+ * @param EOM The end of message identifier: \ref END_OF_MESSAGE_ID
  * @param Padding Extra padding, the Host should set this to 0. Padding should
- * not cause the total frame to exceed \ref USB_READ_BUFFER_SIZE.
+ * not cause the total message to exceed \ref USB_READ_BUFFER_SIZE.
  *
- * @subsection frame_format_reply Reply
+ * @subsection message_format_reply Reply
  *
  * replies use the same header as Requests, with an additional 2 bytes to
  * indicate the return code and status flags.
@@ -63,7 +64,7 @@
  *    0                   1                   2                   3
  *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   |      SOF      |     Token     |            Command            |
+ *   |      SOM      |     Token     |            Command            |
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *   |            Length             |  Return_Code   |     Status   |
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -71,11 +72,12 @@
  *   \                        Payload (if any)                       \
  *   /                                                               /
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   |      EOF      |               Padding (if any)                \
+ *   |      EOM      |               Padding (if any)                \
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * </pre>
  *
- * @param SOF The start of frame identifier: \ref START_OF_MESSAGE_ID
+ * @param SOM The start of message identifier: \ref START_OF_MESSAGE_ID
+ * @param Token A token for the command. The same token will be returned in the
  * @param Token A token for the command. The same token will be returned in the
  * command response. Typically the host will increment the token with each
  * request.
@@ -86,17 +88,17 @@
  * range is 0 - 579 bytes.
  * @param Payload The payload data associated with the command. See each
  * command type below for the specific format of the payload data.
- * @param EOF The end of frame identifier: \ref END_OF_MESSAGE_ID
+ * @param EOM The end of message identifier: \ref END_OF_MESSAGE_ID
  * @param Padding Extra padding, the Host should set this to 0. Padding should
- * not cause the total frame to exceed \ref USB_READ_BUFFER_SIZE.
+ * not cause the total message to exceed \ref USB_READ_BUFFER_SIZE.
  *
- * @section frame_commands Commands
+ * @section message_commands Commands
  *
- * @subsection frame_cmd_echo Echo
+ * @subsection message_cmd_echo Echo
  * Echo data back from the device. This serves as a basic test that Host to
  * Device communications are working correctly.
  *
- * @subsubsection frame_cmd_echo_req Request Payload
+ * @subsubsection message_cmd_echo_req Request Payload
  *
  * <pre>
  *    0                   1                   2                   3
@@ -108,7 +110,7 @@
  *
  * @param Data 0 or more bytes of data.
  *
- * @subsubsection frame_cmd_echo_res Response Payload
+ * @subsubsection message_cmd_echo_res Response Payload
  *
  * <pre>
  *    0                   1                   2                   3
@@ -122,15 +124,15 @@
  * request.
  * @returns \ref RC_OK.
  *
- * @subsection frame_cmd_getbreak Get Break Time
+ * @subsection message_cmd_getbreak Get Break Time
  *
- * Gets the current break time for outgoing DMX512 / RDM frames.
+ * Gets the current break time for outgoing DMX512 / RDM messages.
  *
- * @subsubsection frame_cmd_getbreak_req Request Payload
+ * @subsubsection message_cmd_getbreak_req Request Payload
  *
  * The request contains no data.
  *
- * @subsubsection frame_cmd_getbreak_res Response Payload
+ * @subsubsection message_cmd_getbreak_res Response Payload
  *
  * <pre>
  *    0                   1
@@ -143,11 +145,11 @@
  * @param Break_Time The current break time in microseconds.
  * @returns \ref RC_OK.
  *
- * @subsection frame_cmd_setbreak Set Break Time
+ * @subsection message_cmd_setbreak Set Break Time
  *
- * Sets the break time for outgoing DMX512 / RDM frames.
+ * Sets the break time for outgoing DMX512 / RDM messages.
  *
- * @subsubsection frame_cmd_setbreak_req Request Payload
+ * @subsubsection message_cmd_setbreak_req Request Payload
  *
  * <pre>
  *    0                   1
@@ -157,26 +159,143 @@
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * </pre>
  *
- * @param Break_Time The new break time. See Transceiver_SetBreakTime().
+ * @param Break_Time The new break time in microseconds. See
+ * Transceiver_SetBreakTime() for the range of values allowed.
  *
- * @subsubsection frame_cmd_setbreak_res Response Payload
+ * @subsubsection message_cmd_setbreak_res Response Payload
  *
  * The response contains no data.
  *
  * @returns \ref RC_OK or \ref RC_BAD_PARAM if the value was out of range.
  *
+ * @subsection message_cmd_getmark Get Mark Time
+ *
+ * Gets the current mark-after-break time for outgoing DMX512 / RDM messages.
+ *
+ * @subsubsection message_cmd_getmark_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection message_cmd_getmark_res Response Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |         Mark_Time             |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Mark_Time The current mark time in microseconds.
+ * @returns \ref RC_OK.
+ *
+ * @subsection message_cmd_setmark Set Mark Time
+ *
+ * Sets the mark time for outgoing DMX512 / RDM messages.
+ *
+ * @subsubsection message_cmd_setmark_req Request Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |         Mark_Time             |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Mark_Time The new mark time in microseconds. See
+ * Transceiver_SetMarkTime() for the range of values allowed.
+ *
+ * @subsubsection message_cmd_setmark_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns \ref RC_OK or \ref RC_BAD_PARAM if the value was out of range.
+ *
+ * @subsection message_cmd_getrdmbcastlisten Get RDM Broadcast Listen Time
+ *
+ * Get the current value for the RDM broadcast listen time.
+ *
+ * @subsubsection message_cmd_getrdmbcastlisten_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection message_cmd_getrdmbcastlisten_res Response Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |             Delay             |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Delay The current RDM broadcast listen value, in 10ths of a
+ * millisecond.
+ * @returns \ref RC_OK.
+ *
+ * @subsection message_cmd_setrdmbcastlisten Set RDM Broadcast Listen Time
+ *
+ * Sets the time to wait after a broadcast RDM command has been sent. When set
+ * to a non-0 value, this allows us to detect responders that incorrectly
+ * respond to broadcast commands.
+ *
+ * @subsubsection message_cmd_setrdmbcastlisten_req Request Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |             Delay             |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Delay The time to wait for a RDM response after a broadcast command,
+ * in 10ths of a millisecond. See Transceiver_SetRDMBroadcastListen().
+ *
+ * @subsubsection message_cmd_setrdmbcastlisten_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns \ref RC_OK or \ref RC_BAD_PARAM if the value was out of range.
+ *
+ * @subsection message_cmd_txdmx Send DMX512.
+ *
+ * Sends a single DMX512, Null Start Code frame.
+ *
+ * @subsubsection message_cmd_txdmx_req Request Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                       DMX_Data (if any)                       \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param DMX_Data The DMX512 slot data, excluding the start code. The number
+ * of slots may be 0 - 512.
+ *
+ * @subsubsection message_cmd_txdmx_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns
+ *  - \ref RC_OK if the frame was sent correctly.
+ *  - \ref RC_BUFFER_FULL if the transmit buffer is full.
+ *  - \ref RC_TX_ERROR if a transmit error occurred.
  *
  *
  *
  *
  *
- * @subsection frame_cmd_unknown Unrecognised Commands
+ * @subsection message_cmd_unknown Unrecognised Commands
  *
  * If the device receives a command ID that is doesn't recognize it will return
  * \ref RC_UNKNOWN.
  *
- * @section frame_transport Transport Considerations
- * @subsection frame_transport_usb USB
+ * @section message_transport Transport Considerations
+ * @subsection message_transport_usb USB
  *
  * Communication with the Ja Rule device happens over a custom endpoint.
  *
