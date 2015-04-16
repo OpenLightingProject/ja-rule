@@ -39,6 +39,7 @@ AS_IF([test "x$enable_gcov" = xyes],
 
 # Doxygen
 #####################################################
+DX_DOT_FEATURE(ON)
 DX_PDF_FEATURE(OFF)
 DX_PS_FEATURE(OFF)
 
@@ -51,7 +52,7 @@ AS_IF([test "x$enable_doxygen_version" = xno],
       [doxygen_project_number="Latest Git"])
 DX_ENV_APPEND(PROJECT_NUMBER, $doxygen_project_number)
 
-DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile)
+DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile, [], 1.8.0)
 
 # gmock
 #####################################################

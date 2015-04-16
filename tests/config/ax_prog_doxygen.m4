@@ -4,7 +4,7 @@
 #
 # SYNOPSIS
 #
-#   DX_INIT_DOXYGEN(PROJECT-NAME, DOXYFILE-PATH, [OUTPUT-DIR])
+#   DX_INIT_DOXYGEN(PROJECT-NAME, DOXYFILE-PATH, [OUTPUT-DIR], [MINIMUM-VERSION])
 #   DX_DOXYGEN_FEATURE(ON|OFF)
 #   DX_DOT_FEATURE(ON|OFF)
 #   DX_HTML_FEATURE(ON|OFF)
@@ -262,7 +262,7 @@
 
 DX_ENV=""
 AC_DEFUN([DX_FEATURE_doc],  ON)
-AC_DEFUN([DX_FEATURE_dot],  ON)
+AC_DEFUN([DX_FEATURE_dot],  OFF)
 AC_DEFUN([DX_FEATURE_man],  OFF)
 AC_DEFUN([DX_FEATURE_html], ON)
 AC_DEFUN([DX_FEATURE_chm],  OFF)
@@ -392,10 +392,11 @@ AC_DEFUN([DX_XML_FEATURE],     [AC_DEFUN([DX_FEATURE_xml],  [$1])])
 AC_DEFUN([DX_PDF_FEATURE],     [AC_DEFUN([DX_FEATURE_pdf],  [$1])])
 AC_DEFUN([DX_PS_FEATURE],      [AC_DEFUN([DX_FEATURE_ps],   [$1])])
 
-# DX_INIT_DOXYGEN(PROJECT, [CONFIG-FILE], [OUTPUT-DOC-DIR])
+# DX_INIT_DOXYGEN(PROJECT, [CONFIG-FILE], [OUTPUT-DOC-DIR], [MINIMUM-VERSION])
 # ---------------------------------------------------------
 # PROJECT also serves as the base name for the documentation files.
 # The default CONFIG-FILE is "Doxyfile" and OUTPUT-DOC-DIR is "doxygen-doc".
+# If MINIMUM-VERSION is not provided, 1.3.0 is set as default.
 AC_DEFUN([DX_INIT_DOXYGEN], [
 
 # Files:
@@ -416,6 +417,29 @@ DX_ARG_ABLE(doc, [generate any doxygen documentation],
             [DX_REQUIRE_PROG([DX_DOXYGEN], doxygen)
              DX_REQUIRE_PROG([DX_PERL], perl)],
             [DX_ENV_APPEND(PERL_PATH, $DX_PERL)])
+
+# Check MINIMUM-VERSION
+# From mloskot at https://github.com/mloskot/autotools-modules/blob/master/macros/ax_prog_doxygen.m4
+# Copyright © 2006-2009 Mateusz Loskot <mateusz@loskot.net>
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.
+doxygen_version_req=ifelse([$4], , 1.3.0, [$4])
+doxygen_version_req_major=`expr $doxygen_version_req : '\([[0-9]]*\)'`
+doxygen_version_req_minor=`expr $doxygen_version_req : '[[0-9]]*\.\([[0-9]]*\)'`
+doxygen_version_req_micro=`expr $doxygen_version_req : '[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)'`
+doxygen_version=`$DX_DOXYGEN --version`
+doxygen_version_major=`expr $doxygen_version : '\([[0-9]]*\)'`
+doxygen_version_minor=`expr $doxygen_version : '[[0-9]]*\.\([[0-9]]*\)'`
+doxygen_version_micro=`expr $doxygen_version : '[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)'`
+WANT_DOXYGEN_VERSION=`expr $doxygen_version_req_major \* 100000 \+ $doxygen_version_req_minor \* 100 \+ $doxygen_version_req_micro`
+FOUND_DOXYGEN_VERSION=`expr $doxygen_version_major \* 100000 \+ $doxygen_version_minor \* 100 \+ $doxygen_version_micro`
+if test $WANT_DOXYGEN_VERSION >= $FOUND_DOXYGEN_VERSION; then
+    DOXYGEN_VERSION=$FOUND_DOXYGEN_VERSION
+else
+    # Required Doxygen not found
+    AC_MSG_ERROR([Doxygen $FOUND_DOXYGEN_VERSION found! Required version is $WANTED_DOXYGEN_VERSION])
+fi
 
 # Dot for graphics:
 DX_ARG_ABLE(dot, [generate graphics for doxygen documentation],
