@@ -44,6 +44,9 @@ class LoggerTest : public testing::Test {
   }
 
   StrictMock<MockTransport> transport_mock;
+
+ protected:
+  static const uint8_t kToken = 99;
 };
 
 /*
@@ -61,11 +64,11 @@ TEST_F(LoggerTest, disabled) {
   // Even when the logger is disabled, Logger_SendResponse() should still
   // transmit an (empty) message.
   const uint8_t payload[] = {0};
-  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, 1))
-      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+  EXPECT_CALL(transport_mock, Send(kToken, GET_LOG, RC_OK, _, 1))
+      .With(Args<3, 4>(PayloadIs(payload, arraysize(payload))))
       .WillOnce(Return(true));
 
-  Logger_SendResponse();
+  Logger_SendResponse(kToken);
 }
 
 /*
@@ -84,7 +87,7 @@ TEST_F(LoggerTest, nullCallback) {
   EXPECT_FALSE(Logger_HasOverflowed());
 
   // A nullptr callback means no messages.
-  Logger_SendResponse();
+  Logger_SendResponse(kToken);
 }
 
 /*
@@ -118,11 +121,11 @@ TEST_F(LoggerTest, reset) {
   EXPECT_TRUE(Logger_DataPending());
 
   uint8_t payload[] = {0, 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 0};
-  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
-      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+  EXPECT_CALL(transport_mock, Send(kToken, GET_LOG, RC_OK, _, _))
+      .With(Args<3, 4>(PayloadIs(payload, arraysize(payload))))
       .WillOnce(Return(true));
 
-  Logger_SendResponse();
+  Logger_SendResponse(kToken);
 }
 
 /*
@@ -153,23 +156,23 @@ TEST_F(LoggerTest, logAndFetch) {
   uint8_t payload5[] = {0};
 
   testing::InSequence seq;
-  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
-      .With(Args<2, 3>(PayloadIs(payload1, arraysize(payload1))))
+  EXPECT_CALL(transport_mock, Send(kToken, GET_LOG, RC_OK, _, _))
+      .With(Args<3, 4>(PayloadIs(payload1, arraysize(payload1))))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
-      .With(Args<2, 3>(PayloadIs(payload2, arraysize(payload2))))
+  EXPECT_CALL(transport_mock, Send(kToken, GET_LOG, RC_OK, _, _))
+      .With(Args<3, 4>(PayloadIs(payload2, arraysize(payload2))))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
-      .With(Args<2, 3>(PayloadIs(payload3, arraysize(payload3))))
+  EXPECT_CALL(transport_mock, Send(kToken, GET_LOG, RC_OK, _, _))
+      .With(Args<3, 4>(PayloadIs(payload3, arraysize(payload3))))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
-      .With(Args<2, 3>(PayloadIs(payload4, arraysize(payload4))))
+  EXPECT_CALL(transport_mock, Send(kToken, GET_LOG, RC_OK, _, _))
+      .With(Args<3, 4>(PayloadIs(payload4, arraysize(payload4))))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
-      .With(Args<2, 3>(PayloadIs(payload5, arraysize(payload5))))
+  EXPECT_CALL(transport_mock, Send(kToken, GET_LOG, RC_OK, _, _))
+      .With(Args<3, 4>(PayloadIs(payload5, arraysize(payload5))))
       .WillOnce(Return(true));
 
-  Logger_SendResponse();
+  Logger_SendResponse(kToken);
 
   // Now write some more data
   Logger_Log(string(200, 'y').c_str());
@@ -177,10 +180,10 @@ TEST_F(LoggerTest, logAndFetch) {
   EXPECT_TRUE(Logger_DataPending());
   EXPECT_TRUE(Logger_HasOverflowed());
 
-  Logger_SendResponse();  // 99 'x'
-  Logger_SendResponse();  // 2 'x', 97 'y'
-  Logger_SendResponse();  // 58 'y'
-  Logger_SendResponse();  // Empty
+  Logger_SendResponse(kToken);  // 99 'x'
+  Logger_SendResponse(kToken);  // 2 'x', 97 'y'
+  Logger_SendResponse(kToken);  // 58 'y'
+  Logger_SendResponse(kToken);  // Empty
 }
 
 /*
@@ -199,18 +202,18 @@ TEST_F(LoggerTest, overflow) {
   uint8_t payload2[] = {0};
 
   testing::InSequence seq;
-  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
-      .With(Args<2, 3>(PayloadIs(payload1, arraysize(payload1))))
+  EXPECT_CALL(transport_mock, Send(kToken, GET_LOG, RC_OK, _, _))
+      .With(Args<3, 4>(PayloadIs(payload1, arraysize(payload1))))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
-      .With(Args<2, 3>(PayloadIs(payload2, arraysize(payload2))))
+  EXPECT_CALL(transport_mock, Send(kToken, GET_LOG, RC_OK, _, _))
+      .With(Args<3, 4>(PayloadIs(payload2, arraysize(payload2))))
       .WillOnce(Return(true));
 
-  Logger_SendResponse();
+  Logger_SendResponse(kToken);
   EXPECT_FALSE(Logger_DataPending());
 
   // Now fetch the next message, the overflow flag must clear.
-  Logger_SendResponse();
+  Logger_SendResponse(kToken);
 }
 
 /*
@@ -235,9 +238,9 @@ TEST_F(LoggerTest, write) {
     't', 'e', 's', 't', ' ', '2', 0,
   };
 
-  EXPECT_CALL(transport_mock, Send(GET_LOG, RC_OK, _, _))
-      .With(Args<2, 3>(PayloadIs(payload1, arraysize(payload1))))
+  EXPECT_CALL(transport_mock, Send(kToken, GET_LOG, RC_OK, _, _))
+      .With(Args<3, 4>(PayloadIs(payload1, arraysize(payload1))))
       .WillOnce(Return(true));
 
-  Logger_SendResponse();
+  Logger_SendResponse(kToken);
 }

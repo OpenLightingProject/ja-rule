@@ -27,7 +27,7 @@
 class MockFlags {
  public:
   MOCK_METHOD1(Initialize, void(TransportTXFunction tx_cb));
-  MOCK_METHOD0(SendResponse, void());
+  MOCK_METHOD1(SendResponse, void(uint8_t token));
 };
 
 void Flags_SetMock(MockFlags* mock);

@@ -50,6 +50,7 @@ void USBTransport_Tasks();
 
 /**
  * @brief Send a response to the Host.
+ * @param token The frame token, this should match the request.
  * @param command The command class of the response.
  * @param rc The return code of the response.
  * @param data The iovecs with the payload data.
@@ -60,8 +61,8 @@ void USBTransport_Tasks();
  * Only one message can be sent at a time. Until the send completes, any
  * further messages will be dropped.
  */
-bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
-                               unsigned int iov_count);
+bool USBTransport_SendResponse(uint8_t token, Command command, uint8_t rc,
+                               const IOVec* data, unsigned int iov_count);
 
 /**
  * @brief Check if there is a write in progress

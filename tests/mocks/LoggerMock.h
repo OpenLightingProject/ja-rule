@@ -32,7 +32,7 @@ class MockLogger {
   MOCK_METHOD1(SetState, void(bool enabled));
   MOCK_METHOD1(Log, void(const char* str));
   MOCK_METHOD2(Write, void(const uint8_t* data, unsigned int length));
-  MOCK_METHOD0(SendResponse, void());
+  MOCK_METHOD1(SendResponse, void(uint8_t token));
 };
 
 void Logger_SetMock(MockLogger* mock);

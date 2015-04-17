@@ -56,9 +56,9 @@ void Logger_Write(const uint8_t* data, unsigned int length) {
   }
 }
 
-void Logger_SendResponse() {
+void Logger_SendResponse(uint8_t token) {
   if (g_logger_mock) {
-    g_logger_mock->SendResponse();
+    g_logger_mock->SendResponse(token);
   }
 }
 

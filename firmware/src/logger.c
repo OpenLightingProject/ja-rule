@@ -101,7 +101,7 @@ void _mon_putc(char c) {
   PutChar(c);
 }
 
-void Logger_SendResponse() {
+void Logger_SendResponse(uint8_t token) {
 #ifndef PIPELINE_TRANSPORT_TX
   if (!g_logger.tx_cb) {
     return;
@@ -152,8 +152,8 @@ void Logger_SendResponse() {
     }
   }
 #ifdef PIPELINE_TRANSPORT_TX
-  PIPELINE_TRANSPORT_TX(GET_LOG, RC_OK, g_logger.iovec, iovec_index);
+  PIPELINE_TRANSPORT_TX(token, GET_LOG, RC_OK, g_logger.iovec, iovec_index);
 #else
-  g_logger.tx_cb(GET_LOG, RC_OK, g_logger.iovec, iovec_index);
+  g_logger.tx_cb(token, GET_LOG, RC_OK, g_logger.iovec, iovec_index);
 #endif
 }

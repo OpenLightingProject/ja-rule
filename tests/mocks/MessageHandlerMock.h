@@ -28,9 +28,10 @@
 
 class MessageMatcher : public testing::MatcherInterface<const Message*> {
  public:
-  MessageMatcher(uint16_t command, const uint8_t* payload,
+  MessageMatcher(uint8_t token, uint16_t command, const uint8_t* payload,
                  unsigned int payload_size)
-      : m_command(command),
+      : m_token(token),
+        m_command(command),
         m_payload(payload),
         m_payload_size(payload_size) {
   }
@@ -49,6 +50,7 @@ class MessageMatcher : public testing::MatcherInterface<const Message*> {
   }
 
  private:
+  uint8_t m_token;
   uint16_t m_command;
   const uint8_t* m_payload;
   unsigned int m_payload_size;
@@ -57,11 +59,12 @@ class MessageMatcher : public testing::MatcherInterface<const Message*> {
 /*
  * Check that a message has the given command, and that the payload matches.
  */
-inline testing::Matcher<const Message*> MessageIs(uint16_t command,
+inline testing::Matcher<const Message*> MessageIs(uint8_t token,
+                                                  uint16_t command,
                                                   const uint8_t* payload,
                                                   unsigned int payload_size) {
   return testing::MakeMatcher(
-      new MessageMatcher(command, payload, payload_size));
+      new MessageMatcher(token, command, payload, payload_size));
 }
 
 class MockMessageHandler {

@@ -106,11 +106,12 @@ void Logger_Write(const uint8_t* str, unsigned int length);
 
 /**
  * @brief Send a Log message.
+ * @param token The token to include in the response.
  *
  * This uses the TransportTXFunction passed in Logger_Initialize() to transmit
  * the frame.
  */
-void Logger_SendResponse();
+void Logger_SendResponse(uint8_t token);
 
 #ifdef __cplusplus
 }

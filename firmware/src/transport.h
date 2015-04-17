@@ -34,13 +34,14 @@ typedef enum {
 
 /**
  * @brief A function pointer to send a message to the host
+ * @param token The frame token, this should match the request.
  * @param command the Command indentifier to send
  * @param rc The 8-bit return code.
  * @param iov A pointer to an array of IOVec structures. The data will be
  *   copied.
  * @param iov_count The number of IOVec structures in the array.
  */
-typedef bool (*TransportTXFunction)(Command, uint8_t, const IOVec*,
+typedef bool (*TransportTXFunction)(uint8_t, Command, uint8_t, const IOVec*,
                                     unsigned int);
 
 /**

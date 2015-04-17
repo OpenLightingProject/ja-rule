@@ -30,10 +30,10 @@ void Transport_SetMock(MockTransport* mock) {
   g_transport_mock = mock;
 }
 
-bool Transport_Send(Command command, uint8_t rc, const IOVec* iovec,
-                    unsigned int iovec_count) {
+bool Transport_Send(uint8_t token, Command command, uint8_t rc,
+                    const IOVec* iovec, unsigned int iovec_count) {
   if (g_transport_mock) {
-    return g_transport_mock->Send(command, rc, iovec, iovec_count);
+    return g_transport_mock->Send(token, command, rc, iovec, iovec_count);
   }
   return true;
 }

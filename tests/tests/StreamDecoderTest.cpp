@@ -45,16 +45,16 @@ class StreamDecoderTest : public testing::Test {
   static const uint8_t empty_msg1[];
   static const uint8_t message1[];
 
-  static const uint8_t PAYLOAD_OFFSET = 5;
+  static const uint8_t PAYLOAD_OFFSET = 6;
   // Size of the payload for message1
   static const uint8_t MSG1_PAYLOAD_SIZE = 5;
 };
 
 const uint8_t StreamDecoderTest::empty_msg1[] = {
-  0x5a, 0x01, 0x02, 0x00, 0x00, 0xa5};
+  0x5a, 0x44, 0x01, 0x02, 0x00, 0x00, 0xa5};
 
 const uint8_t StreamDecoderTest::message1[] = {
-  0x5a, 0x02, 0x02, 0x05, 0x00, 1, 2, 3, 4, 5, 0xa5};
+  0x5a, 0x45, 0x02, 0x02, 0x05, 0x00, 1, 2, 3, 4, 5, 0xa5};
 
 /*
  * Check nothing happens if the handler is null.
@@ -73,9 +73,9 @@ TEST_F(StreamDecoderTest, simpleMessage) {
 
   testing::InSequence seq;
   EXPECT_CALL(message_handler_mock,
-              HandleMessage(MessageIs(0x0201, nullptr, 0u)));
+              HandleMessage(MessageIs(0x44, 0x0201, nullptr, 0u)));
   EXPECT_CALL(message_handler_mock,
-              HandleMessage(MessageIs(0x0202, message1 + 5, 5u)));
+              HandleMessage(MessageIs(0x45, 0x0202, message1 + 5, 5u)));
 
   StreamDecoder_Process(empty_msg1, arraysize(empty_msg1));
   StreamDecoder_Process(message1, arraysize(message1));
@@ -89,7 +89,7 @@ TEST_F(StreamDecoderTest, fragmentedMessage) {
   EXPECT_FALSE(StreamDecoder_GetFragmentedFrameFlag());
 
   EXPECT_CALL(message_handler_mock,
-              HandleMessage(MessageIs(0x0202, message1 + PAYLOAD_OFFSET,
+              HandleMessage(MessageIs(0x45, 0x0202, message1 + PAYLOAD_OFFSET,
                                       MSG1_PAYLOAD_SIZE)))
     .Times(3);
 
@@ -128,9 +128,9 @@ TEST_F(StreamDecoderTest, singleByteRx) {
 
   testing::InSequence seq;
   EXPECT_CALL(message_handler_mock,
-              HandleMessage(MessageIs(0x0201, nullptr, 0)));
+              HandleMessage(MessageIs(0x44, 0x0201, nullptr, 0)));
   EXPECT_CALL(message_handler_mock,
-              HandleMessage(MessageIs(0x0202, message1 + PAYLOAD_OFFSET,
+              HandleMessage(MessageIs(0x45, 0x0202, message1 + PAYLOAD_OFFSET,
                                       MSG1_PAYLOAD_SIZE)));
 
   for (unsigned int i = 0; i < arraysize(empty_msg1); i++) {
@@ -157,7 +157,7 @@ TEST_F(StreamDecoderTest, noise) {
   StreamDecoder_Initialize(MessageHandler_HandleMessage);
 
   EXPECT_CALL(message_handler_mock,
-              HandleMessage(MessageIs(0x0201, nullptr, 0)));
+              HandleMessage(MessageIs(0x44, 0x0201, nullptr, 0)));
 
   for (uint8_t i = 0; i < 50; i++) {
     StreamDecoder_Process(&i, 1);  // noise
