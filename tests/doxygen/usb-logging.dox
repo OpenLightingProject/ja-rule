@@ -1,0 +1,25 @@
+/**
+ * @page usb_logger USB Logging
+ * @brief Accessing the serial console.
+ *
+ * [TOC]
+ *
+ * @section usb_Overview Overview
+ *
+ * Ja Rule devices provide a serial console over the USB port. This allows a
+ * user to connect using a <a
+ * href="https://en.wikipedia.org/wiki/Terminal_emulation">terminal
+ * emulator</a>, such as <a
+ * href="http://linux.die.net/man/1/minicom">minicom</a> (Unix) or
+ * <a
+ * href="http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html">
+ * PuTTY</a> (Windows).
+ *
+ * The settings are 8N1, at 9600 baud.
+ *
+ * The console provides different log levels. The +/- keys can be used to
+ * increase / decrease the log level.
+ *
+ * To log messages to the console, use SysLog_Message() and SysLog_Print().
+ * This should not be called within interrupt context.
+ */

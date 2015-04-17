@@ -46,6 +46,8 @@ cache: apt
 before_install:
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
  - sudo add-apt-repository ppa:h-rayflood/llvm-upper -y
+# Required for Doxygen 1.8+
+ - sudo add-apt-repository ppa:libreoffice/ppa -y
  - sudo apt-get update -qq
 #g++-4.9 won't work on Ubuntu 12.04 that Travis currently uses
  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi

@@ -201,7 +201,7 @@ TEST_F(MessageHandlerTest, transceiverRDMDiscoveruRequest) {
               arraysize(frame_reply2))))
       .WillOnce(Return(true));
   EXPECT_CALL(transport_mock,
-              Send(COMMAND_RDM_DUB_REQUEST, RC_RX_TIMEOUT, _, _))
+              Send(COMMAND_RDM_DUB_REQUEST, RC_RDM_TIMEOUT, _, _))
       .With(Args<2, 3>(PayloadIs(
           reinterpret_cast<const uint8_t*>(&kFrameReply3),
           arraysize(kFrameReply3))))
@@ -230,19 +230,20 @@ TEST_F(MessageHandlerTest, transceiverRDMBroadcastRequest) {
           arraysize(kFrameReply1))))
       .WillOnce(Return(true));
   EXPECT_CALL(transport_mock,
-              Send(COMMAND_RDM_BROADCAST_REQUEST, RC_RX_BCAST_RESPONSE, _, _))
+              Send(COMMAND_RDM_BROADCAST_REQUEST, RC_RDM_BCAST_RESPONSE, _, _))
       .With(Args<2, 3>(PayloadIs(
               reinterpret_cast<const uint8_t*>(&frame_reply),
               arraysize(frame_reply))))
       .WillOnce(Return(true));
   EXPECT_CALL(transport_mock,
-              Send(COMMAND_RDM_BROADCAST_REQUEST, RC_RX_TIMEOUT, _, _))
+              Send(COMMAND_RDM_BROADCAST_REQUEST, RC_RDM_TIMEOUT, _, _))
       .With(Args<2, 3>(PayloadIs(
           reinterpret_cast<const uint8_t*>(&kFrameReply3),
           arraysize(kFrameReply3))))
       .WillOnce(Return(true));
   EXPECT_CALL(transport_mock,
-              Send(COMMAND_RDM_BROADCAST_REQUEST, RC_RX_INVALID_RESPONSE, _, _))
+              Send(COMMAND_RDM_BROADCAST_REQUEST, RC_RDM_INVALID_RESPONSE, _,
+                   _))
       .With(Args<2, 3>(PayloadIs(
           reinterpret_cast<const uint8_t*>(&kFrameReply4),
           arraysize(kFrameReply4))))
@@ -275,13 +276,14 @@ TEST_F(MessageHandlerTest, transceiverRDMRequestWithResponse) {
               reinterpret_cast<const uint8_t*>(&frame_reply),
               arraysize(frame_reply))))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock, Send(COMMAND_RDM_REQUEST, RC_RX_TIMEOUT, _, _))
+  EXPECT_CALL(transport_mock,
+              Send(COMMAND_RDM_REQUEST, RC_RDM_TIMEOUT, _, _))
       .With(Args<2, 3>(PayloadIs(
           reinterpret_cast<const uint8_t*>(&kFrameReply3),
           arraysize(kFrameReply3))))
       .WillOnce(Return(true));
   EXPECT_CALL(transport_mock,
-              Send(COMMAND_RDM_REQUEST, RC_RX_INVALID_RESPONSE, _, _))
+              Send(COMMAND_RDM_REQUEST, RC_RDM_INVALID_RESPONSE, _, _))
       .With(Args<2, 3>(PayloadIs(
           reinterpret_cast<const uint8_t*>(&kFrameReply4),
           arraysize(kFrameReply4))))
