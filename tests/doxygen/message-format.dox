@@ -1,0 +1,448 @@
+/**
+ * @page message Host <-> Device Communication
+ * @brief The structure of messages between the Host and Device.
+ *
+ * [TOC]
+ *
+ * @section message_overview Overview
+ *
+ * The Host and Device communicate by exchanging messages. Each message
+ * represents an operation or command. All communication is
+ * initiated by the Host and the Device sends a single message in reply to
+ * each command.
+ *
+ * Messages sent from the Host to the Device are *Requests*, messages sent from
+ * the Device to the Host are *replies*.
+ *
+ * @section message_endian Byte Ordering
+ *
+ * All multi-byte fields are sent little endian (LSB first)
+ *
+ * @section message_format Message Format
+ *
+ * @subsection message_format_request Request
+ *
+ * Each request message begins with a common header, zero or more byte of
+ * payload data, an end-of-message marker and then zero or more bytes of
+ * padding. The total message size must not exceed \ref USB_READ_BUFFER_SIZE.
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |      SOM      |     Token     |            Command            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |            Length             |       Payload (if any)        \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   /                                                               /
+ *   \                        Payload (if any)                       \
+ *   /                                                               /
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |      EOM      |               Padding (optional)              \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param SOM The start of message identifier: \ref START_OF_MESSAGE_ID
+ * @param Token A token for the command. The same token will be returned in the
+ * command response. Typically the host will increment the token with each
+ * request.
+ * @param Command The command ID.
+ * @param Length The length of the data included in the command. The valid
+ * range is 0 - 579 bytes.
+ * @param Payload The payload data associated with the command. See each
+ * command type below for the specific format of the payload data.
+ * @param EOM The end of message identifier: \ref END_OF_MESSAGE_ID
+ * @param Padding Extra padding, the Host should set this to 0. Padding should
+ * not cause the total message to exceed \ref USB_READ_BUFFER_SIZE.
+ *
+ * @subsection message_format_reply Reply
+ *
+ * replies use the same header as Requests, with an additional 2 bytes to
+ * indicate the return code and status flags.
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |      SOM      |     Token     |            Command            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |            Length             |  Return_Code   |     Status   |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   /                                                               /
+ *   \                        Payload (if any)                       \
+ *   /                                                               /
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |      EOM      |               Padding (optional)              \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param SOM The start of message identifier: \ref START_OF_MESSAGE_ID
+ * @param Token A token for the command. The same token will be returned in the
+ * command response. Typically the host will increment the token with each
+ * request.
+ * @param Command The command ID.
+ * @param Return_Code The \ref ReturnCode of the command.
+ * @param Status The status bitfield.
+ * @param Length The length of the data included in the command. The valid
+ * range is 0 - 579 bytes.
+ * @param Payload The payload data associated with the command. See each
+ * command type below for the specific format of the payload data.
+ * @param EOM The end of message identifier: \ref END_OF_MESSAGE_ID
+ * @param Padding Extra padding, the Host should set this to 0. Padding should
+ * not cause the total message to exceed \ref USB_READ_BUFFER_SIZE.
+ *
+ * @section message_commands Commands
+ *
+ * @subsection message_cmd_echo Echo
+ * Echo data back from the device. This serves as a basic test that Host to
+ * Device communications are working correctly.
+ *
+ * @subsubsection message_cmd_echo_req Request Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                     Data (variable size)                      \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Data 0 or more bytes of data.
+ *
+ * @subsubsection message_cmd_echo_res Response Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                     Data (variable size)                      \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Data 0 or more bytes of data, to match what was provided in the
+ * request.
+ * @returns \ref RC_OK.
+ *
+ * @subsection message_cmd_getbreak Get Break Time
+ *
+ * Gets the current break time for outgoing DMX512 / RDM messages.
+ *
+ * @subsubsection message_cmd_getbreak_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection message_cmd_getbreak_res Response Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |          Break_Time           |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Break_Time The current break time in microseconds.
+ * @returns \ref RC_OK.
+ *
+ * @subsection message_cmd_setbreak Set Break Time
+ *
+ * Sets the break time for outgoing DMX512 / RDM messages.
+ *
+ * @subsubsection message_cmd_setbreak_req Request Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |           Break_Time          |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Break_Time The new break time in microseconds. See
+ * Transceiver_SetBreakTime() for the range of values allowed.
+ *
+ * @subsubsection message_cmd_setbreak_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns \ref RC_OK or \ref RC_BAD_PARAM if the value was out of range.
+ *
+ * @subsection message_cmd_getmark Get Mark Time
+ *
+ * Gets the current mark-after-break time for outgoing DMX512 / RDM messages.
+ *
+ * @subsubsection message_cmd_getmark_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection message_cmd_getmark_res Response Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |         Mark_Time             |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Mark_Time The current mark time in microseconds.
+ * @returns \ref RC_OK.
+ *
+ * @subsection message_cmd_setmark Set Mark Time
+ *
+ * Sets the mark time for outgoing DMX512 / RDM messages.
+ *
+ * @subsubsection message_cmd_setmark_req Request Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |         Mark_Time             |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Mark_Time The new mark time in microseconds. See
+ * Transceiver_SetMarkTime() for the range of values allowed.
+ *
+ * @subsubsection message_cmd_setmark_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns \ref RC_OK or \ref RC_BAD_PARAM if the value was out of range.
+ *
+ * @subsection message_cmd_getrdmbcastlisten Get RDM Broadcast Listen Time
+ *
+ * Get the current value for the RDM broadcast listen time.
+ *
+ * @subsubsection message_cmd_getrdmbcastlisten_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection message_cmd_getrdmbcastlisten_res Response Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |             Delay             |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Delay The current RDM broadcast listen value, in 10ths of a
+ * millisecond.
+ * @returns \ref RC_OK.
+ *
+ * @subsection message_cmd_setrdmbcastlisten Set RDM Broadcast Listen Time
+ *
+ * Sets the time to wait after a broadcast RDM command has been sent. When set
+ * to a non-0 value, this allows us to detect responders that incorrectly
+ * respond to broadcast commands.
+ *
+ * @subsubsection message_cmd_setrdmbcastlisten_req Request Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |             Delay             |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Delay The time to wait for a RDM response after a broadcast command,
+ * in 10ths of a millisecond. See Transceiver_SetRDMBroadcastListen().
+ *
+ * @subsubsection message_cmd_setrdmbcastlisten_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns \ref RC_OK or \ref RC_BAD_PARAM if the value was out of range.
+ *
+ * @subsection message_cmd_txdmx Transmit DMX512
+ *
+ * Sends a single DMX512, Null Start Code frame.
+ *
+ * @subsubsection message_cmd_txdmx_req Request Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                   DMX_Data (variable size)                    \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param DMX_Data The DMX512 slot data, excluding the start code. The number
+ * of slots may be 0 - 512.
+ *
+ * @subsubsection message_cmd_txdmx_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns
+ *  - \ref RC_OK if the frame was sent correctly.
+ *  - \ref RC_BUFFER_FULL if the transmit buffer is full.
+ *  - \ref RC_TX_ERROR if a transmit error occurred.
+ *
+ * @subsection message_cmd_rdmdub Transmit RDM DUB
+ *
+ * Sends a RDM discovery unique branch command and then listens for a response.
+ * If any data is received, it is returned in the response payload. If no data
+ * is received a \ref RC_RDM_TIMEOUT is returned.
+ *
+ * The response payload includes timing data.
+ *
+ * @subsubsection message_cmd_rdmdub_req Request Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                          DUB_Command                          \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param DUB_Command The RDM Discovery Unique Branch command, excluding the
+ * start code. The command should be 37 bytes.
+ *
+ * @subsubsection message_cmd_rdmdub_res Response Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |        Discovery_Start        |        Discovery_End          |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \               RDM_DUB_Response (variable size)                \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Discovery_Start the time from the end of the transmitted DUB frame to
+ * the start of the DUB response, in 10ths of a microsecond.
+ * @param Discovery_End the time from the end of the transmitted DUB frame to
+ * the end of the DUB response, in 10ths of a microsecond.
+ * @param RDM_DUB_Response The raw response, if any was received.
+ * @returns
+ *  - \ref RC_OK if the frame was sent correctly and data was received.
+ *  - \ref RC_BUFFER_FULL if the transmit buffer is full.
+ *  - \ref RC_TX_ERROR if a transmit error occurred.
+ *  - \ref RC_RDM_TIMEOUT if no response was received.
+ *
+ * @subsection message_cmd_rdmbcast Transmit Broadcast RDM Get / Set
+ *
+ * Sends a broadcast RDM Get / Set command. If the Broadcast Listen Delay is 0,
+ * the transceiver will then listen for a response. If a response is received,
+ * it will be returned in the response payload.
+ *
+ * @subsubsection message_cmd_rdmbcast_req Request Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                        RDM_Command                            \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param RDM_Command The broadcast RDM Get / Set command, excluding the start
+ * code.
+ *
+ * @subsubsection message_cmd_rdmbcast_res Response Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |          Break_Start           |           Break_End          |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |           Mark_End             | RDM_Response (variable size) \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                 RDM_Response (variable size)                  \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Break_Start the time from the end of the transmitted RDM frame to
+ * the start of the break, in 10ths of a microsecond.
+ * @param Break_End the time from the end of the transmitted RDM frame to
+ * the end of the break / start of the mark, in 10ths of a microsecond.
+ * @param Mark_End the time from the end of the transmitted RDM frame to
+ * the start of the mark, in 10ths of a microsecond.
+ * @param RDM_Response The RDM response, if any was received.
+ * @returns
+ *  - \ref RC_OK if the frame was broadcast correctly and no data was received.
+ *  - \ref RC_BUFFER_FULL if the transmit buffer is full.
+ *  - \ref RC_TX_ERROR if a transmit error occurred.
+ *  - \ref RC_RDM_BCAST_RESPONSE if a response was received.
+ *
+ * @subsection message_cmd_rdm Transmit RDM Get / Set
+ *
+ * Send a RDM Get / Set command and listen for a response. If a response is
+ * received, it will be returned in the response payload.
+ *
+ * @subsubsection message_cmd_rdm_req Request Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                        RDM_Command                            \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param RDM_Command The RDM Get / Set command, excluding the start
+ * code.
+ *
+ * @subsubsection message_cmd_rdm_res Response Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |          Break_Start           |           Break_End          |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |           Mark_End             | RDM_Response (variable size) \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   \                 RDM_Response (variable size)                  \
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Break_Start the time from the end of the transmitted RDM frame to
+ * the start of the break, in 10ths of a microsecond.
+ * @param Break_End the time from the end of the transmitted RDM frame to
+ * the end of the break / start of the mark, in 10ths of a microsecond.
+ * @param Mark_End the time from the end of the transmitted RDM frame to
+ * the start of the mark, in 10ths of a microsecond.
+ * @param RDM_Response The RDM response, if any was received.
+ * @returns
+ *  - \ref RC_OK if the frame was sent correctly and a response was received.
+ *  - \ref RC_BUFFER_FULL if the transmit buffer is full.
+ *  - \ref RC_TX_ERROR if a transmit error occurred.
+ *  - \ref RC_RDM_TIMEOUT if no response was received.
+ *
+ * @subsection message_cmd_unknown Unrecognised Commands
+ *
+ * If the device receives a command ID that is doesn't recognize it will return
+ * \ref RC_UNKNOWN.
+ *
+ * @section message_transport Transport Considerations
+ * @subsection message_transport_usb USB
+ *
+ * Communication with the Ja Rule device happens over a custom endpoint.
+ *
+ * The maximum packet size (wMaxPacketSize) for the USB device is 64 bytes.
+ * This is the largest packet size for a full speed, bulk endpoint. The RX
+ * buffer must be a multiple of the maxPacketSize. Since the largest payload
+ * data size is 513 bytes, we'll set the RX buffer size to 640 (64 * 10).
+ *
+ * On the Microchip RX side, the USB_DEVICE_EVENT_ENDPOINT_READ_COMPLETE event
+ * will be triggered if either:
+ *  - the host sends less than maxPacketSize data in any transaction
+ *  - the host sends maxPacketSize data, and the total size matches the rx
+ *    buffer size.
+ *
+ * libusb on Linux supports a Zero Length Packet (ZLP) flag, which will
+ * automatically send a zero length packet if a transfer ends on a
+ * wMaxPacketSize boundary. Other host OS's don't seem to support this, so the
+ * host side will need to manually pad the message to trigger the
+ * USB_DEVICE_EVENT_ENDPOINT_READ_COMPLETE event.
+ */

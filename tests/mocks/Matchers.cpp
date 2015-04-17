@@ -22,6 +22,39 @@
 
 #include <gmock/gmock.h>
 
+// DataMatcher
+// ----------------------------------------------------------------------------
+
+class DataMatcher :
+    public testing::MatcherInterface< ::testing::tuple<const void*,
+                                                       unsigned int> > {
+ public:
+  DataMatcher(const uint8_t* expected_data, unsigned int expected_size)
+      : m_expected_data(expected_data),
+        m_expected_size(expected_size) {
+  }
+
+  bool MatchAndExplain(
+      ::testing::tuple<const void*, unsigned int> args,
+      testing::MatchResultListener* listener) const;
+
+  void DescribeTo(::std::ostream* os) const {
+    *os << "matches the data of size " << m_expected_size;
+  }
+
+  void DescribeNegationTo(::std::ostream* os) const {
+    *os << "does not match the data of size " << m_expected_size;
+  }
+
+ private:
+  const uint8_t* m_expected_data;
+  unsigned int m_expected_size;
+
+  bool InternalMatchAndExplain(
+      const ::testing::tuple<const uint8_t*, unsigned int>& args,
+      testing::MatchResultListener* listener) const;
+};
+
 bool DataMatcher::MatchAndExplain(
     ::testing::tuple<const void*, unsigned int> args,
     testing::MatchResultListener* listener) const {
@@ -76,6 +109,40 @@ bool DataMatcher::InternalMatchAndExplain(
   return matched;
 }
 
+testing::Matcher< ::testing::tuple<const void*, unsigned int> > DataIs(
+    const uint8_t* expected_data,
+    unsigned int expected_size) {
+  return testing::MakeMatcher(new DataMatcher(expected_data, expected_size));
+}
+
+
+// PayloadMatcher
+// ----------------------------------------------------------------------------
+
+class PayloadMatcher : public testing::MatcherInterface<IOVecTuple> {
+ public:
+  PayloadMatcher(const uint8_t* expected_data, unsigned int expected_size)
+      : m_expected_data(expected_data),
+        m_expected_size(expected_size) {
+  }
+
+  virtual bool MatchAndExplain(IOVecTuple args,
+                               testing::MatchResultListener* listener) const;
+
+  virtual void DescribeTo(::std::ostream* os) const {
+    *os << "matches the payload of size " << m_expected_size;
+  }
+
+  virtual void DescribeNegationTo(::std::ostream* os) const {
+    *os << "does not match the payload of size " << m_expected_size;
+  }
+
+ private:
+  const uint8_t* m_expected_data;
+  unsigned int m_expected_size;
+};
+
+
 bool PayloadMatcher::MatchAndExplain(
     IOVecTuple args,
     testing::MatchResultListener* listener) const {
@@ -127,3 +194,11 @@ bool PayloadMatcher::MatchAndExplain(
   return matched;
 }
 
+testing::Matcher<IOVecTuple> PayloadIs(const uint8_t* expected_data,
+                                       unsigned int expected_size) {
+  return testing::MakeMatcher(new PayloadMatcher(expected_data, expected_size));
+}
+
+testing::Matcher<IOVecTuple> EmptyPayload() {
+  return testing::MakeMatcher(new PayloadMatcher(nullptr, 0));
+}

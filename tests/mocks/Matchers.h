@@ -25,93 +25,62 @@
 #include <stdint.h>
 #include "iovec.h"
 
+/**
+ * @defgroup testing Testing Utilities
+ * @brief Helpers for unit testing.
+ *
+ * @addtogroup testing
+ * @{
+ * @file Matchers.h
+ * @brief Mock Matchers
+ */
+
+/**
+ * @brief An IOVec and it's associated length.
+ */
 typedef ::testing::tuple<const IOVec*, unsigned int> IOVecTuple;
 
-// A tuple matcher that checks a {pointer, length} tuple matches the expected
-// data.
-class DataMatcher :
-    public testing::MatcherInterface< ::testing::tuple<const void*,
-                                                       unsigned int> > {
- public:
-  DataMatcher(const uint8_t* expected_data, unsigned int expected_size)
-      : m_expected_data(expected_data),
-        m_expected_size(expected_size) {
-  }
-
-  bool MatchAndExplain(
-      ::testing::tuple<const void*, unsigned int> args,
-      testing::MatchResultListener* listener) const;
-
-  void DescribeTo(::std::ostream* os) const {
-    *os << "matches the data of size " << m_expected_size;
-  }
-
-  void DescribeNegationTo(::std::ostream* os) const {
-    *os << "does not match the data of size " << m_expected_size;
-  }
-
- private:
-  const uint8_t* m_expected_data;
-  unsigned int m_expected_size;
-
-  bool InternalMatchAndExplain(
-      const ::testing::tuple<const uint8_t*, unsigned int>& args,
-      testing::MatchResultListener* listener) const;
-};
-
-/*
- * Example:
+/**
+ * @brief Check that a {pointer, length} tuple matches the expected data.
+ * @param expected_data A pointer to the expected data.
+ * @param expected_size The size of the expected data.
+ *
+ * @examplepara
+ * ~~~~~~~~~~~~~~~~~~~~~
  *   EXPECT_CALL(mock, Send(...))
  *       .With(Args<1, 2>(DataIs(ptr, length));
+ * ~~~~~~~~~~~~~~~~~~~~~
  */
-inline testing::Matcher< ::testing::tuple<const void*, unsigned int> > DataIs(
+testing::Matcher< ::testing::tuple<const void*, unsigned int> > DataIs(
     const uint8_t* expected_data,
-    unsigned int expected_size) {
-  return testing::MakeMatcher(new DataMatcher(expected_data, expected_size));
-}
+    unsigned int expected_size);
 
-// A tuple matcher that checks a {iovec pointer, iovec size} tuple matches the
-// expected data.
-class PayloadMatcher : public testing::MatcherInterface<IOVecTuple> {
- public:
-  PayloadMatcher(const uint8_t* expected_data, unsigned int expected_size)
-      : m_expected_data(expected_data),
-        m_expected_size(expected_size) {
-  }
-
-  virtual bool MatchAndExplain(IOVecTuple args,
-                               testing::MatchResultListener* listener) const;
-
-  virtual void DescribeTo(::std::ostream* os) const {
-    *os << "matches the payload of size " << m_expected_size;
-  }
-
-  virtual void DescribeNegationTo(::std::ostream* os) const {
-    *os << "does not match the payload of size " << m_expected_size;
-  }
-
- private:
-  const uint8_t* m_expected_data;
-  unsigned int m_expected_size;
-};
-
-/*
- * Example:
+/**
+ * @brief Check that an IOVec matches the expected data.
+ * @param expected_data A pointer to the expected payload data.
+ * @param expected_size The size of the expected payload data.
+ *
+ * @examplepara
+ * ~~~~~~~~~~~~~~~~~~~~~
  *   EXPECT_CALL(mock, Send(...))
- *       .With(Args<1, 2>(PayloadIs(&iovec, 1));
+ *       .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data)));
+ * ~~~~~~~~~~~~~~~~~~~~~
  */
-inline testing::Matcher<IOVecTuple> PayloadIs(const uint8_t* expected_data,
-                                              unsigned int expected_size) {
-  return testing::MakeMatcher(new PayloadMatcher(expected_data, expected_size));
-}
+testing::Matcher<IOVecTuple> PayloadIs(const uint8_t* expected_data,
+                                       unsigned int expected_size);
 
-/*
- * A shortcut that expects an empty payload.
+/**
+ * @brief Check that an IOVec contains no data.
+ *
+ * @examplepara
+ * ~~~~~~~~~~~~~~~~~~~~~
+ *   EXPECT_CALL(mock, Send(...))
+ *       .With(Args<1, 2>(EmptyPayload());
+ * ~~~~~~~~~~~~~~~~~~~~~
  */
-inline testing::Matcher<IOVecTuple> EmptyPayload() {
-  return testing::MakeMatcher(new PayloadMatcher(nullptr, 0));
-}
+testing::Matcher<IOVecTuple> EmptyPayload();
 
-
-
+/**
+ * @}
+ */
 #endif  // TESTS_MOCKS_MATCHERS_H_
