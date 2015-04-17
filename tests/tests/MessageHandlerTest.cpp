@@ -189,7 +189,7 @@ TEST_F(MessageHandlerTest, transceiverRDMDiscoveryRequest) {
             arraysize(frame_reply))))
       .WillOnce(Return(true));
   EXPECT_CALL(transport_mock,
-              Send(kToken + 2, COMMAND_RDM_DUB_REQUEST, RC_RX_TIMEOUT, _, _))
+              Send(kToken + 2, COMMAND_RDM_DUB_REQUEST, RC_RDM_TIMEOUT, _, _))
       .With(Args<3, 4>(EmptyPayload()))
       .WillOnce(Return(true));
 
@@ -215,19 +215,19 @@ TEST_F(MessageHandlerTest, transceiverRDMBroadcastRequest) {
       .WillOnce(Return(true));
   EXPECT_CALL(transport_mock,
               Send(kToken + 1, COMMAND_RDM_BROADCAST_REQUEST,
-                   RC_RX_BCAST_RESPONSE, _, _))
+                   RC_RDM_BCAST_RESPONSE, _, _))
       .With(Args<3, 4>(PayloadIs(
               reinterpret_cast<const uint8_t*>(&frame_reply),
               arraysize(frame_reply))))
       .WillOnce(Return(true));
   EXPECT_CALL(transport_mock,
-              Send(kToken + 2, COMMAND_RDM_BROADCAST_REQUEST, RC_RX_TIMEOUT,
+              Send(kToken + 2, COMMAND_RDM_BROADCAST_REQUEST, RC_RDM_TIMEOUT,
                    _, _))
       .With(Args<3, 4>(EmptyPayload()))
       .WillOnce(Return(true));
   EXPECT_CALL(transport_mock,
               Send(kToken + 3, COMMAND_RDM_BROADCAST_REQUEST,
-                   RC_RX_INVALID_RESPONSE, _, _))
+                   RC_RDM_INVALID_RESPONSE, _, _))
       .With(Args<3, 4>(EmptyPayload()))
       .WillOnce(Return(true));
 
@@ -259,11 +259,11 @@ TEST_F(MessageHandlerTest, transceiverRDMRequestWithResponse) {
               arraysize(frame_reply))))
       .WillOnce(Return(true));
   EXPECT_CALL(transport_mock,
-              Send(kToken + 2, COMMAND_RDM_REQUEST, RC_RX_TIMEOUT, _, _))
+              Send(kToken + 2, COMMAND_RDM_REQUEST, RC_RDM_TIMEOUT, _, _))
       .With(Args<3, 4>(EmptyPayload()))
       .WillOnce(Return(true));
   EXPECT_CALL(transport_mock,
-              Send(kToken + 3, COMMAND_RDM_REQUEST, RC_RX_INVALID_RESPONSE, _,
+              Send(kToken + 3, COMMAND_RDM_REQUEST, RC_RDM_INVALID_RESPONSE, _,
                    _))
       .With(Args<3, 4>(EmptyPayload()))
       .WillOnce(Return(true));
