@@ -28,6 +28,7 @@ import textwrap
 CPP, JS, PROTOBUF, PYTHON = xrange(4)
 
 IGNORED_FILES = [
+  'src/main.c'
 ]
 
 IGNORED_DIRECTORIES = [
