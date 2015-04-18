@@ -30,6 +30,10 @@ CPP, JS, PROTOBUF, PYTHON = xrange(4)
 IGNORED_FILES = [
 ]
 
+IGNORED_DIRECTORIES = [
+    'src/system_config'
+]
+
 def Usage(arg0):
   print textwrap.dedent("""\
   Usage: %s
@@ -142,7 +146,7 @@ def GetDirectoryLicences(root_dir):
   LICENCE_FILE = 'LICENCE'
   licences = {}
 
-  for dir_name, subdirs, files in os.walk(root_dir):
+  for dir_name, subdirs, files in os.walk(root_dir, followlinks=True):
     # skip the root_dir since the licence file is different there
     if dir_name == root_dir:
       continue
@@ -159,16 +163,22 @@ def GetDirectoryLicences(root_dir):
 
     # use this licence for all subdirs
     licence = licences.get(dir_name)
-    if licence is not None:
-      for sub_dir in subdirs:
-        licences[os.path.join(dir_name, sub_dir)] = licence
+    if licence is None:
+      continue
+
+    for sub_dir in subdirs:
+      full_path = os.path.join(dir_name, sub_dir)
+      relative_path = os.path.relpath(full_path, root_dir)
+      for ignored_directory in IGNORED_DIRECTORIES:
+        if not relative_path.startswith(ignored_directory):
+          licences[os.path.join(dir_name, sub_dir)] = licence
   return licences
 
 def CheckLicenceForDir(dir_name, licence, diff, fix):
   """Check all files in a directory contain the correct licence."""
   errors = 0
   # glob doesn't support { } so we iterate instead
-  for match in ['*.h', '*.cpp']:
+  for match in ['*.c', '*.h', '*.cpp']:
     for file_name in glob.glob(os.path.join(dir_name, match)):
       # skip the generated protobuf code
       if '.pb.' in file_name:
