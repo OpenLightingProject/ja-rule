@@ -88,25 +88,75 @@
  * @brief The Ja Rule message commands.
  */
 typedef enum {
-  ECHO = 0x80,  //!< Echo the data back
-  TX_DMX = 0x81,  //!< Transmit a DMX frame
+  ECHO = 0x80,  //!< Echo the data back. See @ref message_cmd_echo
+
+  TX_DMX = 0x81,  //!< Transmit a DMX frame. See @ref message_cmd_txdmx.
   GET_LOG = 0x82,  //!< Fetch more log data
   GET_FLAGS = 0x83,  //!< Get the flags state
   WRITE_LOG = 0x84,
+
+  /**
+   * @brief Reset the device.
+   * See @ref message_cmd_reset.
+   */
   COMMAND_RESET_DEVICE = 0x85,
 
-  COMMAND_RDM_DUB_REQUEST = 0x86,  //!< Send a RDM DUB command
-  COMMAND_RDM_REQUEST = 0x87,  //!< Send a RDM Get / Set command
+  /**
+   * @brief Send a RDM Discovery Unique Branch and wait for a response.
+   * See @ref message_cmd_rdmdub.
+   */
+  COMMAND_RDM_DUB_REQUEST = 0x86,
 
-  SET_BREAK_TIME = 0x88,  //!< Set the break time of the transceiver.
-  GET_BREAK_TIME = 0x89,  //!< Fetch the current transceiver break time.
-  SET_MAB_TIME = 0x90,  //!< Set the MAB time of the transceiver
-  GET_MAB_TIME = 0x91,  //!< Fetch the current transceiver MAB time
+  /**
+   * @brief Send a RDM Get / Set command.
+   * See @ref message_cmd_rdm
+   */
+  COMMAND_RDM_REQUEST = 0x87,
+
+  /**
+   * @brief Set the break time of the transceiver.
+   * See @ref message_cmd_setbreak
+   */
+  SET_BREAK_TIME = 0x88,
+
+  /**
+   * @brief Fetch the current transceiver break time.
+   * See @ref message_cmd_getbreak
+   */
+  GET_BREAK_TIME = 0x89,
+
+  /**
+   * @brief Set the mark-after-break time of the transceiver.
+   * See @ref message_cmd_setmark
+   */
+  SET_MAB_TIME = 0x90,
+
+  /**
+   * @brief Fetch the current transceiver mark-after-break time.
+   * See @ref message_cmd_getmark
+   */
+  GET_MAB_TIME = 0x91,
+
+  /**
+   * @brief Set the RDM Broadcast listen time.
+   * See @ref message_cmd_setrdmbcastlisten.
+   */
   SET_RDM_BROADCAST_LISTEN = 0x92,
+
+  /**
+   * @brief Get the RDM Broadcast listen time.
+   * See @ref message_cmd_getrdmbcastlisten.
+   */
   GET_RDM_BROADCAST_LISTEN = 0x93,
+
   SET_RDM_WAIT_TIME = 0x94,
   GET_RDM_WAIT_TIME = 0x95,
-  COMMAND_RDM_BROADCAST_REQUEST = 0x96  //!< Send a broadcast RDM command
+
+  /**
+   * @brief Send a broadcast RDM command.
+   * See @ref message_cmd_rdmbcast.
+   */
+  COMMAND_RDM_BROADCAST_REQUEST = 0x96
 } Command;
 
 /**

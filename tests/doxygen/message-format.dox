@@ -12,7 +12,7 @@
  * each command.
  *
  * Messages sent from the Host to the Device are *Requests*, messages sent from
- * the Device to the Host are *replies*.
+ * the Device to the Host are *Replies*.
  *
  * @section message_endian Byte Ordering
  *
@@ -24,7 +24,7 @@
  *
  * Each request message begins with a common header, zero or more byte of
  * payload data, an end-of-message marker and then zero or more bytes of
- * padding. The total message size must not exceed \ref USB_READ_BUFFER_SIZE.
+ * padding. The total message size must not exceed @ref USB_READ_BUFFER_SIZE.
  *
  * <pre>
  *    0                   1                   2                   3
@@ -42,18 +42,18 @@
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * </pre>
  *
- * @param SOM The start of message identifier: \ref START_OF_MESSAGE_ID
+ * @param SOM The start of message identifier: @ref START_OF_MESSAGE_ID
  * @param Token A token for the command. The same token will be returned in the
  * command response. Typically the host will increment the token with each
  * request.
- * @param Command The command ID.
+ * @param Command The @ref Command identifier.
  * @param Length The length of the data included in the command. The valid
  * range is 0 - 579 bytes.
  * @param Payload The payload data associated with the command. See each
  * command type below for the specific format of the payload data.
- * @param EOM The end of message identifier: \ref END_OF_MESSAGE_ID
+ * @param EOM The end of message identifier: @ref END_OF_MESSAGE_ID
  * @param Padding Extra padding, the Host should set this to 0. Padding should
- * not cause the total message to exceed \ref USB_READ_BUFFER_SIZE.
+ * not cause the total message to exceed @ref USB_READ_BUFFER_SIZE.
  *
  * @subsection message_format_reply Reply
  *
@@ -76,20 +76,20 @@
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * </pre>
  *
- * @param SOM The start of message identifier: \ref START_OF_MESSAGE_ID
+ * @param SOM The start of message identifier: @ref START_OF_MESSAGE_ID
  * @param Token A token for the command. The same token will be returned in the
  * command response. Typically the host will increment the token with each
  * request.
- * @param Command The command ID.
- * @param Return_Code The \ref ReturnCode of the command.
+ * @param Command The @ref Command identifier.
+ * @param Return_Code The @ref ReturnCode of the command.
  * @param Status The status bitfield.
  * @param Length The length of the data included in the command. The valid
  * range is 0 - 579 bytes.
  * @param Payload The payload data associated with the command. See each
  * command type below for the specific format of the payload data.
- * @param EOM The end of message identifier: \ref END_OF_MESSAGE_ID
+ * @param EOM The end of message identifier: @ref END_OF_MESSAGE_ID
  * @param Padding Extra padding, the Host should set this to 0. Padding should
- * not cause the total message to exceed \ref USB_READ_BUFFER_SIZE.
+ * not cause the total message to exceed @ref USB_READ_BUFFER_SIZE.
  *
  * @section message_commands Commands
  *
@@ -121,7 +121,21 @@
  *
  * @param Data 0 or more bytes of data, to match what was provided in the
  * request.
- * @returns \ref RC_OK.
+ * @returns @ref RC_OK.
+ *
+ * @subsection message_cmd_reset Reset
+ *
+ * Resets the device. This can be used to recover from failures.
+ *
+ * @subsubsection message_cmd_reset_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection message_cmd_reset_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns @ref RC_OK.
  *
  * @subsection message_cmd_getbreak Get Break Time
  *
@@ -142,7 +156,7 @@
  * </pre>
  *
  * @param Break_Time The current break time in microseconds.
- * @returns \ref RC_OK.
+ * @returns @ref RC_OK.
  *
  * @subsection message_cmd_setbreak Set Break Time
  *
@@ -165,7 +179,7 @@
  *
  * The response contains no data.
  *
- * @returns \ref RC_OK or \ref RC_BAD_PARAM if the value was out of range.
+ * @returns @ref RC_OK or @ref RC_BAD_PARAM if the value was out of range.
  *
  * @subsection message_cmd_getmark Get Mark Time
  *
@@ -186,7 +200,7 @@
  * </pre>
  *
  * @param Mark_Time The current mark time in microseconds.
- * @returns \ref RC_OK.
+ * @returns @ref RC_OK.
  *
  * @subsection message_cmd_setmark Set Mark Time
  *
@@ -209,7 +223,7 @@
  *
  * The response contains no data.
  *
- * @returns \ref RC_OK or \ref RC_BAD_PARAM if the value was out of range.
+ * @returns @ref RC_OK or @ref RC_BAD_PARAM if the value was out of range.
  *
  * @subsection message_cmd_getrdmbcastlisten Get RDM Broadcast Listen Time
  *
@@ -231,7 +245,7 @@
  *
  * @param Delay The current RDM broadcast listen value, in 10ths of a
  * millisecond.
- * @returns \ref RC_OK.
+ * @returns @ref RC_OK.
  *
  * @subsection message_cmd_setrdmbcastlisten Set RDM Broadcast Listen Time
  *
@@ -256,7 +270,7 @@
  *
  * The response contains no data.
  *
- * @returns \ref RC_OK or \ref RC_BAD_PARAM if the value was out of range.
+ * @returns @ref RC_OK or @ref RC_BAD_PARAM if the value was out of range.
  *
  * @subsection message_cmd_txdmx Transmit DMX512
  *
@@ -280,15 +294,15 @@
  * The response contains no data.
  *
  * @returns
- *  - \ref RC_OK if the frame was sent correctly.
- *  - \ref RC_BUFFER_FULL if the transmit buffer is full.
- *  - \ref RC_TX_ERROR if a transmit error occurred.
+ *  - @ref RC_OK if the frame was sent correctly.
+ *  - @ref RC_BUFFER_FULL if the transmit buffer is full.
+ *  - @ref RC_TX_ERROR if a transmit error occurred.
  *
  * @subsection message_cmd_rdmdub Transmit RDM DUB
  *
  * Sends a RDM discovery unique branch command and then listens for a response.
  * If any data is received, it is returned in the response payload. If no data
- * is received a \ref RC_RDM_TIMEOUT is returned.
+ * is received a @ref RC_RDM_TIMEOUT is returned.
  *
  * The response payload includes timing data.
  *
@@ -323,10 +337,10 @@
  * the end of the DUB response, in 10ths of a microsecond.
  * @param RDM_DUB_Response The raw response, if any was received.
  * @returns
- *  - \ref RC_OK if the frame was sent correctly and data was received.
- *  - \ref RC_BUFFER_FULL if the transmit buffer is full.
- *  - \ref RC_TX_ERROR if a transmit error occurred.
- *  - \ref RC_RDM_TIMEOUT if no response was received.
+ *  - @ref RC_OK if the frame was sent correctly and data was received.
+ *  - @ref RC_BUFFER_FULL if the transmit buffer is full.
+ *  - @ref RC_TX_ERROR if a transmit error occurred.
+ *  - @ref RC_RDM_TIMEOUT if no response was received.
  *
  * @subsection message_cmd_rdmbcast Transmit Broadcast RDM Get / Set
  *
@@ -369,10 +383,11 @@
  * the start of the mark, in 10ths of a microsecond.
  * @param RDM_Response The RDM response, if any was received.
  * @returns
- *  - \ref RC_OK if the frame was broadcast correctly and no data was received.
- *  - \ref RC_BUFFER_FULL if the transmit buffer is full.
- *  - \ref RC_TX_ERROR if a transmit error occurred.
- *  - \ref RC_RDM_BCAST_RESPONSE if a response was received.
+ *  - @ref RC_OK if the frame was broadcast correctly and the broadcast listen
+ *    delay was 0 or the delay was non-0 and no data was received.
+ *  - @ref RC_BUFFER_FULL if the transmit buffer is full.
+ *  - @ref RC_TX_ERROR if a transmit error occurred.
+ *  - @ref RC_RDM_BCAST_RESPONSE if a response was received.
  *
  * @subsection message_cmd_rdm Transmit RDM Get / Set
  *
@@ -414,15 +429,15 @@
  * the start of the mark, in 10ths of a microsecond.
  * @param RDM_Response The RDM response, if any was received.
  * @returns
- *  - \ref RC_OK if the frame was sent correctly and a response was received.
- *  - \ref RC_BUFFER_FULL if the transmit buffer is full.
- *  - \ref RC_TX_ERROR if a transmit error occurred.
- *  - \ref RC_RDM_TIMEOUT if no response was received.
+ *  - @ref RC_OK if the frame was sent correctly and a response was received.
+ *  - @ref RC_BUFFER_FULL if the transmit buffer is full.
+ *  - @ref RC_TX_ERROR if a transmit error occurred.
+ *  - @ref RC_RDM_TIMEOUT if no response was received.
  *
  * @subsection message_cmd_unknown Unrecognised Commands
  *
  * If the device receives a command ID that is doesn't recognize it will return
- * \ref RC_UNKNOWN.
+ * @ref RC_UNKNOWN.
  *
  * @section message_transport Transport Considerations
  * @subsection message_transport_usb USB
