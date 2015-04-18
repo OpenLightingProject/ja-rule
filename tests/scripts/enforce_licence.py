@@ -32,7 +32,9 @@ IGNORED_FILES = [
 ]
 
 IGNORED_DIRECTORIES = [
-    'src/system_config'
+    'firmware/src/system_config',
+    'src/system_config',
+    'tests/src/system_config',
 ]
 
 def Usage(arg0):
