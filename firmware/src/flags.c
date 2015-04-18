@@ -24,7 +24,7 @@ void Flags_Initialize(TransportTXFunction tx_cb) {
 #endif
 }
 
-void Flags_SendResponse() {
+void Flags_SendResponse(uint8_t token) {
 #ifndef PIPELINE_TRANSPORT_TX
   if (!g_flags_tx_cb) {
     return;
@@ -36,9 +36,9 @@ void Flags_SendResponse() {
   iovec.length = sizeof(g_flags.flags);
 
 #ifdef PIPELINE_TRANSPORT_TX
-  bool ok = PIPELINE_TRANSPORT_TX(GET_FLAGS, RC_OK, &iovec, 1);
+  bool ok = PIPELINE_TRANSPORT_TX(token, GET_FLAGS, RC_OK, &iovec, 1);
 #else
-  bool ok = g_flags_tx_cb(GET_FLAGS, RC_OK, &iovec, 1);
+  bool ok = g_flags_tx_cb(token, GET_FLAGS, RC_OK, &iovec, 1);
 #endif
   if (ok) {
     g_flags.has_changed = false;

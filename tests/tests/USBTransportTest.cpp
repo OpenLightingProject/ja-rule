@@ -57,6 +57,7 @@ class USBTransportTest : public testing::Test {
   void ConfigureDevice();
   void CompleteWrite();
 
+ protected:
   StrictMock<MockUSB> usb_mock;
   StrictMock<MockStreamDecoder> stream_decoder_mock;
 
@@ -67,6 +68,8 @@ class USBTransportTest : public testing::Test {
   // Holds a pointer to the USBTransport_EventHandler function once
   // ConfigureDevice() has run
   USBEventHandler m_event_handler_fn = nullptr;
+
+  static const uint8_t kToken = 99;
 };
 
 /*
@@ -109,7 +112,7 @@ TEST_F(USBTransportTest, uninitialized) {
   // called USBTransport_Tasks() the transport remains in an uninitialized
   // state.
   USBTransport_Initialize(nullptr);
-  EXPECT_FALSE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_FALSE(USBTransport_SendResponse(kToken, ECHO, RC_OK, NULL, 0));
 }
 
 /*
@@ -119,7 +122,7 @@ TEST_F(USBTransportTest, sendResponse) {
   USBTransport_Initialize(StreamDecoder_Process);
 
   // Try with a unconfigured transport.
-  EXPECT_FALSE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_FALSE(USBTransport_SendResponse(kToken, ECHO, RC_OK, NULL, 0));
 
   // Now configure the device and clear the logging bit.
   ConfigureDevice();
@@ -127,7 +130,7 @@ TEST_F(USBTransportTest, sendResponse) {
 
   // Test a message with no data.
   const uint8_t expected_message[] = {
-    0x5a, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa5
+    0x5a, kToken, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa5
   };
 
   EXPECT_CALL(
@@ -137,7 +140,7 @@ TEST_F(USBTransportTest, sendResponse) {
       .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
       .WillOnce(Return(USB_DEVICE_RESULT_OK));
 
-  EXPECT_TRUE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_TRUE(USBTransport_SendResponse(kToken, ECHO, RC_OK, NULL, 0));
   EXPECT_TRUE(USBTransport_WritePending());
 
   CompleteWrite();
@@ -150,7 +153,7 @@ TEST_F(USBTransportTest, doubleSendResponse) {
   Logger_SetDataPendingFlag(false);
 
   const uint8_t expected_message[] = {
-    0x5a, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa5
+    0x5a, kToken, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa5
   };
 
   EXPECT_CALL(
@@ -160,9 +163,9 @@ TEST_F(USBTransportTest, doubleSendResponse) {
       .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
       .WillOnce(Return(USB_DEVICE_RESULT_OK));
 
-  EXPECT_TRUE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_TRUE(USBTransport_SendResponse(kToken, ECHO, RC_OK, NULL, 0));
   // Try to send a second message while the first is pending.
-  EXPECT_FALSE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_FALSE(USBTransport_SendResponse(kToken + 1, ECHO, RC_OK, NULL, 0));
   EXPECT_TRUE(USBTransport_WritePending());
 
   CompleteWrite();
@@ -183,7 +186,7 @@ TEST_F(USBTransportTest, sendResponseWithData) {
   };
 
   const uint8_t expected_message[] = {
-    0x5a, 0x80, 0x00, 0x12, 0x00, 0x00, 0x01,
+    0x5a, kToken, 0x80, 0x00, 0x12, 0x00, 0x00, 0x01,
     1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8,
     0xa5
   };
@@ -195,7 +198,8 @@ TEST_F(USBTransportTest, sendResponseWithData) {
       .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
       .WillOnce(Return(USB_DEVICE_RESULT_OK));
 
-  EXPECT_TRUE(USBTransport_SendResponse(ECHO, RC_OK, iovec, arraysize(iovec)));
+  EXPECT_TRUE(USBTransport_SendResponse(kToken, ECHO, RC_OK, iovec,
+                                        arraysize(iovec)));
   EXPECT_TRUE(USBTransport_WritePending());
 
   CompleteWrite();
@@ -213,7 +217,7 @@ TEST_F(USBTransportTest, sendError) {
                     USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
       .WillOnce(Return(USB_DEVICE_RESULT_ERROR));
 
-  EXPECT_FALSE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_FALSE(USBTransport_SendResponse(kToken, ECHO, RC_OK, NULL, 0));
   EXPECT_FALSE(USBTransport_WritePending());
 }
 
@@ -229,16 +233,17 @@ TEST_F(USBTransportTest, truncateResponse) {
 
   IOVec iovec { large_payload, big_payload_size};
 
-  uint8_t expected_message[7 + PAYLOAD_SIZE + 1];
+  uint8_t expected_message[8 + PAYLOAD_SIZE + 1];
   memset(expected_message, 0, arraysize(expected_message));
   expected_message[0] = 0x5a;
-  expected_message[1] = 0x80;
-  expected_message[2] = 0x0;
-  expected_message[3] = 0x01;
-  expected_message[4] = 0x02;
-  expected_message[5] = RC_OK;
-  expected_message[6] = 0x04;  // flags, truncated.
-  expected_message[7 + PAYLOAD_SIZE] = 0xa5;
+  expected_message[1] = kToken;
+  expected_message[2] = 0x80;
+  expected_message[3] = 0x0;
+  expected_message[4] = 0x01;
+  expected_message[5] = 0x02;
+  expected_message[6] = RC_OK;
+  expected_message[7] = 0x04;  // flags, truncated.
+  expected_message[8 + PAYLOAD_SIZE] = 0xa5;
 
   EXPECT_CALL(
       usb_mock,
@@ -247,7 +252,7 @@ TEST_F(USBTransportTest, truncateResponse) {
       .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
       .WillOnce(Return(USB_DEVICE_RESULT_OK));
 
-  EXPECT_TRUE(USBTransport_SendResponse(ECHO, RC_OK, &iovec, 1));
+  EXPECT_TRUE(USBTransport_SendResponse(kToken, ECHO, RC_OK, &iovec, 1));
   EXPECT_TRUE(USBTransport_WritePending());
 
   CompleteWrite();
@@ -263,7 +268,7 @@ TEST_F(USBTransportTest, pendingFlags) {
   EXPECT_TRUE(Flags_HasChanged());
 
   const uint8_t expected_message[] = {
-    0x5a, 0x80, 0x00, 0x00, 0x00, 0x00, 0x02, 0xa5
+    0x5a, kToken, 0x80, 0x00, 0x00, 0x00, 0x00, 0x02, 0xa5
   };
 
   EXPECT_CALL(
@@ -273,7 +278,7 @@ TEST_F(USBTransportTest, pendingFlags) {
       .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
       .WillOnce(Return(USB_DEVICE_RESULT_OK));
 
-  EXPECT_TRUE(USBTransport_SendResponse(ECHO, RC_OK, NULL, 0));
+  EXPECT_TRUE(USBTransport_SendResponse(kToken, ECHO, RC_OK, NULL, 0));
   EXPECT_TRUE(USBTransport_WritePending());
   CompleteWrite();
   EXPECT_FALSE(USBTransport_WritePending());

@@ -21,8 +21,8 @@ extern "C" {
  *
  * This should either call a function of type TXFunction or be undefined.
  */
-#define PIPELINE_TRANSPORT_TX(command, rc, iov, iov_count) \
-  USBTransport_SendResponse(command, rc, iov, iov_count);
+#define PIPELINE_TRANSPORT_TX(token, command, rc, iov, iov_count) \
+  USBTransport_SendResponse(token, command, rc, iov, iov_count);
 
 /**
  * @brief Controls which function is called when data is received from the

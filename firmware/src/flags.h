@@ -86,11 +86,12 @@ static inline void Flags_SetTXError() {
 
 /**
  * @brief Send a flags message.
+ * @param token The token to include in the response.
  *
  * This uses the TransportTXFunction passed in Flags_Initialize() to transmit
  * the frame.
  */
-void Flags_SendResponse();
+void Flags_SendResponse(uint8_t token);
 
 #ifdef __cplusplus
 }

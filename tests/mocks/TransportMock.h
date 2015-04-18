@@ -26,13 +26,13 @@
 
 class MockTransport {
  public:
-  MOCK_METHOD4(Send, bool(Command command, uint8_t rc,
+  MOCK_METHOD5(Send, bool(uint8_t token, Command command, uint8_t rc,
                           const IOVec* iovec, unsigned int iovec_count));
 };
 
 void Transport_SetMock(MockTransport* mock);
 
-bool Transport_Send(Command command, uint8_t rc, const IOVec* iovec,
-                    unsigned int iovec_count);
+bool Transport_Send(uint8_t token, Command command, uint8_t rc,
+                    const IOVec* iovec, unsigned int iovec_count);
 
 #endif  // TESTS_MOCKS_TRANSPORTMOCK_H_

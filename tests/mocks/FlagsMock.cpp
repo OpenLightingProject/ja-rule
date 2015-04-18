@@ -36,9 +36,9 @@ void Flags_Initialize(TransportTXFunction tx_cb) {
   }
 }
 
-void Flags_SendResponse() {
+void Flags_SendResponse(uint8_t token) {
   if (g_flags_mock) {
-    g_flags_mock->SendResponse();
+    g_flags_mock->SendResponse(token);
   }
 }
 

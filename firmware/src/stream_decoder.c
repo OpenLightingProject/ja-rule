@@ -21,6 +21,7 @@
 
 typedef enum {
   START_OF_MESSAGE,
+  TOKEN,
   COMMAND_LOW,
   COMMAND_HIGH,
   LENGTH_LOW,
@@ -47,6 +48,7 @@ void StreamDecoder_Initialize(MessageHandler handler) {
 #ifndef PIPELINE_HANDLE_MESSAGE
   g_stream_data.handler = handler;
 #endif
+  g_stream_data.message.token = 0;
   g_stream_data.message.length = 0;
   g_stream_data.message.command = 0;
   g_stream_data.message.payload = NULL;
@@ -77,10 +79,14 @@ void StreamDecoder_Process(const uint8_t* data, unsigned int size) {
       case START_OF_MESSAGE:
         for (; data < end; data++) {
           if (*data == START_OF_MESSAGE_ID) {
-            g_stream_data.state = COMMAND_LOW;
+            g_stream_data.state = TOKEN;
             break;
           }
         }
+        break;
+      case TOKEN:
+        g_stream_data.message.token = *data;
+        g_stream_data.state = COMMAND_LOW;
         break;
       case COMMAND_LOW:
         g_stream_data.message.command = (*data & 0xff);

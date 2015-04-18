@@ -10,8 +10,8 @@
 extern "C" {
 #endif
 
-#define PIPELINE_TRANSPORT_TX(command, rc, iov, iov_count) \
-  USBTransport_SendResponse(command, rc, iov, iov_count);
+#define PIPELINE_TRANSPORT_TX(token, command, rc, iov, iov_count) \
+  USBTransport_SendResponse(token, command, rc, iov, iov_count);
 
 #define PIPELINE_TRANSPORT_RX(data, size) \
   StreamDecoder_Process(data, size);

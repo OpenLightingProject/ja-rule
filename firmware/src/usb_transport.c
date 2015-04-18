@@ -257,46 +257,47 @@ void USBTransport_Tasks() {
   }
 }
 
-bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
-                               unsigned int iov_count) {
+bool USBTransport_SendResponse(uint8_t token, Command command, uint8_t rc,
+                               const IOVec* data, unsigned int iov_count) {
   if (g_usb_transport_data.tx_in_progress ||
       !g_usb_transport_data.is_configured) {
     return false;
   }
 
   transmitDataBuffer[0] = START_OF_MESSAGE_ID;
-  transmitDataBuffer[1] = command & 0xff;
-  transmitDataBuffer[2] = command >> 8;
-  // 3 & 4 are the length.
-  transmitDataBuffer[5] = rc;
+  transmitDataBuffer[1] = token;
+  transmitDataBuffer[2] = command & 0xff;
+  transmitDataBuffer[3] = command >> 8;
+  // 4 & 5 are the length.
+  transmitDataBuffer[6] = rc;
 
   // Set appropriate flags.
-  transmitDataBuffer[6] = 0;
+  transmitDataBuffer[7] = 0;
   if (Logger_DataPending()) {
-    transmitDataBuffer[6] |= TRANSPORT_LOGS_PENDING;
+    transmitDataBuffer[7] |= TRANSPORT_LOGS_PENDING;
   }
   if (Flags_HasChanged()) {
-    transmitDataBuffer[6] |= TRANSPORT_FLAGS_CHANGED;
+    transmitDataBuffer[7] |= TRANSPORT_FLAGS_CHANGED;
   }
 
   unsigned int i = 0;
   uint16_t offset = 0;
   for (; i != iov_count; i++) {
     if (offset + data[i].length > PAYLOAD_SIZE) {
-      memcpy(transmitDataBuffer + offset + 7, data[i].base,
+      memcpy(transmitDataBuffer + offset + 8, data[i].base,
              PAYLOAD_SIZE - offset);
       offset = PAYLOAD_SIZE;
       transmitDataBuffer[6] |= TRANSPORT_MSG_TRUNCATED;
       break;
     } else {
-      memcpy(transmitDataBuffer + offset + 7, data[i].base, data[i].length);
+      memcpy(transmitDataBuffer + offset + 8, data[i].base, data[i].length);
       offset += data[i].length;
     }
   }
 
-  transmitDataBuffer[3] = offset & 0xff;
-  transmitDataBuffer[4] = offset >> 8;
-  transmitDataBuffer[7 + offset] = END_OF_MESSAGE_ID;
+  transmitDataBuffer[4] = offset & 0xff;
+  transmitDataBuffer[5] = offset >> 8;
+  transmitDataBuffer[8 + offset] = END_OF_MESSAGE_ID;
 
   g_usb_transport_data.tx_in_progress = true;
 
@@ -304,7 +305,7 @@ bool USBTransport_SendResponse(Command command, uint8_t rc, const IOVec* data,
       g_usb_transport_data.usb_device,
       &g_usb_transport_data.write_transfer,
       g_usb_transport_data.tx_endpoint, transmitDataBuffer,
-      offset + 8,
+      offset + 9,
       USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE);
   if (result != USB_DEVICE_RESULT_OK) {
     g_usb_transport_data.tx_in_progress = false;

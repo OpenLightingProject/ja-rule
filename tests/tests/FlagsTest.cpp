@@ -48,12 +48,13 @@ TEST_F(FlagsTest, testUnsetFlags) {
   EXPECT_FALSE(Flags_HasChanged());
 
   const uint8_t payload[] = {0};
+  const uint8_t token = 99;
 
-  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
-      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+  EXPECT_CALL(transport_mock, Send(token, GET_FLAGS, RC_OK, _, 1))
+      .With(Args<3, 4>(PayloadIs(payload, arraysize(payload))))
       .WillOnce(Return(true));
 
-  Flags_SendResponse();
+  Flags_SendResponse(token);
   EXPECT_FALSE(Flags_HasChanged());
 }
 
@@ -63,12 +64,13 @@ TEST_F(FlagsTest, testLogOverflow) {
   EXPECT_TRUE(Flags_HasChanged());
 
   const uint8_t payload[] = {1};
+  const uint8_t token = 55;
 
-  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
-      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+  EXPECT_CALL(transport_mock, Send(token, GET_FLAGS, RC_OK, _, 1))
+      .With(Args<3, 4>(PayloadIs(payload, arraysize(payload))))
       .WillOnce(Return(true));
 
-  Flags_SendResponse();
+  Flags_SendResponse(token);
   EXPECT_FALSE(Flags_HasChanged());
 }
 
@@ -78,12 +80,13 @@ TEST_F(FlagsTest, testTXDrop) {
   EXPECT_TRUE(Flags_HasChanged());
 
   const uint8_t payload[] = {2};
+  const uint8_t token = 143;
 
-  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
-      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+  EXPECT_CALL(transport_mock, Send(token, GET_FLAGS, RC_OK, _, 1))
+      .With(Args<3, 4>(PayloadIs(payload, arraysize(payload))))
       .WillOnce(Return(true));
 
-  Flags_SendResponse();
+  Flags_SendResponse(token);
   EXPECT_FALSE(Flags_HasChanged());
 }
 
@@ -93,12 +96,13 @@ TEST_F(FlagsTest, testTXError) {
   EXPECT_TRUE(Flags_HasChanged());
 
   const uint8_t payload[] = {4};
+  const uint8_t token = 215;
 
-  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
-      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+  EXPECT_CALL(transport_mock, Send(token, GET_FLAGS, RC_OK, _, 1))
+      .With(Args<3, 4>(PayloadIs(payload, arraysize(payload))))
       .WillOnce(Return(true));
 
-  Flags_SendResponse();
+  Flags_SendResponse(token);
   EXPECT_FALSE(Flags_HasChanged());
 }
 
@@ -108,19 +112,20 @@ TEST_F(FlagsTest, testSendFailure) {
   EXPECT_TRUE(Flags_HasChanged());
 
   const uint8_t payload[] = {1};
+  const uint8_t token = 32;
 
   // The first send fails, so the flag state is maintained.
   testing::InSequence seq;
-  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
-      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+  EXPECT_CALL(transport_mock, Send(token, GET_FLAGS, RC_OK, _, 1))
+      .With(Args<3, 4>(PayloadIs(payload, arraysize(payload))))
       .WillOnce(Return(false));
-  EXPECT_CALL(transport_mock, Send(GET_FLAGS, RC_OK, _, 1))
-      .With(Args<2, 3>(PayloadIs(payload, arraysize(payload))))
+  EXPECT_CALL(transport_mock, Send(token, GET_FLAGS, RC_OK, _, 1))
+      .With(Args<3, 4>(PayloadIs(payload, arraysize(payload))))
       .WillOnce(Return(true));
 
-  Flags_SendResponse();
+  Flags_SendResponse(token);
   EXPECT_TRUE(Flags_HasChanged());
 
-  Flags_SendResponse();
+  Flags_SendResponse(token);
   EXPECT_FALSE(Flags_HasChanged());
 }

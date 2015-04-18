@@ -29,6 +29,11 @@ MockMessageHandler *g_message_handler_mock = NULL;
 bool MessageMatcher::MatchAndExplain(
     const Message* message,
     testing::MatchResultListener* listener) const {
+  if (message->token != m_token) {
+    *listener << "the token is " << static_cast<int>(message->token);
+    return false;
+  }
+
   if (message->command != m_command) {
     *listener << "the command is " << message->command;
     return false;
