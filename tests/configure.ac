@@ -37,6 +37,13 @@ AS_IF([test "x$enable_gcov" = xyes],
        CXXFLAGS="$CXXFLAGS -fprofile-arcs -ftest-coverage"
        LIBS="$LIBS -lgcov"])
 
+# Optionally set the Doxygen version to "Latest Git" for website latest
+# version.
+AC_ARG_ENABLE(
+  [doxygen-version],
+  [AS_HELP_STRING([--disable-doxygen-version],
+  [Substitute the Doxygen version with latest, for the website])])
+
 # Doxygen
 #####################################################
 DX_DOT_FEATURE(ON)
