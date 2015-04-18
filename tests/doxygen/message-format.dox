@@ -131,7 +131,7 @@
  *
  * The request contains no data.
  *
- * @subsubsection message_cmd_getbreak_res Response Payload
+ * @subsubsection message_cmd_reset_res Response Payload
  *
  * The response contains no data.
  *
