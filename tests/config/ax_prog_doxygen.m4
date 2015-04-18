@@ -420,25 +420,27 @@ DX_ARG_ABLE(doc, [generate any doxygen documentation],
 
 # Check MINIMUM-VERSION
 # From mloskot at https://github.com/mloskot/autotools-modules/blob/master/macros/ax_prog_doxygen.m4
-# Copyright © 2006-2009 Mateusz Loskot <mateusz@loskot.net>
+# Copyright (c) 2006-2009 Mateusz Loskot <mateusz@loskot.net>
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
 # notice and this notice are preserved.
-doxygen_version_req=ifelse([$4], , 1.3.0, [$4])
-doxygen_version_req_major=`expr $doxygen_version_req : '\([[0-9]]*\)'`
-doxygen_version_req_minor=`expr $doxygen_version_req : '[[0-9]]*\.\([[0-9]]*\)'`
-doxygen_version_req_micro=`expr $doxygen_version_req : '[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)'`
-doxygen_version=`$DX_DOXYGEN --version`
-doxygen_version_major=`expr $doxygen_version : '\([[0-9]]*\)'`
-doxygen_version_minor=`expr $doxygen_version : '[[0-9]]*\.\([[0-9]]*\)'`
-doxygen_version_micro=`expr $doxygen_version : '[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)'`
-WANT_DOXYGEN_VERSION=`expr $doxygen_version_req_major \* 100000 \+ $doxygen_version_req_minor \* 100 \+ $doxygen_version_req_micro`
-FOUND_DOXYGEN_VERSION=`expr $doxygen_version_major \* 100000 \+ $doxygen_version_minor \* 100 \+ $doxygen_version_micro`
-if test $WANT_DOXYGEN_VERSION -le $FOUND_DOXYGEN_VERSION; then
-    DOXYGEN_VERSION=$FOUND_DOXYGEN_VERSION
-else
-    # Required Doxygen not found
-    AC_MSG_ERROR([Doxygen $FOUND_DOXYGEN_VERSION found! Required version is $WANT_DOXYGEN_VERSION])
+if test -n "$DX_DOXYGEN"; then
+    doxygen_version_req=ifelse([$4], , 1.3.0, [$4])
+    doxygen_version_req_major=`expr $doxygen_version_req : '\([[0-9]]*\)'`
+    doxygen_version_req_minor=`expr $doxygen_version_req : '[[0-9]]*\.\([[0-9]]*\)'`
+    doxygen_version_req_micro=`expr $doxygen_version_req : '[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)'`
+    doxygen_version=`$DX_DOXYGEN --version`
+    doxygen_version_major=`expr $doxygen_version : '\([[0-9]]*\)'`
+    doxygen_version_minor=`expr $doxygen_version : '[[0-9]]*\.\([[0-9]]*\)'`
+    doxygen_version_micro=`expr $doxygen_version : '[[0-9]]*\.[[0-9]]*\.\([[0-9]]*\)'`
+    WANT_DOXYGEN_VERSION=`expr $doxygen_version_req_major \* 100000 \+ $doxygen_version_req_minor \* 100 \+ $doxygen_version_req_micro`
+    FOUND_DOXYGEN_VERSION=`expr $doxygen_version_major \* 100000 \+ $doxygen_version_minor \* 100 \+ $doxygen_version_micro`
+    if test $WANT_DOXYGEN_VERSION -le $FOUND_DOXYGEN_VERSION; then
+        DOXYGEN_VERSION=$FOUND_DOXYGEN_VERSION
+    else
+        # Required Doxygen not found
+        AC_MSG_ERROR([Doxygen $FOUND_DOXYGEN_VERSION found! Required version is $WANT_DOXYGEN_VERSION])
+    fi
 fi
 
 # Dot for graphics:
