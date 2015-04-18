@@ -12,7 +12,7 @@
  * each command.
  *
  * Messages sent from the Host to the Device are *Requests*, messages sent from
- * the Device to the Host are *replies*.
+ * the Device to the Host are *Replies*.
  *
  * @section message_endian Byte Ordering
  *
@@ -46,7 +46,7 @@
  * @param Token A token for the command. The same token will be returned in the
  * command response. Typically the host will increment the token with each
  * request.
- * @param Command The command ID.
+ * @param Command The \ref Command identifier.
  * @param Length The length of the data included in the command. The valid
  * range is 0 - 579 bytes.
  * @param Payload The payload data associated with the command. See each
@@ -80,7 +80,7 @@
  * @param Token A token for the command. The same token will be returned in the
  * command response. Typically the host will increment the token with each
  * request.
- * @param Command The command ID.
+ * @param Command The \ref Command identifier.
  * @param Return_Code The \ref ReturnCode of the command.
  * @param Status The status bitfield.
  * @param Length The length of the data included in the command. The valid
@@ -121,6 +121,20 @@
  *
  * @param Data 0 or more bytes of data, to match what was provided in the
  * request.
+ * @returns \ref RC_OK.
+ *
+ * @subsection message_cmd_reset Reset
+ *
+ * Resets the device. This can be used to recover from failures.
+ *
+ * @subsubsection message_cmd_reset_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection message_cmd_getbreak_res Response Payload
+ *
+ * The response contains no data.
+ *
  * @returns \ref RC_OK.
  *
  * @subsection message_cmd_getbreak Get Break Time
@@ -369,7 +383,8 @@
  * the start of the mark, in 10ths of a microsecond.
  * @param RDM_Response The RDM response, if any was received.
  * @returns
- *  - \ref RC_OK if the frame was broadcast correctly and no data was received.
+ *  - \ref RC_OK if the frame was broadcast correctly and the broadcast listen
+ *    delay was 0 or the delay was non-0 and no data was received.
  *  - \ref RC_BUFFER_FULL if the transmit buffer is full.
  *  - \ref RC_TX_ERROR if a transmit error occurred.
  *  - \ref RC_RDM_BCAST_RESPONSE if a response was received.
