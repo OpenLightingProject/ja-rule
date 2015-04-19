@@ -151,12 +151,12 @@ TEST_F(MessageHandlerTest, testUnknownMessage) {
   MockTransport transport_mock;
   Transport_SetMock(&transport_mock);
 
-  EXPECT_CALL(transport_mock, Send(kToken, (Command) 0, RC_UNKNOWN, NULL, 0))
+  EXPECT_CALL(transport_mock, Send(kToken, (Command) 0xff, RC_UNKNOWN, NULL, 0))
       .WillOnce(Return(true));
 
   MessageHandler_Initialize(Transport_Send);
 
-  Message message = { kToken, (Command) 0, 0, NULL };
+  Message message = { kToken, (Command) 0xff, 0, NULL };
   MessageHandler_HandleMessage(&message);
 }
 
