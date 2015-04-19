@@ -172,10 +172,10 @@ def GetDirectoryLicences(root_dir):
     for sub_dir in subdirs:
       full_path = os.path.join(dir_name, sub_dir)
       relative_path = os.path.relpath(full_path, root_dir)
-      ok = True
+      include_directory = True
       for ignored_directory in IGNORED_DIRECTORIES:
-        ok &= relative_path.startswith(ignored_directory)
-      if ok:
+        include_directory &= relative_path.startswith(ignored_directory)
+      if include_directory:
         licences[os.path.join(dir_name, sub_dir)] = licence
   return licences
 
