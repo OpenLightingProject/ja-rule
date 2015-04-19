@@ -38,9 +38,9 @@
 // The number of buffers we maintain for overlapping I/O
 #define NUMBER_OF_BUFFERS 2
 
-#define BREAK_FUDGE_FACTOR 55
+#define BREAK_FUDGE_FACTOR 74
 
-#define MARK_FUDGE_FACTOR 170
+#define MARK_FUDGE_FACTOR 217
 
 #define INPUT_CAPTURE_MODULE IC_ID_2
 
