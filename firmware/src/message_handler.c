@@ -242,10 +242,10 @@ void MessageHandler_TransceiverEvent(const TransceiverEvent *event) {
       rc = RC_TX_ERROR;
       break;
     case T_RESULT_RX_DATA:
-      rc = event->op == T_OP_RDM_BROADCAST ? RC_RDM_BCAST_RESPONSE : RC_OK;
+      rc = (event->op == T_OP_RDM_BROADCAST ? RC_RDM_BCAST_RESPONSE : RC_OK);
       break;
     case T_RESULT_RX_TIMEOUT:
-      rc = event->op == T_OP_RDM_BROADCAST ? RC_OK : RC_RDM_TIMEOUT;
+      rc = (event->op == T_OP_RDM_BROADCAST ? RC_OK : RC_RDM_TIMEOUT);
       break;
     case T_RESULT_RX_INVALID:
       rc = RC_RDM_INVALID_RESPONSE;
