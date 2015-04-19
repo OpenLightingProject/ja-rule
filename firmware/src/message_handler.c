@@ -245,7 +245,7 @@ void MessageHandler_TransceiverEvent(const TransceiverEvent *event) {
       rc = event->op == T_OP_RDM_BROADCAST ? RC_RDM_BCAST_RESPONSE : RC_OK;
       break;
     case T_RESULT_RX_TIMEOUT:
-      rc = RC_RDM_TIMEOUT;
+      rc = event->op == T_OP_RDM_BROADCAST ? RC_OK : RC_RDM_TIMEOUT;
       break;
     case T_RESULT_RX_INVALID:
       rc = RC_RDM_INVALID_RESPONSE;
@@ -285,6 +285,6 @@ void MessageHandler_TransceiverEvent(const TransceiverEvent *event) {
   }
 
   SendMessage(event->token, command, rc, (IOVec*) &iovec, vector_size);
-  SysLog_Print(SYSLOG_INFO, "Op %d, result: %d, Command is %d",
-               event->op, event->result, command);
+  SysLog_Print(SYSLOG_INFO, "Token %d, op %d, result: %d",
+               event->token, event->op, event->result);
 }

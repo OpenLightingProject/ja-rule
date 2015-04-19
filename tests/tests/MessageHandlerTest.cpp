@@ -232,7 +232,7 @@ TEST_F(MessageHandlerTest, transceiverRDMBroadcastRequest) {
               arraysize(frame_reply))))
       .WillOnce(Return(true));
   EXPECT_CALL(transport_mock,
-              Send(kToken + 2, COMMAND_RDM_BROADCAST_REQUEST, RC_RDM_TIMEOUT,
+              Send(kToken + 2, COMMAND_RDM_BROADCAST_REQUEST, RC_OK,
                    _, _))
       .With(Args<3, 4>(EmptyPayload()))
       .WillOnce(Return(true));
