@@ -107,75 +107,80 @@
  * @brief The Ja Rule message commands.
  */
 typedef enum {
-  ECHO = 0x80,  //!< Echo the data back. See @ref message_cmd_echo
-
-  TX_DMX = 0x81,  //!< Transmit a DMX frame. See @ref message_cmd_txdmx.
-  GET_LOG = 0x82,  //!< Fetch more log data
-  GET_FLAGS = 0x83,  //!< Get the flags state
-  WRITE_LOG = 0x84,
-
+  // Base commands
   /**
    * @brief Reset the device.
    * See @ref message_cmd_reset.
    */
-  COMMAND_RESET_DEVICE = 0x85,
+  COMMAND_RESET_DEVICE = 0x00,
 
-  /**
-   * @brief Send a RDM Discovery Unique Branch and wait for a response.
-   * See @ref message_cmd_rdmdub.
-   */
-  COMMAND_RDM_DUB_REQUEST = 0x86,
-
-  /**
-   * @brief Send a RDM Get / Set command.
-   * See @ref message_cmd_rdm
-   */
-  COMMAND_RDM_REQUEST = 0x87,
-
+  // User Configuration
   /**
    * @brief Set the break time of the transceiver.
    * See @ref message_cmd_setbreak
    */
-  SET_BREAK_TIME = 0x88,
+  SET_BREAK_TIME = 0x10,
 
   /**
    * @brief Fetch the current transceiver break time.
    * See @ref message_cmd_getbreak
    */
-  GET_BREAK_TIME = 0x89,
+  GET_BREAK_TIME = 0x11,
 
   /**
    * @brief Set the mark-after-break time of the transceiver.
    * See @ref message_cmd_setmark
    */
-  SET_MAB_TIME = 0x90,
+  SET_MAB_TIME = 0x12,
 
   /**
    * @brief Fetch the current transceiver mark-after-break time.
    * See @ref message_cmd_getmark
    */
-  GET_MAB_TIME = 0x91,
+  GET_MAB_TIME = 0x13,
 
+  // Advanced Configuration
   /**
    * @brief Set the RDM Broadcast listen time.
    * See @ref message_cmd_setrdmbcastlisten.
    */
-  SET_RDM_BROADCAST_LISTEN = 0x92,
+  SET_RDM_BROADCAST_LISTEN = 0x20,
 
   /**
    * @brief Get the RDM Broadcast listen time.
    * See @ref message_cmd_getrdmbcastlisten.
    */
-  GET_RDM_BROADCAST_LISTEN = 0x93,
+  GET_RDM_BROADCAST_LISTEN = 0x21,
+  SET_RDM_WAIT_TIME = 0x22,
+  GET_RDM_WAIT_TIME = 0x23,
 
-  SET_RDM_WAIT_TIME = 0x94,
-  GET_RDM_WAIT_TIME = 0x95,
+  // DMX
+  TX_DMX = 0x30,  //!< Transmit a DMX frame. See @ref message_cmd_txdmx.
+
+  // RDM
+  /**
+   * @brief Send a RDM Discovery Unique Branch and wait for a response.
+   * See @ref message_cmd_rdmdub.
+   */
+  COMMAND_RDM_DUB_REQUEST = 0x40,
+
+  /**
+   * @brief Send a RDM Get / Set command.
+   * See @ref message_cmd_rdm
+   */
+  COMMAND_RDM_REQUEST = 0x41,
 
   /**
    * @brief Send a broadcast RDM command.
    * See @ref message_cmd_rdmbcast.
    */
-  COMMAND_RDM_BROADCAST_REQUEST = 0x96
+  COMMAND_RDM_BROADCAST_REQUEST = 0x42,
+
+  // Experimental / testing
+  ECHO = 0xf0,  //!< Echo the data back. See @ref message_cmd_echo
+  GET_LOG = 0xf1,  //!< Fetch more log data
+  GET_FLAGS = 0xf2,  //!< Get the flags state
+  WRITE_LOG = 0xf3
 } Command;
 
 /**
