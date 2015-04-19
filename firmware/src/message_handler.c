@@ -230,12 +230,7 @@ void MessageHandler_HandleMessage(const Message *message) {
 
 void MessageHandler_TransceiverEvent(const TransceiverEvent *event) {
   uint8_t vector_size = 0;
-  IOVec iovec[1];
-  if (event->data && event->length > 0) {
-    iovec[0].base = event->data;
-    iovec[0].length = event->length;
-    vector_size++;
-  }
+  IOVec iovec[2];
 
   Command command;
   ReturnCode rc;
@@ -265,9 +260,15 @@ void MessageHandler_TransceiverEvent(const TransceiverEvent *event) {
       break;
     case T_OP_RDM_DUB:
       command = COMMAND_RDM_DUB_REQUEST;
+      iovec[vector_size].base = &event->timing->dub_response;
+      iovec[vector_size].length = sizeof(event->timing->dub_response);
+      vector_size++;
       break;
     case T_OP_RDM_WITH_RESPONSE:
       command = COMMAND_RDM_REQUEST;
+      iovec[vector_size].base = &event->timing->get_set_response;
+      iovec[vector_size].length = sizeof(event->timing->get_set_response);
+      vector_size++;
       break;
     case T_OP_RDM_BROADCAST:
       command = COMMAND_RDM_BROADCAST_REQUEST;
@@ -276,7 +277,14 @@ void MessageHandler_TransceiverEvent(const TransceiverEvent *event) {
       SysLog_Print(SYSLOG_INFO, "Unknown Transceiver event %d", event->op);
       return;
   }
+
+  if (event->data && event->length > 0) {
+    iovec[vector_size].base = event->data;
+    iovec[vector_size].length = event->length;
+    vector_size++;
+  }
+
+  SendMessage(event->token, command, rc, (IOVec*) &iovec, vector_size);
   SysLog_Print(SYSLOG_INFO, "Op %d, result: %d, Command is %d",
                event->op, event->result, command);
-  SendMessage(event->token, command, rc, (IOVec*) &iovec, vector_size);
 }
