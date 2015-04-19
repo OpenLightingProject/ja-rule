@@ -1,1 +1,0 @@
-../../firmware/src/logger.c

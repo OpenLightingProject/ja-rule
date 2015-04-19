@@ -49,5 +49,9 @@
  *
  * @section sec_Licensing Licensing
  *
- * TODO(simon): complete this
+ * The Ja Rule codebase is licensed under the
+ * [LGPL](http://www.gnu.org/licenses/lgpl.html).
+ *
+ * The unit-testing code & mocks are licenced under the
+ * [GPL](http://www.gnu.org/licenses/gpl.html).
  */
