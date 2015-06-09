@@ -57,6 +57,16 @@ extern "C" {
 #define PIPELINE_TRANSCEIVER_EVENT(event) \
   MessageHandler_TransceiverEvent(event);
 
+/**
+ * @brief Specifies the function to call when the RDMResponder needs to send a
+ * frame.
+ * @sa RDMResponderSendCallback.
+ *
+ * This should either call a function of type RDMResponderSendCallback or
+ * undefined.
+ */
+//#define PIPELINE_RDMRESPONDER_SEND(include_break, iov, iov_len) \
+
 #ifdef __cplusplus
 }
 #endif

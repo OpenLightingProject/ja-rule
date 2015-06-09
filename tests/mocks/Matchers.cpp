@@ -163,14 +163,18 @@ bool PayloadMatcher::MatchAndExplain(
   }
 
   bool matched = true;
+  unsigned int block_offset = 0;
+  std::ios::fmtflags ostream_flags;
   if (listener->IsInterested()) {
-    unsigned int block_offset = 0;
-    std::ios::fmtflags ostream_flags(listener->stream()->flags());
-    for (unsigned int i = 0; i < m_expected_size; i++) {
-      uint8_t actual = reinterpret_cast<const uint8_t*>(
-          iovec->base)[block_offset];
-      uint8_t expected = m_expected_data[i];
+    ostream_flags = listener->stream()->flags();
+  }
 
+  for (unsigned int i = 0; i < m_expected_size; i++) {
+    uint8_t actual = reinterpret_cast<const uint8_t*>(
+        iovec->base)[block_offset];
+    uint8_t expected = m_expected_data[i];
+
+    if (listener->IsInterested()) {
       *listener
          << "\n" << std::dec << i << ": 0x" << std::hex
          << static_cast<int>(expected)
@@ -181,14 +185,16 @@ bool PayloadMatcher::MatchAndExplain(
          << (expected == actual ? " == " : " != ")
          << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
          << ")";
-
-      matched &= (expected == actual);
-      block_offset++;
-      if (block_offset >= iovec->length) {
-        block_offset = 0;
-        iovec++;
-      }
     }
+
+    matched &= (expected == actual);
+    block_offset++;
+    if (block_offset >= iovec->length) {
+      block_offset = 0;
+      iovec++;
+    }
+  }
+  if (listener->IsInterested()) {
     listener->stream()->flags(ostream_flags);
   }
   return matched;
