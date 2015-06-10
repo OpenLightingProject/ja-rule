@@ -18,6 +18,18 @@
  */
 #include "rdm_responder.h"
 
+#if HAVE_CONFIG_H
+// We're in the test environment
+#include <config.h>
+#else
+// We're building for the pic.
+#include <endian.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,8 +86,9 @@ static inline int UIDCompare(const uint8_t *uid1, const uint8_t *uid2) {
 static void Checksum(const IOVec* iov, unsigned int iov_count,
                      uint8_t checksum_data[CHECKSUM_SIZE]) {
   uint16_t checksum = 0;
-  for (unsigned int i = 0; i != iov_count; i++) {
-    for (unsigned int j = 0; j != iov[i].length; j++) {
+  unsigned int i, j;
+  for (i = 0; i != iov_count; i++) {
+    for (j = 0; j != iov[i].length; j++) {
       checksum += ((uint8_t*) iov[i].base)[j];
     }
   }
@@ -115,7 +128,8 @@ static void SendDUBResponseIfRequired(const uint8_t *param_data,
   response[19] = g_rdm_responder.uid[5] | FIVE5_CONSTANT;
 
   uint16_t checksum = 0;
-  for (unsigned int i = 8; i < 20; i++) {
+  unsigned int i;
+  for (i = 8; i < 20; i++) {
     checksum += response[i];
   }
 

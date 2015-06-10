@@ -42,7 +42,7 @@ using ola::rdm::NewUnMuteRequest;
 using ola::rdm::RDMDiscoveryRequest;
 using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMRequest;
-using std::auto_ptr;
+using std::unique_ptr;
 
 class MockSender {
  public:
@@ -131,7 +131,7 @@ TEST_F(RDMResponderTest, invalidCommand) {
      .Times(1);
 
   // 0x1fff isn't a PID (yet!)
-  auto_ptr<RDMRequest> request(new RDMGetRequest(
+  unique_ptr<RDMRequest> request(new RDMGetRequest(
       m_controller_uid, m_our_uid, 0, 0, 0, 0x1fff, NULL, 0));
   SendRequest(request.get());
 }
@@ -150,7 +150,7 @@ TEST_F(RDMResponderTest, discovery) {
      .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data))))
      .Times(4);
 
-  auto_ptr<RDMDiscoveryRequest> request(NewDiscoveryUniqueBranchRequest(
+  unique_ptr<RDMDiscoveryRequest> request(NewDiscoveryUniqueBranchRequest(
       m_controller_uid, UID(0, 0), UID::AllDevices(), 0));
   SendRequest(request.get());
 
@@ -186,7 +186,7 @@ TEST_F(RDMResponderTest, testMute) {
      .Times(1);
 
   EXPECT_FALSE(RDMResponder_IsMuted());
-  auto_ptr<RDMDiscoveryRequest> request(NewMuteRequest(
+  unique_ptr<RDMDiscoveryRequest> request(NewMuteRequest(
       m_controller_uid, m_our_uid, 0));
   SendRequest(request.get());
   EXPECT_TRUE(RDMResponder_IsMuted());
@@ -213,7 +213,7 @@ TEST_F(RDMResponderTest, testUnMute) {
   };
 
   // Send a broadcast mute first.
-  auto_ptr<RDMDiscoveryRequest> request(NewMuteRequest(
+  unique_ptr<RDMDiscoveryRequest> request(NewMuteRequest(
       m_controller_uid, UID::AllDevices(), 0));
   SendRequest(request.get());
   EXPECT_TRUE(RDMResponder_IsMuted());
@@ -256,7 +256,7 @@ TEST_F(RDMResponderTest, subdeviceNack) {
      .Times(1);
 
   // 0x1fff isn't a PID (yet!)
-  auto_ptr<RDMRequest> request(new RDMGetRequest(
+  unique_ptr<RDMRequest> request(new RDMGetRequest(
       m_controller_uid, m_our_uid, 0, 0, 1, PID_DEVICE_INFO, NULL, 0));
   SendRequest(request.get());
 }
@@ -279,7 +279,7 @@ TEST_F(RDMResponderTest, supportedParameters) {
      .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data))))
      .Times(1);
 
-  auto_ptr<RDMRequest> request(new RDMGetRequest(
+  unique_ptr<RDMRequest> request(new RDMGetRequest(
       m_controller_uid, m_our_uid, 0, 0, 0, PID_SUPPORTED_PARAMETERS, NULL, 0));
   SendRequest(request.get());
 }
@@ -305,7 +305,7 @@ TEST_F(RDMResponderTest, deviceInfo) {
      .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data))))
      .Times(1);
 
-  auto_ptr<RDMRequest> request(new RDMGetRequest(
+  unique_ptr<RDMRequest> request(new RDMGetRequest(
       m_controller_uid, m_our_uid, 0, 0, 0, PID_DEVICE_INFO, NULL, 0));
   SendRequest(request.get());
 }
@@ -329,7 +329,7 @@ TEST_F(RDMResponderTest, deviceModelDescription) {
      .With(Args<1, 2>(PayloadIs(response, arraysize(response))))
      .Times(1);
 
-  auto_ptr<RDMRequest> request(new RDMGetRequest(
+  unique_ptr<RDMRequest> request(new RDMGetRequest(
       m_controller_uid, m_our_uid, 0, 0, 0, PID_DEVICE_MODEL_DESCRIPTION,
       NULL, 0));
   SendRequest(request.get());
@@ -355,7 +355,7 @@ TEST_F(RDMResponderTest, manufacturerLabel) {
      .With(Args<1, 2>(PayloadIs(response, arraysize(response))))
      .Times(1);
 
-  auto_ptr<RDMRequest> request(new RDMGetRequest(
+  unique_ptr<RDMRequest> request(new RDMGetRequest(
       m_controller_uid, m_our_uid, 0, 0, 0, PID_MANUFACTURER_LABEL,
       NULL, 0));
   SendRequest(request.get());
@@ -379,7 +379,7 @@ TEST_F(RDMResponderTest, softwareVersionLabel) {
      .With(Args<1, 2>(PayloadIs(response, arraysize(response))))
      .Times(1);
 
-  auto_ptr<RDMRequest> request(new RDMGetRequest(
+  unique_ptr<RDMRequest> request(new RDMGetRequest(
       m_controller_uid, m_our_uid, 0, 0, 0, PID_SOFTWARE_VERSION_LABEL,
       NULL, 0));
   SendRequest(request.get());

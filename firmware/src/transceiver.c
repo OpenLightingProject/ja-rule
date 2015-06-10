@@ -19,8 +19,6 @@
 
 #include "transceiver.h"
 
-#include <machine/endian.h>
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
