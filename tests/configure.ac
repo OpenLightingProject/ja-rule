@@ -21,7 +21,7 @@ AC_PROG_LIBTOOL
 AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
 
 # Checks for header files.
-AC_CHECK_HEADERS([machine/endian.h sys/endian.h stdint.h stdlib.h string.h])
+AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL

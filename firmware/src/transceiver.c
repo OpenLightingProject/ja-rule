@@ -19,6 +19,8 @@
 
 #include "transceiver.h"
 
+#include <machine/endian.h>
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,6 +60,7 @@ typedef enum {
   STATE_RX_TIMEOUT,  //!< A RX timeout occured.
   STATE_COMPLETE,  //!< Running the completion handler.
   STATE_BACKOFF,  //!< Waiting until we can send the next break
+  STATE_DISABLED,  //!< Disabled
   STATE_RESET
 } TransceiverState;
 
@@ -111,6 +114,8 @@ typedef struct {
 
   TransceiverBuffer* free_list[NUMBER_OF_BUFFERS];
   uint8_t free_size;  //!< The number of buffers in the free list, may be 0.
+
+  bool enabled;  //!< The desired enabled state.
 } TransceiverData;
 
 typedef struct {
@@ -344,6 +349,7 @@ void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
       case STATE_RX_TIMEOUT:
       case STATE_COMPLETE:
       case STATE_BACKOFF:
+      case STATE_DISABLED:
       case STATE_RESET:
         // Should never happen.
         {};
@@ -396,6 +402,7 @@ void __ISR(_TIMER_3_VECTOR, ipl6) Transceiver_TimerEvent() {
     case STATE_RX_TIMEOUT:
     case STATE_COMPLETE:
     case STATE_BACKOFF:
+    case STATE_DISABLED:
     case STATE_RESET:
       // Should never happen
       {}
@@ -579,6 +586,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
       case STATE_RX_TIMEOUT:
       case STATE_COMPLETE:
       case STATE_BACKOFF:
+      case STATE_DISABLED:
       case STATE_RESET:
         // Should never happen.
         {}
@@ -649,12 +657,25 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
   SYS_INT_VectorSubprioritySet(INT_VECTOR_IC2, INT_SUBPRIORITY_LEVEL0);
 }
 
+bool Transceiver_IsEnabled() {
+  return g_transceiver.state == STATE_DISABLED;
+}
+
+void Transceiver_SetEnabled(bool enabled) {
+  g_transceiver.enabled = enabled;
+}
+
 void Transceiver_Tasks() {
   bool ok;
   Transceiver_LogStateChange();
 
   switch (g_transceiver.state) {
     case STATE_TX_READY:
+      if (!g_transceiver.enabled) {
+        g_transceiver.state = STATE_DISABLED;
+        return;
+      }
+
       if (!g_transceiver.next) {
         return;
       }
@@ -837,8 +858,11 @@ void Transceiver_Tasks() {
         g_transceiver.state = STATE_TX_READY;
       }
       break;
+    case STATE_DISABLED:
+      break;
     case STATE_RESET:
       g_transceiver.state = STATE_TX_READY;
+      break;
   }
 }
 

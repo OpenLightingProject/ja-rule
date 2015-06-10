@@ -34,7 +34,6 @@
 #include <stdint.h>
 #include "iovec.h"
 #include "rdm_frame.h"
-#include "responder.h"
 
 #ifdef __cplusplus
 extern "C" {

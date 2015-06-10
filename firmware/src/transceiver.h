@@ -183,11 +183,20 @@ typedef struct {
 } TransceiverEvent;
 
 /**
- * @brief The callback run when a transceiver event occurs.
+ * @brief The callback run when a transceiver controller event occurs.
  *
  * The pointer is valid for the lifetime of the function call.
  */
 typedef bool (*TransceiverEventCallback)(const TransceiverEvent *event);
+
+
+/**
+ * @brief The callback run when a transceiver responder event occurs.
+ *
+ * The pointer is valid for the lifetime of the function call.
+ */
+typedef bool (*TransceiverResponderEventCallback)(
+    const TransceiverEvent *event);
 
 /**
  * @brief The hardware settings to use for the Transceiver.
@@ -209,7 +218,21 @@ typedef struct {
  * will override this value.
  */
 void Transceiver_Initialize(const TransceiverHardwareSettings *settings,
-                            TransceiverEventCallback callback);
+                            TransceiverEventCallback callback
+                            //ResponderEventCallback responder_callback
+                            );
+
+/**
+ * @brief Switch transceiver modes.
+ * @param mode The new Transceiver mode.
+ */
+bool Transceiver_IsEnabled();
+
+/**
+ * @brief Switch transceiver modes.
+ * @param mode The new Transceiver mode.
+ */
+void Transceiver_SetEnabled(bool enabled);
 
 /**
  * @brief Perform the periodic transceiver tasks.
