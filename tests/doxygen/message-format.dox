@@ -332,9 +332,11 @@
  * </pre>
  *
  * @param Discovery_Start the time from the end of the transmitted DUB frame to
- * the start of the DUB response, in 10ths of a microsecond.
+ * the start of the DUB response, in 10ths of a microsecond. Undefined unless
+ * RC_OK was returned.
  * @param Discovery_End the time from the end of the transmitted DUB frame to
- * the end of the DUB response, in 10ths of a microsecond.
+ * the end of the DUB response, in 10ths of a microsecond. Undefined unless
+ * RC_OK was returned.
  * @param RDM_DUB_Response The raw response, if any was received.
  * @returns
  *  - @ref RC_OK if the frame was sent correctly and data was received.
@@ -376,11 +378,14 @@
  * </pre>
  *
  * @param Break_Start the time from the end of the transmitted RDM frame to
- * the start of the break, in 10ths of a microsecond.
+ * the start of the break, in 10ths of a microsecond. Undefined unless
+ * RC_RDM_BCAST_RESPONSE was returned.
  * @param Break_End the time from the end of the transmitted RDM frame to
  * the end of the break / start of the mark, in 10ths of a microsecond.
+ * Undefined unless RC_RDM_BCAST_RESPONSE was returned.
  * @param Mark_End the time from the end of the transmitted RDM frame to
- * the start of the mark, in 10ths of a microsecond.
+ * the start of the mark, in 10ths of a microsecond. Undefined unless
+ * RC_RDM_BCAST_RESPONSE was returned.
  * @param RDM_Response The RDM response, if any was received.
  * @returns
  *  - @ref RC_OK if the frame was broadcast correctly and the broadcast listen
@@ -422,11 +427,14 @@
  * </pre>
  *
  * @param Break_Start the time from the end of the transmitted RDM frame to
- * the start of the break, in 10ths of a microsecond.
+ * the start of the break, in 10ths of a microsecond. Undefined unless RC_OK
+ * was returned.
  * @param Break_End the time from the end of the transmitted RDM frame to
  * the end of the break / start of the mark, in 10ths of a microsecond.
+ * Undefined unless RC_OK was returned.
  * @param Mark_End the time from the end of the transmitted RDM frame to
- * the start of the mark, in 10ths of a microsecond.
+ * the start of the mark, in 10ths of a microsecond. Undefined unless RC_OK was
+ * returned.
  * @param RDM_Response The RDM response, if any was received.
  * @returns
  *  - @ref RC_OK if the frame was sent correctly and a response was received.
