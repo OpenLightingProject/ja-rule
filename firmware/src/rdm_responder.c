@@ -18,13 +18,6 @@
  */
 #include "rdm_responder.h"
 
-#ifdef HAVE_SYS_ENDIAN_H
-#include <sys/endian.h>
-#else
-// For the PIC build we don't have any #defines set.
-#include <machine/endian.h>
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,7 +47,7 @@ typedef struct {
   bool is_muted;
   uint16_t dmx_start_address;
 
-  // Used when build responses so we avoid using stack space.
+  // Used to construct responses so we avoid using stack space.
   uint8_t param_data[MAX_PARAM_DATA_SIZE];
 } RDMResponderData;
 
@@ -256,7 +249,7 @@ static void GetDeviceInfo(const RDMHeader *header,
     uint16_t dmx_start_address;
     uint16_t sub_device_count;
     uint8_t sensor_count;
-  }__attribute__ ((packed));
+  }__attribute__((packed));
 
   struct device_info_s *device_info =
       (struct device_info_s*) g_rdm_responder.param_data;
