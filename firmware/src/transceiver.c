@@ -313,8 +313,11 @@ void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
         if (g_timing.get_set_response.mark_start -
             g_timing.get_set_response.break_start <
             CONTROLLER_RX_BREAK_TIME_MIN) {
-          // The break was too short, go back to STATE_RX_WAIT_FOR_BREAK
-          g_transceiver.state = STATE_RX_WAIT_FOR_BREAK;
+          // The break was too short.
+          g_transceiver.result = T_RESULT_RX_INVALID;
+          PLIB_TMR_Stop(TMR_ID_3);
+          Transceiver_ResetToMark();
+          g_transceiver.state = STATE_COMPLETE;
         } else {
           // Break was good, enable UART
           SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
