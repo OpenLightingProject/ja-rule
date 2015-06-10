@@ -50,8 +50,9 @@ before_install:
  - sudo add-apt-repository ppa:h-rayflood/llvm-upper -y
 # Required for Doxygen 1.8+
  - sudo add-apt-repository ppa:libreoffice/ppa -y
-# OLA
- - sudo add-apt-repository http://apt.openlighting.org/ubuntu -y
+# OLA, we need at least 0.9.6 with ByteString
+# TODO: switch this to the PPA when it's ready
+ - sudo add-apt-repository http://nomis52.net/data/apt/ -y
  - sudo apt-get update -qq
  - sudo apt-get install --force-yes ola-dev
 #g++-4.9 won't work on Ubuntu 12.04 that Travis currently uses
