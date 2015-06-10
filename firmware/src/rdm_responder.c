@@ -35,9 +35,10 @@
 #include <string.h>
 
 #include "constants.h"
-#include "rdm_frame.h"
 #include "iovec.h"
+#include "rdm_frame.h"
 #include "system_pipeline.h"
+#include "utils.h"
 
 // Various constants
 #define FIVE5_CONSTANT 0x55
@@ -92,8 +93,8 @@ static void Checksum(const IOVec* iov, unsigned int iov_count,
       checksum += ((uint8_t*) iov[i].base)[j];
     }
   }
-  checksum_data[0] = checksum >> 8;
-  checksum_data[1] = checksum & 0xff;
+  checksum_data[0] = ShortMSB(checksum);
+  checksum_data[1] = ShortLSB(checksum);
 }
 
 /*
@@ -133,10 +134,10 @@ static void SendDUBResponseIfRequired(const uint8_t *param_data,
     checksum += response[i];
   }
 
-  response[20] = (checksum >> 8) | AA_CONSTANT;
-  response[21] = (checksum >> 8) | FIVE5_CONSTANT;
-  response[22] = (checksum & 0xff) | AA_CONSTANT;
-  response[23] = (checksum & 0xff) | FIVE5_CONSTANT;
+  response[20] = ShortMSB(checksum) | AA_CONSTANT;
+  response[21] = ShortMSB(checksum) | FIVE5_CONSTANT;
+  response[22] = ShortLSB(checksum) | AA_CONSTANT;
+  response[23] = ShortLSB(checksum) | FIVE5_CONSTANT;
 
   IOVec iov;
   iov.base = response;
