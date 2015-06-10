@@ -21,9 +21,6 @@
 #if HAVE_CONFIG_H
 // We're in the test environment
 #include <config.h>
-#else
-// We're building for the pic.
-#include <endian.h>
 #endif
 
 #ifdef HAVE_ARPA_INET_H
