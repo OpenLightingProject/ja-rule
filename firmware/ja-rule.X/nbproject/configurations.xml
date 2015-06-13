@@ -36,6 +36,8 @@
         <itemPath>../src/transceiver.h</itemPath>
         <itemPath>../src/iovec.h</itemPath>
         <itemPath>../src/coarse_timer.h</itemPath>
+        <itemPath>../src/rdm_responder.h</itemPath>
+        <itemPath>../src/utils.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -115,6 +117,7 @@
         <itemPath>../src/usb_console.c</itemPath>
         <itemPath>../src/transceiver.c</itemPath>
         <itemPath>../src/coarse_timer.c</itemPath>
+        <itemPath>../src/rdm_responder.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"

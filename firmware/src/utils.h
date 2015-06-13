@@ -31,7 +31,7 @@ extern "C" {
  * @param s The 16bit value to split.
  * @returns The lower 8 bits of the uint16_t.
  */
-inline uint8_t ShortLSB(uint16_t s) {
+static inline uint8_t ShortLSB(uint16_t s) {
   return s & 0xff;
 }
 
@@ -40,7 +40,7 @@ inline uint8_t ShortLSB(uint16_t s) {
  * @param s The 16bit value to split.
  * @returns The upper 8 bits of the uint16_t.
  */
-inline uint8_t ShortMSB(uint16_t s) {
+static inline uint8_t ShortMSB(uint16_t s) {
   return s >> 8;
 }
 
