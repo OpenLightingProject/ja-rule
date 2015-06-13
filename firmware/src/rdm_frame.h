@@ -18,9 +18,6 @@
  */
 
 /**
- * @defgroup rdm RDM
- * @brief Remote Device Management
- *
  * @addtogroup rdm
  * @{
  * @file rdm_frame.h
