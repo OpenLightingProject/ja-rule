@@ -100,7 +100,7 @@ static void Checksum(const IOVec* iov, unsigned int iov_count,
  */
 static void SendDUBResponseIfRequired(const uint8_t *param_data,
                                       unsigned int param_data_length) {
-  if (param_data_length != 2 * UID_LENGTH || g_rdm_responder.is_muted) {
+  if (g_rdm_responder.is_muted || param_data_length != 2 * UID_LENGTH) {
     return;
   }
 
@@ -225,9 +225,14 @@ static void Mute(const RDMHeader *header,
   }
   g_rdm_responder.is_muted = true;
 
-  memset(g_rdm_responder.param_data, 0, 8);
+  struct mute_s {
+    uint16_t control_field;
+    uint8_t binding_uid[UID_LENGTH];
+  }__attribute__((packed));
+
+  memset(g_rdm_responder.param_data, 0, sizeof(struct mute_s));
   RespondIfRequired(header, ACK, DISCOVER_COMMAND_RESPONSE, PID_DISC_MUTE,
-                    g_rdm_responder.param_data, 8);
+                    g_rdm_responder.param_data, sizeof(struct mute_s));
 }
 
 static void UnMute(const RDMHeader *header,

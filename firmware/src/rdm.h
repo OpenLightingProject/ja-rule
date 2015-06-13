@@ -59,7 +59,6 @@ static const uint16_t SUBDEVICE_MAX = 0x0200;
 static const uint8_t SUB_START_CODE = 0x01;
 
 /**
-<<<<<<< HEAD
  * @brief The minimum size of an RDM frame.
  */
 static const uint8_t RDM_MIN_FRAME_SIZE = 26;

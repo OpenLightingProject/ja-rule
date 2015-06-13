@@ -87,8 +87,9 @@ INSTANTIATE_TEST_CASE_P(
     sizeTooSmall,
     ChecksumTest,
     ::testing::Range(
-      0u,
-      static_cast<unsigned int>(arraysize(ChecksumTest::sample_message) - 1)));
+        0u,
+        static_cast<unsigned int>(arraysize(ChecksumTest::sample_message) - 1))
+);
 
 TEST_F(ChecksumTest, checksumPasses) {
   EXPECT_TRUE(RDMResponder_VerifyChecksum(sample_message,
@@ -307,7 +308,6 @@ TEST_F(RDMResponderTest, subdeviceNack) {
      .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data))))
      .Times(1);
 
-  // 0x1fff isn't a PID (yet!)
   unique_ptr<RDMRequest> request(new RDMGetRequest(
       m_controller_uid, m_our_uid, 0, 0, 1, PID_DEVICE_INFO, NULL, 0));
   SendRequest(request.get());
