@@ -29,6 +29,7 @@
 #include "system_definitions.h"
 #include "system_pipeline.h"
 #include "transport.h"
+#include "utils.h"
 
 typedef enum {
   USB_STATE_INIT = 0,
@@ -280,8 +281,8 @@ bool USBTransport_SendResponse(uint8_t token, Command command, uint8_t rc,
 
   transmitDataBuffer[0] = START_OF_MESSAGE_ID;
   transmitDataBuffer[1] = token;
-  transmitDataBuffer[2] = command & 0xff;
-  transmitDataBuffer[3] = command >> 8;
+  transmitDataBuffer[2] = ShortLSB(command);
+  transmitDataBuffer[3] = ShortMSB(command);
   // 4 & 5 are the length.
   transmitDataBuffer[6] = rc;
 
@@ -309,8 +310,8 @@ bool USBTransport_SendResponse(uint8_t token, Command command, uint8_t rc,
     }
   }
 
-  transmitDataBuffer[4] = offset & 0xff;
-  transmitDataBuffer[5] = offset >> 8;
+  transmitDataBuffer[4] = ShortLSB(offset);
+  transmitDataBuffer[5] = ShortMSB(offset);
   transmitDataBuffer[8 + offset] = END_OF_MESSAGE_ID;
 
   g_usb_transport_data.tx_in_progress = true;

@@ -21,7 +21,7 @@ AC_PROG_LIBTOOL
 AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
 
 # Checks for header files.
-AC_CHECK_HEADERS([stdint.h stdlib.h string.h])
+AC_CHECK_HEADERS([arpa/inet.h stdint.h stdlib.h string.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -85,6 +85,18 @@ AC_SUBST([GMOCK_INCLUDES])
 AC_SUBST([GMOCK_LIBS])
 AC_SUBST([GTEST_INCLUDES])
 AC_SUBST([GTEST_LIBS])
+
+# pkg-config
+PKG_PROG_PKG_CONFIG
+AS_IF([test -z "$PKG_CONFIG"],
+      [AC_MSG_ERROR([Missing pkg-config, please install it])])
+
+# OLA
+PKG_CHECK_MODULES(
+  OLA,
+  [libola],
+  [],
+  [AC_MSG_ERROR([Missing OLA, please install])])
 
 # Output
 #####################################################
