@@ -54,6 +54,13 @@ typedef enum {
   USART_9N2 = 0x07
 } USART_LINECONTROL_MODE;
 
+typedef enum {
+  USART_ERROR_NONE = 0x00,
+  USART_ERROR_RECEIVER_OVERRUN = 0x01,
+  USART_ERROR_FRAMING = 0x02,
+  USART_ERROR_PARITY = 0x04
+} USART_ERROR;
+
 void PLIB_USART_Enable(USART_MODULE_ID index);
 
 void PLIB_USART_Disable(USART_MODULE_ID index);
@@ -91,6 +98,8 @@ void PLIB_USART_SyncModeSelect(USART_MODULE_ID index, USART_SYNC_MODES mode);
 
 void PLIB_USART_LineControlModeSelect(USART_MODULE_ID index,
                                       USART_LINECONTROL_MODE dataFlowConfig);
+
+USART_ERROR PLIB_USART_ErrorsGet(USART_MODULE_ID index);
 
 #ifdef  __cplusplus
 }

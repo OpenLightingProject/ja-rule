@@ -32,6 +32,7 @@ class MockPeripheralUSART {
   MOCK_METHOD2(LineControlModeSelect,
                void(USART_MODULE_ID index,
                     USART_LINECONTROL_MODE dataFlowConfig));
+  MOCK_METHOD1(ErrorsGet, USART_ERROR(USART_MODULE_ID index));
 };
 
 void PLIB_USART_SetMock(MockPeripheralUSART* mock);

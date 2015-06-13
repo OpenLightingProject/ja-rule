@@ -381,20 +381,31 @@ void USBConsole_Tasks() {
           SysLog_Print(SYSLOG_ALWAYS, "Log level: %s",
                        SysLog_LevelToString(SysLog_GetLevel()));
           break;
+        case 'd':
+          SysLog_Message(SYSLOG_DEBUG, "debug");
+          break;
         case 'e':
           SysLog_Message(SYSLOG_ERROR, "error");
+          break;
+        case 'f':
+          SysLog_Message(SYSLOG_FATAL, "fatal");
+          break;
+        case 'h':
+          SysLog_Message(SYSLOG_INFO, "----------------------");
+          SysLog_Message(SYSLOG_INFO, "r   Reset");
+          SysLog_Message(SYSLOG_INFO, "h   Show help message");
+          SysLog_Message(SYSLOG_INFO, "-   Decrease Log Level");
+          SysLog_Message(SYSLOG_INFO, "+   Increase Log Level");
+          SysLog_Message(SYSLOG_INFO, "----------------------");
           break;
         case 'i':
           SysLog_Message(SYSLOG_INFO, "info");
           break;
+        case 'r':
+          APP_Reset();
+          break;
         case 'w':
           SysLog_Message(SYSLOG_WARN, "warning");
-          break;
-        case 'd':
-          SysLog_Message(SYSLOG_DEBUG, "debug");
-          break;
-        case 'f':
-          SysLog_Message(SYSLOG_FATAL, "fatal");
           break;
         default:
           if (g_usb_console.read_length == USB_CONSOLE_READ_BUFFER_SIZE) {

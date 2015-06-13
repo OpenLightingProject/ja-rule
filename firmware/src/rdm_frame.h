@@ -41,6 +41,7 @@ extern "C" {
  * @brief The common RDM header.
  */
 typedef struct {
+  uint8_t start_code;
   uint8_t sub_start_code;
   uint8_t message_length;
   uint8_t dest_uid[UID_LENGTH];
