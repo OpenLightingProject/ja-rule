@@ -61,6 +61,51 @@ void SendResponse(bool include_break,
   }
 }
 
+bool UIDRequiresAction(const UID &uid) {
+  uint8_t uid_data[UID_LENGTH];
+  uid.Pack(uid_data, UID_LENGTH);
+  return RDMResponder_UIDRequiresAction(uid_data);
+}
+
+// Tests for RDMResponder_VerifyChecksum
+//-----------------------------------------------------------------------------
+class ChecksumTest : public ::testing::TestWithParam<uint32_t> {
+ public:
+  static const uint8_t sample_message[];
+};
+
+const uint8_t ChecksumTest::sample_message[] = {
+  0xcc, 0x01, 0x18, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12, 0x34,
+  0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x02, 0x00, 0x03, 0xdf
+};
+
+TEST_P(ChecksumTest, checksumFails) {
+  EXPECT_FALSE(RDMResponder_VerifyChecksum(sample_message, GetParam()));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    sizeTooSmall,
+    ChecksumTest,
+    ::testing::Range(
+        0u,
+        static_cast<unsigned int>(arraysize(ChecksumTest::sample_message) - 1))
+);
+
+TEST_F(ChecksumTest, checksumPasses) {
+  EXPECT_TRUE(RDMResponder_VerifyChecksum(sample_message,
+                                          arraysize(sample_message)));
+}
+
+TEST_F(ChecksumTest, checksumMismatch) {
+  uint8_t bad_packet[arraysize(sample_message)];
+  memcpy(bad_packet, sample_message, arraysize(sample_message));
+  bad_packet[arraysize(sample_message) - 1]++;
+
+  EXPECT_FALSE(RDMResponder_VerifyChecksum(bad_packet, arraysize(bad_packet)));
+}
+
+// Tests for the rest of the RDMResponder module.
+//-----------------------------------------------------------------------------
 class RDMResponderTest : public testing::Test {
  public:
   RDMResponderTest()
@@ -76,14 +121,9 @@ class RDMResponderTest : public testing::Test {
     g_sender = NULL;
   }
 
-  bool UIDRequiresAction(const UID &uid) {
-    uint8_t uid_data[UID_LENGTH];
-    uid.Pack(uid_data, UID_LENGTH);
-    return RDMResponder_UIDRequiresAction(uid_data);
-  }
-
   void SendRequest(const RDMRequest *request) {
     ola::io::ByteString data;
+    data.push_back(RDM_START_CODE);
     ASSERT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
     RDMResponder_HandleRequest(
         reinterpret_cast<const RDMHeader*>(data.data()),
@@ -100,9 +140,9 @@ class RDMResponderTest : public testing::Test {
   static const uint8_t TEST_UID[UID_LENGTH];
 };
 
-const uint8_t RDMResponderTest::TEST_UID[] = {0x7a, 0x70, 0, 0, 0, 0};
+const uint8_t RDMResponderTest::TEST_UID[] = {0x7a, 0x70, 1, 2, 3, 4};
 
-TEST_F(RDMResponderTest, requiresActionTest) {
+TEST_F(RDMResponderTest, requiresAction) {
   RDMResponder_Initialize(TEST_UID, nullptr);
 
   EXPECT_FALSE(UIDRequiresAction(UID(0, 0)));
@@ -118,11 +158,11 @@ TEST_F(RDMResponderTest, invalidCommand) {
   const uint8_t expected_data[] = {
     0xcc, 0x01, 0x1a,
     0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x00, 0x00, 0x00, 0x00,  // src UID
+    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
     0x00, 0x02, 0x00, 0x00, 0x00,
     0x21, 0x1f, 0xff, 0x2,
     0x00, 0x00,
-    0x04, 0x0e
+    0x04, 0x18
   };
 
   EXPECT_CALL(sender_mock,
@@ -141,8 +181,8 @@ TEST_F(RDMResponderTest, discovery) {
 
   const uint8_t expected_data[] = {
     0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xaa,
-    0xfa, 0x7f, 0xfa, 0x75, 0xaa, 0x55, 0xaa, 0x55,
-    0xaa, 0x55, 0xaa, 0x55, 0xae, 0x57, 0xee, 0xf5
+    0xfa, 0x7f, 0xfa, 0x75, 0xab, 0x55, 0xaa, 0x57,
+    0xab, 0x57, 0xae, 0x55, 0xae, 0x57, 0xee, 0xff
   };
 
   EXPECT_CALL(sender_mock,
@@ -167,17 +207,30 @@ TEST_F(RDMResponderTest, discovery) {
       m_controller_uid, UID(m_our_uid.ManufacturerId(), 0),
       UID::VendorcastAddress(m_our_uid), 0));
   SendRequest(request.get());
+
+  // Check we don't respond if muted
+  EXPECT_FALSE(RDMResponder_IsMuted());
+  unique_ptr<RDMDiscoveryRequest> mute_request(NewMuteRequest(
+      m_controller_uid, UID::AllDevices(), 0));
+  SendRequest(mute_request.get());
+  EXPECT_TRUE(RDMResponder_IsMuted());
+
+  request.reset(NewDiscoveryUniqueBranchRequest(
+      m_controller_uid, UID(0, 0), UID::AllDevices(), 0));
+  SendRequest(request.get());
 }
 
 TEST_F(RDMResponderTest, testMute) {
   RDMResponder_Initialize(TEST_UID, SendResponse);
 
   const uint8_t expected_data[] = {
-    0xcc, 0x01, 24,
+    0xcc, 0x01, 32,
     0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x00, 0x00, 0x00, 0x00,  // src UID
+    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
     0x00, 0x00, 0x00, 0x00, 0x00,
-    0x11, 0x00, 0x02, 0x00, 0x02, 0xdc
+    0x11, 0x00, 0x02, 0x08,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x02, 0xf6
   };
 
   EXPECT_CALL(sender_mock,
@@ -207,9 +260,9 @@ TEST_F(RDMResponderTest, testUnMute) {
   const uint8_t expected_data[] = {
     0xcc, 0x01, 24,
     0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x00, 0x00, 0x00, 0x00,  // src UID
+    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
     0x00, 0x00, 0x00, 0x00, 0x00,
-    0x11, 0x00, 0x03, 0x00, 0x02, 0xdd
+    0x11, 0x00, 0x03, 0x00, 0x02, 0xe7
   };
 
   // Send a broadcast mute first.
@@ -243,11 +296,11 @@ TEST_F(RDMResponderTest, subdeviceNack) {
   const uint8_t expected_data[] = {
     0xcc, 0x01, 0x1a,
     0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x00, 0x00, 0x00, 0x00,  // src UID
+    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
     0x00, 0x02, 0x00, 0x00, 0x00,
     0x21, 0x00, 0x60, 0x2,
     0x00, 0x09,
-    0x03, 0x59
+    0x03, 0x63
   };
 
   EXPECT_CALL(sender_mock,
@@ -255,7 +308,6 @@ TEST_F(RDMResponderTest, subdeviceNack) {
      .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data))))
      .Times(1);
 
-  // 0x1fff isn't a PID (yet!)
   unique_ptr<RDMRequest> request(new RDMGetRequest(
       m_controller_uid, m_our_uid, 0, 0, 1, PID_DEVICE_INFO, NULL, 0));
   SendRequest(request.get());
@@ -267,11 +319,11 @@ TEST_F(RDMResponderTest, supportedParameters) {
   const uint8_t expected_data[] = {
     0xcc, 0x01, 0x1c,
     0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x00, 0x00, 0x00, 0x00,  // src UID
+    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
     0x00, 0x00, 0x00, 0x00, 0x00,
     0x21, 0x00, 0x50, 0x4,
     0x00, 0x80, 0x0, 0x81,
-    0x04, 0x43
+    0x04, 0x4d
   };
 
   EXPECT_CALL(sender_mock,
@@ -290,14 +342,14 @@ TEST_F(RDMResponderTest, deviceInfo) {
   const uint8_t expected_data[] = {
     0xcc, 0x01, 43,
     0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x00, 0x00, 0x00, 0x00,  // src UID
+    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
     0x00, 0x00, 0x00, 0x00, 0x00,
     0x21, 0x00, 0x60, 0x13,
     0x1, 0, 0x1, 0, 0x71, 0x01,
     0, 0, 0, 0,
     0, 0, 0, 0, 0xff, 0xff,
     0, 0, 0,
-    0x05, 0xe2
+    0x05, 0xec
   };
 
   EXPECT_CALL(sender_mock,
@@ -316,12 +368,12 @@ TEST_F(RDMResponderTest, deviceModelDescription) {
   const uint8_t response[] = {
     0xcc, 0x01, 0x29,
     0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x00, 0x00, 0x00, 0x00,  // src UID
+    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
     0x00, 0x00, 0x00, 0x00, 0x00,
     0x21, 0x00, 0x80, 0x11,
     'J', 'a', ' ', 'R', 'u', 'l', 'e', ' ',
     'R', 'e', 's', 'p', 'o', 'n', 'd', 'e', 'r',
-    0x09, 0xc1
+    0x09, 0xcb
   };
 
   EXPECT_CALL(sender_mock,
@@ -341,13 +393,13 @@ TEST_F(RDMResponderTest, manufacturerLabel) {
   const uint8_t response[] = {
     0xcc, 0x01, 0x2d,
     0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x00, 0x00, 0x00, 0x00,  // src UID
+    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
     0x00, 0x00, 0x00, 0x00, 0x00,
     0x21, 0x00, 0x81, 0x15,
     'O', 'p', 'e', 'n', ' ', 'L', 'i', 'g',
     'h', 't', 'i', 'n', 'g', ' ', 'P', 'r', 'o',
     'j', 'e', 'c', 't',
-    0x0b, 0x74
+    0x0b, 0x7e
   };
 
   EXPECT_CALL(sender_mock,
@@ -367,11 +419,11 @@ TEST_F(RDMResponderTest, softwareVersionLabel) {
   const uint8_t response[] = {
     0xcc, 0x01, 29,
     0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x00, 0x00, 0x00, 0x00,  // src UID
+    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
     0x00, 0x00, 0x00, 0x00, 0x00,
     0x21, 0x00, 0xc0, 0x05,
     'A', 'l', 'p', 'h', 'a',
-    0x05, 0x9a
+    0x05, 0xa4
   };
 
   EXPECT_CALL(sender_mock,

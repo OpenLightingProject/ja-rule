@@ -21,6 +21,8 @@
 #if HAVE_CONFIG_H
 // We're in the test environment
 #include <config.h>
+#else
+#include <machine/endian.h>
 #endif
 
 #ifdef HAVE_ARPA_INET_H
@@ -42,7 +44,7 @@
 #define AA_CONSTANT 0xaa
 #define FE_CONSTANT 0xfe
 #define DUB_RESPONSE_LENGTH 24
-#define CHECKSUM_SIZE 2
+#define CHECKSUM_SIZE 2u
 #define MODEL_ID 0x0100
 
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Responder";
@@ -98,7 +100,7 @@ static void Checksum(const IOVec* iov, unsigned int iov_count,
  */
 static void SendDUBResponseIfRequired(const uint8_t *param_data,
                                       unsigned int param_data_length) {
-  if (param_data_length != 2 * UID_LENGTH) {
+  if (g_rdm_responder.is_muted || param_data_length != 2 * UID_LENGTH) {
     return;
   }
 
@@ -159,12 +161,10 @@ static void RespondIfRequired(const RDMHeader *incoming_header,
     return;
   }
 
-  uint8_t start_code = RDM_START_CODE;
-
   RDMHeader outgoing_header;
+  outgoing_header.start_code = RDM_START_CODE;
   outgoing_header.sub_start_code = SUB_START_CODE;
-  outgoing_header.message_length = (
-      sizeof(start_code) + sizeof(outgoing_header) + param_data_length);
+  outgoing_header.message_length = sizeof(outgoing_header) + param_data_length;
   memcpy(outgoing_header.dest_uid, incoming_header->src_uid, UID_LENGTH);
   memcpy(outgoing_header.src_uid, g_rdm_responder.uid, UID_LENGTH);
   outgoing_header.transaction_number = incoming_header->transaction_number;
@@ -175,13 +175,11 @@ static void RespondIfRequired(const RDMHeader *incoming_header,
   outgoing_header.param_id = htons(pid);
   outgoing_header.param_data_length = param_data_length;
 
-  IOVec iov[4];
+  IOVec iov[3];
 
-  iov[0].base = &start_code;
-  iov[0].length = sizeof(start_code);
-  iov[1].base = &outgoing_header;
-  iov[1].length = sizeof(outgoing_header);
-  uint8_t iovec_length = 2;
+  iov[0].base = &outgoing_header;
+  iov[0].length = sizeof(outgoing_header);
+  uint8_t iovec_length = 1;
 
   if (param_data && param_data_length) {
     iov[iovec_length].base = param_data;
@@ -227,8 +225,14 @@ static void Mute(const RDMHeader *header,
   }
   g_rdm_responder.is_muted = true;
 
+  struct mute_s {
+    uint16_t control_field;
+    uint8_t binding_uid[UID_LENGTH];
+  }__attribute__((packed));
+
+  memset(g_rdm_responder.param_data, 0, sizeof(struct mute_s));
   RespondIfRequired(header, ACK, DISCOVER_COMMAND_RESPONSE, PID_DISC_MUTE,
-                    NULL, 0);
+                    g_rdm_responder.param_data, sizeof(struct mute_s));
 }
 
 static void UnMute(const RDMHeader *header,
@@ -342,6 +346,19 @@ bool RDMResponder_UIDRequiresAction(const uint8_t uid[UID_LENGTH]) {
   return (uid[0] == g_rdm_responder.uid[0] && uid[1] == g_rdm_responder.uid[1])
           ||
          (uid[0] == 0xff && uid[1] == 0xff);
+}
+
+bool RDMResponder_VerifyChecksum(const uint8_t *frame, unsigned int size) {
+  if (size < RDM_MIN_FRAME_SIZE || frame[2] + CHECKSUM_SIZE != size) {
+    return false;
+  }
+
+  IOVec iov;
+  iov.base = frame;
+  iov.length = size - CHECKSUM_SIZE;
+  uint8_t checksum[CHECKSUM_SIZE];
+  Checksum(&iov, 1, checksum);
+  return (checksum[0] == frame[frame[2]] && checksum[1] == frame[frame[2] + 1]);
 }
 
 void RDMResponder_HandleRequest(const RDMHeader *header,

@@ -113,3 +113,10 @@ void PLIB_USART_LineControlModeSelect(USART_MODULE_ID index,
     g_plib_usart_mock->LineControlModeSelect(index, dataFlowConfig);
   }
 }
+
+USART_ERROR PLIB_USART_ErrorsGet(USART_MODULE_ID index) {
+  if (g_plib_usart_mock) {
+    return g_plib_usart_mock->ErrorsGet(index);
+  }
+  return USART_ERROR_NONE;
+}
