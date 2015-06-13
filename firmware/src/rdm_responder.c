@@ -46,7 +46,6 @@
 #define DUB_RESPONSE_LENGTH 24
 #define CHECKSUM_SIZE 2
 #define MODEL_ID 0x0100
-#define RDM_VERSION 0x0100
 
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Responder";
 static const char MANUFACTURER_LABEL[] = "Open Lighting Project";
@@ -81,7 +80,7 @@ static inline int UIDCompare(const uint8_t *uid1, const uint8_t *uid2) {
 }
 
 /*
- * @brief Generate the checksum for a RDM frame.
+ * @brief Generate the checksum for an RDM frame.
  */
 static void Checksum(const IOVec* iov, unsigned int iov_count,
                      uint8_t checksum_data[CHECKSUM_SIZE]) {
@@ -374,7 +373,6 @@ void RDMResponder_HandleRequest(const RDMHeader *header,
     switch (param_id) {
       case PID_DISC_UNIQUE_BRANCH:
         SendDUBResponseIfRequired(param_data, param_data_length);
-        {}
         break;
       case PID_DISC_MUTE:
         Mute(header, param_data_length);
