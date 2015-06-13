@@ -71,7 +71,7 @@ bool RDMResponder_UIDRequiresAction(const uint8_t uid[UID_LENGTH]);
 /**
  * @brief Validate the checksum for an RDM frame.
  * @param frame The frame data, starting with the start code.
- * @param length The length of the frame data.
+ * @param size The length of the frame data.
  * @returns True if the checksum was valid, false otherwise.
  */
 bool RDMResponder_VerifyChecksum(const uint8_t *frame, unsigned int size);

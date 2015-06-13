@@ -44,7 +44,7 @@
 #define AA_CONSTANT 0xaa
 #define FE_CONSTANT 0xfe
 #define DUB_RESPONSE_LENGTH 24
-#define CHECKSUM_SIZE 2
+#define CHECKSUM_SIZE 2u
 #define MODEL_ID 0x0100
 
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Responder";
