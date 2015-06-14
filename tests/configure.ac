@@ -94,7 +94,7 @@ AS_IF([test -z "$PKG_CONFIG"],
 # OLA
 PKG_CHECK_MODULES(
   OLA,
-  [libola >= 0.9.6],
+  [libola],
   [],
   [AC_MSG_ERROR([Missing OLA, please install])])
 
