@@ -64,11 +64,6 @@ static const uint8_t SUB_START_CODE = 0x01;
 static const uint8_t RDM_MAX_PARAM_DATA_SIZE = 231;
 
 /**
- * @brief The maximum size of a complete RDM frame.
-static const uint8_t RDM_MAX_FRAME_SIZE = 257;
- */
-
-/**
  * @brief The number of bytes in an RDM checksum
  */
 static const uint8_t RDM_CHECKSUM_LENGTH = 2u;
