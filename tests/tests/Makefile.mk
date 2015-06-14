@@ -13,6 +13,7 @@ TESTS += tests/coarse_timer_test \
          tests/logger_test \
          tests/message_handler_test \
          tests/rdm_responder_test \
+         tests/responder_test \
          tests/stream_decoder_test \
          tests/transceiver_test \
          tests/usb_transport_test
@@ -43,6 +44,14 @@ tests_rdm_responder_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                   src/librdmresponder.la \
                                   mocks/libmatchers.la \
                                   mocks/libmessagehandlermock.la
+
+tests_responder_test_SOURCES = tests/ResponderTest.cpp
+tests_responder_test_CXXFLAGS = $(TESTING_CXXFLAGS)
+tests_responder_test_LDADD = $(TESTING_LIBS) \
+                             src/libresponder.la \
+                             mocks/libmatchers.la \
+                             mocks/librdmrespondermock.la \
+                             mocks/libsyslogmock.la
 
 tests_stream_decoder_test_SOURCES = tests/StreamDecoderTest.cpp
 tests_stream_decoder_test_CXXFLAGS = $(TESTING_CXXFLAGS)
