@@ -28,12 +28,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef min
-#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-
 /*
- * @brief The g_state machine for decoding 485 data.
+ * @brief The g_state machine for decoding RS-485 data.
  *
  * Each g_state is named after the slot we're waiting for, i.e. STATE_START_CODE
  * means we're waiting to receive the first byte.
@@ -50,7 +46,11 @@ typedef enum {
   STATE_DISCARD  //!< Discarding the remaining data.
 } ResponderState;
 
+static const uint16_t UNINITIALIZED_COUNTER = 0xffff;
 
+/*
+ * @brief The counters.
+ */
 ResponderCounters g_responder_counters;
 
 /*
@@ -95,6 +95,11 @@ void Responder_ResetCounters() {
   g_responder_counters.rdm_msg_len_invalid = 0;
   g_responder_counters.rdm_param_data_len_invalid = 0;
   g_responder_counters.rdm_checksum_invalid = 0;
+  // The initial values are from E1.37-5 (draft).
+  g_responder_counters.dmx_last_checksum = 0xff;
+  g_responder_counters.dmx_last_slot_count = UNINITIALIZED_COUNTER;
+  g_responder_counters.dmx_min_slot_count = UNINITIALIZED_COUNTER;
+  g_responder_counters.dmx_max_slot_count = UNINITIALIZED_COUNTER;
 }
 
 void Responder_Receive(const TransceiverEvent *event) {
@@ -105,6 +110,16 @@ void Responder_Receive(const TransceiverEvent *event) {
   }
 
   if (event->result == T_RESULT_RX_START_FRAME) {
+    // Right now we can only tell a DMX frame ended when the next one starts.
+    // TODO(simon): get some clarity on this. It needs to be discussed and
+    // explained in E1.37-5.
+    if (g_state == STATE_DMX_DATA &&
+        (g_responder_counters.dmx_min_slot_count == UNINITIALIZED_COUNTER ||
+         g_responder_counters.dmx_last_slot_count <
+         g_responder_counters.dmx_min_slot_count)) {
+      g_responder_counters.dmx_min_slot_count =
+        g_responder_counters.dmx_last_slot_count;
+    }
     g_offset = 0;
     g_state = STATE_START_CODE;
     if (event->timing) {
@@ -117,6 +132,8 @@ void Responder_Receive(const TransceiverEvent *event) {
     switch (g_state) {
       case STATE_START_CODE:
         if (b == NULL_START_CODE) {
+          g_responder_counters.dmx_last_checksum = 0;
+          g_responder_counters.dmx_last_slot_count = 0;
           SysLog_Message(SYSLOG_DEBUG, "DMX frame");
           g_responder_counters.dmx_frames++;
           g_state = STATE_DMX_DATA;
@@ -179,9 +196,15 @@ void Responder_Receive(const TransceiverEvent *event) {
           SysLog_Message(SYSLOG_ERROR, "Checksum mismatch");
           g_responder_counters.rdm_checksum_invalid++;
         }
-        // handle here
       case STATE_DMX_DATA:
-        // noop
+        g_responder_counters.dmx_last_checksum += b;
+        g_responder_counters.dmx_last_slot_count++;
+        if (g_responder_counters.dmx_max_slot_count == UNINITIALIZED_COUNTER ||
+           g_responder_counters.dmx_last_slot_count >
+             g_responder_counters.dmx_max_slot_count) {
+          g_responder_counters.dmx_max_slot_count =
+            g_responder_counters.dmx_last_slot_count;
+        }
         break;
       case STATE_DISCARD:
         break;

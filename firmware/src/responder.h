@@ -21,7 +21,7 @@
  * @defgroup responder Responder
  * @brief The Responder Subsystem.
  *
- * The responder receives data from the transceiver module and de-multiplexs
+ * The responder receives data from the transceiver module and de-mulitplexes 
  * based on start code.
  *
  * @addtogroup responder
@@ -50,6 +50,10 @@ typedef struct {
   uint32_t rdm_msg_len_invalid;
   uint32_t rdm_param_data_len_invalid;
   uint32_t rdm_checksum_invalid;
+  uint8_t dmx_last_checksum;
+  uint16_t dmx_last_slot_count;
+  uint16_t dmx_min_slot_count;
+  uint16_t dmx_max_slot_count;
 } ResponderCounters;
 
 extern ResponderCounters g_responder_counters;
@@ -122,6 +126,43 @@ static inline uint32_t Responder_RDMParamDataLenInvalidCounter() {
  */
 static inline uint32_t Responder_RDMChecksumInvalidCounter() {
   return g_responder_counters.rdm_checksum_invalid;
+}
+
+/**
+ * @brief The additive checksum of the last DMX frame.
+ *
+ * If no DMX frames have been received, 0xff is reported.
+ */
+static inline uint32_t Responder_DMXLastChecksum() {
+  return g_responder_counters.dmx_last_checksum;
+}
+
+/**
+ * @brief The number of slots in the most recent DMX frame.
+ *
+ * If no DMX frames have been received, 0xffff is reported.
+ */
+static inline uint32_t Responder_DMXLastSlotCount() {
+  return g_responder_counters.dmx_last_slot_count;
+}
+
+/**
+ * @brief The smallest DMX frame seen.
+ *
+ * If no DMX frames have been received, 0xffff is reported. This is only
+ * updated when the start of the next frame is received.
+ */
+static inline uint32_t Responder_DMXMinimumSlotCount() {
+  return g_responder_counters.dmx_min_slot_count;
+}
+
+/**
+ * @brief The largest DMX frame seen.
+ *
+ * If no DMX frames have been received, 0xffff is reported.
+ */
+static inline uint32_t Responder_DMXMaximumSlotCount() {
+  return g_responder_counters.dmx_max_slot_count;
 }
 
 #ifdef __cplusplus

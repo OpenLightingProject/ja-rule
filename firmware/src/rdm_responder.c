@@ -44,7 +44,6 @@
 #define AA_CONSTANT 0xaa
 #define FE_CONSTANT 0xfe
 #define DUB_RESPONSE_LENGTH 24
-#define CHECKSUM_SIZE 2u
 #define MODEL_ID 0x0100
 
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Responder";
@@ -83,7 +82,7 @@ static inline int UIDCompare(const uint8_t *uid1, const uint8_t *uid2) {
  * @brief Generate the checksum for an RDM frame.
  */
 static void Checksum(const IOVec* iov, unsigned int iov_count,
-                     uint8_t checksum_data[CHECKSUM_SIZE]) {
+                     uint8_t checksum_data[RDM_CHECKSUM_LENGTH]) {
   uint16_t checksum = 0;
   unsigned int i, j;
   for (i = 0; i != iov_count; i++) {
@@ -187,10 +186,10 @@ static void RespondIfRequired(const RDMHeader *incoming_header,
     iovec_length++;
   }
 
-  uint8_t checksum_data[CHECKSUM_SIZE];
+  uint8_t checksum_data[RDM_CHECKSUM_LENGTH];
   Checksum(iov, iovec_length, checksum_data);
   iov[iovec_length].base = &checksum_data;
-  iov[iovec_length].length = CHECKSUM_SIZE;
+  iov[iovec_length].length = RDM_CHECKSUM_LENGTH;
   iovec_length++;
 
 #ifdef PIPELINE_RDMRESPONDER_SEND
@@ -349,14 +348,15 @@ bool RDMResponder_UIDRequiresAction(const uint8_t uid[UID_LENGTH]) {
 }
 
 bool RDMResponder_VerifyChecksum(const uint8_t *frame, unsigned int size) {
-  if (size < RDM_MIN_FRAME_SIZE || frame[2] + CHECKSUM_SIZE != size) {
+  if (size < sizeof(RDMHeader) + RDM_CHECKSUM_LENGTH ||
+      frame[2] + RDM_CHECKSUM_LENGTH != size) {
     return false;
   }
 
   IOVec iov;
   iov.base = frame;
-  iov.length = size - CHECKSUM_SIZE;
-  uint8_t checksum[CHECKSUM_SIZE];
+  iov.length = size - RDM_CHECKSUM_LENGTH;
+  uint8_t checksum[RDM_CHECKSUM_LENGTH];
   Checksum(&iov, 1, checksum);
   return (checksum[0] == frame[frame[2]] && checksum[1] == frame[frame[2] + 1]);
 }

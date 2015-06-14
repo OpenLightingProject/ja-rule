@@ -20,6 +20,7 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <memory>
 
 #include "responder.h"
@@ -65,6 +66,8 @@ class ResponderTest : public testing::Test {
   static const uint8_t ASC_FRAME[];
   static const uint8_t DMX_FRAME[];
   static const uint8_t RDM_FRAME[];
+  static const uint8_t SHORT_DMX_FRAME[];
+  static const uint8_t LONG_DMX_FRAME[];
 };
 
 const uint8_t ResponderTest::ASC_FRAME[] = {
@@ -75,6 +78,17 @@ const uint8_t ResponderTest::ASC_FRAME[] = {
 const uint8_t ResponderTest::DMX_FRAME[] = {
   0,
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+};
+
+const uint8_t ResponderTest::LONG_DMX_FRAME[] = {
+  0,
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+  22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+  41, 42, 43, 44, 45
+};
+
+const uint8_t ResponderTest::SHORT_DMX_FRAME[] = {
+  0, 1, 2
 };
 
 const uint8_t ResponderTest::RDM_FRAME[] = {
@@ -196,6 +210,18 @@ TEST_F(ResponderTest, paramDataLenMismatch) {
 
   SendFrame(frame, arraysize(frame));
   EXPECT_EQ(1, Responder_RDMParamDataLenInvalidCounter());
+
+  const uint8_t frame2[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x02, 0x01,
+    0x03, 0xdf
+  };
+
+  EXPECT_CALL(rdm_mock, UIDRequiresAction(&frame2[3]))
+    .WillOnce(Return(true));
+
+  SendFrame(frame2, arraysize(frame2));
+  EXPECT_EQ(2, Responder_RDMParamDataLenInvalidCounter());
 }
 
 // Send an RDM frame that's too short, that also contains a valid checksum
@@ -209,4 +235,44 @@ TEST_F(ResponderTest, nonRxOp) {
   event.timing = NULL;
   event.result = T_RESULT_RX_CONTINUE_FRAME;
   Responder_Receive(&event);
+}
+
+TEST_F(ResponderTest, dmxCounters) {
+  EXPECT_EQ(0xff, Responder_DMXLastChecksum());
+  EXPECT_EQ(0xffff, Responder_DMXLastSlotCount());
+  EXPECT_EQ(0xffff, Responder_DMXMinimumSlotCount());
+  EXPECT_EQ(0xffff, Responder_DMXMaximumSlotCount());
+
+  SendFrame(DMX_FRAME, arraysize(DMX_FRAME));
+
+  EXPECT_EQ(1, Responder_DMXFrames());
+  EXPECT_EQ(55, Responder_DMXLastChecksum());
+  EXPECT_EQ(10, Responder_DMXLastSlotCount());
+  EXPECT_EQ(0xffff, Responder_DMXMinimumSlotCount());
+  EXPECT_EQ(10, Responder_DMXMaximumSlotCount());
+
+  SendFrame(DMX_FRAME, arraysize(DMX_FRAME));
+
+  EXPECT_EQ(2, Responder_DMXFrames());
+  EXPECT_EQ(55, Responder_DMXLastChecksum());
+  EXPECT_EQ(10, Responder_DMXLastSlotCount());
+  EXPECT_EQ(10, Responder_DMXMinimumSlotCount());
+  EXPECT_EQ(10, Responder_DMXMaximumSlotCount());
+
+  SendFrame(SHORT_DMX_FRAME, arraysize(SHORT_DMX_FRAME));
+  SendFrame(SHORT_DMX_FRAME, arraysize(SHORT_DMX_FRAME));
+
+  EXPECT_EQ(4, Responder_DMXFrames());
+  EXPECT_EQ(3, Responder_DMXLastChecksum());
+  EXPECT_EQ(2, Responder_DMXLastSlotCount());
+  EXPECT_EQ(2, Responder_DMXMinimumSlotCount());
+  EXPECT_EQ(10, Responder_DMXMaximumSlotCount());
+
+  SendFrame(LONG_DMX_FRAME, arraysize(LONG_DMX_FRAME));
+
+  EXPECT_EQ(5, Responder_DMXFrames());
+  EXPECT_EQ(0x0b, Responder_DMXLastChecksum());
+  EXPECT_EQ(45, Responder_DMXLastSlotCount());
+  EXPECT_EQ(2, Responder_DMXMinimumSlotCount());
+  EXPECT_EQ(45, Responder_DMXMaximumSlotCount());
 }
