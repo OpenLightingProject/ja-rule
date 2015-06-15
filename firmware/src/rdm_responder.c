@@ -204,8 +204,8 @@ static void RespondIfRequired(const RDMHeader *incoming_header,
  * @brief NACK the request
  * @pre The command class is GET_COMMAND or SET_COMMAND.
  */
-inline void SendNack(const RDMHeader *header,
-                     RDMNackReason reason) {
+inline static void SendNack(const RDMHeader *header,
+                            RDMNackReason reason) {
   uint16_t param_data = htons(reason);
   RespondIfRequired(
       header, NACK_REASON,
