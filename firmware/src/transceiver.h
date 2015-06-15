@@ -89,7 +89,8 @@ typedef enum {
   T_RESULT_RX_TIMEOUT,  //!< No response was received within the RDM wait time.
   T_RESULT_RX_INVALID,  //!< Invalid data received.
 
-  T_RESULT_RX_FRAME  //!< A frame was received
+  T_RESULT_RX_START_FRAME,  //!< A frame was received
+  T_RESULT_RX_CONTINUE_FRAME  //!< A frame was received
 } TransceiverOperationResult;
 
 /**

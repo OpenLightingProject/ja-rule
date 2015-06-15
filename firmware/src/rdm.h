@@ -59,9 +59,14 @@ static const uint16_t SUBDEVICE_MAX = 0x0200;
 static const uint8_t SUB_START_CODE = 0x01;
 
 /**
- * @brief The minimum size of an RDM frame.
+ * @brief The maximum size of RDM parameter data.
  */
-static const uint8_t RDM_MIN_FRAME_SIZE = 26;
+static const uint8_t RDM_MAX_PARAM_DATA_SIZE = 231;
+
+/**
+ * @brief The number of bytes in an RDM checksum
+ */
+static const uint8_t RDM_CHECKSUM_LENGTH = 2;
 
 /**
  * @brief The location of the parameter data in a frame.

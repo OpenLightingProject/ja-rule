@@ -7,6 +7,7 @@ noinst_LTLIBRARIES += mocks/libappmock.la \
                       mocks/libloggermock.la \
                       mocks/libmatchers.la \
                       mocks/libmessagehandlermock.la \
+                      mocks/librdmrespondermock.la \
                       mocks/libstreamdecodermock.la \
                       mocks/libsyslogmock.la \
                       mocks/libtransceivermock.la \
@@ -41,6 +42,11 @@ mocks_libmessagehandlermock_la_SOURCES = mocks/MessageHandlerMock.h \
                                          mocks/MessageHandlerMock.cpp
 mocks_libmessagehandlermock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
 mocks_libmessagehandlermock_la_LIBADD = $(MOCK_LIBS)
+
+mocks_librdmrespondermock_la_SOURCES = mocks/RDMResponderMock.h \
+                                        mocks/RDMResponderMock.cpp
+mocks_librdmrespondermock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
+mocks_librdmrespondermock_la_LIBADD = $(MOCK_LIBS)
 
 mocks_libstreamdecodermock_la_SOURCES = mocks/StreamDecoderMock.h \
                                         mocks/StreamDecoderMock.cpp
