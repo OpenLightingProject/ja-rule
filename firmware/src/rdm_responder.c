@@ -348,8 +348,8 @@ bool RDMResponder_UIDRequiresAction(const uint8_t uid[UID_LENGTH]) {
 }
 
 bool RDMResponder_VerifyChecksum(const uint8_t *frame, unsigned int size) {
-  if (size < sizeof(RDMHeader) + RDM_CHECKSUM_LENGTH ||
-      frame[2] + RDM_CHECKSUM_LENGTH != size) {
+  if (size < sizeof(RDMHeader) + (unsigned int) RDM_CHECKSUM_LENGTH ||
+      frame[2] + (unsigned int) RDM_CHECKSUM_LENGTH != size) {
     return false;
   }
 

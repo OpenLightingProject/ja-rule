@@ -182,7 +182,7 @@ void Responder_Receive(const TransceiverEvent *event) {
             continue;
           }
         }
-        if (g_offset == event->data[2] - 1) {
+        if (g_offset == (unsigned int) (event->data[2] - 1)) {
           g_state = STATE_RDM_CHECKSUM_LO;
         }
         break;

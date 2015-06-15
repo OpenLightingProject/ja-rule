@@ -66,7 +66,7 @@ static const uint8_t RDM_MAX_PARAM_DATA_SIZE = 231;
 /**
  * @brief The number of bytes in an RDM checksum
  */
-static const uint8_t RDM_CHECKSUM_LENGTH = 2u;
+static const uint8_t RDM_CHECKSUM_LENGTH = 2;
 
 /**
  * @brief The location of the parameter data in a frame.
