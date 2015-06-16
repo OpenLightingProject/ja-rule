@@ -160,6 +160,12 @@ TEST_F(ResponderTest, rxSequence) {
   EXPECT_EQ(3, Responder_DMXFrames());
   EXPECT_EQ(1, Responder_ASCFrames());
   EXPECT_EQ(4, Responder_RDMFrames());
+
+  // Confirm counters
+  EXPECT_EQ(55, Responder_DMXLastChecksum());
+  EXPECT_EQ(10, Responder_DMXLastSlotCount());
+  EXPECT_EQ(0, Responder_DMXMinimumSlotCount());
+  EXPECT_EQ(10, Responder_DMXMaximumSlotCount());
 }
 
 TEST_F(ResponderTest, rdmNotForUs) {
