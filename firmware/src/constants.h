@@ -114,6 +114,12 @@ typedef enum {
    */
   COMMAND_RESET_DEVICE = 0x00,
 
+  /**
+   * @brief Change the operating mode of the device.
+   * @sa @ref message_cmd_setmode.
+   */
+  COMMAND_SET_MODE = 0x01,
+
   // User Configuration
   /**
    * @brief Set the break time of the transceiver.
@@ -275,6 +281,22 @@ typedef enum {
  * in E1.20.
  */
 #define CONTROLLER_RX_BREAK_TIME_MAX 3520
+
+/**
+ * @brief The minimum break time for responders to receive
+ *
+ * Measured in 10ths of a microsecond. The value is from line 1 of Table 3-3
+ * in E1.20.
+ */
+#define RESPONDER_RX_BREAK_TIME_MIN  880
+
+/**
+ * @brief The maximum break time for responders to receive.
+ *
+ * Measured in 10ths of a millisecond. The value is from line 1 of Table 3-3
+ * in E1.20.
+ */
+#define RESPONDER_RX_BREAK_TIME_MAX  10000
 
 #endif  // FIRMWARE_SRC_CONSTANTS_H_
 

@@ -62,6 +62,19 @@ void MessageHandler_WriteLog(const Message* message) {
   }
 }
 
+static inline void SetMode(uint8_t token,
+                           const uint8_t* payload,
+                           unsigned int length) {
+  uint8_t mode;
+  if (length != sizeof(mode)) {
+    SendMessage(token, COMMAND_SET_MODE, RC_BAD_PARAM, NULL, 0);
+    return;
+  }
+  mode = payload[0];
+
+  SendMessage(token, COMMAND_SET_MODE, RC_OK, NULL, 0);
+}
+
 static inline void MessageHandler_SetBreakTime(uint8_t token,
                                                const uint8_t* payload,
                                                unsigned int length) {
@@ -174,6 +187,9 @@ void MessageHandler_HandleMessage(const Message *message) {
     case COMMAND_RESET_DEVICE:
       APP_Reset();
       SendMessage(message->token, message->command, RC_OK, NULL, 0);
+      break;
+    case COMMAND_SET_MODE:
+      SetMode(message->token, message->payload, message->length);
       break;
     case COMMAND_RDM_DUB_REQUEST:
       if (!Transceiver_QueueRDMDUB(message->token, message->payload,

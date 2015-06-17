@@ -24,12 +24,15 @@
 #include "coarse_timer.h"
 #include "logger.h"
 #include "message_handler.h"
+#include "rdm.h"
 #include "stream_decoder.h"
 #include "syslog.h"
 #include "system_definitions.h"
 #include "system_settings.h"
 #include "transceiver.h"
 #include "usb_transport.h"
+
+const uint8_t OUR_UID[UID_LENGTH] = {0x7a, 0x70, 0xff, 0xff, 0xfe, 0};
 
 void __ISR(_TIMER_2_VECTOR, ipl6) TimerEvent() {
   CoarseTimer_TimerEvent();
@@ -57,6 +60,7 @@ void APP_Initialize(void) {
     .tx_enable_bit = TRANSCEIVER_RX_ENABLE,
   };
   Transceiver_Initialize(&transceiver_settings, NULL);
+  RDMResponder_Initialize(OUR_UID, NULL);
 
   // Initialize the Host message layers.
   MessageHandler_Initialize(NULL);
