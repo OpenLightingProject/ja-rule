@@ -267,6 +267,10 @@ typedef enum {
  *
  * Measured in 10ths of a microsecond. The value is from line 2 of Table 3-1
  * in E1.20.
+ *
+ * Note that some responders, like say the Robin 600 Spot, have a very short low
+ * before the actual break. This is probably the transceiver turning around and
+ * lasts on the order of 200nS.
  */
 #define CONTROLLER_RX_BREAK_TIME_MIN 880
 

@@ -182,7 +182,7 @@ void Responder_Receive(const TransceiverEvent *event) {
             continue;
           }
         }
-        if (g_offset == event->data[2] - 1) {
+        if (g_offset == (unsigned int) (event->data[2] - 1)) {
           g_state = STATE_RDM_CHECKSUM_LO;
         }
         break;
@@ -196,6 +196,7 @@ void Responder_Receive(const TransceiverEvent *event) {
           SysLog_Message(SYSLOG_ERROR, "Checksum mismatch");
           g_responder_counters.rdm_checksum_invalid++;
         }
+        break;
       case STATE_DMX_DATA:
         g_responder_counters.dmx_last_checksum += b;
         g_responder_counters.dmx_last_slot_count++;

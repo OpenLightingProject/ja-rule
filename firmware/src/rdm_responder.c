@@ -203,8 +203,8 @@ static void RespondIfRequired(const RDMHeader *incoming_header,
  * @brief NACK the request
  * @pre The command class is GET_COMMAND or SET_COMMAND.
  */
-inline void SendNack(const RDMHeader *header,
-                     RDMNackReason reason) {
+inline static void SendNack(const RDMHeader *header,
+                            RDMNackReason reason) {
   uint16_t param_data = htons(reason);
   RespondIfRequired(
       header, NACK_REASON,
@@ -348,8 +348,8 @@ bool RDMResponder_UIDRequiresAction(const uint8_t uid[UID_LENGTH]) {
 }
 
 bool RDMResponder_VerifyChecksum(const uint8_t *frame, unsigned int size) {
-  if (size < sizeof(RDMHeader) + RDM_CHECKSUM_LENGTH ||
-      frame[2] + RDM_CHECKSUM_LENGTH != size) {
+  if (size < sizeof(RDMHeader) + (unsigned int) RDM_CHECKSUM_LENGTH ||
+      frame[2] + (unsigned int) RDM_CHECKSUM_LENGTH != size) {
     return false;
   }
 
