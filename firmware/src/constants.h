@@ -116,7 +116,7 @@ typedef enum {
 
   /**
    * @brief Change the operating mode of the device.
-   * See @ref message_cmd_set_mode.
+   * @sa @ref message_cmd_setmode.
    */
   COMMAND_SET_MODE = 0x01,
 
