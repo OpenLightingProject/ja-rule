@@ -71,8 +71,6 @@ static inline void SetMode(uint8_t token,
     return;
   }
   mode = payload[0];
-
-  Transceiver_SetMode(mode ? T_MODE_RESPONDER : T_MODE_CONTROLLER);
   SendMessage(token, COMMAND_SET_MODE, RC_OK, NULL, 0);
 }
 
