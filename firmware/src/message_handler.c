@@ -71,7 +71,6 @@ static inline void SetMode(uint8_t token,
     return;
   }
   mode = payload[0];
-
   SendMessage(token, COMMAND_SET_MODE, RC_OK, NULL, 0);
 }
 
@@ -170,7 +169,8 @@ void MessageHandler_HandleMessage(const Message *message) {
       MessageHandler_Echo(message);
       break;
     case TX_DMX:
-      if (!Transceiver_QueueDMX(0, message->payload, message->length)) {
+      if (!Transceiver_QueueDMX(message->token, message->payload,
+                                message->length)) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0);
       }
       break;
@@ -196,6 +196,7 @@ void MessageHandler_HandleMessage(const Message *message) {
                                    message->length)) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0);
       }
+      break;
       break;
     case COMMAND_RDM_REQUEST:
       if (!Transceiver_QueueRDMRequest(message->token, message->payload,

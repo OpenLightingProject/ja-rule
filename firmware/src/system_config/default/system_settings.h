@@ -17,6 +17,21 @@ extern "C" {
 #endif
 
 /**
+ * @brief The port used used by the RDM Responder.
+ */
+#define RDM_RESPONDER_PORT
+
+/**
+ * @brief The pin used for IDENTIFY_DEVICE
+ */
+#define RDM_RESPONDER_IDENTIFY_PORT_BIT
+
+/**
+ * @brief The pin used to indicate mute status.
+ */
+#define RDM_RESPONDER_MUTE_PORT_BIT
+
+/**
  * @brief The USART to use for the Transceiver.
  */
 #define TRANSCEIVER_TX_UART

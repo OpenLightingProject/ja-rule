@@ -40,6 +40,17 @@ extern "C" {
 #endif
 
 /**
+ * @brief The settings to use for the RDM Responder.
+ */
+typedef struct {
+  PORTS_CHANNEL identify_port;  //!< The port to use for the identify signal.
+  PORTS_BIT_POS identify_bit;  //!< The port bit to use for the identify signal.
+  PORTS_CHANNEL mute_port;  //!< The port to use to indicate mute state.
+  PORTS_BIT_POS mute_bit;  //!< The port bit used to indicate mute state.
+  uint8_t uid[UID_LENGTH];  //!< The responder's UID.
+} RDMResponderSettings;
+
+/**
  * @brief The callback used to send RDM responses.
  * @param include_break true if a break should be used for the response
  * @param data the raw data to send in the response
@@ -53,13 +64,13 @@ typedef void (*RDMResponderSendCallback)(bool include_break,
 
 /**
  * @brief Initialize the RDM Responder sub-system.
- * @param uid The UID to use for this responder.
+ * @param settings The settings for this responder.
  * @param send_callback The callback to use for sending responses.
  *
  * If PIPELINE_RDMRESPONDER_SEND is defined this will override the
  * send_callback.
  */
-void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH],
+void RDMResponder_Initialize(const RDMResponderSettings *settings,
                              RDMResponderSendCallback send_callback);
 
 /**
@@ -96,6 +107,13 @@ void RDMResponder_HandleRequest(const RDMHeader *header,
  * @returns true if this responder is currently muted.
  */
 bool RDMResponder_IsMuted();
+
+/**
+ * @brief Perform the periodic RDM Responder tasks.
+ *
+ * This should be called in the main event loop.
+ */
+void RDMResponder_Tasks();
 
 
 #ifdef __cplusplus

@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "coarse_timer.h"
 #include "constants.h"
 #include "iovec.h"
 #include "rdm_frame.h"
@@ -45,6 +46,8 @@
 #define FE_CONSTANT 0xfe
 #define DUB_RESPONSE_LENGTH 24
 #define MODEL_ID 0x0100
+#define FLASH_FAST 1000
+#define FLASH_SLOW 10000
 
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Responder";
 static const char MANUFACTURER_LABEL[] = "Open Lighting Project";
@@ -54,8 +57,19 @@ typedef struct {
   RDMResponderSendCallback send_callback;
   uint8_t uid[UID_LENGTH];
   uint8_t queued_message_count;
-  bool is_muted;
   uint16_t dmx_start_address;
+
+  // Mute Settings
+  bool is_muted;
+  CoarseTimer_Value mute_timer;
+  PORTS_CHANNEL mute_port;  //!< The port to use for the identify signal.
+  PORTS_BIT_POS mute_bit;  //!< The port bit to use for the identify signal.
+
+  // Identify settings
+  bool identify_on;
+  CoarseTimer_Value identify_timer;
+  PORTS_CHANNEL identify_port;  //!< The port to use for the identify signal.
+  PORTS_BIT_POS identify_bit;  //!< The port bit to use for the identify signal.
 
   // Used to construct responses so we avoid using stack space.
   uint8_t param_data[MAX_PARAM_DATA_SIZE];
@@ -224,14 +238,13 @@ static void Mute(const RDMHeader *header,
   }
   g_rdm_responder.is_muted = true;
 
-  struct mute_s {
-    uint16_t control_field;
-    uint8_t binding_uid[UID_LENGTH];
-  }__attribute__((packed));
-
-  memset(g_rdm_responder.param_data, 0, sizeof(struct mute_s));
+  uint16_t *control_field = (uint16_t*) g_rdm_responder.param_data;
+  *control_field = 0;
   RespondIfRequired(header, ACK, DISCOVER_COMMAND_RESPONSE, PID_DISC_MUTE,
-                    g_rdm_responder.param_data, sizeof(struct mute_s));
+                    g_rdm_responder.param_data, sizeof(*control_field));
+  PLIB_PORTS_PinClear(
+    PORTS_ID_0, g_rdm_responder.mute_port,
+    g_rdm_responder.mute_bit);
 }
 
 static void UnMute(const RDMHeader *header,
@@ -241,8 +254,14 @@ static void UnMute(const RDMHeader *header,
   }
   g_rdm_responder.is_muted = false;
 
+  uint16_t *control_field = (uint16_t*) g_rdm_responder.param_data;
+  *control_field = 0;
   RespondIfRequired(header, ACK, DISCOVER_COMMAND_RESPONSE, PID_DISC_UN_MUTE,
-                    NULL, 0);
+                    g_rdm_responder.param_data, sizeof(*control_field));
+  PLIB_PORTS_PinSet(
+    PORTS_ID_0, g_rdm_responder.mute_port,
+    g_rdm_responder.mute_bit);
+  g_rdm_responder.mute_timer = CoarseTimer_GetTime();
 }
 
 static void GetDeviceInfo(const RDMHeader *header,
@@ -299,6 +318,51 @@ static void GetSupportedParameters(const RDMHeader *header,
                     g_rdm_responder.param_data, i * sizeof(pids[0]));
 }
 
+static void GetIdentifyDevice(const RDMHeader *header,
+                              unsigned int param_data_length) {
+  if (param_data_length != 0) {
+    SendNack(header, NR_FORMAT_ERROR);
+    return;
+  }
+
+  RespondIfRequired(header, ACK, GET_COMMAND_RESPONSE,
+                    PID_IDENTIFY_DEVICE,
+                    (uint8_t*) &g_rdm_responder.identify_on,
+                    sizeof(g_rdm_responder.identify_on));
+}
+
+static void SetIdentifyDevice(const RDMHeader *header,
+                              const uint8_t *param_data,
+                              unsigned int param_data_length) {
+  uint8_t identify_on;
+  if (param_data_length != sizeof(identify_on)) {
+    SendNack(header, NR_FORMAT_ERROR);
+    return;
+  }
+  identify_on = param_data[0];
+  switch (identify_on) {
+    case 0:
+      g_rdm_responder.identify_on = false;
+      PLIB_PORTS_PinClear(
+        PORTS_ID_0, g_rdm_responder.identify_port,
+        g_rdm_responder.identify_bit);
+      break;
+    case 1:
+      g_rdm_responder.identify_on = true;
+      g_rdm_responder.identify_timer = CoarseTimer_GetTime();
+      PLIB_PORTS_PinSet(
+        PORTS_ID_0, g_rdm_responder.identify_port,
+        g_rdm_responder.identify_bit);
+      break;
+    default:
+      SendNack(header, NR_DATA_OUT_OF_RANGE);
+      return;
+  }
+
+  RespondIfRequired(header, ACK, SET_COMMAND_RESPONSE,
+                    PID_IDENTIFY_DEVICE, NULL, 0);
+}
+
 /*
  * @brief Reply with a string
  * @param header
@@ -323,13 +387,32 @@ static void GenericReturnString(const RDMHeader *header,
 
 // Public Functions
 // ----------------------------------------------------------------------------
-void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH],
+void RDMResponder_Initialize(const RDMResponderSettings *settings,
                              RDMResponderSendCallback send_callback) {
   g_rdm_responder.send_callback = send_callback;
-  memcpy(g_rdm_responder.uid, uid, UID_LENGTH);
+  memcpy(g_rdm_responder.uid, settings->uid, UID_LENGTH);
   g_rdm_responder.queued_message_count = 0;
   g_rdm_responder.is_muted = false;
+  g_rdm_responder.identify_on = false;
+  g_rdm_responder.identify_timer = 0;
   g_rdm_responder.dmx_start_address = 0xffff;
+  g_rdm_responder.identify_port = settings->identify_port;
+  g_rdm_responder.identify_bit = settings->identify_bit;
+  g_rdm_responder.mute_port = settings->mute_port;
+  g_rdm_responder.mute_bit = settings->mute_bit;
+
+  // Initialize hardware
+  PLIB_PORTS_PinDirectionOutputSet(
+    PORTS_ID_0, g_rdm_responder.identify_port, g_rdm_responder.identify_bit);
+  PLIB_PORTS_PinClear(
+    PORTS_ID_0, g_rdm_responder.identify_port, g_rdm_responder.identify_bit);
+
+  PLIB_PORTS_PinDirectionOutputSet(
+    PORTS_ID_0, g_rdm_responder.mute_port, g_rdm_responder.mute_bit);
+  PLIB_PORTS_PinSet(
+    PORTS_ID_0, g_rdm_responder.mute_port,
+    g_rdm_responder.mute_bit);
+  g_rdm_responder.mute_timer = CoarseTimer_GetTime();
 }
 
 bool RDMResponder_UIDRequiresAction(const uint8_t uid[UID_LENGTH]) {
@@ -392,6 +475,9 @@ void RDMResponder_HandleRequest(const RDMHeader *header,
   }
 
   bool is_get = header->command_class == GET_COMMAND;
+  if (is_get && sub_device == SUBDEVICE_ALL) {
+    SendNack(header, NR_SUB_DEVICE_OUT_OF_RANGE);
+  }
 
   switch (param_id) {
     case PID_DEVICE_INFO:
@@ -432,6 +518,13 @@ void RDMResponder_HandleRequest(const RDMHeader *header,
         SendNack(header, NR_UNSUPPORTED_COMMAND_CLASS);
       }
       break;
+    case PID_IDENTIFY_DEVICE:
+      if (is_get) {
+        GetIdentifyDevice(header, param_data_length);
+      } else {
+        SetIdentifyDevice(header, param_data, param_data_length);
+      }
+      break;
     default:
       SendNack(header, NR_UNKNOWN_PID);
   }
@@ -439,4 +532,24 @@ void RDMResponder_HandleRequest(const RDMHeader *header,
 
 bool RDMResponder_IsMuted() {
   return g_rdm_responder.is_muted;
+}
+
+void RDMResponder_Tasks() {
+  if (g_rdm_responder.identify_on) {
+    if (CoarseTimer_HasElapsed(g_rdm_responder.identify_timer, FLASH_FAST)) {
+      g_rdm_responder.identify_timer = CoarseTimer_GetTime();
+      PLIB_PORTS_PinToggle(
+        PORTS_ID_0, g_rdm_responder.identify_port,
+        g_rdm_responder.identify_bit);
+    }
+  }
+
+  if (!g_rdm_responder.is_muted) {
+    if (CoarseTimer_HasElapsed(g_rdm_responder.mute_timer, FLASH_SLOW)) {
+      g_rdm_responder.mute_timer = CoarseTimer_GetTime();
+      PLIB_PORTS_PinToggle(
+        PORTS_ID_0, g_rdm_responder.mute_port,
+        g_rdm_responder.mute_bit);
+    }
+  }
 }
