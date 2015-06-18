@@ -46,7 +46,7 @@ typedef struct {
   PORTS_CHANNEL identify_port;  //!< The port to use for the identify signal.
   PORTS_BIT_POS identify_bit;  //!< The port bit to use for the identify signal.
   PORTS_CHANNEL mute_port;  //!< The port to use to indicate mute state.
-  PORTS_BIT_POS mute_bit; //!< The port bit used to indicate mute state.
+  PORTS_BIT_POS mute_bit;  //!< The port bit used to indicate mute state.
   uint8_t uid[UID_LENGTH];  //!< The responder's UID.
 } RDMResponderSettings;
 
