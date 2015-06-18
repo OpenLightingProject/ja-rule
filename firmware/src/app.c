@@ -33,7 +33,7 @@
 #include "transceiver.h"
 #include "usb_transport.h"
 
-// TODO: figure out how to allocate UIDs.
+// TODO(simon): figure out how to allocate UIDs.
 const uint8_t OUR_UID[UID_LENGTH] = {0x7a, 0x70, 0xff, 0xff, 0xfe, 0};
 
 void __ISR(_TIMER_2_VECTOR, ipl6) TimerEvent() {

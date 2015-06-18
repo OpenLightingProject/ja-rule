@@ -72,6 +72,7 @@ static inline void SetMode(uint8_t token,
   }
   mode = payload[0];
 
+  Transceiver_SetMode(mode ? T_MODE_RESPONDER : T_MODE_CONTROLLER);
   SendMessage(token, COMMAND_SET_MODE, RC_OK, NULL, 0);
 }
 
@@ -170,10 +171,8 @@ void MessageHandler_HandleMessage(const Message *message) {
       MessageHandler_Echo(message);
       break;
     case TX_DMX:
-      if (Transceiver_GetMode() != T_MODE_CONTROLLER) {
-        SendMessage(message->token, message->command, RC_INVALID_MODE, NULL, 0);
-      } else if (!Transceiver_QueueDMX(message->token, message->payload,
-                                       message->length)) {
+      if (!Transceiver_QueueDMX(message->token, message->payload,
+                                message->length)) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0);
       }
       break;
@@ -195,19 +194,15 @@ void MessageHandler_HandleMessage(const Message *message) {
       SetMode(message->token, message->payload, message->length);
       break;
     case COMMAND_RDM_DUB_REQUEST:
-      if (Transceiver_GetMode() != T_MODE_CONTROLLER) {
-        SendMessage(message->token, message->command, RC_INVALID_MODE, NULL, 0);
-      } else if (!Transceiver_QueueRDMDUB(message->token, message->payload,
-                                          message->length)) {
+      if (!Transceiver_QueueRDMDUB(message->token, message->payload,
+                                   message->length)) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0);
       }
       break;
       break;
     case COMMAND_RDM_REQUEST:
-      if (Transceiver_GetMode() != T_MODE_CONTROLLER) {
-        SendMessage(message->token, message->command, RC_INVALID_MODE, NULL, 0);
-      } else if (!Transceiver_QueueRDMRequest(message->token, message->payload,
-                                              message->length, false)) {
+      if (!Transceiver_QueueRDMRequest(message->token, message->payload,
+                                       message->length, false)) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0);
       }
       break;
@@ -240,10 +235,8 @@ void MessageHandler_HandleMessage(const Message *message) {
       MessageHandler_ReturnRDMWaitTime(message->token);
       break;
     case COMMAND_RDM_BROADCAST_REQUEST:
-      if (Transceiver_GetMode() != T_MODE_CONTROLLER) {
-        SendMessage(message->token, message->command, RC_INVALID_MODE, NULL, 0);
-      } else if (!Transceiver_QueueRDMRequest(message->token, message->payload,
-                                              message->length, true)) {
+      if (!Transceiver_QueueRDMRequest(message->token, message->payload,
+                                       message->length, true)) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0);
       }
       break;
