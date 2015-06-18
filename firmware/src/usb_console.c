@@ -22,8 +22,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "responder.h"
 #include "syslog.h"
 #include "system_definitions.h"
+#include "transceiver.h"
 
 #define USB_CONSOLE_BUFFER_SIZE 1024
 // #define USB_CONSOLE_BUFFER_SIZE 70
@@ -381,6 +383,10 @@ void USBConsole_Tasks() {
           SysLog_Print(SYSLOG_ALWAYS, "Log level: %s",
                        SysLog_LevelToString(SysLog_GetLevel()));
           break;
+        case 'c':
+          SysLog_Print(SYSLOG_INFO, "DMX Frames %d", Responder_DMXFrames());
+          SysLog_Print(SYSLOG_INFO, "RDM Frames %d", Responder_RDMFrames());
+          break;
         case 'd':
           SysLog_Message(SYSLOG_DEBUG, "debug");
           break;
@@ -392,14 +398,27 @@ void USBConsole_Tasks() {
           break;
         case 'h':
           SysLog_Message(SYSLOG_INFO, "----------------------");
+          SysLog_Message(SYSLOG_INFO, "c   Dump Counters");
           SysLog_Message(SYSLOG_INFO, "r   Reset");
           SysLog_Message(SYSLOG_INFO, "h   Show help message");
+          SysLog_Message(SYSLOG_INFO, "m   Get operating mode");
+          SysLog_Message(SYSLOG_INFO, "M   Switch operating mode");
           SysLog_Message(SYSLOG_INFO, "-   Decrease Log Level");
           SysLog_Message(SYSLOG_INFO, "+   Increase Log Level");
           SysLog_Message(SYSLOG_INFO, "----------------------");
           break;
         case 'i':
           SysLog_Message(SYSLOG_INFO, "info");
+          break;
+        case 'm':
+          SysLog_Print(SYSLOG_INFO, "%s Mode",
+                       Transceiver_GetMode() == T_MODE_CONTROLLER ?
+                       "Controller" : "Responder");
+          break;
+        case 'M':
+          Transceiver_SetMode(Transceiver_GetMode() == T_MODE_CONTROLLER ?
+                              T_MODE_RESPONDER : T_MODE_CONTROLLER);
+          SysLog_Print(SYSLOG_INFO, "Switched mode");
           break;
         case 'r':
           APP_Reset();

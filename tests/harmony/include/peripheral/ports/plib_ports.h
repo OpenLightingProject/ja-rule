@@ -57,6 +57,10 @@ void PLIB_PORTS_PinClear(PORTS_MODULE_ID index,
                          PORTS_CHANNEL channel,
                          PORTS_BIT_POS bitPos);
 
+void PLIB_PORTS_PinToggle(PORTS_MODULE_ID index,
+                          PORTS_CHANNEL channel,
+                          PORTS_BIT_POS bitPos);
+
 #ifdef  __cplusplus
 }
 #endif

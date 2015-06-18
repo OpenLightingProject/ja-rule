@@ -18,6 +18,11 @@ class MockPeripheralPorts {
                void(PORTS_MODULE_ID index,
                     PORTS_CHANNEL channel,
                     PORTS_BIT_POS bitPos));
+
+  MOCK_METHOD3(PinToggle,
+               void(PORTS_MODULE_ID index,
+                    PORTS_CHANNEL channel,
+                    PORTS_BIT_POS bitPos));
 };
 
 void PLIB_PORTS_SetMock(MockPeripheralPorts* mock);

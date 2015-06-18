@@ -25,6 +25,7 @@
 #include "logger.h"
 #include "message_handler.h"
 #include "rdm.h"
+#include "rdm_responder.h"
 #include "stream_decoder.h"
 #include "syslog.h"
 #include "system_definitions.h"
@@ -32,6 +33,7 @@
 #include "transceiver.h"
 #include "usb_transport.h"
 
+// TODO: figure out how to allocate UIDs.
 const uint8_t OUR_UID[UID_LENGTH] = {0x7a, 0x70, 0xff, 0xff, 0xfe, 0};
 
 void __ISR(_TIMER_2_VECTOR, ipl6) TimerEvent() {
@@ -60,7 +62,15 @@ void APP_Initialize(void) {
     .tx_enable_bit = TRANSCEIVER_RX_ENABLE,
   };
   Transceiver_Initialize(&transceiver_settings, NULL);
-  RDMResponder_Initialize(OUR_UID, NULL);
+
+  RDMResponderSettings responder_settings = {
+    .identify_port = RDM_RESPONDER_PORT,
+    .identify_bit = RDM_RESPONDER_IDENTIFY_PORT_BIT,
+    .mute_port = RDM_RESPONDER_PORT,
+    .mute_bit = RDM_RESPONDER_MUTE_PORT_BIT
+  };
+  memcpy(responder_settings.uid, OUR_UID, UID_LENGTH);
+  RDMResponder_Initialize(&responder_settings, NULL);
 
   // Initialize the Host message layers.
   MessageHandler_Initialize(NULL);
@@ -76,6 +86,7 @@ void APP_Tasks(void) {
   USBTransport_Tasks();
   Transceiver_Tasks();
   USBConsole_Tasks();
+  RDMResponder_Tasks();
 }
 
 void APP_Reset() {

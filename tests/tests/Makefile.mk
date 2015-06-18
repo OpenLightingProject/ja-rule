@@ -42,6 +42,8 @@ tests_rdm_responder_test_SOURCES = tests/RDMResponderTest.cpp
 tests_rdm_responder_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_rdm_responder_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                   src/librdmresponder.la \
+                                  harmony/mocks/libharmonymock.la \
+                                  mocks/libcoarsetimermock.la \
                                   mocks/libmatchers.la \
                                   mocks/libmessagehandlermock.la
 
