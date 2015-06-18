@@ -120,12 +120,10 @@ class RDMResponderTest : public testing::Test {
     PLIB_PORTS_SetMock(&m_ports_mock);
     g_sender = &m_sender_mock;
 
-    m_default_settings = {
-      .identify_port = PORT_CHANNEL_D,
-      .identify_bit = PORTS_BIT_POS_0,
-      .mute_port = PORT_CHANNEL_D,
-      .mute_bit = PORTS_BIT_POS_1
-    };
+    m_default_settings.identify_port = PORT_CHANNEL_D;
+    m_default_settings.identify_bit = PORTS_BIT_POS_0;
+    m_default_settings.mute_port = PORT_CHANNEL_D;
+    m_default_settings.mute_bit = PORTS_BIT_POS_1;
     m_our_uid.Pack(reinterpret_cast<uint8_t*>(&m_default_settings.uid),
                    UID_LENGTH);
 
