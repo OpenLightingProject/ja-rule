@@ -35,7 +35,7 @@ elif [[ $TASK = 'check-licences' ]]; then
 elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
   cd tests
-  autoreconf -i && ./configure
+  autoreconf -i && ./configure --without-ola
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
   #make builtfiles

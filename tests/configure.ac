@@ -92,11 +92,16 @@ AS_IF([test -z "$PKG_CONFIG"],
       [AC_MSG_ERROR([Missing pkg-config, please install it])])
 
 # OLA
-PKG_CHECK_MODULES(
-  OLA,
-  [libola],
-  [],
-  [AC_MSG_ERROR([Missing OLA, please install])])
+AC_ARG_WITH(
+  [ola],
+  [AS_HELP_STRING([--without-ola],
+                  [Skip OLA checks, unittests will not work correctly])])
+AS_IF([test "x$with_ola" != xno],
+      [PKG_CHECK_MODULES(
+        OLA,
+        [libola],
+        [],
+        [AC_MSG_ERROR([Missing OLA, please install])])])
 
 # Output
 #####################################################
