@@ -68,7 +68,7 @@ typedef enum {
 
   // Responder states.
   STATE_R_INITIALIZE = 14,  //!< Initialze responder state
-  STATE_R_RX_PREPARE = 15, //!< Prepare to receive frame
+  STATE_R_RX_PREPARE = 15,  //!< Prepare to receive frame
   STATE_R_RX_MBB = 16,  //!< In mark before break
   STATE_R_RX_BREAK = 17,  //!< In break
   STATE_R_RX_MARK = 18,  //!< In mark after break
@@ -197,6 +197,8 @@ static TransceiverEventCallback g_rx_callback = NULL;
 // The timing settings
 static TimingSettings g_timing_settings;
 
+// Timer Functions
+// ----------------------------------------------------------------------------
 /*
  * @brief Convert microseconds to ticks.
  */
@@ -215,6 +217,21 @@ static inline void RebaseTimer(uint16_t last_event) {
   PLIB_TMR_Counter16BitSet(TMR_ID_3,
                            PLIB_TMR_Counter16BitGet(TMR_ID_3) - last_event);
 }
+
+/*
+ * @brief Start a period timer.
+ * @param ticks The number of ticks.
+ * TODO(simon): see if we can use this elsewhere
+ */
+static inline void Transceiver_SetTimer(unsigned int ticks) {
+  PLIB_TMR_Counter16BitClear(TMR_ID_3);
+  PLIB_TMR_Period16BitSet(TMR_ID_3, ticks);
+  SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
+  SYS_INT_SourceEnable(INT_SOURCE_TIMER_3);
+}
+
+// I/O Functions
+// ----------------------------------------------------------------------------
 
 /*
  * @brief Switch the transceiver to TX mode.
@@ -259,6 +276,110 @@ static inline void SetMark() {
 }
 
 /*
+ * @brief Put us into a MARK state
+ */
+static inline void ResetToMark() {
+  SetMark();
+  EnableTX();
+}
+
+// UART Helpers
+// ----------------------------------------------------------------------------
+/*
+ * @brief Push data into the UART TX queue.
+ */
+static void UART_TXBytes() {
+  while (!PLIB_USART_TransmitterBufferIsFull(g_hw_settings.usart) &&
+         g_transceiver.data_index != g_transceiver.active->size) {
+    PLIB_USART_TransmitterByteSend(
+        g_hw_settings.usart,
+        g_transceiver.active->data[g_transceiver.data_index++]);
+  }
+}
+
+void UART_FlushRX() {
+  while (PLIB_USART_ReceiverDataIsAvailable(g_hw_settings.usart)) {
+    PLIB_USART_ReceiverByteReceive(g_hw_settings.usart);
+  }
+}
+
+/*
+ * @brief Pull data out the UART RX queue.
+ * @returns true if the RX buffer is now full.
+ */
+bool UART_RXBytes() {
+  while (PLIB_USART_ReceiverDataIsAvailable(g_hw_settings.usart) &&
+         g_transceiver.data_index != BUFFER_SIZE) {
+    g_transceiver.active->data[g_transceiver.data_index++] =
+      PLIB_USART_ReceiverByteReceive(g_hw_settings.usart);
+  }
+  if (g_transceiver.active->op == OP_RDM_WITH_RESPONSE ||
+      g_transceiver.active->op == OP_RDM_BROADCAST) {
+    if (g_transceiver.found_expected_length) {
+      if (g_transceiver.data_index == g_transceiver.expected_length) {
+        // We've got enough data to move on
+        PLIB_USART_ReceiverDisable(g_hw_settings.usart);
+        ResetToMark();
+        g_transceiver.state = STATE_C_COMPLETE;
+      }
+    } else {
+      if (g_transceiver.data_index >= 3) {
+        if (g_transceiver.active->data[0] == RDM_START_CODE &&
+            g_transceiver.active->data[1] == RDM_SUB_START_CODE) {
+          g_transceiver.found_expected_length = true;
+          // Add two bytes for the checksum
+          g_transceiver.expected_length = g_transceiver.active->data[2] + 2;
+        }
+      }
+    }
+  }
+  g_transceiver.last_byte = PLIB_TMR_Counter16BitGet(TMR_ID_3);
+  return g_transceiver.data_index >= BUFFER_SIZE;
+}
+
+// Memory Buffer Management
+// ----------------------------------------------------------------------------
+
+/*
+ * @brief Setup the transceiver buffers.
+ */
+static void InitializeBuffers() {
+  g_transceiver.active = NULL;
+  g_transceiver.next = NULL;
+
+  int i = 0;
+  for (; i < NUMBER_OF_BUFFERS; i++) {
+    g_transceiver.free_list[i] = &buffers[i];
+  }
+  g_transceiver.free_size = NUMBER_OF_BUFFERS;
+}
+
+/*
+ * @brief Return the active buffer to the free list.
+ */
+static void FreeActiveBuffer() {
+  if (g_transceiver.active) {
+    g_transceiver.free_list[g_transceiver.free_size] = g_transceiver.active;
+    g_transceiver.free_size++;
+    g_transceiver.active = NULL;
+  }
+}
+
+/*
+ * @brief Move the next buffer to the active buffer.
+ */
+static void TakeNextBuffer() {
+  if (g_transceiver.active) {
+    g_transceiver.free_list[g_transceiver.free_size] = g_transceiver.active;
+    g_transceiver.free_size++;
+  }
+  g_transceiver.active = g_transceiver.next;
+  g_transceiver.next = NULL;
+  g_transceiver.data_index = 0;
+}
+
+// ----------------------------------------------------------------------------
+/*
  * @brief Check for a mode change.
  */
 static void CheckForModeChange() {
@@ -296,12 +417,7 @@ static inline void PrepareRDMResponse() {
   PLIB_USART_TransmitterInterruptModeSelect(g_hw_settings.usart,
                                             USART_TRANSMIT_FIFO_EMPTY);
 
-  // TODO: move this to a function
-  g_transceiver.free_list[g_transceiver.free_size] = g_transceiver.active;
-  g_transceiver.free_size++;
-  g_transceiver.active = g_transceiver.next;
-  g_transceiver.next = NULL;
-  g_transceiver.data_index = 0;
+  TakeNextBuffer();
 
   // Enable timer
   // TODO(simon): make this configurable.
@@ -322,14 +438,6 @@ static inline void StartSendingRDMResponse() {
 
   SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
   SYS_INT_SourceEnable(INT_SOURCE_USART_1_TRANSMIT);
-}
-
-/*
- * @brief Put us into a MARK state
- */
-static inline void Transceiver_ResetToMark() {
-  SetMark();
-  EnableTX();
 }
 
 static inline void LogStateChange() {
@@ -396,34 +504,9 @@ static inline void RXFrameEvent() {
 }
 
 /*
- * @brief Start a period timer.
- * @param ticks The number of ticks.
- */
-static inline void Transceiver_SetTimer(unsigned int ticks) {
-  PLIB_TMR_Counter16BitClear(TMR_ID_3);
-  PLIB_TMR_Period16BitSet(TMR_ID_3, ticks);
-  SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
-  SYS_INT_SourceEnable(INT_SOURCE_TIMER_3);
-}
-
-/*
- * @brief Setup the transceiver buffers.
- */
-void Transceiver_InitializeBuffers() {
-  g_transceiver.active = NULL;
-  g_transceiver.next = NULL;
-
-  int i = 0;
-  for (; i < NUMBER_OF_BUFFERS; i++) {
-    g_transceiver.free_list[i] = &buffers[i];
-  }
-  g_transceiver.free_size = NUMBER_OF_BUFFERS;
-}
-
-/*
  * @brief Reset the settings to their default values.
  */
-void Transceiver_ResetTimingSettings() {
+static void ResetTimingSettings() {
   Transceiver_SetBreakTime(DEFAULT_BREAK_TIME);
   Transceiver_SetMarkTime(DEFAULT_MARK_TIME);
   Transceiver_SetRDMBroadcastListen(DEFAULT_RDM_BROADCAST_LISTEN);
@@ -431,6 +514,8 @@ void Transceiver_ResetTimingSettings() {
   Transceiver_SetRDMDUBResponseTime(DEFAULT_RDM_DUB_RESPONSE_TIME);
 }
 
+// Interrupt Handlers
+// ----------------------------------------------------------------------------
 /*
  * @brief Called when an input capture event occurs.
  */
@@ -622,58 +707,6 @@ void __ISR(_TIMER_3_VECTOR, ipl6) Transceiver_TimerEvent() {
 }
 
 /*
- * @brief Push data into the UART TX queue.
- */
-void Transceiver_TXBytes() {
-  while (!PLIB_USART_TransmitterBufferIsFull(g_hw_settings.usart) &&
-         g_transceiver.data_index != g_transceiver.active->size) {
-    PLIB_USART_TransmitterByteSend(
-        g_hw_settings.usart,
-        g_transceiver.active->data[g_transceiver.data_index++]);
-  }
-}
-
-void Transceiver_FlushRX() {
-  while (PLIB_USART_ReceiverDataIsAvailable(g_hw_settings.usart)) {
-    PLIB_USART_ReceiverByteReceive(g_hw_settings.usart);
-  }
-}
-
-/*
- * @brief Pull data out the UART RX queue.
- * @returns true if the RX buffer is now full.
- */
-bool Transceiver_RXBytes() {
-  while (PLIB_USART_ReceiverDataIsAvailable(g_hw_settings.usart) &&
-         g_transceiver.data_index != BUFFER_SIZE) {
-    g_transceiver.active->data[g_transceiver.data_index++] =
-      PLIB_USART_ReceiverByteReceive(g_hw_settings.usart);
-  }
-  if (g_transceiver.active->op == OP_RDM_WITH_RESPONSE ||
-      g_transceiver.active->op == OP_RDM_BROADCAST) {
-    if (g_transceiver.found_expected_length) {
-      if (g_transceiver.data_index == g_transceiver.expected_length) {
-        // We've got enough data to move on
-        PLIB_USART_ReceiverDisable(g_hw_settings.usart);
-        Transceiver_ResetToMark();
-        g_transceiver.state = STATE_C_COMPLETE;
-      }
-    } else {
-      if (g_transceiver.data_index >= 3) {
-        if (g_transceiver.active->data[0] == RDM_START_CODE &&
-            g_transceiver.active->data[1] == RDM_SUB_START_CODE) {
-          g_transceiver.found_expected_length = true;
-          // Add two bytes for the checksum
-          g_transceiver.expected_length = g_transceiver.active->data[2] + 2;
-        }
-      }
-    }
-  }
-  g_transceiver.last_byte = PLIB_TMR_Counter16BitGet(TMR_ID_3);
-  return g_transceiver.data_index >= BUFFER_SIZE;
-}
-
-/*
  * @brief USART Interrupt handler.
  *
  * This is called for any of the following:
@@ -684,7 +717,7 @@ bool Transceiver_RXBytes() {
 void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
   if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_TRANSMIT)) {
     if (g_transceiver.state == STATE_C_TX_DATA) {
-      Transceiver_TXBytes();
+      UART_TXBytes();
       if (g_transceiver.data_index == g_transceiver.active->size) {
         PLIB_USART_TransmitterInterruptModeSelect(
             g_hw_settings.usart, USART_TRANSMIT_FIFO_IDLE);
@@ -714,7 +747,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
 
           // Turn around the line
           EnableRX();
-          Transceiver_FlushRX();
+          UART_FlushRX();
 
           PLIB_IC_FirstCaptureEdgeSelect(INPUT_CAPTURE_MODULE, IC_EDGE_FALLING);
           PLIB_IC_Enable(INPUT_CAPTURE_MODULE);
@@ -744,7 +777,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
           g_transceiver.data_index = 0;
 
           EnableRX();
-          Transceiver_FlushRX();
+          UART_FlushRX();
 
           PLIB_IC_FirstCaptureEdgeSelect(INPUT_CAPTURE_MODULE, IC_EDGE_FALLING);
           PLIB_IC_Enable(INPUT_CAPTURE_MODULE);
@@ -753,14 +786,12 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         }
       }
     } else if (g_transceiver.state == STATE_R_TX_DATA) {
-      Transceiver_TXBytes();
+      UART_TXBytes();
       if (g_transceiver.data_index == g_transceiver.active->size) {
         PLIB_USART_TransmitterInterruptModeSelect(
             g_hw_settings.usart, USART_TRANSMIT_FIFO_IDLE);
         g_transceiver.state = STATE_R_TX_DRAIN;
-        g_transceiver.free_list[g_transceiver.free_size] = g_transceiver.active;
-        g_transceiver.free_size++;
-        g_transceiver.active = NULL;
+        FreeActiveBuffer();
       }
     } else if (g_transceiver.state == STATE_R_TX_DRAIN) {
       EnableRX();
@@ -772,13 +803,13 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
   } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_RECEIVE)) {
     if (g_transceiver.state == STATE_C_RX_IN_DUB ||
         g_transceiver.state == STATE_C_RX_DATA) {
-      if (Transceiver_RXBytes()) {
+      if (UART_RXBytes()) {
         // RX buffer is full.
         PLIB_TMR_Stop(TMR_ID_3);
         SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
         SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
-        Transceiver_ResetToMark();
+        ResetToMark();
         g_transceiver.result = T_RESULT_RX_INVALID;
         g_transceiver.state = STATE_C_COMPLETE;
       }
@@ -787,7 +818,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         // A framing error indicates a possible break.
         // Switch out of RX mode and back into the break state.
         SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
-        Transceiver_FlushRX();
+        UART_FlushRX();
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
 
         // TODO(simon): how to handle this?
@@ -796,7 +827,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         g_transceiver.data_index = 0;
         g_transceiver.event_index = 0;
         g_transceiver.state = STATE_R_RX_BREAK;
-      } else if (Transceiver_RXBytes()) {
+      } else if (UART_RXBytes()) {
         // RX buffer is full.
         // TODO(simon): What should we do here?
         SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
@@ -818,7 +849,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
         SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
-        Transceiver_ResetToMark();
+        ResetToMark();
         g_transceiver.state = STATE_C_COMPLETE;
         break;
       case STATE_C_INITIALIZE:
@@ -854,13 +885,15 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
   }
 }
 
+// Public API Functions
+// ----------------------------------------------------------------------------
 void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
                             TransceiverEventCallback tx_callback,
                             TransceiverEventCallback rx_callback) {
   g_hw_settings = *settings;
   g_tx_callback = tx_callback;
   g_rx_callback = rx_callback;
-  // TODO: We need to decide what our startup state is.
+  // TODO(simon): We need to decide what our startup state is.
   /*
   g_transceiver.state = STATE_C_INITIALIZE;
   g_transceiver.mode = T_MODE_CONTROLLER;
@@ -872,8 +905,8 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
   g_transceiver.desired_mode = T_MODE_RESPONDER;
   g_transceiver.data_index = 0;
 
-  Transceiver_InitializeBuffers();
-  Transceiver_ResetTimingSettings();
+  InitializeBuffers();
+  ResetTimingSettings();
 
   // Setup the Break, TX Enable & RX Enable I/O Pins
   PLIB_PORTS_PinDirectionOutputSet(PORTS_ID_0,
@@ -942,7 +975,7 @@ void Transceiver_Tasks() {
       PLIB_USART_TransmitterDisable(g_hw_settings.usart);
       PLIB_USART_Disable(g_hw_settings.usart);
       PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
-      Transceiver_ResetToMark();
+      ResetToMark();
       g_transceiver.state = STATE_C_TX_READY;
       // Fall through
     case STATE_C_TX_READY:
@@ -956,12 +989,9 @@ void Transceiver_Tasks() {
       // @pre RX InputCapture is disabled.
       // @pre line in marking state
 
-      // Dequeue frame and set break.
-      g_transceiver.active = g_transceiver.next;
-      g_transceiver.next = NULL;
+      TakeNextBuffer();
 
       // Reset state
-      g_transceiver.data_index = 0;
       g_transceiver.found_expected_length = false;
       g_transceiver.expected_length = 0;
       g_transceiver.result = T_RESULT_TX_OK;
@@ -1000,7 +1030,7 @@ void Transceiver_Tasks() {
         PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
         PLIB_TMR_Stop(TMR_ID_3);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
-        Transceiver_ResetToMark();
+        ResetToMark();
         g_transceiver.state = STATE_C_RX_TIMEOUT;
       }
       break;
@@ -1015,7 +1045,7 @@ void Transceiver_Tasks() {
         // Break was too long
         g_transceiver.result = T_RESULT_RX_INVALID;
         PLIB_TMR_Stop(TMR_ID_3);
-        Transceiver_ResetToMark();
+        ResetToMark();
         g_transceiver.state = STATE_C_COMPLETE;
       } else {
         SYS_INT_SourceEnable(INT_SOURCE_INPUT_CAPTURE_2);
@@ -1039,7 +1069,7 @@ void Transceiver_Tasks() {
         PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
         PLIB_TMR_Stop(TMR_ID_3);
-        Transceiver_ResetToMark();
+        ResetToMark();
         g_transceiver.state = STATE_C_RX_TIMEOUT;
       }
       break;
@@ -1054,7 +1084,7 @@ void Transceiver_Tasks() {
         PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
         PLIB_TMR_Stop(TMR_ID_3);
-        Transceiver_ResetToMark();
+        ResetToMark();
         // We got at least a falling edge, so this should probably be
         // considered a collision, rather than a timeout.
         g_transceiver.state = STATE_C_COMPLETE;
@@ -1124,9 +1154,7 @@ void Transceiver_Tasks() {
       }
 
       if (ok) {
-        g_transceiver.free_list[g_transceiver.free_size] = g_transceiver.active;
-        g_transceiver.free_size++;
-        g_transceiver.active = NULL;
+        FreeActiveBuffer();
         CheckForModeChange();
       }
       break;
@@ -1136,7 +1164,7 @@ void Transceiver_Tasks() {
       PLIB_USART_ReceiverDisable(g_hw_settings.usart);
       PLIB_USART_TransmitterDisable(g_hw_settings.usart);
       PLIB_USART_Enable(g_hw_settings.usart);
-      Transceiver_FlushRX();
+      UART_FlushRX();
 
       // Put us into RX mode
       EnableRX();
@@ -1346,7 +1374,7 @@ void Transceiver_Reset() {
   SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
   SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_ERROR);
 
-  // TODO(simon): Rebuild free list
+  InitializeBuffers();
 
   // Reset Timer
   SYS_INT_SourceDisable(INT_SOURCE_TIMER_3);
@@ -1364,13 +1392,13 @@ void Transceiver_Reset() {
   PLIB_USART_Disable(g_hw_settings.usart);
 
   // Reset buffers in case we got into a weird state.
-  Transceiver_InitializeBuffers();
+  InitializeBuffers();
 
   // Reset all timing configuration.
-  Transceiver_ResetTimingSettings();
+  ResetTimingSettings();
 
   // Set us back into the TX Mark state.
-  Transceiver_ResetToMark();
+  ResetToMark();
 
   CheckForModeChange();
 }
