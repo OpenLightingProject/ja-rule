@@ -61,7 +61,7 @@ void APP_Initialize(void) {
     .rx_enable_bit = TRANSCEIVER_TX_ENABLE,
     .tx_enable_bit = TRANSCEIVER_RX_ENABLE,
   };
-  Transceiver_Initialize(&transceiver_settings, NULL);
+  Transceiver_Initialize(&transceiver_settings, NULL, NULL);
 
   RDMResponderSettings responder_settings = {
     .identify_port = RDM_RESPONDER_PORT,

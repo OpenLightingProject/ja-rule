@@ -23,7 +23,8 @@
  *
  * This module handles communications on the RS485 line.
  *
- * The transceiver can be in either controller or responder mode.
+ * The transceiver can be in either controller or responder mode. Modes can be
+ * changed with Transceiver_SetMode().
  *
  * @par Controller Mode
  *
@@ -39,7 +40,8 @@
  * @par Responder Mode
  *
  * In responder mode, the TransceiverEventCallback will be run when a frame is
- *   received.
+ *   received. The handler should call Transceiver_QueueRDMResponse() to send a
+ *   response frame.
  *
  * @addtogroup transceiver
  * @{
@@ -53,6 +55,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "iovec.h"
 #include "system_config.h"
 #include "peripheral/ports/plib_ports.h"
 #include "peripheral/usart/plib_usart.h"
@@ -60,6 +63,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief The operating modes of the transciever.
+ */
+typedef enum {
+  T_MODE_CONTROLLER,  //!< An RDM controller / source of DMX512
+  T_MODE_RESPONDER,  //!< An RDM device / receiver of DMX512.
+} TransceiverMode;
 
 /**
  * @brief Identifies the type of transceiver operation.
@@ -204,13 +215,32 @@ typedef struct {
 /**
  * @brief Initialize the transceiver.
  * @param settings The settings to use for the transceiver.
- * @param callback The callback to run when a transceiver event occurs.
+ * @param tx_callback The callback to run when a transceiver TX event occurs.
+ * @param rx_callback The callback to run when a transceiver RX event occurs.
  *
- * If PIPELINE_TRANSCEIVER_EVENT is defined in system_pipeline.h, the macro
- * will override this value.
+ * If PIPELINE_TRANSCEIVER_TX_EVENT is defined in system_pipeline.h, the macro
+ * will override the value of tx_callback.
+ * If PIPELINE_TRANSCEIVER_RX_EVENT is defined in system_pipeline.h, the macro
+ * will override the value of rx_callback.
  */
 void Transceiver_Initialize(const TransceiverHardwareSettings *settings,
-                            TransceiverEventCallback callback);
+                            TransceiverEventCallback tx_callback,
+                            TransceiverEventCallback rx_callback);
+
+/**
+ * @brief Change the operating mode of the transceiver.
+ * @param mode the new operating mode.
+ *
+ * After any in-progress operation completes, then next call to
+ * Transceiver_Tasks() will result in the mode change.
+ */
+void Transceiver_SetMode(TransceiverMode mode);
+
+/**
+ * @brief The operating mode of the transceiver.
+ * @returns the current operating mode.
+ */
+TransceiverMode Transceiver_GetMode();
 
 /**
  * @brief Perform the periodic transceiver tasks.
@@ -264,6 +294,18 @@ bool Transceiver_QueueRDMDUB(uint8_t token, const uint8_t* data,
  */
 bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
                                  unsigned int size, bool is_broadcast);
+
+/**
+ * @brief Queue an RDM Response.
+ * @param include_break true if this response requires a break
+ * @param iov The data to send in the response
+ * @param iov_count The number of IOVecs.
+ * @returns true if the frame was accepted and buffered, false if the transmit
+ *   buffer is full.
+ */
+bool Transceiver_QueueRDMResponse(bool include_break,
+                                  const IOVec* iov,
+                                  unsigned int iov_count);
 
 /**
  * @brief Reset the transceiver state.

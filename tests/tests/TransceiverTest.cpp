@@ -51,12 +51,12 @@ class TransceiverTest : public testing::Test {
 
 TEST_F(TransceiverTest, testUnsetTransceiver) {
   TransceiverHardwareSettings settings = DefaultSettings();
-  Transceiver_Initialize(&settings, NULL);
+  Transceiver_Initialize(&settings, NULL, NULL);
 }
 
 TEST_F(TransceiverTest, testSetBreakTime) {
   TransceiverHardwareSettings settings = DefaultSettings();
-  Transceiver_Initialize(&settings, NULL);
+  Transceiver_Initialize(&settings, NULL, NULL);
 
   EXPECT_EQ(176, Transceiver_GetBreakTime());
   EXPECT_FALSE(Transceiver_SetBreakTime(43));
@@ -71,7 +71,7 @@ TEST_F(TransceiverTest, testSetBreakTime) {
 
 TEST_F(TransceiverTest, testSetMarkTime) {
   TransceiverHardwareSettings settings = DefaultSettings();
-  Transceiver_Initialize(&settings, NULL);
+  Transceiver_Initialize(&settings, NULL, NULL);
 
   EXPECT_EQ(12, Transceiver_GetMarkTime());
   EXPECT_FALSE(Transceiver_SetMarkTime(3));
@@ -86,7 +86,7 @@ TEST_F(TransceiverTest, testSetMarkTime) {
 
 TEST_F(TransceiverTest, testSetRDMBroadcastListen) {
   TransceiverHardwareSettings settings = DefaultSettings();
-  Transceiver_Initialize(&settings, NULL);
+  Transceiver_Initialize(&settings, NULL, NULL);
 
   EXPECT_EQ(28, Transceiver_GetRDMBroadcastListen());
   EXPECT_TRUE(Transceiver_SetRDMBroadcastListen(1));
@@ -99,7 +99,7 @@ TEST_F(TransceiverTest, testSetRDMBroadcastListen) {
 
 TEST_F(TransceiverTest, testSetRDMWaitTime) {
   TransceiverHardwareSettings settings = DefaultSettings();
-  Transceiver_Initialize(&settings, NULL);
+  Transceiver_Initialize(&settings, NULL, NULL);
 
   EXPECT_EQ(28, Transceiver_GetRDMWaitTime());
   EXPECT_FALSE(Transceiver_SetRDMWaitTime(9));
@@ -114,7 +114,7 @@ TEST_F(TransceiverTest, testSetRDMWaitTime) {
 
 TEST_F(TransceiverTest, testSetDUBResponseTime) {
   TransceiverHardwareSettings settings = DefaultSettings();
-  Transceiver_Initialize(&settings, NULL);
+  Transceiver_Initialize(&settings, NULL, NULL);
 
   EXPECT_EQ(29000, Transceiver_GetRDMDUBResponseTime());
   EXPECT_FALSE(Transceiver_SetRDMDUBResponseTime(9999));
