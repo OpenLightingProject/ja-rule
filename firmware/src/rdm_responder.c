@@ -62,8 +62,8 @@ typedef struct {
   // Mute Settings
   bool is_muted;
   CoarseTimer_Value mute_timer;
-  PORTS_CHANNEL mute_port;  //!< The port to use for the identify signal.
-  PORTS_BIT_POS mute_bit;  //!< The port bit to use for the identify signal.
+  PORTS_CHANNEL mute_port;  //!< The port to use for the mute signal.
+  PORTS_BIT_POS mute_bit;  //!< The port bit to use for the mute signal.
 
   // Identify settings
   bool identify_on;
