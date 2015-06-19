@@ -1185,7 +1185,8 @@ void Transceiver_Tasks() {
           return;
         }
 
-        g_transceiver.active = g_transceiver.free_list[g_transceiver.free_size - 1];
+        g_transceiver.active =
+          g_transceiver.free_list[g_transceiver.free_size - 1];
         g_transceiver.free_size--;
       }
 
