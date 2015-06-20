@@ -77,7 +77,7 @@ before_install:
 
 after_success:
  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/tests/cov-int/scm_log.txt; fi
- - if [ "$TASK" = "coverage" ]; then cd tests; ls -l src/; coveralls --verbose --gcov /usr/bin/gcov-5 -b . -e include -e mocks -e config.h -e harmony -e system_config -E '.*Test\.cpp$' --gcov-options '\-lp' --follow-symlinks > /dev/null; fi
+ - if [ "$TASK" = "coverage" ]; then cd tests; ls -l src/.libs; ls -l src/; coveralls --verbose --gcov /usr/bin/gcov-5 -b . -e include -e mocks -e config.h -e harmony -e system_config -E '.*Test\.cpp$' --gcov-options '\-lp' --follow-symlinks > /dev/null; fi
 
 after_failure:
  - cat /home/travis/build/${TRAVIS_REPO_SLUG}/tests/config.log
