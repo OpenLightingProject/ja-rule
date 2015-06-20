@@ -223,7 +223,7 @@ static inline void RebaseTimer(uint16_t last_event) {
  * @param ticks The number of ticks.
  * TODO(simon): see if we can use this elsewhere
  */
-static inline void Transceiver_SetTimer(unsigned int ticks) {
+static inline void SetTimer(unsigned int ticks) {
   PLIB_TMR_Counter16BitClear(TMR_ID_3);
   PLIB_TMR_Period16BitSet(TMR_ID_3, ticks);
   SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
@@ -304,7 +304,7 @@ void UART_FlushRX() {
 }
 
 /*
- * @brief Pull data out the UART RX queue.
+ * @brief Pull data out of the UART RX queue.
  * @returns true if the RX buffer is now full.
  */
 bool UART_RXBytes() {
@@ -1006,7 +1006,7 @@ void Transceiver_Tasks() {
       g_transceiver.state = STATE_C_IN_BREAK;
       PLIB_TMR_PrescaleSelect(TMR_ID_3 , TMR_PRESCALE_VALUE_1);
       g_transceiver.tx_frame_start = CoarseTimer_GetTime();
-      Transceiver_SetTimer(g_timing_settings.break_ticks);
+      SetTimer(g_timing_settings.break_ticks);
       SetBreak();
       PLIB_TMR_Start(TMR_ID_3);
 
