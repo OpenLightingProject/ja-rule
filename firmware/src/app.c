@@ -86,7 +86,9 @@ void APP_Tasks(void) {
   USBTransport_Tasks();
   Transceiver_Tasks();
   USBConsole_Tasks();
-  RDMResponder_Tasks();
+  if (Transceiver_GetMode() == T_MODE_RESPONDER) {
+    RDMResponder_Tasks();
+  }
 }
 
 void APP_Reset() {

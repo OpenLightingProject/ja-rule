@@ -418,7 +418,6 @@ void USBConsole_Tasks() {
         case 'M':
           Transceiver_SetMode(Transceiver_GetMode() == T_MODE_CONTROLLER ?
                               T_MODE_RESPONDER : T_MODE_CONTROLLER);
-          SysLog_Print(SYSLOG_INFO, "Switched mode");
           break;
         case 'r':
           APP_Reset();

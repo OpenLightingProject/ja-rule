@@ -73,10 +73,10 @@ typedef enum {
   STATE_R_RX_BREAK = 17,  //!< In break
   STATE_R_RX_MARK = 18,  //!< In mark after break
   STATE_R_RX_DATA = 19,  //!< Receiving data
-  STATE_R_TX_WAITING = 20,
-  STATE_R_TX_BREAK = 21,
-  STATE_R_TX_MARK = 22,
-  STATE_R_TX_DATA = 23,
+  STATE_R_TX_WAITING = 20,  //!< Delay before response
+  STATE_R_TX_BREAK = 21,  //!< In TX Break
+  STATE_R_TX_MARK = 22,  //!< In TX Mark
+  STATE_R_TX_DATA = 23,  //!< Transmitting data.
   STATE_R_TX_DRAIN = 24,  //!< Wait for last byte to be sent.
   STATE_R_TX_COMPLETE = 80,
 
@@ -221,7 +221,6 @@ static inline void RebaseTimer(uint16_t last_event) {
 /*
  * @brief Start a period timer.
  * @param ticks The number of ticks.
- * TODO(simon): see if we can use this elsewhere
  */
 static inline void SetTimer(unsigned int ticks) {
   PLIB_TMR_Counter16BitClear(TMR_ID_3);
@@ -791,7 +790,6 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         PLIB_USART_TransmitterInterruptModeSelect(
             g_hw_settings.usart, USART_TRANSMIT_FIFO_IDLE);
         g_transceiver.state = STATE_R_TX_DRAIN;
-        FreeActiveBuffer();
       }
     } else if (g_transceiver.state == STATE_R_TX_DRAIN) {
       EnableRX();
@@ -893,12 +891,6 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
   g_hw_settings = *settings;
   g_tx_callback = tx_callback;
   g_rx_callback = rx_callback;
-  // TODO(simon): We need to decide what our startup state is.
-  /*
-  g_transceiver.state = STATE_C_INITIALIZE;
-  g_transceiver.mode = T_MODE_CONTROLLER;
-  g_transceiver.desired_mode = T_MODE_CONTROLLER;
-  */
 
   g_transceiver.state = STATE_R_INITIALIZE;
   g_transceiver.mode = T_MODE_RESPONDER;
@@ -957,6 +949,12 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
 }
 
 void Transceiver_SetMode(TransceiverMode mode) {
+  if (mode == T_MODE_CONTROLLER) {
+    SysLog_Print(SYSLOG_INFO, "Switching to Controller mode");
+  } else {
+    SysLog_Print(SYSLOG_INFO, "Switching to Responder mode");
+  }
+
   g_transceiver.desired_mode = mode;
 }
 
@@ -1258,8 +1256,10 @@ void Transceiver_Tasks() {
       // noop, waiting for timer event.
       break;
     case STATE_R_TX_DATA:
-    case STATE_R_TX_DRAIN:
       // noop
+      break;
+    case STATE_R_TX_DRAIN:
+      FreeActiveBuffer();
       break;
     case STATE_R_TX_COMPLETE:
       PLIB_TMR_Period16BitSet(TMR_ID_3, 65535);
