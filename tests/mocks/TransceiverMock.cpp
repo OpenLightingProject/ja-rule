@@ -37,6 +37,19 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
   }
 }
 
+void Transceiver_SetMode(TransceiverMode mode) {
+  if (g_transceiver_mock) {
+    g_transceiver_mock->SetMode(mode);
+  }
+}
+
+TransceiverMode Transceiver_GetMode() {
+  if (g_transceiver_mock) {
+    return g_transceiver_mock->GetMode();
+  }
+  return T_MODE_RESPONDER;
+}
+
 void Transceiver_Tasks() {
   if (g_transceiver_mock) {
     return g_transceiver_mock->Tasks();

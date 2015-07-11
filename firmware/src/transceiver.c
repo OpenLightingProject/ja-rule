@@ -49,6 +49,9 @@
 
 #define BUFFER_SIZE (DMX_FRAME_SIZE + 1)
 
+#define RDM_INTERSLOT_TIMEOUT 21  // In 10ths of a ms
+#define DMX_INTERSLOT_TIMEOUT 10000  // In 10ths of a ms
+
 typedef enum {
   // Controller states
   STATE_C_INITIALIZE = 0,  //!< Initialize controller state.
@@ -148,6 +151,12 @@ typedef struct {
    * @brief The approximate time the last byte arrived.
    */
   uint16_t last_byte;
+
+  /**
+   * @brief The approximate time the last byte arrived, accurate to 10ths of a
+   * millisecond.
+   */
+  CoarseTimer_Value last_byte_coarse;
 
   TransceiverOperationResult result;
 
@@ -333,6 +342,7 @@ bool UART_RXBytes() {
     }
   }
   g_transceiver.last_byte = PLIB_TMR_Counter16BitGet(TMR_ID_3);
+  g_transceiver.last_byte_coarse = CoarseTimer_GetTime();
   return g_transceiver.data_index >= BUFFER_SIZE;
 }
 
@@ -378,34 +388,6 @@ static void TakeNextBuffer() {
 }
 
 // ----------------------------------------------------------------------------
-/*
- * @brief Check for a mode change.
- */
-static void CheckForModeChange() {
-  if (g_transceiver.mode == g_transceiver.desired_mode) {
-    switch (g_transceiver.mode) {
-      case T_MODE_CONTROLLER:
-        g_transceiver.state = STATE_C_TX_READY;
-        break;
-      case T_MODE_RESPONDER:
-        g_transceiver.state = STATE_R_RX_BREAK;
-        break;
-    }
-  } else {
-    // Changing mode
-    g_transceiver.mode = g_transceiver.desired_mode;
-    SysLog_Print(SYSLOG_INFO, "T mode now %d", g_transceiver.mode);
-    switch (g_transceiver.mode) {
-      case T_MODE_CONTROLLER:
-        g_transceiver.state = STATE_C_INITIALIZE;
-        break;
-      case T_MODE_RESPONDER:
-        g_transceiver.state = STATE_R_INITIALIZE;
-        break;
-    }
-  }
-}
-
 static inline void PrepareRDMResponse() {
   // Rebase the timer to when the last byte was received
   uint16_t now = PLIB_TMR_Counter16BitGet(TMR_ID_3);
@@ -977,6 +959,15 @@ void Transceiver_Tasks() {
       g_transceiver.state = STATE_C_TX_READY;
       // Fall through
     case STATE_C_TX_READY:
+      if (g_transceiver.desired_mode != T_MODE_CONTROLLER) {
+        TakeNextBuffer();
+        FreeActiveBuffer();
+        SysLog_Print(SYSLOG_INFO, "Switched to responder mode");
+        g_transceiver.mode = g_transceiver.desired_mode;
+        g_transceiver.state = STATE_R_INITIALIZE;
+        break;
+      }
+
       if (!g_transceiver.next) {
         return;
       }
@@ -1153,7 +1144,7 @@ void Transceiver_Tasks() {
 
       if (ok) {
         FreeActiveBuffer();
-        CheckForModeChange();
+        g_transceiver.state = STATE_C_TX_READY;
       }
       break;
     case STATE_R_INITIALIZE:
@@ -1209,23 +1200,17 @@ void Transceiver_Tasks() {
     case STATE_R_RX_MBB:
       // noop, waiting for IC event
 
-      /*
-      // Check if there is a mode change request while we're waiting for the
-      // break.
-      // The problem is, that we're hardly ever in this state!
-      SYS_INT_SourceDisable(INT_SOURCE_TIMER_3);
       SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
-
       if (g_transceiver.desired_mode != T_MODE_RESPONDER) {
-        // TODO(simon): careful, if we switch modes here we'll lose the active
-        // buffer!
-        CheckForModeChange();
+        g_transceiver.mode = g_transceiver.desired_mode;
+        PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
+        PLIB_TMR_Stop(TMR_ID_3);
+        FreeActiveBuffer();
+        SysLog_Print(SYSLOG_INFO, "Switched to controller mode");
+        g_transceiver.state = STATE_C_INITIALIZE;
         break;
       }
-      SYS_INT_SourceEnable(INT_SOURCE_TIMER_3);
       SYS_INT_SourceEnable(INT_SOURCE_INPUT_CAPTURE_2);
-      break;
-       */
       break;
 
     case STATE_R_RX_BREAK:
@@ -1237,6 +1222,21 @@ void Transceiver_Tasks() {
 
     case STATE_R_RX_DATA:
       SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
+
+      if (g_transceiver.data_index) {
+        // Got at least one byte, so we have the start code.
+        // Check the time since the last byte.
+        if ((g_transceiver.active->data[0] == RDM_START_CODE &&
+             CoarseTimer_HasElapsed(g_transceiver.last_byte_coarse,
+                                    RDM_INTERSLOT_TIMEOUT)) ||
+            CoarseTimer_HasElapsed(g_transceiver.last_byte_coarse,
+                                   DMX_INTERSLOT_TIMEOUT)) {
+          // RDM inter-slot timeout
+          PLIB_USART_ReceiverDisable(g_hw_settings.usart);
+          g_transceiver.state = STATE_R_RX_PREPARE;
+          break;
+        }
+      }
 
       if (g_transceiver.event_index != g_transceiver.data_index) {
         RXFrameEvent();
@@ -1267,7 +1267,9 @@ void Transceiver_Tasks() {
       g_transceiver.state = STATE_R_RX_PREPARE;
       break;
     case STATE_RESET:
-      CheckForModeChange();
+      g_transceiver.mode = g_transceiver.desired_mode;
+      g_transceiver.state = (g_transceiver.mode == T_MODE_RESPONDER ?
+          STATE_R_INITIALIZE : STATE_C_INITIALIZE);
       break;
     case STATE_ERROR:
       break;
@@ -1401,7 +1403,7 @@ void Transceiver_Reset() {
   // Set us back into the TX Mark state.
   ResetToMark();
 
-  CheckForModeChange();
+  g_transceiver.state = STATE_RESET;
 }
 
 bool Transceiver_SetBreakTime(uint16_t break_time_us) {

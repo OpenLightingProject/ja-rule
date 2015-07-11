@@ -31,6 +31,8 @@ class MockTransceiver {
   MOCK_METHOD3(Initialize, void(const TransceiverHardwareSettings* settings,
                                 TransceiverEventCallback tx_callback,
                                 TransceiverEventCallback rx_callback));
+  MOCK_METHOD1(SetMode, void(TransceiverMode mode));
+  MOCK_METHOD0(GetMode, TransceiverMode());
   MOCK_METHOD0(Tasks, void());
   MOCK_METHOD3(QueueDMX, bool(uint8_t token, const uint8_t* data,
                               unsigned int size));
