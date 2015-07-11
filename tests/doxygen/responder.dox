@@ -1,0 +1,12 @@
+/**
+ * @page responder_sm Responder State Machine
+ * @brief The Responder State Machine
+ *
+ * [TOC]
+ *
+ * @section responder_sm_overview Overview
+ *
+ * The state diagram for the responder is shown below.
+ *
+ * @dotfile responder.dot "Responder State Machine"
+ */

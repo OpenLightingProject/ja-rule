@@ -1,0 +1,73 @@
+digraph {
+  {rank=source; STATE_UNINITIALLIZED; };
+
+  // Nodes
+  STATE_UNINITIALLIZED [label="Uninitialized" shape="rectangle"];
+  STATE_TX_READY [label="Waiting for TX request"];
+  STATE_IN_BREAK [label="In Break"];
+  STATE_IN_MARK [label="In Mark"];
+  STATE_TX_DATA [label="Transmit data"];
+  BRANCH_TX_ISR_DECISION [label="TX buffer empty?" shape="diamond"];
+  STATE_TX_DATA_BUFFER_EMPTY [label="Waiting for TX to complete"];
+  BRANCH_IS_RDM [label="RDM frame?" shape="diamond"];
+  BRANCH_IS_RDM_DUB [label="Is DUB?" shape="diamond"];
+  BRANCH_IS_RDM_BROADCAST [label="Is broadcast?" shape="diamond"];
+  BRANCH_RDM_BCAST_WAIT_TIME [label="Broadcast wait is?" shape="diamond"];
+
+  STATE_RDM_WAIT_FOR_BREAK [label="Wait for break"];
+  STATE_RDM_WAIT_FOR_MARK [label="Wait for mark"];
+  BRANCH_CHECK_BREAK_LENGTH [label="Valid break?" shape="diamond"];
+  STATE_RX_DATA [label="Receive data"];
+  BRANCH_RX_CHECK_SIZE [label="RX buffer full" shape="diamond"];
+  BRANCH_DUB_CHECK_SIZE [label="RX buffer full" shape="diamond"];
+  STATE_RX_WAIT_FOR_DUB [label="Wait for DUB response"];
+  STATE_RX_IN_DUB [label="In DUB Response"];
+  STATE_RX_TIMEOUT [label="Timeout"];
+
+  STATE_COMPLETE [label="Run handler"];
+  STATE_BACKOFF [label="Backoff delay"];
+
+  // Edges
+  STATE_UNINITIALLIZED -> STATE_TX_READY;
+  STATE_TX_READY -> STATE_IN_BREAK [label="Frame arrives"];
+  STATE_IN_BREAK -> STATE_IN_MARK [label="Timer ISR"];
+  STATE_IN_MARK -> STATE_TX_DATA [label="Timer ISR"];
+  STATE_TX_DATA -> BRANCH_TX_ISR_DECISION [label="UART TX ISR"];
+  BRANCH_TX_ISR_DECISION -> STATE_TX_DATA_BUFFER_EMPTY [label="Yes"];
+  BRANCH_TX_ISR_DECISION:sw -> STATE_TX_DATA [label="No"];
+  STATE_TX_DATA_BUFFER_EMPTY -> BRANCH_IS_RDM [label="TX ISR"];
+  BRANCH_IS_RDM -> STATE_COMPLETE [label="No"];
+  BRANCH_IS_RDM -> BRANCH_IS_RDM_DUB [label="Yes"];
+  BRANCH_IS_RDM_DUB -> BRANCH_IS_RDM_BROADCAST [label="No"];
+
+  // DUB branch
+  BRANCH_IS_RDM_DUB -> STATE_RX_WAIT_FOR_DUB [label="Yes"];
+  STATE_RX_WAIT_FOR_DUB -> STATE_RX_TIMEOUT [label="timeout"];
+  STATE_RX_WAIT_FOR_DUB -> STATE_RX_IN_DUB [label="Falling edge"];
+  STATE_RX_IN_DUB -> STATE_RX_TIMEOUT [label="timeout"];
+  STATE_RX_IN_DUB -> BRANCH_DUB_CHECK_SIZE [label="UART RX"];
+  BRANCH_DUB_CHECK_SIZE -> STATE_RX_IN_DUB [label="No"];
+  BRANCH_DUB_CHECK_SIZE -> STATE_COMPLETE [label="Yes"];
+  STATE_RX_IN_DUB -> STATE_COMPLETE [label="UART Error"];
+
+  // RDM RX branch
+  BRANCH_IS_RDM_BROADCAST -> BRANCH_RDM_BCAST_WAIT_TIME [label="Yes"];
+  BRANCH_IS_RDM_BROADCAST -> STATE_RDM_WAIT_FOR_BREAK [label="No"];
+  BRANCH_RDM_BCAST_WAIT_TIME -> STATE_COMPLETE [label="0s"];
+  BRANCH_RDM_BCAST_WAIT_TIME -> STATE_RDM_WAIT_FOR_BREAK  [label="Non 0"];
+  STATE_RDM_WAIT_FOR_BREAK:s -> STATE_RX_TIMEOUT [label="timeout"];
+  STATE_RDM_WAIT_FOR_BREAK -> STATE_RDM_WAIT_FOR_MARK [label="falling\nedge"];
+  STATE_RDM_WAIT_FOR_MARK:e -> STATE_RX_TIMEOUT [label="timeout"];
+  STATE_RDM_WAIT_FOR_MARK -> BRANCH_CHECK_BREAK_LENGTH [label="rising edge"];
+  BRANCH_CHECK_BREAK_LENGTH -> STATE_COMPLETE [label="No"];
+  BRANCH_CHECK_BREAK_LENGTH -> STATE_RX_DATA [label="Yes"];
+  STATE_RX_DATA -> STATE_RX_TIMEOUT [label="timeout"];
+  STATE_RX_DATA -> BRANCH_RX_CHECK_SIZE [label="UART\nRX"];
+  BRANCH_RX_CHECK_SIZE:sw -> STATE_RX_DATA [label="No"];
+  BRANCH_RX_CHECK_SIZE:se -> STATE_COMPLETE [label="Yes"];
+  STATE_RX_DATA -> STATE_COMPLETE [label="UART\nError"];
+
+  STATE_RX_TIMEOUT -> STATE_COMPLETE;
+  STATE_COMPLETE -> STATE_BACKOFF;
+  STATE_BACKOFF -> STATE_TX_READY [label="Time exceeded"];
+}

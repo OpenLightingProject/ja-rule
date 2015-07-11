@@ -1,0 +1,63 @@
+digraph {
+  {rank=source; STATE_R_UNINITIALLIZED; };
+
+  // Nodes
+  STATE_R_UNINITIALLIZED [label="Uninitialized" shape="rectangle"];
+  STATE_R_INITIALLIZE [label="Initialize responder state"];
+  STATE_R_RX_PREPARE [label="Prepare to receive frame"];
+  STATE_R_RX_MBB [label="Mark before Break"];
+  STATE_R_RX_BREAK [label="In break"];
+  STATE_R_RX_MARK [label="In Mark"];
+  STATE_R_RX_DATA [label="Receive data"];
+  STATE_R_TX_WAITING [label="Delay before response"];
+  STATE_R_TX_BREAK [label="In TX Break"];
+  STATE_R_TX_MARK [label="In TX Mark"];
+  STATE_R_TX_DATA [label="TX Data"];
+  STATE_R_TX_DRAIN [label="Wait for TX to complete"];
+  STATE_R_TX_COMPLETE [label="Complete"];
+
+  // Processing steps
+  STEP_R_TRANSCEIVER_EVENT [label="Signal Transceiver Event"];
+
+  // Conditionals
+  BRANCH_RX_BREAK_DURATION [label="Break length > 88uS?" shape="diamond"];
+  BRANCH_RX_MARK_DURATION [label="Mark length > 8uS?" shape="diamond"];
+  BRANCH_RX_FRAMING_ERROR [label="Framing error?" shape="diamond"];
+  BRANCH_RX_BUFFER_FULL [label="Rx Buffer Full?" shape="diamond"];
+  BRANCH_RX_SHOULD_RESPOND [label="Requires Response?" shape="diamond"];
+  BRANCH_RX_REQUIRES_BREAK [label="Requires break?" shape="diamond"];
+  BRANCH_R_TX_LAST_BYTE [label="Last byte?" shape="diamond"];
+
+  // Edges
+  STATE_R_UNINITIALLIZED -> STATE_R_INITIALLIZE;
+  STATE_R_INITIALLIZE -> STATE_R_RX_PREPARE;
+  STATE_R_RX_PREPARE -> STATE_R_RX_MBB;
+  STATE_R_RX_MBB -> STATE_R_RX_BREAK [label="Falling edge"];
+  STATE_R_RX_BREAK -> BRANCH_RX_BREAK_DURATION [label="Rising edge"];
+  BRANCH_RX_BREAK_DURATION -> STATE_R_RX_MBB [label="No"];
+  BRANCH_RX_BREAK_DURATION -> STATE_R_RX_MARK [label="Yes"];
+  STATE_R_RX_MARK -> BRANCH_RX_MARK_DURATION [label="Falling edge"];
+  BRANCH_RX_MARK_DURATION -> STATE_R_RX_BREAK [label="No"];
+  BRANCH_RX_MARK_DURATION -> STATE_R_RX_DATA [label="Yes"];
+  STATE_R_RX_DATA -> BRANCH_RX_FRAMING_ERROR [label="Receive byte"];
+  BRANCH_RX_FRAMING_ERROR -> STATE_R_RX_BREAK [label="Yes"];
+  BRANCH_RX_FRAMING_ERROR -> BRANCH_RX_BUFFER_FULL [label="No"];
+  BRANCH_RX_BUFFER_FULL -> STEP_R_TRANSCEIVER_EVENT [label="No"];
+  // TODO: Need to decide what to do here
+  // BRANCH_RX_BUFFER_FULL -> ???
+
+  STEP_R_TRANSCEIVER_EVENT -> BRANCH_RX_SHOULD_RESPOND;
+
+  BRANCH_RX_SHOULD_RESPOND -> STATE_R_RX_DATA [label="No"];
+  BRANCH_RX_SHOULD_RESPOND -> STATE_R_TX_WAITING [label="Yes"];
+  STATE_R_TX_WAITING -> BRANCH_RX_REQUIRES_BREAK [label="Timer event"];
+  BRANCH_RX_REQUIRES_BREAK -> STATE_R_TX_DATA [label="No"];
+  BRANCH_RX_REQUIRES_BREAK -> STATE_R_TX_BREAK [label="Yes"];
+  STATE_R_TX_BREAK -> STATE_R_TX_MARK [label="Timer event"];
+  STATE_R_TX_MARK -> STATE_R_TX_DATA [label="Timer event"];
+  STATE_R_TX_DATA -> BRANCH_R_TX_LAST_BYTE [label="Byte sent"];
+  BRANCH_R_TX_LAST_BYTE -> STATE_R_TX_DATA [label="No"];
+  BRANCH_R_TX_LAST_BYTE -> STATE_R_TX_DRAIN [label="Yes"];
+  STATE_R_TX_DRAIN -> STATE_R_TX_COMPLETE [label="UART complete"];
+  STATE_R_TX_COMPLETE -> STATE_R_RX_PREPARE;
+}
