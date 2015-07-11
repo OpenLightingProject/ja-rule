@@ -17,7 +17,7 @@ extern "C" {
 #endif
 
 /**
- * @brief The port used used by the RDM Responder.
+ * @brief The port used by the RDM Responder.
  */
 #define RDM_RESPONDER_PORT
 

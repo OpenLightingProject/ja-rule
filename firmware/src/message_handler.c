@@ -198,7 +198,6 @@ void MessageHandler_HandleMessage(const Message *message) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0);
       }
       break;
-      break;
     case COMMAND_RDM_REQUEST:
       if (!Transceiver_QueueRDMRequest(message->token, message->payload,
                                        message->length, false)) {
