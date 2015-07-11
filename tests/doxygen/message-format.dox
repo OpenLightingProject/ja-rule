@@ -474,11 +474,7 @@
  * The response contains no data.
  *
  * @returns @ref RC_OK or @ref RC_BAD_PARAM if the value was out of range.
-
-
-
-
-
+ *
  * @subsection message_cmd_txdmx Transmit DMX512
  *
  * Sends a single DMX512, Null Start Code frame.
