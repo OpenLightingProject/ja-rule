@@ -211,13 +211,13 @@ typedef enum {
 
   // RDM
   /**
-   * @brief Send a RDM Discovery Unique Branch and wait for a response.
+   * @brief Send an RDM Discovery Unique Branch and wait for a response.
    * See @ref message_cmd_rdmdub.
    */
   COMMAND_RDM_DUB_REQUEST = 0x40,
 
   /**
-   * @brief Send a RDM Get / Set command.
+   * @brief Send an RDM Get / Set command.
    * See @ref message_cmd_rdm
    */
   COMMAND_RDM_REQUEST = 0x41,
@@ -302,14 +302,14 @@ typedef enum {
 #define DEFAULT_RDM_RESPONSE_TIMEOUT 28
 
 /**
- * @brief The default maximum time a RDM DUB response can take.
+ * @brief The default maximum time an RDM DUB response can take.
  *
  * Measured in in 10ths of a microsecond. From Line 3, Table 3-3, E1.20.
  */
 #define DEFAULT_RDM_DUB_RESPONSE_LIMIT 29000
 
 /**
- * @brief The default time to wait before sending a RDM responder.
+ * @brief The default time to wait before sending an RDM response.
  * @sa Transceiver_SetRDMResponderDelay.
  *
  * Measured in in 10ths of a microsecond. From Table 3-4, E1.20.
@@ -335,22 +335,6 @@ typedef enum {
  * in E1.20.
  */
 #define CONTROLLER_RX_BREAK_TIME_MAX 3520
-
-/**
- * @brief The minimum break time for responders to receive
- *
- * Measured in 10ths of a microsecond. The value is from line 1 of Table 3-3
- * in E1.20.
- */
-#define RESPONDER_RX_BREAK_TIME_MIN  880
-
-/**
- * @brief The maximum break time for responders to receive.
- *
- * Measured in 10ths of a millisecond. The value is from line 1 of Table 3-3
- * in E1.20.
- */
-#define RESPONDER_RX_BREAK_TIME_MAX  10000
 
 #endif  // FIRMWARE_SRC_CONSTANTS_H_
 
