@@ -57,6 +57,8 @@ typedef struct {
 
 StreamDecoderData g_stream_data;
 
+// Public Functions
+// ----------------------------------------------------------------------------
 void StreamDecoder_Initialize(MessageHandler handler) {
   g_stream_data.state = START_OF_MESSAGE;
 #ifndef PIPELINE_HANDLE_MESSAGE

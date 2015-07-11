@@ -32,12 +32,6 @@
 static TransportTXFunction g_message_tx_cb;
 #endif
 
-void MessageHandler_Initialize(TransportTXFunction tx_cb) {
-#ifndef PIPELINE_TRANSPORT_TX
-  g_message_tx_cb = tx_cb;
-#endif
-}
-
 static inline void SendMessage(uint8_t token, Command command, uint8_t rc,
                                const IOVec* iov, unsigned int iov_size) {
 #ifdef PIPELINE_TRANSPORT_TX
@@ -47,14 +41,14 @@ static inline void SendMessage(uint8_t token, Command command, uint8_t rc,
 #endif
 }
 
-void MessageHandler_Echo(const Message *message) {
+static void Echo(const Message *message) {
   IOVec iovec;
   iovec.base = message->payload;
   iovec.length = message->length;
   SendMessage(message->token, ECHO, RC_OK, &iovec, 1);
 }
 
-void MessageHandler_WriteLog(const Message* message) {
+static void WriteLog(const Message* message) {
   Logger_Write(message->payload, message->length);
   if (message->payload[message->length - 1]) {
     // NULL terminate.
@@ -62,9 +56,9 @@ void MessageHandler_WriteLog(const Message* message) {
   }
 }
 
-static inline void SetMode(uint8_t token,
-                           const uint8_t* payload,
-                           unsigned int length) {
+static void SetMode(uint8_t token,
+                    const uint8_t* payload,
+                    unsigned int length) {
   uint8_t mode;
   if (length != sizeof(mode)) {
     SendMessage(token, COMMAND_SET_MODE, RC_BAD_PARAM, NULL, 0);
@@ -74,9 +68,9 @@ static inline void SetMode(uint8_t token,
   SendMessage(token, COMMAND_SET_MODE, RC_OK, NULL, 0);
 }
 
-static inline void MessageHandler_SetBreakTime(uint8_t token,
-                                               const uint8_t* payload,
-                                               unsigned int length) {
+static void SetBreakTime(uint8_t token,
+                         const uint8_t* payload,
+                         unsigned int length) {
   uint16_t break_time;
   if (length != sizeof(break_time)) {
     SendMessage(token, SET_BREAK_TIME, RC_BAD_PARAM, NULL, 0);
@@ -88,7 +82,7 @@ static inline void MessageHandler_SetBreakTime(uint8_t token,
   SendMessage(token, SET_BREAK_TIME, ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
 }
 
-static inline void MessageHandler_ReturnBreakTime(uint8_t token) {
+static void ReturnBreakTime(uint8_t token) {
   uint16_t break_time = Transceiver_GetBreakTime();
   IOVec iovec;
   iovec.base = (uint8_t*) &break_time;
@@ -96,9 +90,9 @@ static inline void MessageHandler_ReturnBreakTime(uint8_t token) {
   SendMessage(token, GET_BREAK_TIME, RC_OK, &iovec, 1);
 }
 
-static inline void MessageHandler_SetMarkTime(uint8_t token,
-                                              const uint8_t* payload,
-                                              unsigned int length) {
+static void SetMarkTime(uint8_t token,
+                        const uint8_t* payload,
+                        unsigned int length) {
   uint16_t mark_time;
   if (length != sizeof(mark_time)) {
     SendMessage(token, SET_MAB_TIME, RC_BAD_PARAM, NULL, 0);
@@ -110,7 +104,7 @@ static inline void MessageHandler_SetMarkTime(uint8_t token,
   SendMessage(token, SET_MAB_TIME, ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
 }
 
-static inline void MessageHandler_ReturnMABTime(uint8_t token) {
+static void ReturnMABTime(uint8_t token) {
   uint16_t mab_time = Transceiver_GetMarkTime();
   IOVec iovec;
   iovec.base = (uint8_t*) &mab_time;
@@ -118,9 +112,9 @@ static inline void MessageHandler_ReturnMABTime(uint8_t token) {
   SendMessage(token, GET_MAB_TIME, RC_OK, &iovec, 1);
 }
 
-static inline void MessageHandler_SetRDMBroadcastListen(uint8_t token,
-                                                        const uint8_t* payload,
-                                                        unsigned int length) {
+static void SetRDMBroadcastListen(uint8_t token,
+                                  const uint8_t* payload,
+                                  unsigned int length) {
   uint16_t time;
   if (length != sizeof(time)) {
     SendMessage(token, SET_RDM_BROADCAST_LISTEN, RC_BAD_PARAM, NULL, 0);
@@ -133,7 +127,7 @@ static inline void MessageHandler_SetRDMBroadcastListen(uint8_t token,
               0);
 }
 
-static inline void MessageHandler_ReturnRDMBroadcastListen(uint8_t token) {
+static void ReturnRDMBroadcastListen(uint8_t token) {
   uint16_t time = Transceiver_GetRDMBroadcastListen();
   IOVec iovec;
   iovec.base = (uint8_t*) &time;
@@ -141,9 +135,9 @@ static inline void MessageHandler_ReturnRDMBroadcastListen(uint8_t token) {
   SendMessage(token, GET_RDM_BROADCAST_LISTEN, RC_OK, &iovec, 1);
 }
 
-static inline void MessageHandler_SetRDMWaitTime(uint8_t token,
-                                                 const uint8_t* payload,
-                                                 unsigned int length) {
+static void SetRDMWaitTime(uint8_t token,
+                           const uint8_t* payload,
+                           unsigned int length) {
   uint16_t wait_time;
   if (length != sizeof(wait_time)) {
     SendMessage(token, SET_RDM_WAIT_TIME, RC_BAD_PARAM, NULL, 0);
@@ -155,7 +149,7 @@ static inline void MessageHandler_SetRDMWaitTime(uint8_t token,
   SendMessage(token, SET_RDM_WAIT_TIME, ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
 }
 
-static inline void MessageHandler_ReturnRDMWaitTime(uint8_t token) {
+static void ReturnRDMWaitTime(uint8_t token) {
   uint16_t wait_time = Transceiver_GetRDMWaitTime();
   IOVec iovec;
   iovec.base = (uint8_t*) &wait_time;
@@ -163,10 +157,18 @@ static inline void MessageHandler_ReturnRDMWaitTime(uint8_t token) {
   SendMessage(token, GET_RDM_WAIT_TIME, RC_OK, &iovec, 1);
 }
 
+// Public Functions
+// ----------------------------------------------------------------------------
+void MessageHandler_Initialize(TransportTXFunction tx_cb) {
+#ifndef PIPELINE_TRANSPORT_TX
+  g_message_tx_cb = tx_cb;
+#endif
+}
+
 void MessageHandler_HandleMessage(const Message *message) {
   switch (message->command) {
     case ECHO:
-      MessageHandler_Echo(message);
+      Echo(message);
       break;
     case TX_DMX:
       if (!Transceiver_QueueDMX(message->token, message->payload,
@@ -181,7 +183,7 @@ void MessageHandler_HandleMessage(const Message *message) {
       Flags_SendResponse(message->token);
       break;
     case WRITE_LOG:
-      MessageHandler_WriteLog(message);
+      WriteLog(message);
       SendMessage(message->token, message->command, RC_OK, NULL, 0);
       break;
     case COMMAND_RESET_DEVICE:
@@ -204,32 +206,28 @@ void MessageHandler_HandleMessage(const Message *message) {
       }
       break;
     case SET_BREAK_TIME:
-      MessageHandler_SetBreakTime(message->token, message->payload,
-                                  message->length);
+      SetBreakTime(message->token, message->payload, message->length);
       break;
     case GET_BREAK_TIME:
-      MessageHandler_ReturnBreakTime(message->token);
+      ReturnBreakTime(message->token);
       break;
     case SET_MAB_TIME:
-      MessageHandler_SetMarkTime(message->token, message->payload,
-                                 message->length);
+      SetMarkTime(message->token, message->payload, message->length);
       break;
     case GET_MAB_TIME:
-      MessageHandler_ReturnMABTime(message->token);
+      ReturnMABTime(message->token);
       break;
     case SET_RDM_BROADCAST_LISTEN:
-      MessageHandler_SetRDMBroadcastListen(message->token, message->payload,
-                                           message->length);
+      SetRDMBroadcastListen(message->token, message->payload, message->length);
       break;
     case GET_RDM_BROADCAST_LISTEN:
-      MessageHandler_ReturnRDMBroadcastListen(message->token);
+      ReturnRDMBroadcastListen(message->token);
       break;
     case SET_RDM_WAIT_TIME:
-      MessageHandler_SetRDMWaitTime(message->token, message->payload,
-                                    message->length);
+      SetRDMWaitTime(message->token, message->payload, message->length);
       break;
     case GET_RDM_WAIT_TIME:
-      MessageHandler_ReturnRDMWaitTime(message->token);
+      ReturnRDMWaitTime(message->token);
       break;
     case COMMAND_RDM_BROADCAST_REQUEST:
       if (!Transceiver_QueueRDMRequest(message->token, message->payload,
