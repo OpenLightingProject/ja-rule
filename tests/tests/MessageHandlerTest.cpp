@@ -160,6 +160,12 @@ TEST_P(ConfigurationTest, CheckSetGet) {
       EXPECT_CALL(m_transceiver_mock, GetRDMResponderDelay())
           .WillOnce(Return(args.value));
       break;
+    case COMMAND_GET_RDM_RESPONDER_JITTER:
+      EXPECT_CALL(m_transceiver_mock, SetRDMResponderJitter(args.value))
+          .WillOnce(Return(true));
+      EXPECT_CALL(m_transceiver_mock, GetRDMResponderJitter())
+          .WillOnce(Return(args.value));
+      break;
     default:
       {}
   }
@@ -187,7 +193,9 @@ INSTANTIATE_TEST_CASE_P(
       ConfigurationTestArgs(COMMAND_GET_RDM_DUB_RESPONSE_LIMIT,
                             COMMAND_SET_RDM_DUB_RESPONSE_LIMIT, 20000),
       ConfigurationTestArgs(COMMAND_GET_RDM_RESPONDER_DELAY,
-                            COMMAND_SET_RDM_RESPONDER_DELAY, 2000)));
+                            COMMAND_SET_RDM_RESPONDER_DELAY, 2000),
+      ConfigurationTestArgs(COMMAND_GET_RDM_RESPONDER_JITTER,
+                            COMMAND_SET_RDM_RESPONDER_JITTER, 10)));
 
 // Non-parametized tests.
 // ----------------------------------------------------------------------------

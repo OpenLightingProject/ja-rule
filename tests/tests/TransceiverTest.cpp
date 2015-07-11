@@ -141,3 +141,24 @@ TEST_F(TransceiverTest, testSetResponderDelay) {
   EXPECT_FALSE(Transceiver_SetRDMResponderDelay(20001));
   EXPECT_EQ(20000, Transceiver_GetRDMResponderDelay());
 }
+
+TEST_F(TransceiverTest, testSetResponderJitter) {
+  TransceiverHardwareSettings settings = DefaultSettings();
+  Transceiver_Initialize(&settings, NULL);
+
+  EXPECT_EQ(0, Transceiver_GetRDMResponderJitter());
+  EXPECT_FALSE(Transceiver_SetRDMResponderJitter(20000));
+  EXPECT_EQ(0, Transceiver_GetRDMResponderJitter());
+  // 176uS + up to 1ms
+  EXPECT_TRUE(Transceiver_SetRDMResponderJitter(1000));
+  EXPECT_EQ(1000, Transceiver_GetRDMResponderJitter());
+  EXPECT_TRUE(Transceiver_SetRDMResponderJitter(18240));
+  EXPECT_EQ(18240, Transceiver_GetRDMResponderJitter());
+  EXPECT_FALSE(Transceiver_SetRDMResponderJitter(18241));
+  EXPECT_EQ(18240, Transceiver_GetRDMResponderJitter());
+
+  // Now increase the delay, jitter should adjust
+  EXPECT_TRUE(Transceiver_SetRDMResponderDelay(11000));
+  EXPECT_EQ(11000, Transceiver_GetRDMResponderDelay());
+  EXPECT_EQ(9000, Transceiver_GetRDMResponderJitter());
+}

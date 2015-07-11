@@ -51,6 +51,8 @@ class MockTransceiver {
   MOCK_METHOD0(GetRDMDUBResponseLimit, uint16_t());
   MOCK_METHOD1(SetRDMResponderDelay, bool(uint16_t delay));
   MOCK_METHOD0(GetRDMResponderDelay, uint16_t());
+  MOCK_METHOD1(SetRDMResponderJitter, bool(uint16_t max_jitter));
+  MOCK_METHOD0(GetRDMResponderJitter, uint16_t());
 };
 
 void Transceiver_SetMock(MockTransceiver* mock);

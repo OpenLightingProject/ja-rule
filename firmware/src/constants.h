@@ -194,6 +194,18 @@ typedef enum {
    */
   COMMAND_GET_RDM_RESPONDER_DELAY = 0x27,
 
+  /**
+   * @brief Set the RDM responder jitter.
+   * See @ref message_cmd_setrdmresponderjitter.
+   */
+  COMMAND_SET_RDM_RESPONDER_JITTER = 0x28,
+
+  /**
+   * @brief Get the RDM responder jitter.
+   * See @ref message_cmd_getrdmresponderjitter.
+   */
+  COMMAND_GET_RDM_RESPONDER_JITTER = 0x29,
+
   // DMX
   TX_DMX = 0x30,  //!< Transmit a DMX frame. See @ref message_cmd_txdmx.
 

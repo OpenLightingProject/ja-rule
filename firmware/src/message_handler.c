@@ -79,7 +79,8 @@ static void SetBreakTime(uint8_t token,
 
   break_time = payload[0] + (payload[1] << 8);
   bool ok = Transceiver_SetBreakTime(break_time);
-  SendMessage(token, COMMAND_SET_BREAK_TIME, ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
+  SendMessage(token, COMMAND_SET_BREAK_TIME, ok ? RC_OK : RC_BAD_PARAM,
+              NULL, 0);
 }
 
 static void ReturnBreakTime(uint8_t token, unsigned int length) {
@@ -140,7 +141,8 @@ static void SetRDMBroadcastTimeout(uint8_t token,
 
 static void ReturnRDMBroadcastTimeout(uint8_t token, unsigned int length) {
   if (length) {
-    SendMessage(token, COMMAND_GET_RDM_BROADCAST_TIMEOUT, RC_BAD_PARAM, NULL, 0);
+    SendMessage(token, COMMAND_GET_RDM_BROADCAST_TIMEOUT, RC_BAD_PARAM, NULL,
+                0);
     return;
   }
   uint16_t time = Transceiver_GetRDMBroadcastTimeout();
@@ -237,6 +239,34 @@ static void ReturnRDMResponderDelay(uint8_t token, unsigned int length) {
   SendMessage(token, COMMAND_GET_RDM_RESPONDER_DELAY, RC_OK, &iovec, 1);
 }
 
+static void SetRDMResponderJitter(uint8_t token,
+                                  const uint8_t* payload,
+                                  unsigned int length) {
+  uint16_t jitter;
+  if (length != sizeof(jitter)) {
+    SendMessage(token, COMMAND_SET_RDM_RESPONDER_JITTER, RC_BAD_PARAM, NULL, 0);
+    return;
+  }
+
+  jitter = payload[0] + (payload[1] << 8);
+  bool ok = Transceiver_SetRDMResponderJitter(jitter);
+  SendMessage(token, COMMAND_SET_RDM_RESPONDER_JITTER,
+              ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
+}
+
+static void ReturnRDMResponderJitter(uint8_t token, unsigned int length) {
+  if (length) {
+    SendMessage(token, COMMAND_GET_RDM_RESPONDER_JITTER, RC_BAD_PARAM,
+                NULL, 0);
+    return;
+  }
+  uint16_t jitter = Transceiver_GetRDMResponderJitter();
+  IOVec iovec;
+  iovec.base = (uint8_t*) &jitter;
+  iovec.length = sizeof(jitter);
+  SendMessage(token, COMMAND_GET_RDM_RESPONDER_JITTER, RC_OK, &iovec, 1);
+}
+
 // Public Functions
 // ----------------------------------------------------------------------------
 void MessageHandler_Initialize(TransportTXFunction tx_cb) {
@@ -320,6 +350,12 @@ void MessageHandler_HandleMessage(const Message *message) {
       break;
     case COMMAND_GET_RDM_RESPONDER_DELAY:
       ReturnRDMResponderDelay(message->token, message->length);
+      break;
+    case COMMAND_SET_RDM_RESPONDER_JITTER:
+      SetRDMResponderJitter(message->token, message->payload, message->length);
+      break;
+    case COMMAND_GET_RDM_RESPONDER_JITTER:
+      ReturnRDMResponderJitter(message->token, message->length);
       break;
 
     case COMMAND_RDM_BROADCAST_REQUEST:

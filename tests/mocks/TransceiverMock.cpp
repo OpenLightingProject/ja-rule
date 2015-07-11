@@ -156,3 +156,17 @@ uint16_t Transceiver_GetRDMResponderDelay() {
   }
   return 1760;
 }
+
+bool Transceiver_SetRDMResponderJitter(uint16_t max_jitter) {
+  if (g_transceiver_mock) {
+    return g_transceiver_mock->SetRDMResponderJitter(max_jitter);
+  }
+  return true;
+}
+
+uint16_t Transceiver_GetRDMResponderJitter() {
+  if (g_transceiver_mock) {
+    return g_transceiver_mock->GetRDMResponderJitter();
+  }
+  return 0;
+}

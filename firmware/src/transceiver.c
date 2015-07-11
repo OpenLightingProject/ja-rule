@@ -44,6 +44,16 @@
 
 #define INPUT_CAPTURE_MODULE IC_ID_2
 
+/*
+ * @brief The minimum RDM responder delay in 10ths of a micro, Table 3-4, E1.20
+ */
+#define MINIMUM_RESPONDER_DELAY 1760
+
+/*
+ * @brief The maximum RDM responder delay in 10ths of a micro. Table 3-4, E1.20
+ */
+#define MAXIMUM_RESPONDER_DELAY 20000
+
 typedef enum {
   STATE_TX_READY,  //!< Wait for a pending frame
   STATE_IN_BREAK,  //!< In the Break
@@ -123,6 +133,7 @@ typedef struct {
   uint16_t rdm_response_timeout;
   uint16_t rdm_dub_response_limit;
   uint16_t rdm_responder_delay;
+  uint16_t rdm_responder_jitter;
 } TransceiverTimingSettings;
 
 // The TX / RX buffers
@@ -290,6 +301,7 @@ void Transceiver_ResetTimingSettings() {
   Transceiver_SetRDMResponseTimeout(DEFAULT_RDM_RESPONSE_TIMEOUT);
   Transceiver_SetRDMDUBResponseLimit(DEFAULT_RDM_DUB_RESPONSE_LIMIT);
   Transceiver_SetRDMResponderDelay(DEFAULT_RDM_RESPONDER_DELAY);
+  Transceiver_SetRDMResponderJitter(0);
 }
 
 /*
@@ -1006,13 +1018,30 @@ uint16_t Transceiver_GetRDMDUBResponseLimit() {
 }
 
 bool Transceiver_SetRDMResponderDelay(uint16_t delay) {
-  if (delay < 1760 || delay > 20000) {
+  if (delay < MINIMUM_RESPONDER_DELAY || delay > MAXIMUM_RESPONDER_DELAY) {
     return false;
   }
   g_timing_settings.rdm_responder_delay = delay;
+  uint16_t max_jitter = MAXIMUM_RESPONDER_DELAY - delay;
+  g_timing_settings.rdm_responder_jitter = (
+    g_timing_settings.rdm_responder_jitter < max_jitter ?
+    g_timing_settings.rdm_responder_jitter : max_jitter);
   return true;
 }
 
 uint16_t Transceiver_GetRDMResponderDelay() {
   return g_timing_settings.rdm_responder_delay;
+}
+
+bool Transceiver_SetRDMResponderJitter(uint16_t max_jitter) {
+  if (max_jitter >
+      MAXIMUM_RESPONDER_DELAY - g_timing_settings.rdm_responder_delay) {
+    return false;
+  }
+  g_timing_settings.rdm_responder_jitter = max_jitter;
+  return true;
+}
+
+uint16_t Transceiver_GetRDMResponderJitter() {
+  return g_timing_settings.rdm_responder_jitter;
 }

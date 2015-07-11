@@ -397,11 +397,29 @@ uint16_t Transceiver_GetRDMDUBResponseLimit();
 bool Transceiver_SetRDMResponderDelay(uint16_t delay);
 
 /**
- * @brief Return the RDM response delay.
- * @returns The RDM response delay, in 10ths of a millisecond.
- * @sa Transceiver_SetRDMResponseDelay.
+ * @brief Return the RDM responder delay.
+ * @returns The RDM responder delay, in 10ths of a millisecond.
+ * @sa Transceiver_SetRDMResponderDelay.
  */
 uint16_t Transceiver_GetRDMResponderDelay();
+
+/**
+ * @brief Configure the jitter added to the responder delay.
+ * @param max_jitter the maximum jitter in 10ths of a microsecond. Set to 0 to
+ *   disable jitter. Valid values are 0 to 20000 - Responder Delay.
+ * @returns true if jitter time was updated, false if the value was out of
+ *   range.
+ *
+ * The default value is 0.
+ */
+bool Transceiver_SetRDMResponderJitter(uint16_t max_jitter);
+
+/**
+ * @brief Return the RDM responder jitter.
+ * @returns The RDM responder jitter, in 10ths of a millisecond.
+ * @sa Transceiver_SetRDMResponderJitter.
+ */
+uint16_t Transceiver_GetRDMResponderJitter();
 
 #ifdef __cplusplus
 }
