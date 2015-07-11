@@ -34,12 +34,13 @@
  *  - Transceiver_QueueRDMRequest();
  *
  * When the operation completes, the TransceiverEventCallback will be run, with
- * the result of the operation.
+ * the result of the operation. See @ref controller_sm
+ * "Controller State Machine".
  *
  * @par Responder Mode
  *
  * In responder mode, the TransceiverEventCallback will be run when a frame is
- *   received.
+ *   received. See @ref responder_sm "Responder State Machine".
  *
  * @addtogroup transceiver
  * @{
