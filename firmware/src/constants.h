@@ -137,13 +137,13 @@ typedef enum {
    * @brief Set the mark-after-break time of the transceiver.
    * See @ref message_cmd_setmark
    */
-  COMMAND_SET_MAB_TIME = 0x12,
+  COMMAND_SET_MARK_TIME = 0x12,
 
   /**
    * @brief Fetch the current transceiver mark-after-break time.
    * See @ref message_cmd_getmark
    */
-  COMMAND_GET_MAB_TIME = 0x13,
+  COMMAND_GET_MARK_TIME = 0x13,
 
   // Advanced Configuration
   /**

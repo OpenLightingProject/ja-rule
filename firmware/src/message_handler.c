@@ -100,18 +100,18 @@ static void SetMarkTime(uint8_t token,
                         unsigned int length) {
   uint16_t mark_time;
   if (length != sizeof(mark_time)) {
-    SendMessage(token, COMMAND_SET_MAB_TIME, RC_BAD_PARAM, NULL, 0);
+    SendMessage(token, COMMAND_SET_MARK_TIME, RC_BAD_PARAM, NULL, 0);
     return;
   }
 
   mark_time = payload[0] + (payload[1] << 8);
   bool ok = Transceiver_SetMarkTime(mark_time);
-  SendMessage(token, COMMAND_SET_MAB_TIME, ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
+  SendMessage(token, COMMAND_SET_MARK_TIME, ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
 }
 
-static void ReturnMABTime(uint8_t token, unsigned int length) {
+static void ReturnMarkTime(uint8_t token, unsigned int length) {
   if (length) {
-    SendMessage(token, COMMAND_GET_MAB_TIME, RC_BAD_PARAM, NULL, 0);
+    SendMessage(token, COMMAND_GET_MARK_TIME, RC_BAD_PARAM, NULL, 0);
     return;
   }
 
@@ -119,7 +119,7 @@ static void ReturnMABTime(uint8_t token, unsigned int length) {
   IOVec iovec;
   iovec.base = (uint8_t*) &mab_time;
   iovec.length = sizeof(mab_time);
-  SendMessage(token, COMMAND_GET_MAB_TIME, RC_OK, &iovec, 1);
+  SendMessage(token, COMMAND_GET_MARK_TIME, RC_OK, &iovec, 1);
 }
 
 static void SetRDMBroadcastTimeout(uint8_t token,
@@ -291,11 +291,11 @@ void MessageHandler_HandleMessage(const Message *message) {
     case COMMAND_GET_BREAK_TIME:
       ReturnBreakTime(message->token, message->length);
       break;
-    case COMMAND_SET_MAB_TIME:
+    case COMMAND_SET_MARK_TIME:
       SetMarkTime(message->token, message->payload, message->length);
       break;
-    case COMMAND_GET_MAB_TIME:
-      ReturnMABTime(message->token, message->length);
+    case COMMAND_GET_MARK_TIME:
+      ReturnMarkTime(message->token, message->length);
       break;
     case COMMAND_SET_RDM_BROADCAST_TIMEOUT:
       SetRDMBroadcastTimeout(message->token, message->payload, message->length);

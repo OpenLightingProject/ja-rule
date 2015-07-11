@@ -130,7 +130,7 @@ TEST_P(ConfigurationTest, CheckSetGet) {
       EXPECT_CALL(m_transceiver_mock, GetBreakTime())
           .WillOnce(Return(args.value));
       break;
-    case COMMAND_GET_MAB_TIME:
+    case COMMAND_GET_MARK_TIME:
       EXPECT_CALL(m_transceiver_mock, SetMarkTime(args.value))
           .WillOnce(Return(true));
       EXPECT_CALL(m_transceiver_mock, GetMarkTime())
@@ -179,7 +179,7 @@ INSTANTIATE_TEST_CASE_P(
     ConfigurationTest,
     ::testing::Values(
       ConfigurationTestArgs(COMMAND_GET_BREAK_TIME, COMMAND_SET_BREAK_TIME, 88),
-      ConfigurationTestArgs(COMMAND_GET_MAB_TIME, COMMAND_SET_MAB_TIME, 16),
+      ConfigurationTestArgs(COMMAND_GET_MARK_TIME, COMMAND_SET_MARK_TIME, 16),
       ConfigurationTestArgs(COMMAND_GET_RDM_BROADCAST_TIMEOUT,
                             COMMAND_SET_RDM_BROADCAST_TIMEOUT, 20),
       ConfigurationTestArgs(COMMAND_GET_RDM_RESPONSE_TIMEOUT,
