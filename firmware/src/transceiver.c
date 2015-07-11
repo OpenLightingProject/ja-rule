@@ -60,8 +60,6 @@
  */
 #define RESPONDER_RX_BREAK_TIME_MAX  10000
 
-#endif  // FIRMWARE_SRC_CONSTANTS_H_
-
 /*
  * @brief The minimum RDM responder delay in 10ths of a microsecond, Table 3-4,
  * E1.20

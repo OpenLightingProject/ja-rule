@@ -32,6 +32,10 @@
 static TransportTXFunction g_message_tx_cb;
 #endif
 
+static inline uint16_t JoinUInt16(uint8_t upper, uint8_t lower) {
+  return (upper << 8) + lower;
+}
+
 static inline void SendMessage(uint8_t token, Command command, uint8_t rc,
                                const IOVec* iov, unsigned int iov_size) {
 #ifdef PIPELINE_TRANSPORT_TX
@@ -77,7 +81,7 @@ static void SetBreakTime(uint8_t token,
     return;
   }
 
-  break_time = payload[0] + (payload[1] << 8);
+  break_time = JoinUInt16(payload[1], payload[0]);
   bool ok = Transceiver_SetBreakTime(break_time);
   SendMessage(token, COMMAND_SET_BREAK_TIME, ok ? RC_OK : RC_BAD_PARAM,
               NULL, 0);
@@ -105,7 +109,7 @@ static void SetMarkTime(uint8_t token,
     return;
   }
 
-  mark_time = payload[0] + (payload[1] << 8);
+  mark_time = JoinUInt16(payload[1], payload[0]);
   bool ok = Transceiver_SetMarkTime(mark_time);
   SendMessage(token, COMMAND_SET_MARK_TIME, ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
 }
@@ -133,7 +137,7 @@ static void SetRDMBroadcastTimeout(uint8_t token,
     return;
   }
 
-  time = payload[0] + (payload[1] << 8);
+  time = JoinUInt16(payload[1], payload[0]);
   bool ok = Transceiver_SetRDMBroadcastTimeout(time);
   SendMessage(token, COMMAND_SET_RDM_BROADCAST_TIMEOUT,
               ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
@@ -162,7 +166,7 @@ static void SetRDMResponseTimeout(
     return;
   }
 
-  timeout = payload[0] + (payload[1] << 8);
+  timeout = JoinUInt16(payload[1], payload[0]);
   bool ok = Transceiver_SetRDMResponseTimeout(timeout);
   SendMessage(token, COMMAND_SET_RDM_RESPONSE_TIMEOUT,
               ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
@@ -192,7 +196,7 @@ static void SetRDMDUBResponseLimit(uint8_t token,
     return;
   }
 
-  limit = payload[0] + (payload[1] << 8);
+  limit = JoinUInt16(payload[1], payload[0]);
   bool ok = Transceiver_SetRDMDUBResponseLimit(limit);
   SendMessage(token, COMMAND_SET_RDM_DUB_RESPONSE_LIMIT,
               ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
@@ -220,7 +224,7 @@ static void SetRDMResponderDelay(uint8_t token,
     return;
   }
 
-  delay = payload[0] + (payload[1] << 8);
+  delay = JoinUInt16(payload[1], payload[0]);
   bool ok = Transceiver_SetRDMResponderDelay(delay);
   SendMessage(token, COMMAND_SET_RDM_RESPONDER_DELAY,
               ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
@@ -248,7 +252,7 @@ static void SetRDMResponderJitter(uint8_t token,
     return;
   }
 
-  jitter = payload[0] + (payload[1] << 8);
+  jitter = JoinUInt16(payload[1], payload[0]);
   bool ok = Transceiver_SetRDMResponderJitter(jitter);
   SendMessage(token, COMMAND_SET_RDM_RESPONDER_JITTER,
               ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
