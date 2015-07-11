@@ -352,7 +352,7 @@ uint16_t Transceiver_GetRDMBroadcastTimeout();
  * limits of the specification to fail. By setting the value more than 28, we
  * can accomodate responders that are out-of-spec.
  */
-bool Transceiver_SetRDMResponseTimeout(uint16_t wait_time);
+bool Transceiver_SetRDMResponseTimeout(uint16_t delay);
 
 /**
  * @brief Return the controller's RDM response timeout.
@@ -406,7 +406,7 @@ uint16_t Transceiver_GetRDMResponderDelay();
 /**
  * @brief Configure the jitter added to the responder delay.
  * @param max_jitter the maximum jitter in 10ths of a microsecond. Set to 0 to
- *   disable jitter. Valid values are 0 to 20000 - Responder Delay.
+ *   disable jitter. Valid values are 0 to (20000 - Responder Delay).
  * @returns true if jitter time was updated, false if the value was out of
  *   range.
  *
