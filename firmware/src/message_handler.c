@@ -79,21 +79,27 @@ static inline void MessageHandler_SetBreakTime(uint8_t token,
                                                unsigned int length) {
   uint16_t break_time;
   if (length != sizeof(break_time)) {
-    SendMessage(token, SET_BREAK_TIME, RC_BAD_PARAM, NULL, 0);
+    SendMessage(token, COMMAND_SET_BREAK_TIME, RC_BAD_PARAM, NULL, 0);
     return;
   }
 
   break_time = payload[0] + (payload[1] << 8);
   bool ok = Transceiver_SetBreakTime(break_time);
-  SendMessage(token, SET_BREAK_TIME, ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
+  SendMessage(token, COMMAND_SET_BREAK_TIME, ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
 }
 
-static inline void MessageHandler_ReturnBreakTime(uint8_t token) {
+static inline void MessageHandler_ReturnBreakTime(uint8_t token,
+                                                  unsigned int length) {
+  if (length) {
+    SendMessage(token, COMMAND_GET_BREAK_TIME, RC_BAD_PARAM, NULL, 0);
+    return;
+  }
+
   uint16_t break_time = Transceiver_GetBreakTime();
   IOVec iovec;
   iovec.base = (uint8_t*) &break_time;
   iovec.length = sizeof(break_time);
-  SendMessage(token, GET_BREAK_TIME, RC_OK, &iovec, 1);
+  SendMessage(token, COMMAND_GET_BREAK_TIME, RC_OK, &iovec, 1);
 }
 
 static inline void MessageHandler_SetMarkTime(uint8_t token,
@@ -101,66 +107,143 @@ static inline void MessageHandler_SetMarkTime(uint8_t token,
                                               unsigned int length) {
   uint16_t mark_time;
   if (length != sizeof(mark_time)) {
-    SendMessage(token, SET_MAB_TIME, RC_BAD_PARAM, NULL, 0);
+    SendMessage(token, COMMAND_SET_MAB_TIME, RC_BAD_PARAM, NULL, 0);
     return;
   }
 
   mark_time = payload[0] + (payload[1] << 8);
   bool ok = Transceiver_SetMarkTime(mark_time);
-  SendMessage(token, SET_MAB_TIME, ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
+  SendMessage(token, COMMAND_SET_MAB_TIME, ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
 }
 
-static inline void MessageHandler_ReturnMABTime(uint8_t token) {
+static inline void MessageHandler_ReturnMABTime(uint8_t token,
+                                                unsigned int length) {
+  if (length) {
+    SendMessage(token, COMMAND_GET_MAB_TIME, RC_BAD_PARAM, NULL, 0);
+    return;
+  }
   uint16_t mab_time = Transceiver_GetMarkTime();
   IOVec iovec;
   iovec.base = (uint8_t*) &mab_time;
   iovec.length = sizeof(mab_time);
-  SendMessage(token, GET_MAB_TIME, RC_OK, &iovec, 1);
+  SendMessage(token, COMMAND_GET_MAB_TIME, RC_OK, &iovec, 1);
 }
 
-static inline void MessageHandler_SetRDMBroadcastListen(uint8_t token,
+static inline void MessageHandler_SetRDMBroadcastTimeout(uint8_t token,
                                                         const uint8_t* payload,
                                                         unsigned int length) {
   uint16_t time;
   if (length != sizeof(time)) {
-    SendMessage(token, SET_RDM_BROADCAST_LISTEN, RC_BAD_PARAM, NULL, 0);
+    SendMessage(token, COMMAND_SET_RDM_BROADCAST_TIMEOUT, RC_BAD_PARAM, NULL,
+                0);
     return;
   }
 
   time = payload[0] + (payload[1] << 8);
-  bool ok = Transceiver_SetRDMBroadcastListen(time);
-  SendMessage(token, SET_RDM_BROADCAST_LISTEN, ok ? RC_OK : RC_BAD_PARAM, NULL,
-              0);
+  bool ok = Transceiver_SetRDMBroadcastTimeout(time);
+  SendMessage(token, COMMAND_SET_RDM_BROADCAST_TIMEOUT,
+              ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
 }
 
-static inline void MessageHandler_ReturnRDMBroadcastListen(uint8_t token) {
-  uint16_t time = Transceiver_GetRDMBroadcastListen();
+static inline void MessageHandler_ReturnRDMBroadcastTimeout(
+    uint8_t token,
+    unsigned int length) {
+  if (length) {
+    SendMessage(token, COMMAND_GET_RDM_BROADCAST_TIMEOUT, RC_BAD_PARAM, NULL, 0);
+    return;
+  }
+  uint16_t time = Transceiver_GetRDMBroadcastTimeout();
   IOVec iovec;
   iovec.base = (uint8_t*) &time;
   iovec.length = sizeof(time);
-  SendMessage(token, GET_RDM_BROADCAST_LISTEN, RC_OK, &iovec, 1);
+  SendMessage(token, COMMAND_GET_RDM_BROADCAST_TIMEOUT, RC_OK, &iovec, 1);
 }
 
-static inline void MessageHandler_SetRDMWaitTime(uint8_t token,
-                                                 const uint8_t* payload,
-                                                 unsigned int length) {
-  uint16_t wait_time;
-  if (length != sizeof(wait_time)) {
-    SendMessage(token, SET_RDM_WAIT_TIME, RC_BAD_PARAM, NULL, 0);
+static inline void MessageHandler_SetRDMResponseTimeout(
+    uint8_t token,
+    const uint8_t* payload,
+    unsigned int length) {
+  uint16_t timeout;
+  if (length != sizeof(timeout)) {
+    SendMessage(token, COMMAND_SET_RDM_RESPONSE_TIMEOUT, RC_BAD_PARAM, NULL, 0);
     return;
   }
 
-  wait_time = payload[0] + (payload[1] << 8);
-  bool ok = Transceiver_SetRDMWaitTime(wait_time);
-  SendMessage(token, SET_RDM_WAIT_TIME, ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
+  timeout = payload[0] + (payload[1] << 8);
+  bool ok = Transceiver_SetRDMResponseTimeout(timeout);
+  SendMessage(token, COMMAND_SET_RDM_RESPONSE_TIMEOUT,
+              ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
 }
 
-static inline void MessageHandler_ReturnRDMWaitTime(uint8_t token) {
-  uint16_t wait_time = Transceiver_GetRDMWaitTime();
+static inline void MessageHandler_ReturnRDMResponseTimeout(
+    uint8_t token,
+    unsigned int length) {
+  if (length) {
+    SendMessage(token, COMMAND_GET_RDM_RESPONSE_TIMEOUT, RC_BAD_PARAM, NULL, 0);
+    return;
+  }
+  uint16_t timeout = Transceiver_GetRDMResponseTimeout();
   IOVec iovec;
-  iovec.base = (uint8_t*) &wait_time;
-  iovec.length = sizeof(wait_time);
-  SendMessage(token, GET_RDM_WAIT_TIME, RC_OK, &iovec, 1);
+  iovec.base = (uint8_t*) &timeout;
+  iovec.length = sizeof(timeout);
+  SendMessage(token, COMMAND_GET_RDM_RESPONSE_TIMEOUT, RC_OK, &iovec, 1);
+}
+
+static void SetRDMDUBResponseLimit(uint8_t token,
+                                   const uint8_t* payload,
+                                   unsigned int length) {
+  uint16_t limit;
+  if (length != sizeof(limit)) {
+    SendMessage(token, COMMAND_SET_RDM_DUB_RESPONSE_LIMIT, RC_BAD_PARAM, NULL,
+                0);
+    return;
+  }
+
+  limit = payload[0] + (payload[1] << 8);
+  bool ok = Transceiver_SetRDMDUBResponseLimit(limit);
+  SendMessage(token, COMMAND_SET_RDM_DUB_RESPONSE_LIMIT,
+              ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
+}
+
+static void ReturnRDMDUBResponseLimit(uint8_t token, unsigned int length) {
+  if (length) {
+    SendMessage(token, COMMAND_GET_RDM_DUB_RESPONSE_LIMIT, RC_BAD_PARAM,
+                NULL, 0);
+    return;
+  }
+  uint16_t limit = Transceiver_GetRDMDUBResponseLimit();
+  IOVec iovec;
+  iovec.base = (uint8_t*) &limit;
+  iovec.length = sizeof(limit);
+  SendMessage(token, COMMAND_GET_RDM_DUB_RESPONSE_LIMIT, RC_OK, &iovec, 1);
+}
+
+static void SetRDMResponderDelay(uint8_t token,
+                                 const uint8_t* payload,
+                                 unsigned int length) {
+  uint16_t delay;
+  if (length != sizeof(delay)) {
+    SendMessage(token, COMMAND_SET_RDM_RESPONDER_DELAY, RC_BAD_PARAM, NULL, 0);
+    return;
+  }
+
+  delay = payload[0] + (payload[1] << 8);
+  bool ok = Transceiver_SetRDMResponderDelay(delay);
+  SendMessage(token, COMMAND_SET_RDM_RESPONDER_DELAY,
+              ok ? RC_OK : RC_BAD_PARAM, NULL, 0);
+}
+
+static void ReturnRDMResponderDelay(uint8_t token, unsigned int length) {
+  if (length) {
+    SendMessage(token, COMMAND_GET_RDM_RESPONDER_DELAY, RC_BAD_PARAM,
+                NULL, 0);
+    return;
+  }
+  uint16_t delay = Transceiver_GetRDMResponderDelay();
+  IOVec iovec;
+  iovec.base = (uint8_t*) &delay;
+  iovec.length = sizeof(delay);
+  SendMessage(token, COMMAND_GET_RDM_RESPONDER_DELAY, RC_OK, &iovec, 1);
 }
 
 void MessageHandler_HandleMessage(const Message *message) {
@@ -203,34 +286,47 @@ void MessageHandler_HandleMessage(const Message *message) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0);
       }
       break;
-    case SET_BREAK_TIME:
+    case COMMAND_SET_BREAK_TIME:
       MessageHandler_SetBreakTime(message->token, message->payload,
                                   message->length);
       break;
-    case GET_BREAK_TIME:
-      MessageHandler_ReturnBreakTime(message->token);
+    case COMMAND_GET_BREAK_TIME:
+      MessageHandler_ReturnBreakTime(message->token, message->length);
       break;
-    case SET_MAB_TIME:
+    case COMMAND_SET_MAB_TIME:
       MessageHandler_SetMarkTime(message->token, message->payload,
                                  message->length);
       break;
-    case GET_MAB_TIME:
-      MessageHandler_ReturnMABTime(message->token);
+    case COMMAND_GET_MAB_TIME:
+      MessageHandler_ReturnMABTime(message->token, message->length);
       break;
-    case SET_RDM_BROADCAST_LISTEN:
-      MessageHandler_SetRDMBroadcastListen(message->token, message->payload,
+    case COMMAND_SET_RDM_BROADCAST_TIMEOUT:
+      MessageHandler_SetRDMBroadcastTimeout(message->token, message->payload,
+                                            message->length);
+      break;
+    case COMMAND_GET_RDM_BROADCAST_TIMEOUT:
+      MessageHandler_ReturnRDMBroadcastTimeout(message->token, message->length);
+      break;
+    case COMMAND_SET_RDM_RESPONSE_TIMEOUT:
+      MessageHandler_SetRDMResponseTimeout(message->token, message->payload,
                                            message->length);
       break;
-    case GET_RDM_BROADCAST_LISTEN:
-      MessageHandler_ReturnRDMBroadcastListen(message->token);
+    case COMMAND_GET_RDM_RESPONSE_TIMEOUT:
+      MessageHandler_ReturnRDMResponseTimeout(message->token, message->length);
       break;
-    case SET_RDM_WAIT_TIME:
-      MessageHandler_SetRDMWaitTime(message->token, message->payload,
-                                    message->length);
+    case COMMAND_SET_RDM_DUB_RESPONSE_LIMIT:
+      SetRDMDUBResponseLimit(message->token, message->payload, message->length);
       break;
-    case GET_RDM_WAIT_TIME:
-      MessageHandler_ReturnRDMWaitTime(message->token);
+    case COMMAND_GET_RDM_DUB_RESPONSE_LIMIT:
+      ReturnRDMDUBResponseLimit(message->token, message->length);
       break;
+    case COMMAND_SET_RDM_RESPONDER_DELAY:
+      SetRDMResponderDelay(message->token, message->payload, message->length);
+      break;
+    case COMMAND_GET_RDM_RESPONDER_DELAY:
+      ReturnRDMResponderDelay(message->token, message->length);
+      break;
+
     case COMMAND_RDM_BROADCAST_REQUEST:
       if (!Transceiver_QueueRDMRequest(message->token, message->payload,
                                        message->length, true)) {

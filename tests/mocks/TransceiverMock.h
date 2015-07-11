@@ -43,10 +43,14 @@ class MockTransceiver {
   MOCK_METHOD0(GetBreakTime, uint16_t());
   MOCK_METHOD1(SetMarkTime, bool(uint16_t break_time_us));
   MOCK_METHOD0(GetMarkTime, uint16_t());
-  MOCK_METHOD1(SetRDMBroadcastListen, bool(uint16_t break_time_us));
-  MOCK_METHOD0(GetRDMBroadcastListen, uint16_t());
-  MOCK_METHOD1(SetRDMWaitTime, bool(uint16_t break_time_us));
-  MOCK_METHOD0(GetRDMWaitTime, uint16_t());
+  MOCK_METHOD1(SetRDMBroadcastTimeout, bool(uint16_t break_time_us));
+  MOCK_METHOD0(GetRDMBroadcastTimeout, uint16_t());
+  MOCK_METHOD1(SetRDMResponseTimeout, bool(uint16_t break_time_us));
+  MOCK_METHOD0(GetRDMResponseTimeout, uint16_t());
+  MOCK_METHOD1(SetRDMDUBResponseLimit, bool(uint16_t limit));
+  MOCK_METHOD0(GetRDMDUBResponseLimit, uint16_t());
+  MOCK_METHOD1(SetRDMResponderDelay, bool(uint16_t delay));
+  MOCK_METHOD0(GetRDMResponderDelay, uint16_t());
 };
 
 void Transceiver_SetMock(MockTransceiver* mock);

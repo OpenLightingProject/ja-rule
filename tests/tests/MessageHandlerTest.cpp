@@ -34,8 +34,172 @@ using ::testing::Args;
 using ::testing::Return;
 using ::testing::_;
 
+
+// Tests for configuration messages.
+// ----------------------------------------------------------------------------
+struct ConfigurationTestArgs {
+ public:
+  ConfigurationTestArgs(Command get_command,
+                        Command set_command,
+                        uint16_t value)
+    : get_command(get_command),
+      set_command(set_command),
+      value(value) {
+  }
+
+  Command get_command;
+  Command set_command;
+  uint16_t value;
+};
+
+class ConfigurationTest
+    : public ::testing::TestWithParam<ConfigurationTestArgs> {
+ public:
+  void SetUp() {
+    Transport_SetMock(&m_transport_mock);
+    Transceiver_SetMock(&m_transceiver_mock);
+    MessageHandler_Initialize(Transport_Send);
+  }
+  void TearDown() {
+    Transceiver_SetMock(nullptr);
+    Transport_SetMock(nullptr);
+  }
+
+  MockTransport m_transport_mock;
+  MockTransceiver m_transceiver_mock;
+  static const uint8_t kToken = 0;
+};
+
+TEST_P(ConfigurationTest, CheckOversizedGetRequest) {
+  ConfigurationTestArgs args = GetParam();
+  EXPECT_CALL(m_transport_mock,
+              Send(kToken, args.get_command, RC_BAD_PARAM, _, 0))
+      .WillOnce(Return(true));
+
+  uint16_t payload = 0;
+  Message large_message = {
+    kToken, static_cast<uint16_t>(args.get_command),
+    sizeof(payload),
+    reinterpret_cast<uint8_t*>(&payload)
+  };
+  MessageHandler_HandleMessage(&large_message);
+}
+
+TEST_P(ConfigurationTest , CheckZeroLengthSetRequest) {
+  ConfigurationTestArgs args = GetParam();
+  EXPECT_CALL(m_transport_mock,
+              Send(kToken, args.set_command, RC_BAD_PARAM, _, 0))
+      .WillOnce(Return(true));
+
+  Message small_message = {
+    kToken, static_cast<uint16_t>(args.set_command), 0, NULL
+  };
+  MessageHandler_HandleMessage(&small_message);
+}
+
+TEST_P(ConfigurationTest, CheckOversizedSetRequest) {
+  ConfigurationTestArgs args = GetParam();
+  EXPECT_CALL(m_transport_mock,
+              Send(kToken, args.set_command, RC_BAD_PARAM, _, 0))
+      .WillOnce(Return(true));
+
+  uint32_t payload = 0;
+  Message large_message = {
+    kToken, static_cast<uint16_t>(args.set_command),
+    sizeof(payload),
+    reinterpret_cast<uint8_t*>(&payload)
+  };
+  MessageHandler_HandleMessage(&large_message);
+}
+
+TEST_P(ConfigurationTest, CheckSetGet) {
+  ConfigurationTestArgs args = GetParam();
+  EXPECT_CALL(m_transport_mock,
+              Send(kToken, args.set_command, RC_OK, _, 0))
+      .WillOnce(Return(true));
+  EXPECT_CALL(m_transport_mock,
+              Send(kToken, args.get_command, RC_OK, _, 1))
+      .With(Args<3, 4>(PayloadIs(reinterpret_cast<uint8_t*>(&args.value),
+                                 sizeof(args.value))))
+      .WillOnce(Return(true));
+
+  switch (args.get_command) {
+    case COMMAND_GET_BREAK_TIME:
+      EXPECT_CALL(m_transceiver_mock, SetBreakTime(args.value))
+          .WillOnce(Return(true));
+      EXPECT_CALL(m_transceiver_mock, GetBreakTime())
+          .WillOnce(Return(args.value));
+      break;
+    case COMMAND_GET_MAB_TIME:
+      EXPECT_CALL(m_transceiver_mock, SetMarkTime(args.value))
+          .WillOnce(Return(true));
+      EXPECT_CALL(m_transceiver_mock, GetMarkTime())
+          .WillOnce(Return(args.value));
+      break;
+    case COMMAND_GET_RDM_BROADCAST_TIMEOUT:
+      EXPECT_CALL(m_transceiver_mock, SetRDMBroadcastTimeout(args.value))
+          .WillOnce(Return(true));
+      EXPECT_CALL(m_transceiver_mock, GetRDMBroadcastTimeout())
+          .WillOnce(Return(args.value));
+      break;
+    case COMMAND_GET_RDM_RESPONSE_TIMEOUT:
+      EXPECT_CALL(m_transceiver_mock, SetRDMResponseTimeout(args.value))
+          .WillOnce(Return(true));
+      EXPECT_CALL(m_transceiver_mock, GetRDMResponseTimeout())
+          .WillOnce(Return(args.value));
+      break;
+    case COMMAND_GET_RDM_DUB_RESPONSE_LIMIT:
+      EXPECT_CALL(m_transceiver_mock, SetRDMDUBResponseLimit(args.value))
+          .WillOnce(Return(true));
+      EXPECT_CALL(m_transceiver_mock, GetRDMDUBResponseLimit())
+          .WillOnce(Return(args.value));
+      break;
+    case COMMAND_GET_RDM_RESPONDER_DELAY:
+      EXPECT_CALL(m_transceiver_mock, SetRDMResponderDelay(args.value))
+          .WillOnce(Return(true));
+      EXPECT_CALL(m_transceiver_mock, GetRDMResponderDelay())
+          .WillOnce(Return(args.value));
+      break;
+    default:
+      {}
+  }
+
+  Message set_message = { kToken, static_cast<uint16_t>(args.set_command),
+                          sizeof(args.value),
+                          reinterpret_cast<uint8_t*>(&args.value) };
+  MessageHandler_HandleMessage(&set_message);
+
+  Message get_message = { kToken, static_cast<uint16_t>(args.get_command),
+                          0, NULL};
+  MessageHandler_HandleMessage(&get_message);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    SetCommand,
+    ConfigurationTest,
+    ::testing::Values(
+      ConfigurationTestArgs(COMMAND_GET_BREAK_TIME, COMMAND_SET_BREAK_TIME, 88),
+      ConfigurationTestArgs(COMMAND_GET_MAB_TIME, COMMAND_SET_MAB_TIME, 16),
+      ConfigurationTestArgs(COMMAND_GET_RDM_BROADCAST_TIMEOUT,
+                            COMMAND_SET_RDM_BROADCAST_TIMEOUT, 20),
+      ConfigurationTestArgs(COMMAND_GET_RDM_RESPONSE_TIMEOUT,
+                            COMMAND_SET_RDM_RESPONSE_TIMEOUT, 20),
+      ConfigurationTestArgs(COMMAND_GET_RDM_DUB_RESPONSE_LIMIT,
+                            COMMAND_SET_RDM_DUB_RESPONSE_LIMIT, 20000),
+      ConfigurationTestArgs(COMMAND_GET_RDM_RESPONDER_DELAY,
+                            COMMAND_SET_RDM_RESPONDER_DELAY, 2000)));
+
+// Non-parametized tests.
+// ----------------------------------------------------------------------------
+
 class MessageHandlerTest : public testing::Test {
  public:
+  void SetUp() {
+    Transport_SetMock(&m_transport_mock);
+    Transceiver_SetMock(&m_transceiver_mock);
+    MessageHandler_Initialize(Transport_Send);
+  }
+
   void TearDown() {
     Transceiver_SetMock(nullptr);
     Flags_SetMock(nullptr);
@@ -60,6 +224,9 @@ class MessageHandlerTest : public testing::Test {
   }
 
  protected:
+  MockTransport m_transport_mock;
+  MockTransceiver m_transceiver_mock;
+
   static const uint8_t kToken = 0;
   static const uint8_t kEmptyDUBResponse[];
   static const uint8_t kEmptyRDMResponse[];
@@ -69,38 +236,41 @@ const uint8_t MessageHandlerTest::kEmptyDUBResponse[] = {0, 0, 0, 0};
 const uint8_t MessageHandlerTest::kEmptyRDMResponse[] = {0, 0, 0, 0, 0, 0};
 
 TEST_F(MessageHandlerTest, testEcho) {
-  MockTransport transport_mock;
-  Transport_SetMock(&transport_mock);
-
   const uint8_t echo_payload[] = {1, 3, 4, 4};
 
-  EXPECT_CALL(transport_mock, Send(kToken, ECHO, RC_OK, _, 1))
+  EXPECT_CALL(m_transport_mock, Send(kToken, ECHO, RC_OK, _, 1))
       .With(Args<3, 4>(PayloadIs(echo_payload, arraysize(echo_payload))))
       .WillOnce(Return(true));
-
-  MessageHandler_Initialize(Transport_Send);
 
   Message message = { kToken, ECHO, arraysize(echo_payload), &echo_payload[0] };
   MessageHandler_HandleMessage(&message);
 }
 
-TEST_F(MessageHandlerTest, testDMX) {
-  MockTransport transport_mock;
-  Transport_SetMock(&transport_mock);
-  MockTransceiver transceiver_mock;
-  Transceiver_SetMock(&transceiver_mock);
+TEST_F(MessageHandlerTest, testSetMode) {
+  EXPECT_CALL(m_transport_mock, Send(kToken, COMMAND_SET_MODE, RC_OK, _, 0))
+      .Times(2)
+      .WillRepeatedly(Return(true));
+  // TODO(simon): Add the transceiver expectaction here
 
+  uint8_t request_payload = 0;
+  Message message = { kToken, COMMAND_SET_MODE, sizeof(request_payload),
+                      &request_payload };
+  MessageHandler_HandleMessage(&message);
+
+  request_payload = 1;
+  MessageHandler_HandleMessage(&message);
+}
+
+TEST_F(MessageHandlerTest, testDMX) {
   const uint8_t dmx_data[] = {1, 3, 4, 4};
 
   testing::InSequence seq;
-  EXPECT_CALL(transceiver_mock, QueueDMX(_, _, arraysize(dmx_data)))
+  EXPECT_CALL(m_transceiver_mock, QueueDMX(_, _, arraysize(dmx_data)))
       .WillOnce(Return(true));
-  EXPECT_CALL(transceiver_mock, QueueDMX(_, _, arraysize(dmx_data)))
+  EXPECT_CALL(m_transceiver_mock, QueueDMX(_, _, arraysize(dmx_data)))
       .WillOnce(Return(false));
-  EXPECT_CALL(transport_mock, Send(kToken, TX_DMX, RC_BUFFER_FULL, NULL, 0))
+  EXPECT_CALL(m_transport_mock, Send(kToken, TX_DMX, RC_BUFFER_FULL, NULL, 0))
       .WillOnce(Return(true));
-
-  MessageHandler_Initialize(Transport_Send);
 
   Message message = { kToken, TX_DMX, arraysize(dmx_data), &dmx_data[0] };
   MessageHandler_HandleMessage(&message);
@@ -113,8 +283,6 @@ TEST_F(MessageHandlerTest, testLogger) {
 
   EXPECT_CALL(logger_mock, SendResponse(kToken));
 
-  MessageHandler_Initialize(Transport_Send);
-
   Message message = { kToken, GET_LOG, 0, NULL };
   MessageHandler_HandleMessage(&message);
 }
@@ -125,8 +293,6 @@ TEST_F(MessageHandlerTest, testFlags) {
 
   EXPECT_CALL(flags_mock, SendResponse(kToken));
 
-  MessageHandler_Initialize(Transport_Send);
-
   Message message = { kToken, GET_FLAGS, 0, NULL };
   MessageHandler_HandleMessage(&message);
 }
@@ -134,77 +300,62 @@ TEST_F(MessageHandlerTest, testFlags) {
 TEST_F(MessageHandlerTest, testReset) {
   MockApp app_mock;
   APP_SetMock(&app_mock);
-  MockTransport transport_mock;
-  Transport_SetMock(&transport_mock);
 
   EXPECT_CALL(app_mock, Reset());
-  EXPECT_CALL(transport_mock,
+  EXPECT_CALL(m_transport_mock,
               Send(kToken, COMMAND_RESET_DEVICE, RC_OK, NULL, 0))
       .WillOnce(Return(true));
 
-  MessageHandler_Initialize(Transport_Send);
   Message message = { kToken, COMMAND_RESET_DEVICE, 0, NULL };
   MessageHandler_HandleMessage(&message);
 }
 
 TEST_F(MessageHandlerTest, testUnknownMessage) {
-  MockTransport transport_mock;
-  Transport_SetMock(&transport_mock);
-
-  EXPECT_CALL(transport_mock, Send(kToken, (Command) 0xff, RC_UNKNOWN, NULL, 0))
+  EXPECT_CALL(m_transport_mock,
+              Send(kToken, (Command) 0xff, RC_UNKNOWN, NULL, 0))
       .WillOnce(Return(true));
-
-  MessageHandler_Initialize(Transport_Send);
 
   Message message = { kToken, (Command) 0xff, 0, NULL };
   MessageHandler_HandleMessage(&message);
 }
 
 TEST_F(MessageHandlerTest, transceiverDMXEvent) {
-  MockTransport transport_mock;
-  Transport_SetMock(&transport_mock);
-
-  EXPECT_CALL(transport_mock, Send(kToken, TX_DMX, RC_OK, _, _))
+  EXPECT_CALL(m_transport_mock, Send(kToken, TX_DMX, RC_OK, _, _))
       .With(Args<3, 4>(EmptyPayload()))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock, Send(kToken + 1, TX_DMX, RC_TX_ERROR, _, _))
+  EXPECT_CALL(m_transport_mock, Send(kToken + 1, TX_DMX, RC_TX_ERROR, _, _))
       .With(Args<3, 4>(EmptyPayload()))
       .WillOnce(Return(true));
 
-  MessageHandler_Initialize(Transport_Send);
   SendEvent(kToken, T_OP_TX_ONLY, T_RESULT_TX_OK, NULL, 0);
   SendEvent(kToken + 1, T_OP_TX_ONLY, T_RESULT_TX_ERROR, NULL, 0);
 }
 
 TEST_F(MessageHandlerTest, transceiverRDMDiscoveryRequest) {
-  MockTransport transport_mock;
-  Transport_SetMock(&transport_mock);
-
   // Any data, doesn't have to be valid RDM
   const uint8_t rdm_reply[] = {1, 3, 4, 4, 5};
 
   const uint8_t frame_reply[] = {0, 0, 0, 0, 1, 3, 4, 4, 5};
 
-  EXPECT_CALL(transport_mock,
+  EXPECT_CALL(m_transport_mock,
               Send(kToken, COMMAND_RDM_DUB_REQUEST, RC_TX_ERROR, _, _))
       .With(Args<3, 4>(PayloadIs(
             reinterpret_cast<const uint8_t*>(&kEmptyDUBResponse),
             arraysize(kEmptyDUBResponse))))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock,
+  EXPECT_CALL(m_transport_mock,
               Send(kToken + 1, COMMAND_RDM_DUB_REQUEST, RC_OK, _, _))
       .With(Args<3, 4>(PayloadIs(
             reinterpret_cast<const uint8_t*>(&frame_reply),
             arraysize(frame_reply))))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock,
+  EXPECT_CALL(m_transport_mock,
               Send(kToken + 2, COMMAND_RDM_DUB_REQUEST, RC_RDM_TIMEOUT, _, _))
       .With(Args<3, 4>(PayloadIs(
             reinterpret_cast<const uint8_t*>(&kEmptyDUBResponse),
             arraysize(kEmptyDUBResponse))))
       .WillOnce(Return(true));
 
-  MessageHandler_Initialize(Transport_Send);
   SendEvent(kToken, T_OP_RDM_DUB, T_RESULT_TX_ERROR, NULL, 0);
   SendEvent(kToken + 1, T_OP_RDM_DUB, T_RESULT_RX_DATA,
             static_cast<const uint8_t*>(rdm_reply),
@@ -213,36 +364,32 @@ TEST_F(MessageHandlerTest, transceiverRDMDiscoveryRequest) {
 }
 
 TEST_F(MessageHandlerTest, transceiverRDMBroadcastRequest) {
-  MockTransport transport_mock;
-  Transport_SetMock(&transport_mock);
-
   // Any data, doesn't have to be valid RDM
   const uint8_t rdm_reply[] = {1, 3, 4, 4, 5};
   const uint8_t frame_reply[] = {1, 3, 4, 4, 5};
 
-  EXPECT_CALL(transport_mock,
+  EXPECT_CALL(m_transport_mock,
               Send(kToken, COMMAND_RDM_BROADCAST_REQUEST, RC_TX_ERROR, _, _))
       .With(Args<3, 4>(EmptyPayload()))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock,
+  EXPECT_CALL(m_transport_mock,
               Send(kToken + 1, COMMAND_RDM_BROADCAST_REQUEST,
                    RC_RDM_BCAST_RESPONSE, _, _))
       .With(Args<3, 4>(PayloadIs(
               reinterpret_cast<const uint8_t*>(&frame_reply),
               arraysize(frame_reply))))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock,
+  EXPECT_CALL(m_transport_mock,
               Send(kToken + 2, COMMAND_RDM_BROADCAST_REQUEST, RC_OK,
                    _, _))
       .With(Args<3, 4>(EmptyPayload()))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock,
+  EXPECT_CALL(m_transport_mock,
               Send(kToken + 3, COMMAND_RDM_BROADCAST_REQUEST,
                    RC_RDM_INVALID_RESPONSE, _, _))
       .With(Args<3, 4>(EmptyPayload()))
       .WillOnce(Return(true));
 
-  MessageHandler_Initialize(Transport_Send);
   SendEvent(kToken, T_OP_RDM_BROADCAST, T_RESULT_TX_ERROR, NULL, 0);
   SendEvent(kToken + 1, T_OP_RDM_BROADCAST, T_RESULT_RX_DATA,
             static_cast<const uint8_t*>(rdm_reply),
@@ -252,32 +399,29 @@ TEST_F(MessageHandlerTest, transceiverRDMBroadcastRequest) {
 }
 
 TEST_F(MessageHandlerTest, transceiverRDMRequestWithResponse) {
-  MockTransport transport_mock;
-  Transport_SetMock(&transport_mock);
-
   // Any data, doesn't have to be valid RDM
   const uint8_t rdm_reply[] = {1, 3, 4, 4, 5};
   const uint8_t frame_reply[] = {0, 0, 0, 0, 0, 0, 1, 3, 4, 4, 5};
 
-  EXPECT_CALL(transport_mock,
+  EXPECT_CALL(m_transport_mock,
               Send(kToken, COMMAND_RDM_REQUEST, RC_TX_ERROR, _, _))
       .With(Args<3, 4>(PayloadIs(
               reinterpret_cast<const uint8_t*>(&kEmptyRDMResponse),
               arraysize(kEmptyRDMResponse))))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock,
+  EXPECT_CALL(m_transport_mock,
               Send(kToken + 1, COMMAND_RDM_REQUEST, RC_OK, _, _))
       .With(Args<3, 4>(PayloadIs(
               reinterpret_cast<const uint8_t*>(&frame_reply),
               arraysize(frame_reply))))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock,
+  EXPECT_CALL(m_transport_mock,
               Send(kToken + 2, COMMAND_RDM_REQUEST, RC_RDM_TIMEOUT, _, _))
       .With(Args<3, 4>(PayloadIs(
               reinterpret_cast<const uint8_t*>(&kEmptyRDMResponse),
               arraysize(kEmptyRDMResponse))))
       .WillOnce(Return(true));
-  EXPECT_CALL(transport_mock,
+  EXPECT_CALL(m_transport_mock,
               Send(kToken + 3, COMMAND_RDM_REQUEST, RC_RDM_INVALID_RESPONSE, _,
                    _))
       .With(Args<3, 4>(PayloadIs(
@@ -285,7 +429,6 @@ TEST_F(MessageHandlerTest, transceiverRDMRequestWithResponse) {
               arraysize(kEmptyRDMResponse))))
       .WillOnce(Return(true));
 
-  MessageHandler_Initialize(Transport_Send);
   SendEvent(kToken, T_OP_RDM_WITH_RESPONSE, T_RESULT_TX_ERROR, NULL, 0);
   SendEvent(kToken + 1, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_DATA,
             static_cast<const uint8_t*>(rdm_reply),

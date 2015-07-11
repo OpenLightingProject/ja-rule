@@ -290,6 +290,7 @@ bool Transceiver_SetBreakTime(uint16_t break_time_us);
 /**
  * @brief Return the current configured break time.
  * @returns The break time in micro-seconds.
+ * @sa Transceiver_SetBreakTime
  */
 uint16_t Transceiver_GetBreakTime();
 
@@ -308,57 +309,61 @@ bool Transceiver_SetMarkTime(uint16_t mark_time_us);
 /**
  * @brief Return the current configured mark-after-break (MAB) time.
  * @returns The MAB time in micro-seconds.
+ * @sa Transceiver_SetMarkTime.
  */
 uint16_t Transceiver_GetMarkTime();
 
 /**
- * @brief Set the time to wait after RDM broadcasts.
- * @param delay the broadcast listen delay, in 10ths of a millisecond. Valid
- *   values are 0 to 50 (0 to 5ms).
- * @returns true if the broadcast listen delay was updated, false if the value
+ * @brief Set the controller timeout for broadcast RDM commands.
+ * @param delay the time to wait for a broadcast response, in 10ths of a
+ *   millisecond. Valid values are 0 to 50 (0 to 5ms).
+ * @returns true if the broadcast timeout was updated, false if the value
  *   was out of range.
  *
- * With the exception of a DUB, an RDM controller usually doesn't listen to the
- * line after sending a broadcast command. However for testing purposes we
- * want to be able to listen for responders that incorrectly reply.
+ * With the exception of a DUB, an RDM controller usually doesn't listen for
+ * responses after sending a broadcast command. However for testing purposes we
+ * want to be able to listen for responders that incorrectly reply to non-DUB
+ * broadcasts.
  */
-bool Transceiver_SetRDMBroadcastListen(uint16_t delay);
+bool Transceiver_SetRDMBroadcastTimeout(uint16_t delay);
 
 /**
- * @brief Return the current configured RDM broadcast listen time.
+ * @brief Return the current controller timeout for broadcast RDM commands.
  * @returns The RDM broadcast listen time, in 10ths of a millisecond.
  */
-uint16_t Transceiver_GetRDMBroadcastListen();
+uint16_t Transceiver_GetRDMBroadcastTimeout();
 
 /**
- * @brief Set the time to wait for a response before considering a RDM response
- *   lost.
- * @param wait_time the time to wait in 10ths of a millisecond. Valid values
+ * @brief Set the controller's RDM response timeout.
+ * @param delay the time to wait in 10ths of a millisecond. Valid values
  *   are 10 - 50 (1 - 5ms). Values < 28 are outside the specification but may
  *   be used for testing.
  * @returns true if time was updated, false if the value was out of range.
  *
- * This is used for both DISCOVERY and GET/SET commands. However the limits for
- * broadcast commands is controlled with Transceiver_SetRDMBroadcastListen().
+ * This response timeout is the time the controller waits for an RDM response
+ * before considering the response missing. This is used for both DISCOVERY and
+ * GET/SET commands. The limits for broadcast commands is controlled with
+ * Transceiver_SetRDMBroadcastTimeout().
  *
  * The default value is 28 (2.8mS), see Lines 1 & 3, Table 3-2, E1.20.
  *
  * By setting the value less than 28, we can cause responders that are at the
  * limits of the specification to fail. By setting the value more than 28, we
- * can support responders that are out-of-spec.
+ * can accomodate responders that are out-of-spec.
  */
-bool Transceiver_SetRDMWaitTime(uint16_t wait_time);
+bool Transceiver_SetRDMResponseTimeout(uint16_t wait_time);
 
 /**
- * @brief Return the RDM wait time.
- * @returns The RDM wait time in 10ths of a millisecond.
+ * @brief Return the controller's RDM response timeout.
+ * @returns The controller RDM response timeout, in 10ths of a millisecond.
+ * @sa Transceiver_SetRDMResponseTimeout
  */
-uint16_t Transceiver_GetRDMWaitTime();
+uint16_t Transceiver_GetRDMResponseTimeout();
 
 /**
- * @brief Configure the maximum time that a RDM DUB response packet can take.
- * @param wait_time the time to wait from the start of the DUB response until
- * the end, in 10ths of a microseconds. Valid values are 10000 - 35000
+ * @brief Set the maximum time allowed for a DUB response.
+ * @param limit the maximum time to wait from the start of the DUB response
+ * until the end, in 10ths of a microseconds. Valid values are 10000 - 35000
  * (1 - 3.5ms). Values < 28000 are outside the specification but may be used
  * for testing.
  * @returns true if time was updated, false if the value was out of range.
@@ -369,13 +374,33 @@ uint16_t Transceiver_GetRDMWaitTime();
  * limits of the specification to fail. By setting the value to more than 29000,
  * we can support responders that are out-of-spec.
  */
-bool Transceiver_SetRDMDUBResponseTime(uint16_t wait_time);
+bool Transceiver_SetRDMDUBResponseLimit(uint16_t limit);
 
 /**
- * @brief Return the RDM RX packet
- * @returns The RDM wait time in 10ths of a microsecond.
+ * @brief Return the Controller DUB response timeout.
+ * @returns The RDM DUB response limit, in 10ths of a millisecond.
+ * @sa Transceiver_SetDUBResponseLimit.
  */
-uint16_t Transceiver_GetRDMDUBResponseTime();
+uint16_t Transceiver_GetRDMDUBResponseLimit();
+
+/**
+ * @brief Configure the delay after the end of the controller's packet before
+ * the responder will transmit the reply.
+ * @param delay the delay between the end-of-packet and transmitting the
+ * responder, in 10ths of a microseconds. Valid values are 1760 - 20000
+ * (0.176 - 2ms).
+ * @returns true if time was updated, false if the value was out of range.
+ *
+ * The default value is 1760 (176uS), see Table 3-4, E1.20.
+ */
+bool Transceiver_SetRDMResponderDelay(uint16_t delay);
+
+/**
+ * @brief Return the RDM response delay.
+ * @returns The RDM response delay, in 10ths of a millisecond.
+ * @sa Transceiver_SetRDMResponseDelay.
+ */
+uint16_t Transceiver_GetRDMResponderDelay();
 
 #ifdef __cplusplus
 }
