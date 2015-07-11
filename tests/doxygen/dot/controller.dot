@@ -70,7 +70,4 @@ digraph {
   STATE_RX_TIMEOUT -> STATE_COMPLETE;
   STATE_COMPLETE -> STATE_BACKOFF;
   STATE_BACKOFF -> STATE_TX_READY [label="Time exceeded"];
-
-
-  // {rank=sink; LastSTATE; };
 }

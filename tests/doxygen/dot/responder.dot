@@ -60,7 +60,4 @@ digraph {
   BRANCH_R_TX_LAST_BYTE -> STATE_R_TX_DRAIN [label="Yes"];
   STATE_R_TX_DRAIN -> STATE_R_TX_COMPLETE [label="UART complete"];
   STATE_R_TX_COMPLETE -> STATE_R_RX_PREPARE;
-
-
-  // {rank=sink; LastSTATE; };
 }
