@@ -101,30 +101,72 @@ uint16_t Transceiver_GetMarkTime() {
   return 12;
 }
 
-bool Transceiver_SetRDMBroadcastListen(uint16_t delay) {
+bool Transceiver_SetRDMBroadcastTimeout(uint16_t delay) {
   if (g_transceiver_mock) {
-    return g_transceiver_mock->SetRDMBroadcastListen(delay);
+    return g_transceiver_mock->SetRDMBroadcastTimeout(delay);
   }
   return true;
 }
 
-uint16_t Transceiver_GetRDMBroadcastListen() {
+uint16_t Transceiver_GetRDMBroadcastTimeout() {
   if (g_transceiver_mock) {
-    return g_transceiver_mock->GetRDMBroadcastListen();
+    return g_transceiver_mock->GetRDMBroadcastTimeout();
   }
   return 0;
 }
 
-bool Transceiver_SetRDMWaitTime(uint16_t wait_time) {
+bool Transceiver_SetRDMResponseTimeout(uint16_t wait_time) {
   if (g_transceiver_mock) {
-    return g_transceiver_mock->SetRDMWaitTime(wait_time);
+    return g_transceiver_mock->SetRDMResponseTimeout(wait_time);
   }
   return true;
 }
 
-uint16_t Transceiver_GetRDMWaitTime() {
+uint16_t Transceiver_GetRDMResponseTimeout() {
   if (g_transceiver_mock) {
-    return g_transceiver_mock->GetRDMWaitTime();
+    return g_transceiver_mock->GetRDMResponseTimeout();
   }
   return 28;
+}
+
+bool Transceiver_SetRDMDUBResponseLimit(uint16_t limit) {
+  if (g_transceiver_mock) {
+    return g_transceiver_mock->SetRDMDUBResponseLimit(limit);
+  }
+  return true;
+}
+
+uint16_t Transceiver_GetRDMDUBResponseLimit() {
+  if (g_transceiver_mock) {
+    return g_transceiver_mock->GetRDMDUBResponseLimit();
+  }
+  return 28;
+}
+
+bool Transceiver_SetRDMResponderDelay(uint16_t delay) {
+  if (g_transceiver_mock) {
+    return g_transceiver_mock->SetRDMResponderDelay(delay);
+  }
+  return true;
+}
+
+uint16_t Transceiver_GetRDMResponderDelay() {
+  if (g_transceiver_mock) {
+    return g_transceiver_mock->GetRDMResponderDelay();
+  }
+  return 1760;
+}
+
+bool Transceiver_SetRDMResponderJitter(uint16_t max_jitter) {
+  if (g_transceiver_mock) {
+    return g_transceiver_mock->SetRDMResponderJitter(max_jitter);
+  }
+  return true;
+}
+
+uint16_t Transceiver_GetRDMResponderJitter() {
+  if (g_transceiver_mock) {
+    return g_transceiver_mock->GetRDMResponderJitter();
+  }
+  return 0;
 }

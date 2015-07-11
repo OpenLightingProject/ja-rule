@@ -125,53 +125,99 @@ typedef enum {
    * @brief Set the break time of the transceiver.
    * See @ref message_cmd_setbreak
    */
-  SET_BREAK_TIME = 0x10,
+  COMMAND_SET_BREAK_TIME = 0x10,
 
   /**
    * @brief Fetch the current transceiver break time.
    * See @ref message_cmd_getbreak
    */
-  GET_BREAK_TIME = 0x11,
+  COMMAND_GET_BREAK_TIME = 0x11,
 
   /**
    * @brief Set the mark-after-break time of the transceiver.
    * See @ref message_cmd_setmark
    */
-  SET_MAB_TIME = 0x12,
+  COMMAND_SET_MARK_TIME = 0x12,
 
   /**
    * @brief Fetch the current transceiver mark-after-break time.
    * See @ref message_cmd_getmark
    */
-  GET_MAB_TIME = 0x13,
+  COMMAND_GET_MARK_TIME = 0x13,
 
   // Advanced Configuration
   /**
-   * @brief Set the RDM Broadcast listen time.
-   * See @ref message_cmd_setrdmbcastlisten.
+   * @brief Set the RDM Broadcast timeout.
+   * See @ref message_cmd_setrdmbcasttimeout.
    */
-  SET_RDM_BROADCAST_LISTEN = 0x20,
+  COMMAND_SET_RDM_BROADCAST_TIMEOUT = 0x20,
 
   /**
-   * @brief Get the RDM Broadcast listen time.
-   * See @ref message_cmd_getrdmbcastlisten.
+   * @brief Get the RDM Broadcast timeout.
+   * See @ref message_cmd_getrdmbcasttimeout.
    */
-  GET_RDM_BROADCAST_LISTEN = 0x21,
-  SET_RDM_WAIT_TIME = 0x22,
-  GET_RDM_WAIT_TIME = 0x23,
+  COMMAND_GET_RDM_BROADCAST_TIMEOUT = 0x21,
+
+  /**
+   * @brief Set the RDM Response timeout.
+   * See @ref message_cmd_setrdmresponsetimeout.
+   */
+  COMMAND_SET_RDM_RESPONSE_TIMEOUT = 0x22,
+
+  /**
+   * @brief Get the RDM Response timeout.
+   * See @ref message_cmd_getrdmresponsetimeout.
+   */
+  COMMAND_GET_RDM_RESPONSE_TIMEOUT = 0x23,
+
+  /**
+   * @brief Set the RDM DUB Response limit.
+   * See @ref message_cmd_setrdmdubresponselimit.
+   */
+  COMMAND_SET_RDM_DUB_RESPONSE_LIMIT = 0x24,
+
+  /**
+   * @brief Get the RDM Response limit.
+   * See @ref message_cmd_getrdmdubresponselimit.
+   */
+  COMMAND_GET_RDM_DUB_RESPONSE_LIMIT = 0x25,
+
+  /**
+   * @brief Set the RDM responder delay.
+   * See @ref message_cmd_setrdmresponderdelay.
+   */
+  COMMAND_SET_RDM_RESPONDER_DELAY = 0x26,
+
+  /**
+   * @brief Get the RDM responder delay.
+   * See @ref message_cmd_getrdmresponderdelay.
+   */
+  COMMAND_GET_RDM_RESPONDER_DELAY = 0x27,
+
+  /**
+   * @brief Set the RDM responder jitter.
+   * See @ref message_cmd_setrdmresponderjitter.
+   */
+  COMMAND_SET_RDM_RESPONDER_JITTER = 0x28,
+
+  /**
+   * @brief Get the RDM responder jitter.
+   * See @ref message_cmd_getrdmresponderjitter.
+   */
+  COMMAND_GET_RDM_RESPONDER_JITTER = 0x29,
 
   // DMX
   TX_DMX = 0x30,  //!< Transmit a DMX frame. See @ref message_cmd_txdmx.
 
   // RDM
   /**
-   * @brief Send a RDM Discovery Unique Branch and wait for a response.
+   * @brief Send an RDM Discovery Unique Branch and wait for a response.
    * See @ref message_cmd_rdmdub.
    */
   COMMAND_RDM_DUB_REQUEST = 0x40,
 
   /**
-   * @brief Send a RDM Get / Set command.
+   * @brief Send an RDM Get / Set command.
    * See @ref message_cmd_rdm
    */
   COMMAND_RDM_REQUEST = 0x41,
@@ -244,23 +290,31 @@ typedef enum {
  * responses from broadcast messages, however by waiting we can detect bad
  * responders, so we set this the same as DEFAULT_RDM_WAIT_TIME.
  */
-#define DEFAULT_RDM_BROADCAST_LISTEN 28
+#define DEFAULT_RDM_BROADCAST_TIMEOUT 28
 
 /**
- * @brief The default time to wait for a response after sending an RDM message.
+ * @brief The default RDM response timeout for a controller.
  *
  * Measured is in 10ths of a millisecond, from Line 1 & 3, Table 3-2, E1.20.
  * Responders have 2ms (see Table 3-4), and then in line proxies can introduce
  * up to 704uS of delay. This rounds to 2.8 ms.
  */
-#define DEFAULT_RDM_WAIT_TIME 28
+#define DEFAULT_RDM_RESPONSE_TIMEOUT 28
 
 /**
- * @brief The default time a RDM DUB response can take.
+ * @brief The default maximum time an RDM DUB response can take.
  *
  * Measured in in 10ths of a microsecond. From Line 3, Table 3-3, E1.20.
  */
-#define DEFAULT_RDM_DUB_RESPONSE_TIME 29000
+#define DEFAULT_RDM_DUB_RESPONSE_LIMIT 29000
+
+/**
+ * @brief The default time to wait before sending an RDM response.
+ * @sa Transceiver_SetRDMResponderDelay.
+ *
+ * Measured in in 10ths of a microsecond. From Table 3-4, E1.20.
+ */
+#define DEFAULT_RDM_RESPONDER_DELAY 1760
 
 /**
  * @brief The minimum break time for controllers to receive.
@@ -281,22 +335,6 @@ typedef enum {
  * in E1.20.
  */
 #define CONTROLLER_RX_BREAK_TIME_MAX 3520
-
-/**
- * @brief The minimum break time for responders to receive
- *
- * Measured in 10ths of a microsecond. The value is from line 1 of Table 3-3
- * in E1.20.
- */
-#define RESPONDER_RX_BREAK_TIME_MIN  880
-
-/**
- * @brief The maximum break time for responders to receive.
- *
- * Measured in 10ths of a millisecond. The value is from line 1 of Table 3-3
- * in E1.20.
- */
-#define RESPONDER_RX_BREAK_TIME_MAX  10000
 
 #endif  // FIRMWARE_SRC_CONSTANTS_H_
 

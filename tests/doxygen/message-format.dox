@@ -12,7 +12,7 @@
  * each command.
  *
  * Messages sent from the Host to the Device are *Requests*, messages sent from
- * the Device to the Host are *Replies*.
+ * the Device to the Host are *Responses*.
  *
  * @section message_endian Byte Ordering
  *
@@ -55,9 +55,9 @@
  * @param Padding Extra padding, the Host should set this to 0. Padding should
  * not cause the total message to exceed @ref USB_READ_BUFFER_SIZE.
  *
- * @subsection message_format_reply Reply
+ * @subsection message_format_reply Response
  *
- * replies use the same header as Requests, with an additional 2 bytes to
+ * Responses use the same header as Requests, with an additional 2 bytes to
  * indicate the return code and status flags.
  *
  * <pre>
@@ -248,48 +248,228 @@
  *
  * @returns @ref RC_OK or @ref RC_BAD_PARAM if the value was out of range.
  *
- * @subsection message_cmd_getrdmbcastlisten Get RDM Broadcast Listen Time
+ * @subsection message_cmd_getrdmbcasttimeout Get RDM Broadcast Timeout
  *
- * Get the current value for the RDM broadcast listen time.
+ * Get the time the controller will wait for an RDM Response after sending a
+ * broadcast command.
  *
- * @subsubsection message_cmd_getrdmbcastlisten_req Request Payload
+ * @subsubsection message_cmd_getrdmbcasttimeout_req Request Payload
  *
  * The request contains no data.
  *
- * @subsubsection message_cmd_getrdmbcastlisten_res Response Payload
+ * @subsubsection message_cmd_getrdmbcasttimeout_res Response Payload
  *
  * <pre>
  *    0                   1
  *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   |             Delay             |
+ *   |             Timeout           |
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * </pre>
  *
- * @param Delay The current RDM broadcast listen value, in 10ths of a
+ * @param Timeout The current RDM broadcast timeout, in 10ths of a
  * millisecond.
  * @returns @ref RC_OK.
  *
- * @subsection message_cmd_setrdmbcastlisten Set RDM Broadcast Listen Time
+ * @subsection message_cmd_setrdmbcasttimeout Set RDM Broadcast Timeout
  *
- * Sets the time to wait after a broadcast RDM command has been sent. When set
- * to a non-0 value, this allows us to detect responders that incorrectly
- * respond to broadcast commands.
+ * Sets the time to wait for an RDM response after sending a broadcast RDM
+ * command. When set to a non-0 value, this allows us to detect responders that
+ * incorrectly respond to broadcast commands.
  *
- * @subsubsection message_cmd_setrdmbcastlisten_req Request Payload
+ * @subsubsection message_cmd_setrdmbcasttimeout_req Request Payload
  *
  * <pre>
  *    0                   1
  *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *   |             Delay             |
+ *   |             Timeout           |
  *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * </pre>
  *
- * @param Delay The time to wait for a RDM response after a broadcast command,
- * in 10ths of a millisecond. See Transceiver_SetRDMBroadcastListen().
+ * @param Timeout The time to wait for a RDM response after a broadcast command,
+ * in 10ths of a millisecond. See Transceiver_SetRDMBroadcastTimeout().
  *
- * @subsubsection message_cmd_setrdmbcastlisten_res Response Payload
+ * @subsubsection message_cmd_setrdmbcasttimeout_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns @ref RC_OK or @ref RC_BAD_PARAM if the value was out of range.
+ *
+ * @subsection message_cmd_getrdmresponsetimeout Get RDM Response Timeout
+ *
+ * Get the time that the controller will wait for an RDM Response after sending
+ * an RDM command.
+ *
+ * @subsubsection message_cmd_getrdmresponsetimeout_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection message_cmd_getrdmresponsetimeout_res Response Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |             Timeout           |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Timeout The current RDM response timeout, in 10ths of a
+ * millisecond.
+ * @returns @ref RC_OK.
+ *
+ * @subsection message_cmd_setrdmresponsetimeout Set RDM Response Timeout
+ *
+ * Sets the time to wait for a reply after a sending an RDM command.
+ *
+ * @subsubsection message_cmd_setrdmresponsetimeout_req Request Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |             Timeout           |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Timeout The time to wait for a RDM response after a broadcast command,
+ * in 10ths of a millisecond. See Transceiver_SetRDMResponseTimeout().
+ *
+ * @subsubsection message_cmd_setrdmresponsetimeout_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns @ref RC_OK or @ref RC_BAD_PARAM if the value was out of range.
+ *
+ * @subsection message_cmd_getrdmdubresponselimit Get RDM DUB Response Limit
+ *
+ * Get the maximum time a DUB response can take.
+ *
+ * @subsubsection message_cmd_getrdmdubresponselimit_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection message_cmd_getrdmdubresponselimit_res Response Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |              Limit            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Limit The maximum time a DUB response can take, in 10ths of a
+ * microsecond.
+ * @returns @ref RC_OK.
+ *
+ * @subsection message_cmd_setrdmdubresponselimit Set RDM DUB Response Limit
+ *
+ * Sets the time to wait for a reply after a sending an RDM command.
+ *
+ * @subsubsection message_cmd_setrdmdubresponselimit_req Request Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |              Limit            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Limit The maximum time a DUB response can take, in 10ths of a
+ * millisecond. See Transceiver_SetRDMDUBResponseLimit().
+ *
+ * @subsubsection message_cmd_setrdmdubresponselimit_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns @ref RC_OK or @ref RC_BAD_PARAM if the value was out of range.
+ *
+ * @subsection message_cmd_getrdmresponderdelay Get RDM Responder Delay
+ *
+ * Get the minimum time the responder waits before sending an RDM response.
+ *
+ * @subsubsection message_cmd_getrdmresponderdelay_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection message_cmd_getrdmresponderdelay_res Response Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |              Delay            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Delay The current RDM responder delay, in 10ths of a microsecond.
+ * @returns @ref RC_OK.
+ *
+ * @subsection message_cmd_setrdmresponderdelay Set RDM Responder Delay
+ *
+ * Sets the minimum time the responder waits before sending an RDM response.
+ *
+ * @subsubsection message_cmd_setrdmresponderdelay_req Request Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |              Delay            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Delay The minimum time to wait before sending an RDM response,
+ * in 10ths of a microsecond. See Transceiver_SetRDMResponderDelay().
+ *
+ * @subsubsection message_cmd_setrdmresponderdelay_res Response Payload
+ *
+ * The response contains no data.
+ *
+ * @returns @ref RC_OK or @ref RC_BAD_PARAM if the value was out of range.
+ *
+ * @subsection message_cmd_getrdmresponderjitter Get RDM Responder Jitter
+ *
+ * Get the jitter to use when sending RDM responses.
+ *
+ * @subsubsection message_cmd_getrdmresponderjitter_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection message_cmd_getrdmresponderjitter_res Response Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |              Jitter           |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Jitter The current RDM responder jitter, in 10ths of a microsecond.
+ * @returns @ref RC_OK.
+ *
+ * @subsection message_cmd_setrdmresponderjitter Set RDM Responder Jitter
+ *
+ * Set the jitter to use when sending RDM responses.
+ *
+ * @subsubsection message_cmd_setrdmresponderjitter_req Request Payload
+ *
+ * <pre>
+ *    0                   1
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |              Jitter           |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param Delay The jitter to use when sending an RDM response,
+ * in 10ths of a microsecond. See Transceiver_SetRDMResponderJitter().
+ *
+ * @subsubsection message_cmd_setrdmresponderjitter_res Response Payload
  *
  * The response contains no data.
  *
