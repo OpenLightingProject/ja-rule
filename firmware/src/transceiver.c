@@ -34,6 +34,7 @@
 #include "peripheral/ic/plib_ic.h"
 #include "peripheral/usart/plib_usart.h"
 #include "peripheral/tmr/plib_tmr.h"
+#include "transceiver_timing.h"
 
 // The number of buffers we maintain for overlapping I/O
 #define NUMBER_OF_BUFFERS 2
@@ -43,34 +44,6 @@
 #define MARK_FUDGE_FACTOR 217
 
 #define INPUT_CAPTURE_MODULE IC_ID_2
-
-/*
- * @brief The minimum break time for responders to receive
- *
- * Measured in 10ths of a microsecond. The value is from line 1 of Table 3-3
- * in E1.20.
- */
-#define RESPONDER_RX_BREAK_TIME_MIN  880
-
-/*
- * @brief The maximum break time for responders to receive.
- *
- * Measured in 10ths of a millisecond. The value is from line 1 of Table 3-3
- * in E1.20.
- */
-#define RESPONDER_RX_BREAK_TIME_MAX  10000
-
-/*
- * @brief The minimum RDM responder delay in 10ths of a microsecond, Table 3-4,
- * E1.20
- */
-#define MINIMUM_RESPONDER_DELAY 1760
-
-/*
- * @brief The maximum RDM responder delay in 10ths of a microsecond. Table 3-4,
- * E1.20
- */
-#define MAXIMUM_RESPONDER_DELAY 20000
 
 typedef enum {
   STATE_TX_READY,  //!< Wait for a pending frame
@@ -829,27 +802,32 @@ void Transceiver_Tasks() {
       //  - If bcast, the min EOF to break is 0.176ms
       //  - If lost response, the min EOF to break is 3.0ms
       //  - Any other packet, min EOF to break is 176uS.
-      ok = CoarseTimer_HasElapsed(g_transceiver.tx_frame_start, 13);
+      ok = CoarseTimer_HasElapsed(g_transceiver.tx_frame_start,
+                                  CONTROLLER_MIN_BREAK_TO_BREAK);
 
       switch (g_transceiver.active->type) {
         case T_OP_TX_ONLY:
           // 176uS min, rounds to 0.2ms.
-          ok &= CoarseTimer_HasElapsed(g_transceiver.tx_frame_end, 2);
+          ok &= CoarseTimer_HasElapsed(g_transceiver.tx_frame_end,
+                                       CONTROLLER_NON_RDM_BACKOFF);
           break;
         case T_OP_RDM_DUB:
           // It would be nice to be able to reduce this if we didn't get a
           // response, but the standard doesn't allow this.
-          ok &= CoarseTimer_HasElapsed(g_transceiver.tx_frame_end, 58);
+          ok &= CoarseTimer_HasElapsed(g_transceiver.tx_frame_end,
+                                       CONTROLLER_DUB_BACKOFF);
           break;
         case T_OP_RDM_BROADCAST:
-          ok &= CoarseTimer_HasElapsed(g_transceiver.tx_frame_end, 2);
+          ok &= CoarseTimer_HasElapsed(g_transceiver.tx_frame_end,
+                                       CONTROLLER_BROADCAST_BACKOFF);
           break;
         case T_OP_RDM_WITH_RESPONSE:
           // TODO(simon):
           // We can probably make this faster, since the 3ms only
           // applies for no responses. If we do get a response, then it's only
-          // a 0.176ms delay, from the end of the responder frame.
-          ok &= CoarseTimer_HasElapsed(g_transceiver.tx_frame_end, 30);
+          // a 0.176ms delay, from the end of the response frame.
+          ok &= CoarseTimer_HasElapsed(g_transceiver.tx_frame_end,
+                                       CONTROLLER_MISSING_RESPONSE_BACKOFF);
           break;
         case T_OP_RX:
           // Noop
@@ -968,7 +946,8 @@ void Transceiver_Reset() {
 }
 
 bool Transceiver_SetBreakTime(uint16_t break_time_us) {
-  if (break_time_us < 44 || break_time_us > 800) {
+  if (break_time_us < MINIMUM_TX_BREAK_TIME ||
+      break_time_us > MAXIMUM_TX_BREAK_TIME) {
     return false;
   }
   g_timing_settings.break_time = break_time_us;
@@ -983,7 +962,8 @@ uint16_t Transceiver_GetBreakTime() {
 }
 
 bool Transceiver_SetMarkTime(uint16_t mark_time_us) {
-  if (mark_time_us < 4 || mark_time_us > 800) {
+  if (mark_time_us < MINIMUM_TX_MARK_TIME ||
+      mark_time_us > MAXIMUM_TX_MARK_TIME) {
     return false;
   }
   g_timing_settings.mark_time = mark_time_us;

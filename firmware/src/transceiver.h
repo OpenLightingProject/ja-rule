@@ -276,7 +276,7 @@ void Transceiver_Reset();
 
 /**
  * @brief Set the break (space) time.
- * @param break_time_us the break time in micro-seconds, values are 44 to 800
+ * @param break_time_us the break time in microseconds, values are 44 to 800
  *   inclusive.
  * @returns true if the break time was updated, false if the value was out of
  *   range.
@@ -290,14 +290,14 @@ bool Transceiver_SetBreakTime(uint16_t break_time_us);
 
 /**
  * @brief Return the current configured break time.
- * @returns The break time in micro-seconds.
+ * @returns The break time in microseconds.
  * @sa Transceiver_SetBreakTime
  */
 uint16_t Transceiver_GetBreakTime();
 
 /**
  * @brief Set the mark-after-break (MAB) time.
- * @param mark_time_us the mark time in micro-seconds, values are 4 to 800
+ * @param mark_time_us the mark time in microseconds, values are 4 to 800
  *   inclusive.
  * @returns true if the mark time was updated, false if the value was out of
  *   range.
@@ -309,7 +309,7 @@ bool Transceiver_SetMarkTime(uint16_t mark_time_us);
 
 /**
  * @brief Return the current configured mark-after-break (MAB) time.
- * @returns The MAB time in micro-seconds.
+ * @returns The MAB time in microseconds.
  * @sa Transceiver_SetMarkTime.
  */
 uint16_t Transceiver_GetMarkTime();
@@ -379,7 +379,7 @@ bool Transceiver_SetRDMDUBResponseLimit(uint16_t limit);
 
 /**
  * @brief Return the Controller DUB response timeout.
- * @returns The RDM DUB response limit, in 10ths of a millisecond.
+ * @returns The RDM DUB response limit, in 10ths of a microseconds.
  * @sa Transceiver_SetDUBResponseLimit.
  */
 uint16_t Transceiver_GetRDMDUBResponseLimit();
@@ -398,7 +398,7 @@ bool Transceiver_SetRDMResponderDelay(uint16_t delay);
 
 /**
  * @brief Return the RDM responder delay.
- * @returns The RDM responder delay, in 10ths of a millisecond.
+ * @returns The RDM responder delay, in 10ths of a microsecond.
  * @sa Transceiver_SetRDMResponderDelay.
  */
 uint16_t Transceiver_GetRDMResponderDelay();
@@ -416,7 +416,7 @@ bool Transceiver_SetRDMResponderJitter(uint16_t max_jitter);
 
 /**
  * @brief Return the RDM responder jitter.
- * @returns The RDM responder jitter, in 10ths of a millisecond.
+ * @returns The RDM responder jitter, in 10ths of a microsecond.
  * @sa Transceiver_SetRDMResponderJitter.
  */
 uint16_t Transceiver_GetRDMResponderJitter();
