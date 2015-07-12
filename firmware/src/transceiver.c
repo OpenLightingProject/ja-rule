@@ -50,9 +50,6 @@
 
 #define BUFFER_SIZE (DMX_FRAME_SIZE + 1)
 
-#define RDM_INTERSLOT_TIMEOUT 21  // In 10ths of a ms
-#define DMX_INTERSLOT_TIMEOUT 10000  // In 10ths of a ms
-
 typedef enum {
   // Controller states
   STATE_C_INITIALIZE = 0,  //!< Initialize controller state.
@@ -159,6 +156,9 @@ typedef struct {
    */
   CoarseTimer_Value last_byte_coarse;
 
+  /**
+   * @brief The result of the last operation.
+   */
   TransceiverOperationResult result;
 
   /**
@@ -404,7 +404,8 @@ static inline void PrepareRDMResponse() {
   TakeNextBuffer();
 
   // Enable timer
-  // TODO(simon): make this configurable.
+  // TODO(simon): Use rdm_responder_delay & rdm_responder_jitter to make this
+  // configurable.
   PLIB_TMR_Period16BitSet(TMR_ID_3, 1760 - RESPONSE_FUDGE_FACTOR);
   SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
   SYS_INT_SourceEnable(INT_SOURCE_TIMER_3);
@@ -1238,9 +1239,9 @@ void Transceiver_Tasks() {
         // Check the time since the last byte.
         if ((g_transceiver.active->data[0] == RDM_START_CODE &&
              CoarseTimer_HasElapsed(g_transceiver.last_byte_coarse,
-                                    RDM_INTERSLOT_TIMEOUT)) ||
+                                    RESPONDER_RDM_INTERSLOT_TIMEOUT)) ||
             CoarseTimer_HasElapsed(g_transceiver.last_byte_coarse,
-                                   DMX_INTERSLOT_TIMEOUT)) {
+                                   RESPONDER_DMX_INTERSLOT_TIMEOUT)) {
           // RDM inter-slot timeout
           PLIB_USART_ReceiverDisable(g_hw_settings.usart);
           g_transceiver.state = STATE_R_RX_PREPARE;
