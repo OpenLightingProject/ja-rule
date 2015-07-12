@@ -379,7 +379,7 @@ bool Transceiver_SetRDMDUBResponseLimit(uint16_t limit);
 
 /**
  * @brief Return the Controller DUB response timeout.
- * @returns The RDM DUB response limit, in 10ths of a microseconds.
+ * @returns The RDM DUB response limit, in 10ths of a microsecond.
  * @sa Transceiver_SetDUBResponseLimit.
  */
 uint16_t Transceiver_GetRDMDUBResponseLimit();

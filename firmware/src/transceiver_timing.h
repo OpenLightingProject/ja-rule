@@ -20,6 +20,12 @@
 #ifndef FIRMWARE_SRC_TRANSCEIVER_TIMING_H_
 #define FIRMWARE_SRC_TRANSCEIVER_TIMING_H_
 
+/**
+ * @addtogroup transceiver
+ * @{
+ * @file transceiver_timing.h
+ */
+
 // Common params
 // ----------------------------------------------------------------------------
 
@@ -121,7 +127,7 @@
 // Responder params
 // ----------------------------------------------------------------------------
 
-/*
+/**
  * @brief The minimum break time for responders to receive.
  *
  * Measured in 10ths of a microsecond. The value is from line 1 of Table 3-3
@@ -129,7 +135,7 @@
  */
 #define RESPONDER_RX_BREAK_TIME_MIN  880
 
-/*
+/**
  * @brief The maximum break time for responders to receive.
  *
  * Measured in 10ths of a millisecond. The value is from line 1 of Table 3-3
@@ -137,16 +143,20 @@
  */
 #define RESPONDER_RX_BREAK_TIME_MAX  10000
 
-/*
+/**
  * @brief The minimum RDM responder delay in 10ths of a microsecond, Table 3-4,
  * E1.20
  */
 #define MINIMUM_RESPONDER_DELAY 1760
 
-/*
+/**
  * @brief The maximum RDM responder delay in 10ths of a microsecond. Table 3-4,
  * E1.20
  */
 #define MAXIMUM_RESPONDER_DELAY 20000
+
+/**
+ * @}
+ */
 
 #endif   // FIRMWARE_SRC_TRANSCEIVER_TIMING_H_
