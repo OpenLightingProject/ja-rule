@@ -88,41 +88,77 @@ TEST_F(TransceiverTest, testSetRDMBroadcastListen) {
   TransceiverHardwareSettings settings = DefaultSettings();
   Transceiver_Initialize(&settings, NULL, NULL);
 
-  EXPECT_EQ(28, Transceiver_GetRDMBroadcastListen());
-  EXPECT_TRUE(Transceiver_SetRDMBroadcastListen(1));
-  EXPECT_EQ(1, Transceiver_GetRDMBroadcastListen());
-  EXPECT_TRUE(Transceiver_SetRDMBroadcastListen(50));
-  EXPECT_EQ(50, Transceiver_GetRDMBroadcastListen());
-  EXPECT_FALSE(Transceiver_SetRDMBroadcastListen(51));
-  EXPECT_EQ(50, Transceiver_GetRDMBroadcastListen());
+  EXPECT_EQ(28, Transceiver_GetRDMBroadcastTimeout());
+  EXPECT_TRUE(Transceiver_SetRDMBroadcastTimeout(1));
+  EXPECT_EQ(1, Transceiver_GetRDMBroadcastTimeout());
+  EXPECT_TRUE(Transceiver_SetRDMBroadcastTimeout(50));
+  EXPECT_EQ(50, Transceiver_GetRDMBroadcastTimeout());
+  EXPECT_FALSE(Transceiver_SetRDMBroadcastTimeout(51));
+  EXPECT_EQ(50, Transceiver_GetRDMBroadcastTimeout());
 }
 
 TEST_F(TransceiverTest, testSetRDMWaitTime) {
   TransceiverHardwareSettings settings = DefaultSettings();
   Transceiver_Initialize(&settings, NULL, NULL);
 
-  EXPECT_EQ(28, Transceiver_GetRDMWaitTime());
-  EXPECT_FALSE(Transceiver_SetRDMWaitTime(9));
-  EXPECT_EQ(28, Transceiver_GetRDMWaitTime());
-  EXPECT_TRUE(Transceiver_SetRDMWaitTime(10));
-  EXPECT_EQ(10, Transceiver_GetRDMWaitTime());
-  EXPECT_TRUE(Transceiver_SetRDMWaitTime(50));
-  EXPECT_EQ(50, Transceiver_GetRDMWaitTime());
-  EXPECT_FALSE(Transceiver_SetRDMWaitTime(51));
-  EXPECT_EQ(50, Transceiver_GetRDMWaitTime());
+  EXPECT_EQ(28, Transceiver_GetRDMResponseTimeout());
+  EXPECT_FALSE(Transceiver_SetRDMResponseTimeout(9));
+  EXPECT_EQ(28, Transceiver_GetRDMResponseTimeout());
+  EXPECT_TRUE(Transceiver_SetRDMResponseTimeout(10));
+  EXPECT_EQ(10, Transceiver_GetRDMResponseTimeout());
+  EXPECT_TRUE(Transceiver_SetRDMResponseTimeout(50));
+  EXPECT_EQ(50, Transceiver_GetRDMResponseTimeout());
+  EXPECT_FALSE(Transceiver_SetRDMResponseTimeout(51));
+  EXPECT_EQ(50, Transceiver_GetRDMResponseTimeout());
 }
 
 TEST_F(TransceiverTest, testSetDUBResponseTime) {
   TransceiverHardwareSettings settings = DefaultSettings();
   Transceiver_Initialize(&settings, NULL, NULL);
 
-  EXPECT_EQ(29000, Transceiver_GetRDMDUBResponseTime());
-  EXPECT_FALSE(Transceiver_SetRDMDUBResponseTime(9999));
-  EXPECT_EQ(29000, Transceiver_GetRDMDUBResponseTime());
-  EXPECT_TRUE(Transceiver_SetRDMDUBResponseTime(10000));
-  EXPECT_EQ(10000, Transceiver_GetRDMDUBResponseTime());
-  EXPECT_TRUE(Transceiver_SetRDMDUBResponseTime(35000));
-  EXPECT_EQ(35000, Transceiver_GetRDMDUBResponseTime());
-  EXPECT_FALSE(Transceiver_SetRDMDUBResponseTime(35001));
-  EXPECT_EQ(35000, Transceiver_GetRDMDUBResponseTime());
+  EXPECT_EQ(29000, Transceiver_GetRDMDUBResponseLimit());
+  EXPECT_FALSE(Transceiver_SetRDMDUBResponseLimit(9999));
+  EXPECT_EQ(29000, Transceiver_GetRDMDUBResponseLimit());
+  EXPECT_TRUE(Transceiver_SetRDMDUBResponseLimit(10000));
+  EXPECT_EQ(10000, Transceiver_GetRDMDUBResponseLimit());
+  EXPECT_TRUE(Transceiver_SetRDMDUBResponseLimit(35000));
+  EXPECT_EQ(35000, Transceiver_GetRDMDUBResponseLimit());
+  EXPECT_FALSE(Transceiver_SetRDMDUBResponseLimit(35001));
+  EXPECT_EQ(35000, Transceiver_GetRDMDUBResponseLimit());
+}
+
+TEST_F(TransceiverTest, testSetResponderDelay) {
+  TransceiverHardwareSettings settings = DefaultSettings();
+  Transceiver_Initialize(&settings, NULL, NULL);
+
+  EXPECT_EQ(1760, Transceiver_GetRDMResponderDelay());
+  EXPECT_FALSE(Transceiver_SetRDMResponderDelay(1759));
+  EXPECT_EQ(1760, Transceiver_GetRDMResponderDelay());
+  EXPECT_TRUE(Transceiver_SetRDMResponderDelay(1761));
+  EXPECT_EQ(1761, Transceiver_GetRDMResponderDelay());
+  EXPECT_TRUE(Transceiver_SetRDMResponderDelay(20000));
+  EXPECT_EQ(20000, Transceiver_GetRDMResponderDelay());
+  EXPECT_FALSE(Transceiver_SetRDMResponderDelay(20001));
+  EXPECT_EQ(20000, Transceiver_GetRDMResponderDelay());
+}
+
+TEST_F(TransceiverTest, testSetResponderJitter) {
+  TransceiverHardwareSettings settings = DefaultSettings();
+  Transceiver_Initialize(&settings, NULL, NULL);
+
+  EXPECT_EQ(0, Transceiver_GetRDMResponderJitter());
+  EXPECT_FALSE(Transceiver_SetRDMResponderJitter(20000));
+  EXPECT_EQ(0, Transceiver_GetRDMResponderJitter());
+  // 176uS + up to 1ms
+  EXPECT_TRUE(Transceiver_SetRDMResponderJitter(1000));
+  EXPECT_EQ(1000, Transceiver_GetRDMResponderJitter());
+  EXPECT_TRUE(Transceiver_SetRDMResponderJitter(18240));
+  EXPECT_EQ(18240, Transceiver_GetRDMResponderJitter());
+  EXPECT_FALSE(Transceiver_SetRDMResponderJitter(18241));
+  EXPECT_EQ(18240, Transceiver_GetRDMResponderJitter());
+
+  // Now increase the delay, jitter should adjust
+  EXPECT_TRUE(Transceiver_SetRDMResponderDelay(11000));
+  EXPECT_EQ(11000, Transceiver_GetRDMResponderDelay());
+  EXPECT_EQ(9000, Transceiver_GetRDMResponderJitter());
 }

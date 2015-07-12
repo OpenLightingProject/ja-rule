@@ -94,7 +94,7 @@ typedef struct {
 
 USBConsoleData g_usb_console;
 
-static uint16_t USBConsole_SpaceRemaining() {
+static uint16_t SpaceRemaining() {
   int16_t remaining = USB_CONSOLE_BUFFER_SIZE;
   if (g_usb_console.write.read != -1) {
     if (g_usb_console.write.read < g_usb_console.write.write) {
@@ -106,7 +106,7 @@ static uint16_t USBConsole_SpaceRemaining() {
   return remaining;
 }
 
-void USBConsole_AbortTransfers() {
+static void AbortTransfers() {
   // TODO(simon): Fix this. There seems to be some internal state that isn't
   // reset correctly. Re-enumerating the USB works but cancelling the IRPs
   // doesn't.
@@ -205,7 +205,7 @@ USB_DEVICE_CDC_EVENT_RESPONSE USBConsole_CDCEventHandler(
  * @brief Check if the device was reset.
  * @returns true if the USB device was reset, false otherwise.
  */
-bool USBConsole_CheckAndHandleReset() {
+static bool CheckAndHandleReset() {
   if (USBTransport_IsConfigured() == false) {
     g_usb_console.read_state = READ_STATE_WAIT_FOR_CONFIGURATION;
     g_usb_console.read_handle = USB_DEVICE_CDC_TRANSFER_HANDLE_INVALID;
@@ -216,6 +216,27 @@ bool USBConsole_CheckAndHandleReset() {
   return false;
 }
 
+/*
+ * @brief Log raw data to the console.
+ * @pre str is NULL terminated and has at least one non-NULL character.
+ * @pre There is at least 1 byte of space in the buffer.
+ */
+void LogRaw(const char* str) {
+  const char* c = str;
+  while (*c) {
+    if (g_usb_console.write.write == g_usb_console.write.read && c != str) {
+      return;
+    }
+
+    g_usb_console.write.buffer[g_usb_console.write.write++] = *c++;
+    if (g_usb_console.write.write == USB_CONSOLE_BUFFER_SIZE) {
+      g_usb_console.write.write = 0;
+    }
+  }
+}
+
+// Public Functions
+// ----------------------------------------------------------------------------
 void USBConsole_Initialize() {
   // Dummy line coding params.
   g_usb_console.line_coding.dwDTERate = 9600;
@@ -237,30 +258,12 @@ void USBConsole_Initialize() {
                                  USBConsole_CDCEventHandler, NULL);
 }
 
-/*
- * @brief Log raw data to the console.
- * @pre str is NULL terminated and has at least one non-NULL character.
- * @pre There is at least 1 byte of space in the buffer.
- */
-void USBConsole_LogRaw(const char* str) {
-  const char* c = str;
-  while (*c) {
-    if (g_usb_console.write.write == g_usb_console.write.read && c != str) {
-      return;
-    }
-
-    g_usb_console.write.buffer[g_usb_console.write.write++] = *c++;
-    if (g_usb_console.write.write == USB_CONSOLE_BUFFER_SIZE) {
-      g_usb_console.write.write = 0;
-    }
-  }
-}
 void USBConsole_Log(const char* message) {
   if (g_usb_console.control_line_state.carrier == 0 || *message == 0) {
     return;
   }
 
-  int16_t remaining = USBConsole_SpaceRemaining();
+  int16_t remaining = SpaceRemaining();
   if (remaining < LOG_TERMINATOR_SIZE) {
     // There isn't enough room for the terminator characters.
     return;
@@ -272,22 +275,22 @@ void USBConsole_Log(const char* message) {
     g_usb_console.write.write = 0;
   }
 
-  USBConsole_LogRaw(message);
+  LogRaw(message);
 
   // We need to terminate with \r\n
-  remaining = USBConsole_SpaceRemaining();
+  remaining = SpaceRemaining();
   if (remaining < LOG_TERMINATOR_SIZE) {
     g_usb_console.write.write -= LOG_TERMINATOR_SIZE;
     if (g_usb_console.write.write < 0) {
       g_usb_console.write.write += USB_CONSOLE_BUFFER_SIZE;
     }
   }
-  USBConsole_LogRaw(LOG_TERMINATOR);
+  LogRaw(LOG_TERMINATOR);
   return;
 }
 
 void USBConsole_Tasks() {
-  if (USBConsole_CheckAndHandleReset()) {
+  if (CheckAndHandleReset()) {
     return;
   }
 

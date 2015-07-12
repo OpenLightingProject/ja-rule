@@ -52,6 +52,34 @@
 #define RDM_INTERSLOT_TIMEOUT 21  // In 10ths of a ms
 #define DMX_INTERSLOT_TIMEOUT 10000  // In 10ths of a ms
 
+/*
+ * @brief The minimum break time for responders to receive
+ *
+ * Measured in 10ths of a microsecond. The value is from line 1 of Table 3-3
+ * in E1.20.
+ */
+#define RESPONDER_RX_BREAK_TIME_MIN  880
+
+/*
+ * @brief The maximum break time for responders to receive.
+ *
+ * Measured in 10ths of a millisecond. The value is from line 1 of Table 3-3
+ * in E1.20.
+ */
+#define RESPONDER_RX_BREAK_TIME_MAX  10000
+
+/*
+ * @brief The minimum RDM responder delay in 10ths of a microsecond, Table 3-4,
+ * E1.20
+ */
+#define MINIMUM_RESPONDER_DELAY 1760
+
+/*
+ * @brief The maximum RDM responder delay in 10ths of a microsecond. Table 3-4,
+ * E1.20
+ */
+#define MAXIMUM_RESPONDER_DELAY 20000
+
 typedef enum {
   // Controller states
   STATE_C_INITIALIZE = 0,  //!< Initialize controller state.
@@ -126,10 +154,10 @@ typedef struct {
   /**
    * @brief The time to wait for the RDM response.
    *
-   * This is set to either g_timing_settings.rdm_wait_time or
-   * g_timing_settings.rdm_broadcast_listen depending on the type of request.
+   * This is set to either g_timing_settings.rdm_response_timeout or
+   * g_timing_settings.rdm_broadcast_timeout depending on the type of request.
    */
-  uint16_t rdm_wait_time;
+  uint16_t rdm_response_timeout;
 
   /**
    * @brief The index into the TransceiverBuffer's data, for transmit or
@@ -182,9 +210,11 @@ typedef struct {
   uint16_t break_ticks;
   uint16_t mark_time;
   uint16_t mark_ticks;
-  uint16_t rdm_broadcast_listen;
-  uint16_t rdm_wait_time;
-  uint16_t rdm_dub_response_time;
+  uint16_t rdm_broadcast_timeout;
+  uint16_t rdm_response_timeout;
+  uint16_t rdm_dub_response_limit;
+  uint16_t rdm_responder_delay;
+  uint16_t rdm_responder_jitter;
 } TimingSettings;
 
 // The TX / RX buffers
@@ -490,9 +520,11 @@ static inline void RXFrameEvent() {
 static void ResetTimingSettings() {
   Transceiver_SetBreakTime(DEFAULT_BREAK_TIME);
   Transceiver_SetMarkTime(DEFAULT_MARK_TIME);
-  Transceiver_SetRDMBroadcastListen(DEFAULT_RDM_BROADCAST_LISTEN);
-  Transceiver_SetRDMWaitTime(DEFAULT_RDM_WAIT_TIME);
-  Transceiver_SetRDMDUBResponseTime(DEFAULT_RDM_DUB_RESPONSE_TIME);
+  Transceiver_SetRDMBroadcastTimeout(DEFAULT_RDM_BROADCAST_TIMEOUT);
+  Transceiver_SetRDMResponseTimeout(DEFAULT_RDM_RESPONSE_TIMEOUT);
+  Transceiver_SetRDMDUBResponseLimit(DEFAULT_RDM_DUB_RESPONSE_LIMIT);
+  Transceiver_SetRDMResponderDelay(DEFAULT_RDM_RESPONDER_DELAY);
+  Transceiver_SetRDMResponderJitter(0);
 }
 
 // Interrupt Handlers
@@ -744,16 +776,16 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
           SYS_INT_SourceEnable(INT_SOURCE_USART_1_ERROR);
 
         } else if (g_transceiver.active->op == OP_RDM_BROADCAST &&
-                   g_timing_settings.rdm_broadcast_listen == 0) {
+                   g_timing_settings.rdm_broadcast_timeout == 0) {
           // Go directly to the complete state.
           PLIB_TMR_Stop(TMR_ID_3);
           g_transceiver.state = STATE_C_COMPLETE;
         } else {
           // Either T_OP_RDM_WITH_RESPONSE or a non-0 broadcast listen time.
-          g_transceiver.rdm_wait_time = (
+          g_transceiver.rdm_response_timeout = (
               g_transceiver.active->op == OP_RDM_BROADCAST ?
-              g_timing_settings.rdm_broadcast_listen :
-              g_timing_settings.rdm_wait_time);
+              g_timing_settings.rdm_broadcast_timeout :
+              g_timing_settings.rdm_response_timeout);
           g_transceiver.state = STATE_C_RX_WAIT_FOR_BREAK;
           g_transceiver.data_index = 0;
 
@@ -1010,7 +1042,7 @@ void Transceiver_Tasks() {
 
     case STATE_C_RX_WAIT_FOR_BREAK:
       if (CoarseTimer_HasElapsed(g_transceiver.tx_frame_end,
-                                 g_transceiver.rdm_wait_time)) {
+                                 g_transceiver.rdm_response_timeout)) {
         SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
         // Note: the IC ISR may have run between the case check and the
         // SourceDisable and switched us to STATE_C_RX_WAIT_FOR_MARK.
@@ -1049,7 +1081,7 @@ void Transceiver_Tasks() {
 
     case STATE_C_RX_WAIT_FOR_DUB:
       if (CoarseTimer_HasElapsed(g_transceiver.tx_frame_end,
-                                 g_timing_settings.rdm_wait_time)) {
+                                 g_timing_settings.rdm_response_timeout)) {
         SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
         // Note: the IC ISR may have run between the case check and the
         // SourceDisable and switched us to STATE_C_RX_IN_DUB.
@@ -1064,7 +1096,7 @@ void Transceiver_Tasks() {
       break;
     case STATE_C_RX_IN_DUB:
       if ((PLIB_TMR_Counter16BitGet(TMR_ID_3) - g_timing.dub_response.start >
-           g_timing_settings.rdm_dub_response_time)) {
+           g_timing_settings.rdm_dub_response_limit)) {
         // The UART Error interupt may have fired, putting us into
         // STATE_C_COMPLETE, already.
         SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
@@ -1436,40 +1468,69 @@ uint16_t Transceiver_GetMarkTime() {
   return g_timing_settings.mark_time;
 }
 
-bool Transceiver_SetRDMBroadcastListen(uint16_t delay) {
+bool Transceiver_SetRDMBroadcastTimeout(uint16_t delay) {
   if (delay > 50) {
     return false;
   }
-  g_timing_settings.rdm_broadcast_listen = delay;
-  SysLog_Print(SYSLOG_INFO, "Bcast listen is %d",
-               g_timing_settings.rdm_broadcast_listen);
+  g_timing_settings.rdm_broadcast_timeout = delay;
+  SysLog_Print(SYSLOG_INFO, "Bcast timeout: %d",
+               g_timing_settings.rdm_broadcast_timeout);
   return true;
 }
 
-uint16_t Transceiver_GetRDMBroadcastListen() {
-  return g_timing_settings.rdm_broadcast_listen;
+uint16_t Transceiver_GetRDMBroadcastTimeout() {
+  return g_timing_settings.rdm_broadcast_timeout;
 }
 
-bool Transceiver_SetRDMWaitTime(uint16_t wait_time) {
-  if (wait_time < 10 || wait_time > 50) {
+bool Transceiver_SetRDMResponseTimeout(uint16_t delay) {
+  if (delay < 10 || delay > 50) {
     return false;
   }
-  g_timing_settings.rdm_wait_time = wait_time;
+  g_timing_settings.rdm_response_timeout = delay;
   return true;
 }
 
-uint16_t Transceiver_GetRDMWaitTime() {
-  return g_timing_settings.rdm_wait_time;
+uint16_t Transceiver_GetRDMResponseTimeout() {
+  return g_timing_settings.rdm_response_timeout;
 }
 
-bool Transceiver_SetRDMDUBResponseTime(uint16_t wait_time) {
-  if (wait_time < 10000 || wait_time > 35000) {
+bool Transceiver_SetRDMDUBResponseLimit(uint16_t limit) {
+  if (limit < 10000 || limit > 35000) {
     return false;
   }
-  g_timing_settings.rdm_dub_response_time = wait_time;
+  g_timing_settings.rdm_dub_response_limit = limit;
   return true;
 }
 
-uint16_t Transceiver_GetRDMDUBResponseTime() {
-  return g_timing_settings.rdm_dub_response_time;
+uint16_t Transceiver_GetRDMDUBResponseLimit() {
+  return g_timing_settings.rdm_dub_response_limit;
+}
+
+bool Transceiver_SetRDMResponderDelay(uint16_t delay) {
+  if (delay < MINIMUM_RESPONDER_DELAY || delay > MAXIMUM_RESPONDER_DELAY) {
+    return false;
+  }
+  g_timing_settings.rdm_responder_delay = delay;
+  uint16_t max_jitter = MAXIMUM_RESPONDER_DELAY - delay;
+  g_timing_settings.rdm_responder_jitter = (
+    g_timing_settings.rdm_responder_jitter < max_jitter ?
+    g_timing_settings.rdm_responder_jitter : max_jitter);
+  return true;
+}
+
+uint16_t Transceiver_GetRDMResponderDelay() {
+  return g_timing_settings.rdm_responder_delay;
+}
+
+bool Transceiver_SetRDMResponderJitter(uint16_t max_jitter) {
+  if (max_jitter >
+      MAXIMUM_RESPONDER_DELAY - g_timing_settings.rdm_responder_delay) {
+    return false;
+  }
+  g_timing_settings.rdm_responder_jitter = max_jitter;
+  return true;
+}
+
+uint16_t Transceiver_GetRDMResponderJitter() {
+  return g_timing_settings.rdm_responder_jitter;
 }

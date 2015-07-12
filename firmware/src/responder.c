@@ -83,6 +83,8 @@ static inline void DispatchRDMRequest(const uint8_t *frame) {
       param_data_size);
 }
 
+// Public Functions
+// ----------------------------------------------------------------------------
 void Responder_Initialize() {
   Responder_ResetCounters();
 }
