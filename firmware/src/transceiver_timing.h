@@ -24,6 +24,11 @@
  * @addtogroup transceiver
  * @{
  * @file transceiver_timing.h
+ * @brief The timing constants for the 485 Transceiver.
+ *
+ * This header contains the timing constants from E1.11-2008 [DMX] and
+ * E1.20-2010 [RDM]. In some cases we allow the user to configure values
+ * outside the range in t he standards. This is for testing purposes.
  */
 
 // Common params
