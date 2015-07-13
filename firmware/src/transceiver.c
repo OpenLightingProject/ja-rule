@@ -409,7 +409,9 @@ static inline void PrepareRDMResponse() {
   if (g_timing_settings.rdm_responder_jitter) {
     jitter = Random_PseudoGet() % g_timing_settings.rdm_responder_jitter;
   }
-  PLIB_TMR_Period16BitSet(TMR_ID_3, 1760 - RESPONSE_FUDGE_FACTOR + jitter);
+  PLIB_TMR_Period16BitSet(
+      TMR_ID_3,
+      g_timing_settings.rdm_responder_delay - RESPONSE_FUDGE_FACTOR + jitter);
   SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
   SYS_INT_SourceEnable(INT_SOURCE_TIMER_3);
 }
