@@ -94,5 +94,5 @@ void APP_Tasks(void) {
 void APP_Reset() {
   Transceiver_Reset();
   SysLog_Message(SYSLOG_INFO, "Reset Device");
-  USBTransport_SoftReset();  
+  USBTransport_SoftReset();
 }
