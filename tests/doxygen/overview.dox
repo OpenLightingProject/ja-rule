@@ -19,7 +19,7 @@
  *    - Mark time
  *    - Response delay
  *
- * @subsection sec_features_responder DMX / RDM Receiver
+ * @subsection sec_features_responder DMX512 / RDM Receiver
  *  - Configurable RDM response delay, with an option to introduce jitter
  *  - Identify & Mute status indicators.
  *
