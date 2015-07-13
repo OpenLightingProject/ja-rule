@@ -28,7 +28,7 @@
  *
  * This header contains the timing constants from E1.11-2008 [DMX] and
  * E1.20-2010 [RDM]. In some cases we allow the user to configure values
- * outside the range in t he standards. This is for testing purposes.
+ * outside the range in the standards; this is for testing purposes.
  */
 
 // Common params
