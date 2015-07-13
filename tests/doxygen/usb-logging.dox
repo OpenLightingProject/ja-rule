@@ -18,7 +18,8 @@
  * The settings are 8N1, at 9600 baud.
  *
  * The console provides different log levels. The +/- keys can be used to
- * increase / decrease the log level.
+ * increase / decrease the log level. Press the 'h' key to see a list of
+ * commands.
  *
  * To log messages to the console, use SysLog_Message() and SysLog_Print().
  * This should not be called within interrupt context.
