@@ -35,6 +35,7 @@
 #include "peripheral/usart/plib_usart.h"
 #include "peripheral/tmr/plib_tmr.h"
 #include "transceiver_timing.h"
+#include "random.h"
 
 // The number of buffers we maintain for overlapping I/O
 #define NUMBER_OF_BUFFERS 2
@@ -403,10 +404,12 @@ static inline void PrepareRDMResponse() {
 
   TakeNextBuffer();
 
-  // Enable timer
-  // TODO(simon): Use rdm_responder_delay & rdm_responder_jitter to make this
-  // configurable.
-  PLIB_TMR_Period16BitSet(TMR_ID_3, 1760 - RESPONSE_FUDGE_FACTOR);
+  // Enable the timer to trigger when we send the RDM response.
+  unsigned int jitter = 0;
+  if (g_timing_settings.rdm_responder_jitter) {
+    jitter = Random_PseudoGet() % g_timing_settings.rdm_responder_jitter;
+  }
+  PLIB_TMR_Period16BitSet(TMR_ID_3, 1760 - RESPONSE_FUDGE_FACTOR + jitter);
   SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
   SYS_INT_SourceEnable(INT_SOURCE_TIMER_3);
 }
@@ -1255,6 +1258,9 @@ void Transceiver_Tasks() {
       }
 
       if (g_transceiver.next) {
+        // Update the seed with the value from the coarse timer. This is a
+        // useful source of entropy.
+        Random_SetSeed(CoarseTimer_GetTime());
         PrepareRDMResponse();
       } else {
         // Continue receiving
