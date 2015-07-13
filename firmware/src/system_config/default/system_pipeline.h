@@ -48,14 +48,24 @@ extern "C" {
   USBConsole_Log(message);
 
 /**
- * @brief Specifies the function to call when a transceiver event occurs.
+ * @brief Specifies the function to call when a transceiver TX event occurs.
  * @sa TransceiverEventCallback.
  *
  * This should either call a function of type TransceiverEventCallback or
  * undefined.
  */
-#define PIPELINE_TRANSCEIVER_EVENT(event) \
+#define PIPELINE_TRANSCEIVER_TX_EVENT(event) \
   MessageHandler_TransceiverEvent(event);
+
+/**
+ * @brief Specifies the function to call when a transceiver RX event occurs.
+ * @sa TransceiverEventCallback.
+ *
+ * This should either call a function of type TransceiverEventCallback or
+ * undefined.
+ */
+#define PIPELINE_TRANSCEIVER_RX_EVENT(event) \
+  Responder_Receive(event);
 
 /**
  * @brief Specifies the function to call when the RDMResponder needs to send a
@@ -65,7 +75,8 @@ extern "C" {
  * This should either call a function of type RDMResponderSendCallback or
  * undefined.
  */
-//#define PIPELINE_RDMRESPONDER_SEND(include_break, iov, iov_len) \
+#define PIPELINE_RDMRESPONDER_SEND(include_break, iov, iov_len) \
+  Transceiver_QueueRDMResponse(include_break, iov, iov_len);
 
 #ifdef __cplusplus
 }

@@ -29,10 +29,25 @@ void Transceiver_SetMock(MockTransceiver* mock) {
 }
 
 
-void Transceiver_Initialize(const TransceiverHardwareSettings* settings) {
+void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
+                            TransceiverEventCallback tx_callback,
+                            TransceiverEventCallback rx_callback) {
   if (g_transceiver_mock) {
-    return g_transceiver_mock->Initialize(settings);
+    return g_transceiver_mock->Initialize(settings, tx_callback, rx_callback);
   }
+}
+
+void Transceiver_SetMode(TransceiverMode mode) {
+  if (g_transceiver_mock) {
+    g_transceiver_mock->SetMode(mode);
+  }
+}
+
+TransceiverMode Transceiver_GetMode() {
+  if (g_transceiver_mock) {
+    return g_transceiver_mock->GetMode();
+  }
+  return T_MODE_RESPONDER;
 }
 
 void Transceiver_Tasks() {

@@ -239,23 +239,24 @@ typedef enum {
  * @brief JaRule command return codes.
  */
 typedef enum {
-  RC_OK,  //!< The command completed successfully.
-  RC_UNKNOWN,  //!< Unknown command
+  RC_OK = 0,  //!< The command completed successfully.
+  RC_UNKNOWN = 1,  //!< Unknown command
   /**
    * @brief The command could not be completed due to a full memory buffer
    */
-  RC_BUFFER_FULL,
-  RC_BAD_PARAM,  //!< The command was malformed.
-  RC_TX_ERROR,  //!< There was an error during transceiver transmit.
-  RC_RDM_TIMEOUT,  //!< No response was received.
+  RC_BUFFER_FULL = 2,
+  RC_BAD_PARAM = 3,  //!< The command was malformed.
+  RC_TX_ERROR = 4,  //!< There was an error during transceiver transmit.
+  RC_RDM_TIMEOUT = 5,  //!< No RDM response was received.
 
   /**
    * @brief Data was received in response to a broadcast RDM command.
    *
    * This usually indicates a broken responder.
    */
-  RC_RDM_BCAST_RESPONSE,
-  RC_RDM_INVALID_RESPONSE,  //!< An invalid RDM response was received.
+  RC_RDM_BCAST_RESPONSE = 6,
+  RC_RDM_INVALID_RESPONSE = 7,  //!< An invalid RDM response was received.
+  RC_INVALID_MODE = 8  //!< The command is invalid in the current mode.
 } ReturnCode;
 
 /**

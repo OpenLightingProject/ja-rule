@@ -61,7 +61,7 @@ void APP_Initialize(void) {
     .rx_enable_bit = TRANSCEIVER_TX_ENABLE,
     .tx_enable_bit = TRANSCEIVER_RX_ENABLE,
   };
-  Transceiver_Initialize(&transceiver_settings, NULL);
+  Transceiver_Initialize(&transceiver_settings, NULL, NULL);
 
   RDMResponderSettings responder_settings = {
     .identify_port = RDM_RESPONDER_PORT,
@@ -86,7 +86,9 @@ void APP_Tasks(void) {
   USBTransport_Tasks();
   Transceiver_Tasks();
   USBConsole_Tasks();
-  RDMResponder_Tasks();
+  if (Transceiver_GetMode() == T_MODE_RESPONDER) {
+    RDMResponder_Tasks();
+  }
 }
 
 void APP_Reset() {

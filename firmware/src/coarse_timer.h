@@ -130,7 +130,7 @@ uint32_t CoarseTimer_Delta(CoarseTimer_Value start_time,
 /**
  * @brief Check if a time interval has passed.
  * @param start_time The time to measure from.
- * @param interval The time interval in 10ths of a microsecond.
+ * @param interval The time interval in 10ths of a millisecond.
  * @returns true if the interval has elapsed since the start_time.
  */
 bool CoarseTimer_HasElapsed(CoarseTimer_Value start_time, uint32_t interval);

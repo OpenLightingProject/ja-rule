@@ -22,8 +22,14 @@ extern "C" {
 #define PIPELINE_LOG_WRITE(message) \
   USBConsole_Log(message);
 
-#define PIPELINE_TRANSCEIVER_EVENT(event) \
+#define PIPELINE_TRANSCEIVER_TX_EVENT(event) \
   MessageHandler_TransceiverEvent(event);
+
+#define PIPELINE_TRANSCEIVER_RX_EVENT(event) \
+  Responder_Receive(event);
+
+#define PIPELINE_RDMRESPONDER_SEND(include_break, iov, iov_len) \
+  Transceiver_QueueRDMResponse(include_break, iov, iov_len);
 
 #ifdef __cplusplus
 }

@@ -24,6 +24,11 @@
  * @addtogroup transceiver
  * @{
  * @file transceiver_timing.h
+ * @brief The timing constants for the 485 Transceiver.
+ *
+ * This header contains the timing constants from E1.11-2008 [DMX] and
+ * E1.20-2010 [RDM]. In some cases we allow the user to configure values
+ * outside the range in the standards; this is for testing purposes.
  */
 
 // Common params
@@ -82,7 +87,6 @@
  * in E1.20.
  */
 #define CONTROLLER_RX_BREAK_TIME_MAX 3520
-
 
 /**
  * @brief The minimum break-to-break time at a controller.
@@ -154,6 +158,38 @@
  * E1.20
  */
 #define MAXIMUM_RESPONDER_DELAY 20000
+
+/**
+ * @brief The minimum mark time for responders to receive
+ *
+ * Measured in 10ths of a microsecond. The value is from line 1 of Table 3-3
+ * in E1.20.
+ */
+#define RESPONDER_RX_MARK_TIME_MIN  80
+
+/**
+ * @brief The maximum mark time for responders to receive.
+ *
+ * Measured in 10ths of a millisecond. The value is from line 1 of Table 3-3
+ * in E1.20.
+ */
+#define RESPONDER_RX_MARK_TIME_MAX  10000
+
+/**
+ * @brief The inter-slot timeout for RDM frames.
+ *
+ * Measured in 10ths of a millisecond. The value is from line 1 of Table 3-3
+ * in E1.20.
+ */
+#define RESPONDER_RDM_INTERSLOT_TIMEOUT 21
+
+/**
+ * @brief The inter-slot timeout for DMX and other ASC frames.
+ *
+ * Measured in 10ths of a millisecond. The value is from Table 6 of E1.11-2008
+ */
+#define RESPONDER_DMX_INTERSLOT_TIMEOUT 10000
+
 
 /**
  * @}
