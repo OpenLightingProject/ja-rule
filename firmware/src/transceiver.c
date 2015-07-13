@@ -79,7 +79,7 @@ typedef enum {
   STATE_R_TX_MARK = 22,  //!< In TX Mark
   STATE_R_TX_DATA = 23,  //!< Transmitting data.
   STATE_R_TX_DRAIN = 24,  //!< Wait for last byte to be sent.
-  STATE_R_TX_COMPLETE = 80,
+  STATE_R_TX_COMPLETE = 25,  //!< Response complete
 
   // Common states
   STATE_RESET = 99,
@@ -473,7 +473,7 @@ static inline void RXFrameEvent() {
     0,
     T_OP_RX,
     g_transceiver.event_index == 0 ? T_RESULT_RX_START_FRAME :
-      T_RESULT_RX_CONTINUE_FRAME,
+        T_RESULT_RX_CONTINUE_FRAME,
     g_transceiver.active->data,
     g_transceiver.data_index,
     &g_timing
