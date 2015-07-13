@@ -120,6 +120,12 @@ typedef enum {
    */
   COMMAND_SET_MODE = 0x01,
 
+  /**
+   * @brief Get the UID of the device.
+   * @sa @ref message_cmd_getuid.
+   */
+  COMMAND_GET_UID = 0x02,
+
   // User Configuration
   /**
    * @brief Set the break time of the transceiver.

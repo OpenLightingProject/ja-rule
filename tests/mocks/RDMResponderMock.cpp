@@ -63,3 +63,9 @@ bool RDMResponder_IsMuted() {
   }
   return false;
 }
+
+void RDMResponder_GetUID(uint8_t *uid) {
+  if (g_rdmresponder_mock) {
+    g_rdmresponder_mock->GetUID(uid);
+  }
+}

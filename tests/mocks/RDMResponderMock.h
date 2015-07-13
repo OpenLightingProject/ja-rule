@@ -35,6 +35,7 @@ class MockRDMResponder {
                                    const uint8_t *param_data,
                                    unsigned int length));
   MOCK_METHOD0(IsMuted, bool());
+  MOCK_METHOD1(GetUID, void(uint8_t *uid));
 };
 
 void RDMResponder_SetMock(MockRDMResponder* mock);

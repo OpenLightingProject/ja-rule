@@ -146,6 +146,30 @@
  *
  * @returns @ref RC_OK.
  *
+ * @subsection message_cmd_getuid Get UID
+ *
+ * Get the UID of the device.
+ *
+ * @subsubsection message_cmd_getuid_req Request Payload
+ *
+ * The request contains no data.
+ *
+ * @subsubsection message_cmd_getuid_res Response Payload
+ *
+ * <pre>
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |                                UID                            |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |           UID (cont.)           |
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ * </pre>
+ *
+ * @param UID The UID of the device, in network byte order.
+ *
+ * @returns @ref RC_OK.
+ *
  * @subsection message_cmd_reset Reset
  *
  * Resets the device. This can be used to recover from failures.
