@@ -77,7 +77,7 @@ static void SetMode(uint8_t token,
 
 static void GetUID(uint8_t token, unsigned int length) {
   if (length) {
-    SendMessage(token, COMMAND_SET_MODE, RC_BAD_PARAM, NULL, 0);
+    SendMessage(token, COMMAND_GET_UID, RC_BAD_PARAM, NULL, 0);
     return;
   }
   uint8_t uid[UID_LENGTH];
