@@ -109,12 +109,17 @@ void RDMResponder_HandleRequest(const RDMHeader *header,
 bool RDMResponder_IsMuted();
 
 /**
+ * @brief Get the UID of the responder.
+ * @param uid A pointer to copy the UID to; should be at least UID_LENGTH.
+ */
+void RDMResponder_GetUID(uint8_t *uid);
+
+/**
  * @brief Perform the periodic RDM Responder tasks.
  *
  * This should be called in the main event loop.
  */
 void RDMResponder_Tasks();
-
 
 #ifdef __cplusplus
 }

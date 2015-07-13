@@ -534,6 +534,10 @@ bool RDMResponder_IsMuted() {
   return g_rdm_responder.is_muted;
 }
 
+void RDMResponder_GetUID(uint8_t *uid) {
+  memcpy(uid, g_rdm_responder.uid, UID_LENGTH);
+}
+
 void RDMResponder_Tasks() {
   if (g_rdm_responder.identify_on) {
     if (CoarseTimer_HasElapsed(g_rdm_responder.identify_timer, FLASH_FAST)) {

@@ -25,6 +25,7 @@
 #include "FlagsMock.h"
 #include "LoggerMock.h"
 #include "Matchers.h"
+#include "RDMResponderMock.h"
 #include "TransceiverMock.h"
 #include "TransportMock.h"
 #include "constants.h"
@@ -33,6 +34,7 @@
 using ::testing::Args;
 using ::testing::Return;
 using ::testing::_;
+using ::testing::SetArrayArgument;
 
 
 // Tests for configuration messages.
@@ -206,6 +208,7 @@ class MessageHandlerTest : public testing::Test {
     Transport_SetMock(&m_transport_mock);
     Transceiver_SetMock(&m_transceiver_mock);
     MessageHandler_Initialize(Transport_Send);
+    RDMResponder_SetMock(&m_rdm_responder_mock);
   }
 
   void TearDown() {
@@ -213,6 +216,7 @@ class MessageHandlerTest : public testing::Test {
     Flags_SetMock(nullptr);
     Logger_SetMock(nullptr);
     Transport_SetMock(nullptr);
+    RDMResponder_SetMock(nullptr);
   }
 
   void SendEvent(uint8_t token, TransceiverOperation op,
@@ -234,6 +238,7 @@ class MessageHandlerTest : public testing::Test {
  protected:
   MockTransport m_transport_mock;
   MockTransceiver m_transceiver_mock;
+  MockRDMResponder m_rdm_responder_mock;
 
   static const uint8_t kToken = 0;
   static const uint8_t kEmptyDUBResponse[];
@@ -258,7 +263,10 @@ TEST_F(MessageHandlerTest, testSetMode) {
   EXPECT_CALL(m_transport_mock, Send(kToken, COMMAND_SET_MODE, RC_OK, _, 0))
       .Times(2)
       .WillRepeatedly(Return(true));
-  // TODO(simon): Add the transceiver expectaction here
+  EXPECT_CALL(m_transceiver_mock, SetMode(T_MODE_CONTROLLER))
+      .Times(1);
+  EXPECT_CALL(m_transceiver_mock, SetMode(T_MODE_RESPONDER))
+      .Times(1);
 
   uint8_t request_payload = 0;
   Message message = { kToken, COMMAND_SET_MODE, sizeof(request_payload),
@@ -266,6 +274,19 @@ TEST_F(MessageHandlerTest, testSetMode) {
   MessageHandler_HandleMessage(&message);
 
   request_payload = 1;
+  MessageHandler_HandleMessage(&message);
+}
+
+TEST_F(MessageHandlerTest, testGetUID) {
+  uint8_t uid_data[UID_LENGTH] = {0x7a, 0x70, 0x01, 0x02, 0x03, 0x04};
+
+  EXPECT_CALL(m_transport_mock, Send(kToken, COMMAND_GET_UID, RC_OK, _, 1))
+      .With(Args<3, 4>(PayloadIs(uid_data, arraysize(uid_data))))
+      .WillOnce(Return(true));
+  EXPECT_CALL(m_rdm_responder_mock, GetUID(_))
+      .WillOnce(SetArrayArgument<0>(uid_data, uid_data + UID_LENGTH));
+
+  Message message = { kToken, COMMAND_GET_UID, 0, NULL};
   MessageHandler_HandleMessage(&message);
 }
 

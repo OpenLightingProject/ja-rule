@@ -23,6 +23,8 @@
 #include "constants.h"
 #include "flags.h"
 #include "logger.h"
+#include "rdm_frame.h"
+#include "rdm_responder.h"
 #include "syslog.h"
 #include "system_definitions.h"
 #include "system_pipeline.h"
@@ -71,6 +73,19 @@ static void SetMode(uint8_t token,
   mode = payload[0];
   Transceiver_SetMode(mode ? T_MODE_RESPONDER : T_MODE_CONTROLLER);
   SendMessage(token, COMMAND_SET_MODE, RC_OK, NULL, 0);
+}
+
+static void GetUID(uint8_t token, unsigned int length) {
+  if (length) {
+    SendMessage(token, COMMAND_SET_MODE, RC_BAD_PARAM, NULL, 0);
+    return;
+  }
+  uint8_t uid[UID_LENGTH];
+  RDMResponder_GetUID(uid);
+  IOVec iovec;
+  iovec.base = (uint8_t*) uid;
+  iovec.length = UID_LENGTH;
+  SendMessage(token, COMMAND_GET_UID, RC_OK, &iovec, 1);
 }
 
 static void SetBreakTime(uint8_t token,
@@ -307,6 +322,9 @@ void MessageHandler_HandleMessage(const Message *message) {
       break;
     case COMMAND_SET_MODE:
       SetMode(message->token, message->payload, message->length);
+      break;
+    case COMMAND_GET_UID:
+      GetUID(message->token, message->length);
       break;
     case COMMAND_RDM_DUB_REQUEST:
       if (!Transceiver_QueueRDMDUB(message->token, message->payload,

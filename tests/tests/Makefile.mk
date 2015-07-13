@@ -79,6 +79,7 @@ tests_message_handler_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
                                    mocks/libflagsmock.la \
                                    mocks/libloggermock.la \
                                    mocks/libmatchers.la \
+                                   mocks/librdmrespondermock.la \
                                    mocks/libsyslogmock.la \
                                    mocks/libtransceivermock.la \
                                    mocks/libtransportmock.la
