@@ -37,7 +37,6 @@ tests_message_handler_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
                                    src/libmessagehandler.la \
                                    mocks/libappmock.la \
                                    mocks/libflagsmock.la \
-                                   mocks/libloggermock.la \
                                    mocks/libmatchers.la \
                                    mocks/librdmrespondermock.la \
                                    mocks/libsyslogmock.la \
@@ -79,7 +78,6 @@ tests_usb_transport_test_SOURCES = tests/USBTransportTest.cpp
 tests_usb_transport_test_CXXFLAGS = $(TESTING_CXXFLAGS)
 tests_usb_transport_test_LDADD = $(TESTING_LIBS) \
                                  src/libusbtransport.la \
-                                 mocks/libloggermock.la \
                                  mocks/libmatchers.la \
                                  mocks/libstreamdecodermock.la \
                                  mocks/libusbmock.la \
