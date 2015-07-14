@@ -37,8 +37,8 @@
 /**
  * @brief The minimum break time the user can configure, in microseconds.
  *
- * DMX1990 was 88uS and later versions raised this to 92uS. We allow down to
- * 44uS because Sean says it's useful for testing.
+ * DMX1990 was 88us and later versions raised this to 92us. We allow down to
+ * 44us because Sean says it's useful for testing.
  */
 #define MINIMUM_TX_BREAK_TIME 44
 
@@ -53,7 +53,7 @@
 /**
  * @brief The minimum mark time the user can configure, in microseconds.
  *
- * DMX1986 apparently allows a 4uS mark time.
+ * DMX1986 apparently allows a 4us mark time.
  */
 #define MINIMUM_TX_MARK_TIME 4
 
@@ -108,7 +108,7 @@
  * @brief The back off time for a broadcast command.
  *
  * Measured in 10ths of a millisecond. The value is from line 6 of Table 3-2
- * in E1.20. In this case we round 176uS to 0.2 ms.
+ * in E1.20. In this case we round 176us to 0.2 ms.
  */
 #define CONTROLLER_BROADCAST_BACKOFF 2
 
@@ -124,7 +124,7 @@
  * @brief The back off time for a non-RDM command
  *
  * Measured in 10ths of a millisecond. The value is from line 7 of Table 3-2
- * in E1.20. In this case we round 176uS to 0.2 ms.
+ * in E1.20. In this case we round 176us to 0.2 ms.
  */
 #define CONTROLLER_NON_RDM_BACKOFF 2
 
