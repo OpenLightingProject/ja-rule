@@ -306,6 +306,4 @@ TEST_F(ResponderTest, SPIOutput) {
     .Times(1);
 
   SendFrame(DMX_FRAME, arraysize(DMX_FRAME));
-
-
 }
