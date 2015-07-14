@@ -10,7 +10,6 @@ TESTING_LIBS = $(GMOCK_LIBS) $(GTEST_LIBS)
 
 TESTS += tests/coarse_timer_test \
          tests/flags_test \
-         tests/logger_test \
          tests/message_handler_test \
          tests/rdm_responder_test \
          tests/responder_test \
@@ -31,14 +30,6 @@ tests_flags_test_LDADD = $(TESTING_LIBS) \
                          src/libflags.la \
                          mocks/libmatchers.la \
                          mocks/libtransportmock.la
-
-tests_logger_test_SOURCES = tests/LoggerTest.cpp
-tests_logger_test_CXXFLAGS = $(TESTING_CXXFLAGS)
-tests_logger_test_LDADD = $(TESTING_LIBS) \
-                          src/liblogger.la \
-                          mocks/libmatchers.la \
-                          mocks/libtransportmock.la
-
 
 tests_message_handler_test_SOURCES = tests/MessageHandlerTest.cpp
 tests_message_handler_test_CXXFLAGS = $(TESTING_CXXFLAGS)

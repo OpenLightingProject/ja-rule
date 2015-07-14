@@ -24,11 +24,9 @@
         </logicalFolder>
         <itemPath>../src/app.h</itemPath>
         <itemPath>../src/constants.h</itemPath>
-        <itemPath>../src/logger.h</itemPath>
         <itemPath>../src/message_handler.h</itemPath>
         <itemPath>../src/stream_decoder.h</itemPath>
         <itemPath>../src/transport.h</itemPath>
-        <itemPath>../src/logger_private.h</itemPath>
         <itemPath>../src/flags.h</itemPath>
         <itemPath>../src/usb_transport.h</itemPath>
         <itemPath>../src/syslog.h</itemPath>
@@ -111,7 +109,6 @@
         </logicalFolder>
         <itemPath>../src/app.c</itemPath>
         <itemPath>../src/main.c</itemPath>
-        <itemPath>../src/logger.c</itemPath>
         <itemPath>../src/message_handler.c</itemPath>
         <itemPath>../src/stream_decoder.c</itemPath>
         <itemPath>../src/flags.c</itemPath>

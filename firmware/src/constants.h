@@ -236,9 +236,7 @@ typedef enum {
 
   // Experimental / testing
   ECHO = 0xf0,  //!< Echo the data back. See @ref message_cmd_echo
-  GET_LOG = 0xf1,  //!< Fetch more log data
   GET_FLAGS = 0xf2,  //!< Get the flags state
-  WRITE_LOG = 0xf3
 } Command;
 
 /**

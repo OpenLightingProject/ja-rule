@@ -17,7 +17,6 @@ BUILD_FLAGS = -I system_config -I harmony/include -I ../firmware/src $(WARNING_C
 noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
                      src/libcoarsetimer.la \
                      src/libflags.la \
-                     src/liblogger.la \
                      src/libmessagehandler.la \
                      src/librandom.la \
                      src/librdmresponder.la \
@@ -51,9 +50,6 @@ src_libcoarsetimer_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libflags_la_SOURCES = src/flags.c
 src_libflags_la_CFLAGS = $(BUILD_FLAGS)
-
-src_liblogger_la_SOURCES = src/logger.c
-src_liblogger_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libmessagehandler_la_SOURCES = src/message_handler.c
 src_libmessagehandler_la_CFLAGS = $(BUILD_FLAGS)

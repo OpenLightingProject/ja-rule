@@ -25,7 +25,6 @@
 #include "system_definitions.h"
 
 #include "Array.h"
-#include "LoggerMock.h"
 #include "Matchers.h"
 #include "StreamDecoderMock.h"
 #include "USBMock.h"
@@ -46,7 +45,6 @@ class USBTransportTest : public testing::Test {
   void SetUp() {
     USB_SetMock(&usb_mock);
     StreamDecoder_SetMock(&stream_decoder_mock);
-    // Logger_Initialize(Transport_Send, PAYLOAD_SIZE);
   }
 
   void TearDown() {
@@ -126,7 +124,6 @@ TEST_F(USBTransportTest, sendResponse) {
 
   // Now configure the device and clear the logging bit.
   ConfigureDevice();
-  Logger_SetDataPendingFlag(false);
 
   // Test a message with no data.
   const uint8_t expected_message[] = {
@@ -150,7 +147,6 @@ TEST_F(USBTransportTest, sendResponse) {
 TEST_F(USBTransportTest, doubleSendResponse) {
   USBTransport_Initialize(StreamDecoder_Process);
   ConfigureDevice();
-  Logger_SetDataPendingFlag(false);
 
   const uint8_t expected_message[] = {
     0x5a, kToken, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa5
@@ -175,7 +171,6 @@ TEST_F(USBTransportTest, doubleSendResponse) {
 TEST_F(USBTransportTest, sendResponseWithData) {
   USBTransport_Initialize(StreamDecoder_Process);
   ConfigureDevice();
-  Logger_SetDataPendingFlag(true);
 
   const uint8_t chunk1[] = {1, 2, 3, 4, 5, 6, 7, 8};
   const uint8_t chunk2[] = {9, 0, 1, 2, 3, 4, 5, 6, 7, 8};
@@ -209,7 +204,6 @@ TEST_F(USBTransportTest, sendResponseWithData) {
 TEST_F(USBTransportTest, sendError) {
   USBTransport_Initialize(StreamDecoder_Process);
   ConfigureDevice();
-  Logger_SetDataPendingFlag(false);
 
   EXPECT_CALL(
       usb_mock,
@@ -224,7 +218,6 @@ TEST_F(USBTransportTest, sendError) {
 TEST_F(USBTransportTest, truncateResponse) {
   USBTransport_Initialize(StreamDecoder_Process);
   ConfigureDevice();
-  Logger_SetDataPendingFlag(false);
 
   // Send a lot of data, and make sure we set the truncated bit.
   const unsigned int big_payload_size = PAYLOAD_SIZE + 100;
@@ -262,7 +255,6 @@ TEST_F(USBTransportTest, truncateResponse) {
 TEST_F(USBTransportTest, pendingFlags) {
   USBTransport_Initialize(StreamDecoder_Process);
   ConfigureDevice();
-  Logger_SetDataPendingFlag(false);
 
   Flags_SetTXDrop();
   EXPECT_TRUE(Flags_HasChanged());

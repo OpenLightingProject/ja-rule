@@ -22,7 +22,6 @@
 #include "app.h"
 #include "constants.h"
 #include "flags.h"
-#include "logger.h"
 #include "rdm_frame.h"
 #include "rdm_responder.h"
 #include "syslog.h"
@@ -52,14 +51,6 @@ static void Echo(const Message *message) {
   iovec.base = message->payload;
   iovec.length = message->length;
   SendMessage(message->token, ECHO, RC_OK, &iovec, 1);
-}
-
-static void WriteLog(const Message* message) {
-  Logger_Write(message->payload, message->length);
-  if (message->payload[message->length - 1]) {
-    // NULL terminate.
-    Logger_Log("");
-  }
 }
 
 static void SetMode(uint8_t token,
@@ -306,15 +297,8 @@ void MessageHandler_HandleMessage(const Message *message) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0);
       }
       break;
-    case GET_LOG:
-      Logger_SendResponse(message->token);
-      break;
     case GET_FLAGS:
       Flags_SendResponse(message->token);
-      break;
-    case WRITE_LOG:
-      WriteLog(message);
-      SendMessage(message->token, message->command, RC_OK, NULL, 0);
       break;
     case COMMAND_RESET_DEVICE:
       APP_Reset();
