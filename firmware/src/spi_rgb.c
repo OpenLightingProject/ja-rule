@@ -77,7 +77,7 @@ void SPIRGB_SetPixel(uint16_t index, RGB_Color color, uint8_t value) {
   }
   // Map RGB to GRB
   uint8_t color_offset = 0;
-  switch (color){
+  switch (color) {
     case RED:
       color_offset = 1;
       break;
