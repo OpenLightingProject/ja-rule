@@ -26,6 +26,7 @@
 #include "message_handler.h"
 #include "rdm.h"
 #include "rdm_responder.h"
+#include "spi_rgb.h"
 #include "stream_decoder.h"
 #include "syslog.h"
 #include "system_definitions.h"
@@ -80,14 +81,26 @@ void APP_Initialize(void) {
   // TODO(simon): remove this.
   Logger_Initialize(NULL, PAYLOAD_SIZE);
   Logger_SetState(true);
+
+  SPIRGBConfiguration spi_config;
+  spi_config.module_id = SPI_ID_1;
+  spi_config.baud_rate = 1000000;
+  spi_config.use_enhanced_buffering = true;
+  SPIRGB_Init(&spi_config);
+
+  // Send a frame with all pixels set to 0.
+  SPIRGB_BeginUpdate();
+  SPIRGB_CompleteUpdate();
 }
 
 void APP_Tasks(void) {
   USBTransport_Tasks();
   Transceiver_Tasks();
   USBConsole_Tasks();
+
   if (Transceiver_GetMode() == T_MODE_RESPONDER) {
     RDMResponder_Tasks();
+    SPIRGB_Tasks();
   }
 }
 

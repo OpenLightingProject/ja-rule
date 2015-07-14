@@ -40,6 +40,7 @@
         <itemPath>../src/rdm_responder.h</itemPath>
         <itemPath>../src/utils.h</itemPath>
         <itemPath>../src/random.h</itemPath>
+        <itemPath>../src/spi_rgb.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -122,6 +123,7 @@
         <itemPath>../src/responder.c</itemPath>
         <itemPath>../src/rdm_responder.c</itemPath>
         <itemPath>../src/random.c</itemPath>
+        <itemPath>../src/spi_rgb.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"

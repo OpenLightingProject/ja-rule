@@ -22,6 +22,7 @@ noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
                      src/librandom.la \
                      src/librdmresponder.la \
                      src/libresponder.la \
+                     src/libspirgb.la \
                      src/libstreamdecoder.la \
                      src/libtransceiver.la \
                      src/libusbtransport.la
@@ -31,6 +32,8 @@ harmony_mocks_libharmonymock_la_SOURCES = \
     harmony/mocks/plib_ic_mock.h \
     harmony/mocks/plib_ports_mock.cpp \
     harmony/mocks/plib_ports_mock.h \
+    harmony/mocks/plib_spi_mock.h \
+    harmony/mocks/plib_spi_mock.cpp \
     harmony/mocks/plib_tmr_mock.cpp \
     harmony/mocks/plib_tmr_mock.h \
     harmony/mocks/plib_usart_mock.cpp \
@@ -63,6 +66,9 @@ src_librdmresponder_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libresponder_la_SOURCES = src/responder.c
 src_libresponder_la_CFLAGS = $(BUILD_FLAGS)
+
+src_libspirgb_la_SOURCES = src/spi_rgb.c
+src_libspirgb_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libstreamdecoder_la_SOURCES = src/stream_decoder.c
 src_libstreamdecoder_la_CFLAGS = $(BUILD_FLAGS)
