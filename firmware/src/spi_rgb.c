@@ -19,6 +19,8 @@
 
 #include "spi_rgb.h"
 
+#include <string.h>
+
 #include "peripheral/spi/plib_spi.h"
 #include "syslog.h"
 
