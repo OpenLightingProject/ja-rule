@@ -47,7 +47,6 @@ void SPIRGB_Init(const SPIRGBConfiguration *config) {
   g_spi.in_update = false;
   g_spi.tx_index = 0;
 
-  unsigned int i = 0;
   memset(g_spi.pixels, LPD8806_PIXEL_BYTE, SLOTS_PER_PIXEL * PIXEL_COUNT);
   memset(&g_spi.pixels[SLOTS_PER_PIXEL * PIXEL_COUNT], 0, LATCH_BYTES);
 
