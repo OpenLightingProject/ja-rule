@@ -24,7 +24,7 @@
 
 // TODO(simon): move these into the config (and set with RDM?)
 #define PIXEL_COUNT 2
-#define SLOT_PER_PIXEL 3
+#define SLOTS_PER_PIXEL 3
 #define LATCH_BYTES 1
 
 #define LPD8806_PIXEL_BYTE 0x80
@@ -34,7 +34,7 @@ typedef struct {
   bool use_enhanced_buffering;
   bool in_update;
   uint32_t tx_index;
-  uint8_t pixels[SLOT_PER_PIXEL * PIXEL_COUNT + LATCH_BYTES];
+  uint8_t pixels[SLOTS_PER_PIXEL * PIXEL_COUNT + LATCH_BYTES];
 } SPIState;
 
 static SPIState g_spi;
@@ -46,14 +46,8 @@ void SPIRGB_Init(const SPIRGBConfiguration *config) {
   g_spi.tx_index = 0;
 
   unsigned int i = 0;
-  for (; i < SLOT_PER_PIXEL * PIXEL_COUNT; i++) {
-    g_spi.pixels[i] = LPD8806_PIXEL_BYTE;
-  }
-
-  for (i = SLOT_PER_PIXEL * PIXEL_COUNT;
-       i < SLOT_PER_PIXEL * PIXEL_COUNT + LATCH_BYTES; i++) {
-    g_spi.pixels[i] = 0x0;
-  }
+  memset(g_spi.pixels, LPD8806_PIXEL_BYTE, SLOTS_PER_PIXEL * PIXEL_COUNT);
+  memset(&g_spi.pixels[SLOTS_PER_PIXEL * PIXEL_COUNT], 0, LATCH_BYTES);
 
   // Init the SPI hardware.
   PLIB_SPI_BaudRateSet(g_spi.module_id, SYS_CLK_FREQ, config->baud_rate);
@@ -88,7 +82,7 @@ void SPIRGB_SetPixel(uint16_t index, RGB_Color color, uint8_t value) {
       color_offset = 2;
       break;
     }
-  g_spi.pixels[index * SLOT_PER_PIXEL + color_offset] =
+  g_spi.pixels[index * SLOTS_PER_PIXEL + color_offset] =
       LPD8806_PIXEL_BYTE | value >> 1;
 }
 
@@ -102,7 +96,7 @@ void SPIRGB_Tasks() {
     return;
   }
 
-  while (g_spi.tx_index < PIXEL_COUNT * SLOT_PER_PIXEL + LATCH_BYTES) {
+  while (g_spi.tx_index < PIXEL_COUNT * SLOTS_PER_PIXEL + LATCH_BYTES) {
     if (g_spi.use_enhanced_buffering) {
       if (PLIB_SPI_TransmitBufferIsFull(g_spi.module_id)) {
         return;
