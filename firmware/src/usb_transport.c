@@ -23,7 +23,6 @@
 
 #include "constants.h"
 #include "flags.h"
-#include "logger.h"
 #include "stream_decoder.h"
 #include "system_config.h"
 #include "system_definitions.h"
@@ -288,9 +287,6 @@ bool USBTransport_SendResponse(uint8_t token, Command command, uint8_t rc,
 
   // Set appropriate flags.
   transmitDataBuffer[7] = 0;
-  if (Logger_DataPending()) {
-    transmitDataBuffer[7] |= TRANSPORT_LOGS_PENDING;
-  }
   if (Flags_HasChanged()) {
     transmitDataBuffer[7] |= TRANSPORT_FLAGS_CHANGED;
   }

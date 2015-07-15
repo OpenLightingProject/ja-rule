@@ -23,7 +23,6 @@
 #include "AppMock.h"
 #include "Array.h"
 #include "FlagsMock.h"
-#include "LoggerMock.h"
 #include "Matchers.h"
 #include "RDMResponderMock.h"
 #include "TransceiverMock.h"
@@ -214,7 +213,6 @@ class MessageHandlerTest : public testing::Test {
   void TearDown() {
     Transceiver_SetMock(nullptr);
     Flags_SetMock(nullptr);
-    Logger_SetMock(nullptr);
     Transport_SetMock(nullptr);
     RDMResponder_SetMock(nullptr);
   }
@@ -303,16 +301,6 @@ TEST_F(MessageHandlerTest, testDMX) {
 
   Message message = { kToken, TX_DMX, arraysize(dmx_data), &dmx_data[0] };
   MessageHandler_HandleMessage(&message);
-  MessageHandler_HandleMessage(&message);
-}
-
-TEST_F(MessageHandlerTest, testLogger) {
-  MockLogger logger_mock;
-  Logger_SetMock(&logger_mock);
-
-  EXPECT_CALL(logger_mock, SendResponse(kToken));
-
-  Message message = { kToken, GET_LOG, 0, NULL };
   MessageHandler_HandleMessage(&message);
 }
 

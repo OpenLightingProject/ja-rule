@@ -4,7 +4,6 @@
 noinst_LTLIBRARIES += mocks/libappmock.la \
                       mocks/libcoarsetimermock.la \
                       mocks/libflagsmock.la \
-                      mocks/libloggermock.la \
                       mocks/libmatchers.la \
                       mocks/libmessagehandlermock.la \
                       mocks/librdmrespondermock.la \
@@ -30,10 +29,6 @@ mocks_libcoarsetimermock_la_LIBADD = $(MOCK_LIBS)
 mocks_libflagsmock_la_SOURCES = mocks/FlagsMock.h mocks/FlagsMock.cpp
 mocks_libflagsmock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
 mocks_libflagsmock_la_LIBADD = $(MOCK_LIBS)
-
-mocks_libloggermock_la_SOURCES = mocks/LoggerMock.h mocks/LoggerMock.cpp
-mocks_libloggermock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
-mocks_libloggermock_la_LIBADD = $(MOCK_LIBS)
 
 mocks_libmatchers_la_SOURCES = mocks/Matchers.h mocks/Matchers.cpp
 mocks_libmatchers_la_CXXFLAGS = $(MOCK_CXXFLAGS)

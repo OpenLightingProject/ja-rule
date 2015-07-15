@@ -22,7 +22,6 @@
 #include "sys/attribs.h"
 
 #include "coarse_timer.h"
-#include "logger.h"
 #include "message_handler.h"
 #include "rdm.h"
 #include "rdm_responder.h"
@@ -78,9 +77,6 @@ void APP_Initialize(void) {
   StreamDecoder_Initialize(NULL);
 
   Flags_Initialize();
-  // TODO(simon): remove this.
-  Logger_Initialize(NULL, PAYLOAD_SIZE);
-  Logger_SetState(true);
 
   SPIRGBConfiguration spi_config;
   spi_config.module_id = SPI_ID_1;

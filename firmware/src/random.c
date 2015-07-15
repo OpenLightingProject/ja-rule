@@ -25,5 +25,5 @@ void Random_SetSeed(unsigned int seed) {
 }
 
 int Random_PseudoGet() {
-  return rand();
+  return rand();  // coverity[DC.WEAK_CRYPTO]
 }
