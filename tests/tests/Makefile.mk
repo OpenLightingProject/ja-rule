@@ -14,6 +14,7 @@ TESTS += tests/coarse_timer_test \
          tests/message_handler_test \
          tests/rdm_responder_test \
          tests/responder_test \
+         tests/spirgb_test \
          tests/stream_decoder_test \
          tests/transceiver_test \
          tests/usb_transport_test
@@ -38,6 +39,20 @@ tests_logger_test_LDADD = $(TESTING_LIBS) \
                           mocks/libmatchers.la \
                           mocks/libtransportmock.la
 
+
+tests_message_handler_test_SOURCES = tests/MessageHandlerTest.cpp
+tests_message_handler_test_CXXFLAGS = $(TESTING_CXXFLAGS)
+tests_message_handler_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
+                                   src/libmessagehandler.la \
+                                   mocks/libappmock.la \
+                                   mocks/libflagsmock.la \
+                                   mocks/libloggermock.la \
+                                   mocks/libmatchers.la \
+                                   mocks/librdmrespondermock.la \
+                                   mocks/libsyslogmock.la \
+                                   mocks/libtransceivermock.la \
+                                   mocks/libtransportmock.la
+
 tests_rdm_responder_test_SOURCES = tests/RDMResponderTest.cpp
 tests_rdm_responder_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_rdm_responder_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
@@ -53,7 +68,15 @@ tests_responder_test_LDADD = $(TESTING_LIBS) \
                              src/libresponder.la \
                              mocks/libmatchers.la \
                              mocks/librdmrespondermock.la \
+                             mocks/libspirgbmock.la \
                              mocks/libsyslogmock.la
+
+tests_spirgb_test_SOURCES = tests/SPIRGBTest.cpp
+tests_spirgb_test_CXXFLAGS = $(TESTING_CXXFLAGS)
+tests_spirgb_test_LDADD = $(TESTING_LIBS) \
+                          src/libspirgb.la \
+                          harmony/mocks/libharmonymock.la \
+                          mocks/libmatchers.la
 
 tests_stream_decoder_test_SOURCES = tests/StreamDecoderTest.cpp
 tests_stream_decoder_test_CXXFLAGS = $(TESTING_CXXFLAGS)
@@ -70,19 +93,6 @@ tests_usb_transport_test_LDADD = $(TESTING_LIBS) \
                                  mocks/libstreamdecodermock.la \
                                  mocks/libusbmock.la \
                                  src/libflags.la
-
-tests_message_handler_test_SOURCES = tests/MessageHandlerTest.cpp
-tests_message_handler_test_CXXFLAGS = $(TESTING_CXXFLAGS)
-tests_message_handler_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
-                                   src/libmessagehandler.la \
-                                   mocks/libappmock.la \
-                                   mocks/libflagsmock.la \
-                                   mocks/libloggermock.la \
-                                   mocks/libmatchers.la \
-                                   mocks/librdmrespondermock.la \
-                                   mocks/libsyslogmock.la \
-                                   mocks/libtransceivermock.la \
-                                   mocks/libtransportmock.la
 
 tests_transceiver_test_SOURCES = tests/TransceiverTest.cpp
 tests_transceiver_test_CXXFLAGS = $(TESTING_CXXFLAGS)

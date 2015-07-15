@@ -27,6 +27,7 @@
 #include "Array.h"
 #include "Matchers.h"
 #include "RDMResponderMock.h"
+#include "SPIRGBMock.h"
 
 using ::testing::StrictMock;
 using ::testing::Return;
@@ -36,11 +37,13 @@ class ResponderTest : public testing::Test {
  public:
   void SetUp() {
     RDMResponder_SetMock(&rdm_mock);
+    SPIRGB_SetMock(&spi_mock);
     Responder_Initialize();
   }
 
   void TearDown() {
-    RDMResponder_SetMock(NULL);
+    RDMResponder_SetMock(nullptr);
+    SPIRGB_SetMock(nullptr);
   }
 
   void SendFrame(const uint8_t *frame, unsigned int size,
@@ -62,6 +65,7 @@ class ResponderTest : public testing::Test {
 
  protected:
   StrictMock<MockRDMResponder> rdm_mock;
+  MockSPIRGB spi_mock;
 
   static const uint8_t ASC_FRAME[];
   static const uint8_t DMX_FRAME[];
@@ -281,4 +285,25 @@ TEST_F(ResponderTest, dmxCounters) {
   EXPECT_EQ(45, Responder_DMXLastSlotCount());
   EXPECT_EQ(2, Responder_DMXMinimumSlotCount());
   EXPECT_EQ(45, Responder_DMXMaximumSlotCount());
+}
+
+TEST_F(ResponderTest, SPIOutput) {
+  SPIRGBConfiguration spi_config;
+  spi_config.module_id = SPI_ID_1;
+  spi_config.baud_rate = 2000000;
+  spi_config.use_enhanced_buffering = false;
+  SPIRGB_Init(&spi_config);
+
+  EXPECT_CALL(spi_mock, BeginUpdate())
+    .Times(1);
+  EXPECT_CALL(spi_mock, SetPixel(0, RED, 1)).Times(1);
+  EXPECT_CALL(spi_mock, SetPixel(0, GREEN, 2)).Times(1);
+  EXPECT_CALL(spi_mock, SetPixel(0, BLUE, 3)).Times(1);
+  EXPECT_CALL(spi_mock, SetPixel(1, RED, 4)).Times(1);
+  EXPECT_CALL(spi_mock, SetPixel(1, GREEN, 5)).Times(1);
+  EXPECT_CALL(spi_mock, SetPixel(1, BLUE, 6)).Times(1);
+  EXPECT_CALL(spi_mock, CompleteUpdate())
+    .Times(1);
+
+  SendFrame(DMX_FRAME, arraysize(DMX_FRAME));
 }

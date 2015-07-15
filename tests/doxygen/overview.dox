@@ -22,6 +22,7 @@
  * @subsection sec_features_responder DMX512 / RDM Receiver
  *  - Configurable RDM response delay, with an option to introduce jitter
  *  - Identify & Mute status indicators.
+ *  - RGB Pixel control using SPI (LPD8806 only for now).
  *
  * @subsection sec_features_common Common
  *  - \ref usb_logger, with adjustable log levels.

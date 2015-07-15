@@ -8,6 +8,7 @@ noinst_LTLIBRARIES += mocks/libappmock.la \
                       mocks/libmatchers.la \
                       mocks/libmessagehandlermock.la \
                       mocks/librdmrespondermock.la \
+                      mocks/libspirgbmock.la \
                       mocks/libstreamdecodermock.la \
                       mocks/libsyslogmock.la \
                       mocks/libtransceivermock.la \
@@ -34,7 +35,7 @@ mocks_libloggermock_la_SOURCES = mocks/LoggerMock.h mocks/LoggerMock.cpp
 mocks_libloggermock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
 mocks_libloggermock_la_LIBADD = $(MOCK_LIBS)
 
-mocks_libmatchers_la_SOURCES = mocks/Matcherss.h mocks/Matchers.cpp
+mocks_libmatchers_la_SOURCES = mocks/Matchers.h mocks/Matchers.cpp
 mocks_libmatchers_la_CXXFLAGS = $(MOCK_CXXFLAGS)
 mocks_libmatchers_la_LIBADD = $(MOCK_LIBS)
 
@@ -47,6 +48,10 @@ mocks_librdmrespondermock_la_SOURCES = mocks/RDMResponderMock.h \
                                         mocks/RDMResponderMock.cpp
 mocks_librdmrespondermock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
 mocks_librdmrespondermock_la_LIBADD = $(MOCK_LIBS)
+
+mocks_libspirgbmock_la_SOURCES = mocks/SPIRGBMock.h mocks/SPIRGBMock.cpp
+mocks_libspirgbmock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
+mocks_libspirgbmock_la_LIBADD = $(MOCK_LIBS)
 
 mocks_libstreamdecodermock_la_SOURCES = mocks/StreamDecoderMock.h \
                                         mocks/StreamDecoderMock.cpp

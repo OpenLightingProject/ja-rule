@@ -22,6 +22,7 @@
 #include "constants.h"
 #include "rdm_frame.h"
 #include "rdm_responder.h"
+#include "spi_rgb.h"
 #include "syslog.h"
 #include "transceiver.h"
 
@@ -129,6 +130,11 @@ void Responder_Receive(const TransceiverEvent *event) {
     }
   }
 
+  if (event->result == T_RESULT_RX_FRAME_TIMEOUT) {
+    SPIRGB_CompleteUpdate();
+    return;
+  }
+
   for (; g_offset < event->length; g_offset++) {
     uint8_t b = event->data[g_offset];
     switch (g_state) {
@@ -139,6 +145,7 @@ void Responder_Receive(const TransceiverEvent *event) {
           SysLog_Message(SYSLOG_DEBUG, "DMX frame");
           g_responder_counters.dmx_frames++;
           g_state = STATE_DMX_DATA;
+          SPIRGB_BeginUpdate();
         } else if (b == RDM_START_CODE) {
           g_responder_counters.rdm_frames++;
           g_state = STATE_RDM_SUB_START_CODE;
@@ -200,6 +207,13 @@ void Responder_Receive(const TransceiverEvent *event) {
         }
         break;
       case STATE_DMX_DATA:
+        // TODO(simon): configure this with DMX_START_ADDRESS and footprints.
+        if (g_offset - 1 < 6) {
+          SPIRGB_SetPixel((g_offset - 1) / 3, (g_offset - 1) % 3, b);
+        } else if (g_offset - 1 == 6) {
+          SPIRGB_CompleteUpdate();
+        }
+
         g_responder_counters.dmx_last_checksum += b;
         g_responder_counters.dmx_last_slot_count++;
         if (g_responder_counters.dmx_max_slot_count == UNINITIALIZED_COUNTER ||

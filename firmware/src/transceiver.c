@@ -494,6 +494,28 @@ static inline void RXFrameEvent() {
 }
 
 /*
+ * @brief Run the RX callback with an end-of-frame event.
+ */
+static inline void RXEndFrameEvent() {
+  TransceiverEvent event = {
+    0,
+    T_OP_RX,
+    T_RESULT_RX_FRAME_TIMEOUT,
+    NULL,
+    0,
+    &g_timing
+  };
+
+#ifdef PIPELINE_TRANSCEIVER_RX_EVENT
+  PIPELINE_TRANSCEIVER_RX_EVENT(&event);
+#else
+  if (g_rx_callback) {
+    g_rx_callback(&event);
+  }
+#endif
+}
+
+/*
  * @brief Reset the settings to their default values.
  */
 static void ResetTimingSettings() {
@@ -1248,6 +1270,7 @@ void Transceiver_Tasks() {
             CoarseTimer_HasElapsed(g_transceiver.last_byte_coarse,
                                    RESPONDER_DMX_INTERSLOT_TIMEOUT)) {
           // RDM inter-slot timeout
+          RXEndFrameEvent();
           PLIB_USART_ReceiverDisable(g_hw_settings.usart);
           g_transceiver.state = STATE_R_RX_PREPARE;
           break;

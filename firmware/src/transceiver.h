@@ -102,7 +102,12 @@ typedef enum {
   T_RESULT_RX_INVALID,  //!< Invalid data received.
 
   T_RESULT_RX_START_FRAME,  //!< A frame was received
-  T_RESULT_RX_CONTINUE_FRAME  //!< A frame was received
+  T_RESULT_RX_CONTINUE_FRAME,  //!< A frame was received
+
+  /**
+   * @brief The frame timed out (inter-slot delay exceeded)
+   */
+  T_RESULT_RX_FRAME_TIMEOUT
 } TransceiverOperationResult;
 
 /**
