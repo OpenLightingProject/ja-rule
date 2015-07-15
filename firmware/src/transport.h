@@ -41,7 +41,6 @@
  * @brief Flags use in a response message.
  */
 typedef enum {
-  TRANSPORT_LOGS_PENDING = 0x01,  //!< Log messages are pending
   TRANSPORT_FLAGS_CHANGED = 0x02,  //!< Flags have changed
   TRANSPORT_MSG_TRUNCATED = 0x04  //!< The message has been truncated.
 } TransportFlags;
