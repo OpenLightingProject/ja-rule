@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * SPIRGBMock.h
- * A mock coarse timer module.
+ * A mock SPI RGB module.
  * Copyright (C) 2015 Simon Newton
  */
 
