@@ -26,6 +26,15 @@
 #include "constants.h"
 #include "utils.h"
 
+static uint16_t Checksum(const uint8_t *data, unsigned int length) {
+  uint16_t checksum = 0;
+  unsigned int i;
+  for (i = 0; i < length; i++) {
+    checksum += data[i];
+  }
+  return checksum;
+}
+
 bool RDMUtil_RequiresAction(const RDMResponder *responder,
                             const uint8_t uid[UID_LENGTH]) {
   if (RDMUtil_UIDCompare(responder->uid, uid) == 0) {
@@ -47,23 +56,15 @@ bool RDMUtil_VerifyChecksum(const uint8_t *frame, unsigned int size) {
     return false;
   }
 
-  uint16_t checksum = 0;
   uint8_t message_length = frame[MESSAGE_LENGTH_OFFSET];
-  unsigned int i;
-  for (i = 0; i < message_length; i++) {
-    checksum += frame[i];
-  }
+  uint16_t checksum = Checksum(frame, message_length);
   return (ShortMSB(checksum) == frame[message_length] &&
           ShortLSB(checksum) == frame[message_length + 1]);
 }
 
 int RDMUtil_AppendChecksum(uint8_t *frame) {
-  uint16_t checksum = 0;
-  unsigned int i;
   uint8_t message_length = frame[MESSAGE_LENGTH_OFFSET];
-  for (i = 0; i < message_length; i++) {
-    checksum += frame[i];
-  }
+  uint16_t checksum = Checksum(frame, message_length);
   frame[message_length] = ShortMSB(checksum);
   frame[message_length + 1] = ShortLSB(checksum);
   return message_length + RDM_CHECKSUM_LENGTH;
@@ -76,3 +77,4 @@ unsigned int RDMUtil_SafeStringLength(const char *str, unsigned int max_size) {
   }
   return size;
 }
+

@@ -54,6 +54,11 @@ static const uint16_t SUBDEVICE_ALL = 0xffff;
 static const uint16_t SUBDEVICE_MAX = 0x0200;
 
 /**
+ * @brief The maximum number of product detail ids a responder can have.
+ */
+enum { MAX_PRODUCT_DETAILS = 6 };
+
+/**
  * @brief The RDM Sub Start Code.
  */
 static const uint8_t SUB_START_CODE = 0x01;
@@ -69,7 +74,7 @@ static const uint8_t RDM_MAX_PARAM_DATA_SIZE = 231;
 static const uint8_t RDM_CHECKSUM_LENGTH = 2;
 
 /**
- * @brief The location of the parameter data length in a frame.
+ * @brief The location of the message length field in a frame.
  */
 static const uint8_t MESSAGE_LENGTH_OFFSET = 2;
 
@@ -92,6 +97,11 @@ static const uint16_t RDM_VERSION = 0x0100;
  * @brief The size of the default strings used in RDM.
  */
 enum { RDM_DEFAULT_STRING_SIZE = 32 };
+
+/**
+ * @brief The size of a DUB response.
+ */
+enum { DUB_RESPONSE_LENGTH = 24 };
 
 /**
  * @brief The length of UIDs.
