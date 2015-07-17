@@ -25,7 +25,7 @@
 #include "logger.h"
 #include "message_handler.h"
 #include "rdm.h"
-#include "rdm_responder.h"
+#include "rdm_handler.h"
 #include "spi_rgb.h"
 #include "stream_decoder.h"
 #include "syslog.h"
@@ -64,14 +64,13 @@ void APP_Initialize(void) {
   };
   Transceiver_Initialize(&transceiver_settings, NULL, NULL);
 
-  RDMResponderSettings responder_settings = {
-    .identify_port = RDM_RESPONDER_PORT,
-    .identify_bit = RDM_RESPONDER_IDENTIFY_PORT_BIT,
-    .mute_port = RDM_RESPONDER_PORT,
-    .mute_bit = RDM_RESPONDER_MUTE_PORT_BIT
+  RDMHandlerSettings rdm_handler_settings = {
+    .default_model = BASIC_RESPONDER,
+    .send_callback = NULL
   };
-  memcpy(responder_settings.uid, OUR_UID, UID_LENGTH);
-  RDMResponder_Initialize(&responder_settings, NULL);
+  RDMHandler_Initialize(&rdm_handler_settings);
+
+  RDMResponder_Initialize(OUR_UID);
 
   // Initialize the Host message layers.
   MessageHandler_Initialize(NULL);
@@ -99,7 +98,7 @@ void APP_Tasks(void) {
   USBConsole_Tasks();
 
   if (Transceiver_GetMode() == T_MODE_RESPONDER) {
-    RDMResponder_Tasks();
+    RDMHandler_Tasks();
     SPIRGB_Tasks();
   }
 }

@@ -103,7 +103,7 @@ enum { DUB_RESPONSE_LENGTH = 24 };
 enum { RDM_MAX_FRAME_SIZE = 257 };
 
 /**
- * @brief The length of UIDs.
+ * @brief The length of a UID.
  */
 enum {
   UID_LENGTH = 6  //!< The size of a UID.
@@ -121,8 +121,8 @@ enum {
  * @note See section 6.2.10 of ANSI E1.20 for more information.
  */
 typedef enum {
-  DISCOVER_COMMAND = 0x10, /**< Discovery Command */
-  DISCOVER_COMMAND_RESPONSE = 0x11, /**< Discovery Response */
+  DISCOVERY_COMMAND = 0x10, /**< Discovery Command */
+  DISCOVERY_COMMAND_RESPONSE = 0x11, /**< Discovery Response */
   GET_COMMAND = 0x20, /**< Get Command */
   GET_COMMAND_RESPONSE = 0x21, /**< Get Response */
   SET_COMMAND = 0x30, /**< Set Command */

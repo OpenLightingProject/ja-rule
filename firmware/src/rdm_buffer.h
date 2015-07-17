@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 /**
- * @brief The memory location used to build the RDM responder.
+ * @brief The memory location used to build the RDM response.
  *
  * Guaranteed to be at least RDM_MAX_FRAME_SIZE bytes.
  */

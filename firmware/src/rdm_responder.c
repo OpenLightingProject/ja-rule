@@ -29,115 +29,86 @@
 #include <arpa/inet.h>
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-#include "coarse_timer.h"
 #include "constants.h"
-#include "iovec.h"
-#include "rdm_frame.h"
-#include "system_pipeline.h"
+#include "macros.h"
+#include "rdm_buffer.h"
+#include "rdm_util.h"
 #include "utils.h"
 
-// Various constants
+const char MANUFACTURER_LABEL[] = "Open Lighting Project";
+
+// Microchip defines this macro in stdlib.h but it's non standard.
+// We define it here so that the unit tests work.
+#ifndef min
+#define min(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+
 #define FIVE5_CONSTANT 0x55
 #define AA_CONSTANT 0xaa
 #define FE_CONSTANT 0xfe
-#define DUB_RESPONSE_LENGTH 24
-#define MODEL_ID 0x0100
-#define FLASH_FAST 1000
-#define FLASH_SLOW 10000
 
-static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Responder";
-static const char MANUFACTURER_LABEL[] = "Open Lighting Project";
-static const char SOFTWARE_LABEL[] = "Alpha";
+RDMResponder g_responder;
 
-typedef struct {
-  RDMResponderSendCallback send_callback;
-  uint8_t uid[UID_LENGTH];
-  uint8_t queued_message_count;
-  uint16_t dmx_start_address;
-
-  // Mute Settings
-  bool is_muted;
-  CoarseTimer_Value mute_timer;
-  PORTS_CHANNEL mute_port;  //!< The port to use for the mute signal.
-  PORTS_BIT_POS mute_bit;  //!< The port bit to use for the mute signal.
-
-  // Identify settings
-  bool identify_on;
-  CoarseTimer_Value identify_timer;
-  PORTS_CHANNEL identify_port;  //!< The port to use for the identify signal.
-  PORTS_BIT_POS identify_bit;  //!< The port bit to use for the identify signal.
-
-  // Used to construct responses so we avoid using stack space.
-  uint8_t param_data[MAX_PARAM_DATA_SIZE];
-} RDMResponderData;
-
-RDMResponderData g_rdm_responder;
-
-/*
- * @brief Check if the UID matches our UID.
- */
-static inline bool RequiresResponse(const RDMHeader *header) {
-  // Check if UID is for us
-  return memcmp(g_rdm_responder.uid, header->dest_uid, UID_LENGTH) == 0;
+#define ReturnUnlessUnicast(header) \
+if (!RDMUtil_RequiresResponse(&g_responder, header->dest_uid)) {\
+  return RDM_RESPONDER_NO_RESPONSE; \
 }
 
-/*
- * @brief uid1 < uid2
- */
-static inline int UIDCompare(const uint8_t *uid1, const uint8_t *uid2) {
-  return memcmp(uid1, uid2, UID_LENGTH);
+void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]) {
+  memcpy(g_responder.uid, uid, UID_LENGTH);
+  g_responder.def = NULL;
+  RDMResponder_ResetToFactoryDefaults();
 }
 
-/*
- * @brief Generate the checksum for an RDM frame.
- */
-static void Checksum(const IOVec* iov, unsigned int iov_count,
-                     uint8_t checksum_data[RDM_CHECKSUM_LENGTH]) {
-  uint16_t checksum = 0;
-  unsigned int i, j;
-  for (i = 0; i != iov_count; i++) {
-    for (j = 0; j != iov[i].length; j++) {
-      checksum += ((uint8_t*) iov[i].base)[j];
-    }
-  }
-  checksum_data[0] = ShortMSB(checksum);
-  checksum_data[1] = ShortLSB(checksum);
+void RDMResponder_ResetToFactoryDefaults() {
+  g_responder.queued_message_count = 0;
+  g_responder.dmx_start_address = 0xffff;
+  g_responder.is_muted = false;
+  g_responder.identify_on = false;
+  strncpy(g_responder.device_label,
+          g_responder.def->default_device_label,
+          RDMUtil_SafeStringLength(g_responder.def->default_device_label,
+                                   RDM_DEFAULT_STRING_SIZE));
+  g_responder.using_factory_defaults = true;
 }
 
-/*
- * @brief Send a DUB response if our UID falls within the range.
- */
-static void SendDUBResponseIfRequired(const uint8_t *param_data,
-                                      unsigned int param_data_length) {
-  if (g_rdm_responder.is_muted || param_data_length != 2 * UID_LENGTH) {
-    return;
+void RDMResponder_GetUID(uint8_t *uid) {
+  memcpy(uid, g_responder.uid, UID_LENGTH);
+}
+
+bool RDMResponder_UIDRequiresAction(const uint8_t uid[UID_LENGTH]) {
+  return RDMUtil_RequiresAction(&g_responder, uid);
+}
+
+int RDMResponder_HandleDUBRequest(const uint8_t *param_data,
+                                  unsigned int param_data_length) {
+  if (g_responder.is_muted || param_data_length != 2 * UID_LENGTH) {
+    return RDM_RESPONDER_NO_RESPONSE;
   }
 
-  if (!(UIDCompare(param_data, g_rdm_responder.uid) <= 0 &&
-        UIDCompare(g_rdm_responder.uid, param_data + UID_LENGTH) <= 0)) {
-    return;
+  if (!(RDMUtil_UIDCompare(param_data, g_responder.uid) <= 0 &&
+        RDMUtil_UIDCompare(g_responder.uid, param_data + UID_LENGTH) <= 0)) {
+    return RDM_RESPONDER_NO_RESPONSE;
   }
 
-  uint8_t response[DUB_RESPONSE_LENGTH];
+  uint8_t *response = (uint8_t*) g_rdm_buffer;
   memset(response, FE_CONSTANT, 7);
   response[7] = AA_CONSTANT;
-  response[8] = g_rdm_responder.uid[0] | AA_CONSTANT;
-  response[9] = g_rdm_responder.uid[0] | FIVE5_CONSTANT;
-  response[10] = g_rdm_responder.uid[1] | AA_CONSTANT;
-  response[11] = g_rdm_responder.uid[1] | FIVE5_CONSTANT;
+  response[8] = g_responder.uid[0] | AA_CONSTANT;
+  response[9] = g_responder.uid[0] | FIVE5_CONSTANT;
+  response[10] = g_responder.uid[1] | AA_CONSTANT;
+  response[11] = g_responder.uid[1] | FIVE5_CONSTANT;
 
-  response[12] = g_rdm_responder.uid[2] | AA_CONSTANT;
-  response[13] = g_rdm_responder.uid[2] | FIVE5_CONSTANT;
-  response[14] = g_rdm_responder.uid[3] | AA_CONSTANT;
-  response[15] = g_rdm_responder.uid[3] | FIVE5_CONSTANT;
-  response[16] = g_rdm_responder.uid[4] | AA_CONSTANT;
-  response[17] = g_rdm_responder.uid[4] | FIVE5_CONSTANT;
-  response[18] = g_rdm_responder.uid[5] | AA_CONSTANT;
-  response[19] = g_rdm_responder.uid[5] | FIVE5_CONSTANT;
+  response[12] = g_responder.uid[2] | AA_CONSTANT;
+  response[13] = g_responder.uid[2] | FIVE5_CONSTANT;
+  response[14] = g_responder.uid[3] | AA_CONSTANT;
+  response[15] = g_responder.uid[3] | FIVE5_CONSTANT;
+  response[16] = g_responder.uid[4] | AA_CONSTANT;
+  response[17] = g_responder.uid[4] | FIVE5_CONSTANT;
+  response[18] = g_responder.uid[5] | AA_CONSTANT;
+  response[19] = g_responder.uid[5] | FIVE5_CONSTANT;
 
   uint16_t checksum = 0;
   unsigned int i;
@@ -149,411 +120,239 @@ static void SendDUBResponseIfRequired(const uint8_t *param_data,
   response[21] = ShortMSB(checksum) | FIVE5_CONSTANT;
   response[22] = ShortLSB(checksum) | AA_CONSTANT;
   response[23] = ShortLSB(checksum) | FIVE5_CONSTANT;
-
-  IOVec iov;
-  iov.base = response;
-  iov.length = DUB_RESPONSE_LENGTH;
-
-#ifdef PIPELINE_RDMRESPONDER_SEND
-  PIPELINE_RDMRESPONDER_SEND(false, &iov, 1);
-#else
-  g_rdm_responder.send_callback(false, &iov, 1);
-#endif
+  return -DUB_RESPONSE_LENGTH;
 }
 
-/*
- * @brief Send a RDM response, if the request was not broadcast.
- */
-static void RespondIfRequired(const RDMHeader *incoming_header,
+void RDMResponder_BuildHeader(const RDMHeader *incoming_header,
                               RDMResponseType response_type,
                               RDMCommandClass command_class,
                               RDMPid pid,
-                              const uint8_t *param_data,
                               unsigned int param_data_length) {
-  if (!RequiresResponse(incoming_header)) {
-    return;
-  }
-
-  RDMHeader outgoing_header;
-  outgoing_header.start_code = RDM_START_CODE;
-  outgoing_header.sub_start_code = SUB_START_CODE;
-  outgoing_header.message_length = sizeof(outgoing_header) + param_data_length;
-  memcpy(outgoing_header.dest_uid, incoming_header->src_uid, UID_LENGTH);
-  memcpy(outgoing_header.src_uid, g_rdm_responder.uid, UID_LENGTH);
-  outgoing_header.transaction_number = incoming_header->transaction_number;
-  outgoing_header.port_id = response_type;
-  outgoing_header.message_count = g_rdm_responder.queued_message_count;
-  outgoing_header.sub_device = htons(SUBDEVICE_ROOT);
-  outgoing_header.command_class = command_class;
-  outgoing_header.param_id = htons(pid);
-  outgoing_header.param_data_length = param_data_length;
-
-  IOVec iov[3];
-
-  iov[0].base = &outgoing_header;
-  iov[0].length = sizeof(outgoing_header);
-  uint8_t iovec_length = 1;
-
-  if (param_data && param_data_length) {
-    iov[iovec_length].base = param_data;
-    iov[iovec_length].length = param_data_length;
-    iovec_length++;
-  }
-
-  uint8_t checksum_data[RDM_CHECKSUM_LENGTH];
-  Checksum(iov, iovec_length, checksum_data);
-  iov[iovec_length].base = &checksum_data;
-  iov[iovec_length].length = RDM_CHECKSUM_LENGTH;
-  iovec_length++;
-
-#ifdef PIPELINE_RDMRESPONDER_SEND
-  PIPELINE_RDMRESPONDER_SEND(true, iov, iovec_length);
-#else
-  g_rdm_responder.send_callback(true, iov, iovec_length);
-#endif
+  RDMHeader *outgoing_header = (RDMHeader*) g_rdm_buffer;
+  outgoing_header->start_code = RDM_START_CODE;
+  outgoing_header->sub_start_code = SUB_START_CODE;
+  outgoing_header->message_length = sizeof(outgoing_header) + param_data_length;
+  memcpy(outgoing_header->dest_uid, incoming_header->src_uid, UID_LENGTH);
+  memcpy(outgoing_header->src_uid, g_responder.uid, UID_LENGTH);
+  outgoing_header->transaction_number = incoming_header->transaction_number;
+  outgoing_header->port_id = response_type;
+  outgoing_header->message_count = g_responder.queued_message_count;
+  outgoing_header->sub_device = htons(SUBDEVICE_ROOT);
+  outgoing_header->command_class = command_class;
+  outgoing_header->param_id = htons(pid);
+  outgoing_header->param_data_length = param_data_length;
 }
 
-/*
- * @brief NACK the request
- * @pre The command class is GET_COMMAND or SET_COMMAND.
- */
-inline static void SendNack(const RDMHeader *header,
-                            RDMNackReason reason) {
+int RDMResponder_BuildNack(const RDMHeader *header, RDMNackReason reason) {
+  ReturnUnlessUnicast(header);
+
   uint16_t param_data = htons(reason);
-  RespondIfRequired(
+
+  RDMResponder_BuildHeader(
       header, NACK_REASON,
       (header->command_class == GET_COMMAND ?
        GET_COMMAND_RESPONSE : SET_COMMAND_RESPONSE),
-      ntohs(header->param_id),
-      (uint8_t*) &param_data, sizeof(param_data));
+       ntohs(header->param_id),
+       sizeof(param_data));
+  memcpy(g_rdm_buffer + sizeof(RDMHeader), &param_data,
+         sizeof(param_data));
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_DispatchPID(const RDMHeader *header,
+                             const uint8_t *param_data) {
+  const ResponderDefinition *definition = g_responder.def;
+  uint16_t pid = ntohs(header->param_id);
+  unsigned int i = 0;
+  // TODO(simon): convert to binary search if the list gets long.
+  // We'll need to add a check to ensure it's sorted though.
+  for (; i < definition->descriptor_count; i++) {
+    if (pid == definition->descriptors[i].pid) {
+      if (header->command_class == GET_COMMAND) {
+        if (definition->descriptors[i].get_handler) {
+          return definition->descriptors[i].get_handler(header, param_data);
+        } else {
+          return RDMResponder_BuildNack(header, NR_UNSUPPORTED_COMMAND_CLASS);
+        }
+      } else {
+        if (definition->descriptors[i].set_handler) {
+          return definition->descriptors[i].set_handler(header, param_data);
+        } else {
+          return RDMResponder_BuildNack(header, NR_UNSUPPORTED_COMMAND_CLASS);
+        }
+      }
+    }
+  }
+  return RDMResponder_BuildNack(header, NR_UNKNOWN_PID);
 }
 
 // PID Handlers
 // ----------------------------------------------------------------------------
-
-static void Mute(const RDMHeader *header,
-                 unsigned int param_data_length) {
-  if (param_data_length != 0) {
-    return;
+int RDMResponder_GenericReturnString(const RDMHeader *header,
+                                     const char *reply_string,
+                                     unsigned int string_size) {
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
-  g_rdm_responder.is_muted = true;
+  ReturnUnlessUnicast(header);
 
-  uint16_t *control_field = (uint16_t*) g_rdm_responder.param_data;
-  *control_field = 0;
-  RespondIfRequired(header, ACK, DISCOVER_COMMAND_RESPONSE, PID_DISC_MUTE,
-                    g_rdm_responder.param_data, sizeof(*control_field));
-  PLIB_PORTS_PinClear(
-    PORTS_ID_0, g_rdm_responder.mute_port,
-    g_rdm_responder.mute_bit);
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           ntohs(header->param_id), string_size);
+  memcpy(g_rdm_buffer + sizeof(RDMHeader), reply_string, string_size);
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
-static void UnMute(const RDMHeader *header,
-                   unsigned int param_data_length) {
-  if (param_data_length != 0) {
-    return;
+int RDMResponder_SetMute(const RDMHeader *header) {
+  if (header->param_data_length) {
+    return RDM_RESPONDER_NO_RESPONSE;
   }
-  g_rdm_responder.is_muted = false;
+  g_responder.is_muted = true;
 
-  uint16_t *control_field = (uint16_t*) g_rdm_responder.param_data;
-  *control_field = 0;
-  RespondIfRequired(header, ACK, DISCOVER_COMMAND_RESPONSE, PID_DISC_UN_MUTE,
-                    g_rdm_responder.param_data, sizeof(*control_field));
-  PLIB_PORTS_PinSet(
-    PORTS_ID_0, g_rdm_responder.mute_port,
-    g_rdm_responder.mute_bit);
-  g_rdm_responder.mute_timer = CoarseTimer_GetTime();
+  ReturnUnlessUnicast(header);
+  RDMResponder_BuildHeader(header, ACK, DISCOVERY_COMMAND_RESPONSE,
+                           PID_DISC_MUTE, sizeof(uint16_t));
+  uint8_t *param_data = g_rdm_buffer + sizeof(RDMHeader);
+  param_data[0] = 0;  // set control field to 0
+  param_data[1] = 0;
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
-static void GetDeviceInfo(const RDMHeader *header,
-                          unsigned int param_data_length) {
-  if (param_data_length != 0) {
-    SendNack(header, NR_FORMAT_ERROR);
-    return;
+int RDMResponder_SetUnMute(const RDMHeader *header) {
+  if (header->param_data_length) {
+    return RDM_RESPONDER_NO_RESPONSE;
   }
+  g_responder.is_muted = false;
 
-  struct device_info_s {
-    uint16_t rdm_version;
-    uint16_t model;
-    uint16_t product_category;
-    uint32_t software_version;
-    uint16_t dmx_footprint;
-    uint8_t current_personality;
-    uint8_t personality_count;
-    uint16_t dmx_start_address;
-    uint16_t sub_device_count;
-    uint8_t sensor_count;
-  }__attribute__((packed));
-
-  struct device_info_s *device_info =
-      (struct device_info_s*) g_rdm_responder.param_data;
-  device_info->rdm_version = htons(RDM_VERSION);
-  device_info->model = htons(MODEL_ID);
-  device_info->product_category = htons(PRODUCT_CATEGORY_TEST_EQUIPMENT);
-  device_info->software_version = htonl(0);
-  device_info->dmx_footprint = htons(0);
-  device_info->current_personality = 0;
-  device_info->personality_count = 0;
-  device_info->dmx_start_address = htons(g_rdm_responder.dmx_start_address);
-  device_info->sub_device_count = htons(0);
-  device_info->sensor_count = 0;
-
-  RespondIfRequired(header, ACK, GET_COMMAND_RESPONSE, PID_DEVICE_INFO,
-                    g_rdm_responder.param_data, sizeof(struct device_info_s));
+  ReturnUnlessUnicast(header);
+  RDMResponder_BuildHeader(header, ACK, DISCOVERY_COMMAND_RESPONSE,
+                           PID_DISC_UN_MUTE, sizeof(uint16_t));
+  uint8_t *param_data = g_rdm_buffer + sizeof(RDMHeader);
+  param_data[0] = 0;  // set control field to 0
+  param_data[1] = 0;
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
-static void GetSupportedParameters(const RDMHeader *header,
-                                   unsigned int param_data_length) {
-  if (param_data_length != 0) {
-    SendNack(header, NR_FORMAT_ERROR);
-    return;
+int RDMResponder_GetProductDetailIds(const RDMHeader *header,
+                                     UNUSED const uint8_t *param_data) {
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
-  uint16_t *pids = (uint16_t*) g_rdm_responder.param_data;
-  unsigned int i = 0;
-  pids[i++] = htons(PID_DEVICE_MODEL_DESCRIPTION);
-  pids[i++] = htons(PID_MANUFACTURER_LABEL);
+  ReturnUnlessUnicast(header);
 
-  RespondIfRequired(header, ACK, GET_COMMAND_RESPONSE,
-                    PID_SUPPORTED_PARAMETERS,
-                    g_rdm_responder.param_data, i * sizeof(pids[0]));
+  const ResponderDefinition *definition = g_responder.def;
+  unsigned int size = 0;
+  unsigned int offset = sizeof(RDMHeader);
+  if (definition->product_detail_ids) {
+    unsigned int i = 0;
+    while (i < min(definition->product_detail_ids->size, MAX_PRODUCT_DETAILS)) {
+      uint16_t detail_id = htons(definition->product_detail_ids->ids[i]);
+      memcpy(g_rdm_buffer + offset, &detail_id, sizeof(RDMProductDetail));
+      offset += sizeof(RDMProductDetail);
+      size += sizeof(RDMProductDetail);
+      i++;
+    }
+  }
+
+  RDMResponder_BuildHeader(header, ACK, SET_COMMAND_RESPONSE,
+                           PID_PRODUCT_DETAIL_ID_LIST, size);
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
-static void GetIdentifyDevice(const RDMHeader *header,
-                              unsigned int param_data_length) {
-  if (param_data_length != 0) {
-    SendNack(header, NR_FORMAT_ERROR);
-    return;
-  }
-
-  RespondIfRequired(header, ACK, GET_COMMAND_RESPONSE,
-                    PID_IDENTIFY_DEVICE,
-                    (uint8_t*) &g_rdm_responder.identify_on,
-                    sizeof(g_rdm_responder.identify_on));
+int RDMResponder_GetDeviceModelDescription(const RDMHeader *header,
+                                           UNUSED const uint8_t *param_data) {
+  const ResponderDefinition *definition = g_responder.def;
+  return RDMResponder_GenericReturnString(
+      header, definition->model_description,
+      RDMUtil_SafeStringLength(definition->model_description,
+                               RDM_DEFAULT_STRING_SIZE) + 1);
 }
 
-static void SetIdentifyDevice(const RDMHeader *header,
-                              const uint8_t *param_data,
-                              unsigned int param_data_length) {
-  uint8_t identify_on;
-  if (param_data_length != sizeof(identify_on)) {
-    SendNack(header, NR_FORMAT_ERROR);
-    return;
+int RDMResponder_GetManufacturerLabel(const RDMHeader *header,
+                                      UNUSED const uint8_t *param_data) {
+  const ResponderDefinition *definition = g_responder.def;
+  return RDMResponder_GenericReturnString(
+      header, definition->manufacturer_label,
+      RDMUtil_SafeStringLength(definition->manufacturer_label,
+                               RDM_DEFAULT_STRING_SIZE) + 1);
+}
+
+int RDMResponder_GetSoftwareVersion(const RDMHeader *header,
+                                    UNUSED const uint8_t *param_data) {
+  const ResponderDefinition *definition = g_responder.def;
+  return RDMResponder_GenericReturnString(
+      header, definition->software_label,
+      RDMUtil_SafeStringLength(definition->software_label,
+                               RDM_DEFAULT_STRING_SIZE) + 1);
+}
+
+int RDMResponder_GetDeviceLabel(const RDMHeader *header,
+                                UNUSED const uint8_t *param_data) {
+  return RDMResponder_GenericReturnString(
+      header, g_responder.device_label,
+      RDMUtil_SafeStringLength(g_responder.device_label,
+                               RDM_DEFAULT_STRING_SIZE) + 1);
+}
+
+int RDMResponder_SetDeviceLabel(const RDMHeader *header,
+                                const uint8_t *param_data) {
+  if (header->param_data_length > RDM_DEFAULT_STRING_SIZE) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
-  identify_on = param_data[0];
-  switch (identify_on) {
+  unsigned int len = min(header->param_data_length, RDM_DEFAULT_STRING_SIZE);
+  strncpy(g_responder.device_label, (const char*) param_data, len);
+
+  ReturnUnlessUnicast(header);
+  RDMResponder_BuildHeader(header, ACK, SET_COMMAND_RESPONSE,
+                           PID_DEVICE_LABEL, 0);
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_GetIdentifyDevice(const RDMHeader *header,
+                                   UNUSED const uint8_t *param_data) {
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           PID_IDENTIFY_DEVICE, sizeof(uint8_t));
+  g_rdm_buffer[sizeof(RDMHeader)] = g_responder.identify_on;
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_SetIdentifyDevice(const RDMHeader *header,
+                                   const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  switch (param_data[0]) {
     case 0:
-      g_rdm_responder.identify_on = false;
-      PLIB_PORTS_PinClear(
-        PORTS_ID_0, g_rdm_responder.identify_port,
-        g_rdm_responder.identify_bit);
+      g_responder.identify_on = false;
       break;
     case 1:
-      g_rdm_responder.identify_on = true;
-      g_rdm_responder.identify_timer = CoarseTimer_GetTime();
-      PLIB_PORTS_PinSet(
-        PORTS_ID_0, g_rdm_responder.identify_port,
-        g_rdm_responder.identify_bit);
+      g_responder.identify_on = true;
       break;
     default:
-      SendNack(header, NR_DATA_OUT_OF_RANGE);
-      return;
+      return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  RespondIfRequired(header, ACK, SET_COMMAND_RESPONSE,
-                    PID_IDENTIFY_DEVICE, NULL, 0);
+  RDMResponder_BuildHeader(header, ACK, SET_COMMAND_RESPONSE,
+                           PID_IDENTIFY_DEVICE, 0);
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
-/*
- * @brief Reply with a string
- * @param header
- * @param param_data_length
- * @param reply_string The string to reply with
- * @param string_size The length of the string, including the terminating NULL.
- */
-static void GenericReturnString(const RDMHeader *header,
-                                unsigned int param_data_length,
-                                const char *reply_string,
-                                unsigned int string_size) {
-  if (param_data_length != 0) {
-    SendNack(header, NR_FORMAT_ERROR);
-    return;
-  }
-
-  RespondIfRequired(header, ACK, GET_COMMAND_RESPONSE,
-                    ntohs(header->param_id),
-                    (const uint8_t*) reply_string,
-                    string_size - 1);
-}
-
-// Public Functions
-// ----------------------------------------------------------------------------
-void RDMResponder_Initialize(const RDMResponderSettings *settings,
-                             RDMResponderSendCallback send_callback) {
-  g_rdm_responder.send_callback = send_callback;
-  memcpy(g_rdm_responder.uid, settings->uid, UID_LENGTH);
-  g_rdm_responder.queued_message_count = 0;
-  g_rdm_responder.is_muted = false;
-  g_rdm_responder.identify_on = false;
-  g_rdm_responder.identify_timer = 0;
-  g_rdm_responder.dmx_start_address = 0xffff;
-  g_rdm_responder.identify_port = settings->identify_port;
-  g_rdm_responder.identify_bit = settings->identify_bit;
-  g_rdm_responder.mute_port = settings->mute_port;
-  g_rdm_responder.mute_bit = settings->mute_bit;
-
-  // Initialize hardware
-  PLIB_PORTS_PinDirectionOutputSet(
-    PORTS_ID_0, g_rdm_responder.identify_port, g_rdm_responder.identify_bit);
-  PLIB_PORTS_PinClear(
-    PORTS_ID_0, g_rdm_responder.identify_port, g_rdm_responder.identify_bit);
-
-  PLIB_PORTS_PinDirectionOutputSet(
-    PORTS_ID_0, g_rdm_responder.mute_port, g_rdm_responder.mute_bit);
-  PLIB_PORTS_PinSet(
-    PORTS_ID_0, g_rdm_responder.mute_port,
-    g_rdm_responder.mute_bit);
-  g_rdm_responder.mute_timer = CoarseTimer_GetTime();
-}
-
-bool RDMResponder_UIDRequiresAction(const uint8_t uid[UID_LENGTH]) {
-  if (memcmp(g_rdm_responder.uid, uid, UID_LENGTH) == 0) {
-    return true;
-  }
-
-  if (uid[2] != 0xff || uid[3] != 0xff || uid[4] != 0xff || uid[5] != 0xff) {
-    // definitely not a broadcast
-    return false;
-  }
-
-  return (uid[0] == g_rdm_responder.uid[0] && uid[1] == g_rdm_responder.uid[1])
-          ||
-         (uid[0] == 0xff && uid[1] == 0xff);
-}
-
-bool RDMResponder_VerifyChecksum(const uint8_t *frame, unsigned int size) {
-  if (size < sizeof(RDMHeader) + (unsigned int) RDM_CHECKSUM_LENGTH ||
-      frame[2] + (unsigned int) RDM_CHECKSUM_LENGTH != size) {
-    return false;
-  }
-
-  IOVec iov;
-  iov.base = frame;
-  iov.length = size - RDM_CHECKSUM_LENGTH;
-  uint8_t checksum[RDM_CHECKSUM_LENGTH];
-  Checksum(&iov, 1, checksum);
-  return (checksum[0] == frame[frame[2]] && checksum[1] == frame[frame[2] + 1]);
-}
-
-void RDMResponder_HandleRequest(const RDMHeader *header,
-                                const uint8_t *param_data,
-                                unsigned int param_data_length) {
-  uint16_t sub_device = ntohs(header->sub_device);
-
-  // No subdevice support for now.
-  if (sub_device != SUBDEVICE_ROOT && sub_device != SUBDEVICE_ALL) {
-    SendNack(header, NR_SUB_DEVICE_OUT_OF_RANGE);
-    return;
-  }
-
-  uint16_t param_id = ntohs(header->param_id);
-
-  if (header->command_class == DISCOVER_COMMAND) {
-    switch (param_id) {
-      case PID_DISC_UNIQUE_BRANCH:
-        SendDUBResponseIfRequired(param_data, param_data_length);
-        break;
-      case PID_DISC_MUTE:
-        Mute(header, param_data_length);
-        break;
-      case PID_DISC_UN_MUTE:
-        UnMute(header, param_data_length);
-        break;
-      default:
-        {}
-    }
-    return;
-  }
-
-  bool is_get = header->command_class == GET_COMMAND;
-  if (is_get && sub_device == SUBDEVICE_ALL) {
-    SendNack(header, NR_SUB_DEVICE_OUT_OF_RANGE);
-  }
-
-  switch (param_id) {
-    case PID_DEVICE_INFO:
-      if (is_get) {
-        GetDeviceInfo(header, param_data_length);
-      } else {
-        SendNack(header, NR_UNSUPPORTED_COMMAND_CLASS);
-      }
-      break;
-    case PID_SUPPORTED_PARAMETERS:
-      if (is_get) {
-        GetSupportedParameters(header, param_data_length);
-      } else {
-        SendNack(header, NR_UNSUPPORTED_COMMAND_CLASS);
-      }
-      break;
-    case PID_DEVICE_MODEL_DESCRIPTION:
-      if (is_get) {
-        GenericReturnString(header, param_data_length, DEVICE_MODEL_DESCRIPTION,
-                            sizeof(DEVICE_MODEL_DESCRIPTION));
-      } else {
-        SendNack(header, NR_UNSUPPORTED_COMMAND_CLASS);
-      }
-      break;
-    case PID_MANUFACTURER_LABEL:
-      if (is_get) {
-        GenericReturnString(header, param_data_length, MANUFACTURER_LABEL,
-                            sizeof(MANUFACTURER_LABEL));
-      } else {
-        SendNack(header, NR_UNSUPPORTED_COMMAND_CLASS);
-      }
-      break;
-    case PID_SOFTWARE_VERSION_LABEL:
-      if (is_get) {
-        GenericReturnString(header, param_data_length, SOFTWARE_LABEL,
-                            sizeof(SOFTWARE_LABEL));
-      } else {
-        SendNack(header, NR_UNSUPPORTED_COMMAND_CLASS);
-      }
-      break;
-    case PID_IDENTIFY_DEVICE:
-      if (is_get) {
-        GetIdentifyDevice(header, param_data_length);
-      } else {
-        SetIdentifyDevice(header, param_data, param_data_length);
-      }
-      break;
+int RDMResponder_HandleDiscovery(const RDMHeader *header,
+                                 const uint8_t *param_data) {
+  switch (ntohs(header->param_id)) {
+    case PID_DISC_UNIQUE_BRANCH:
+      return RDMResponder_HandleDUBRequest(param_data,
+                                           header->param_data_length);
+    case PID_DISC_MUTE:
+      return RDMResponder_SetMute(header);
+    case PID_DISC_UN_MUTE:
+      return RDMResponder_SetUnMute(header);
     default:
-      SendNack(header, NR_UNKNOWN_PID);
+      {}
   }
-}
-
-bool RDMResponder_IsMuted() {
-  return g_rdm_responder.is_muted;
-}
-
-void RDMResponder_GetUID(uint8_t *uid) {
-  memcpy(uid, g_rdm_responder.uid, UID_LENGTH);
-}
-
-void RDMResponder_Tasks() {
-  if (g_rdm_responder.identify_on) {
-    if (CoarseTimer_HasElapsed(g_rdm_responder.identify_timer, FLASH_FAST)) {
-      g_rdm_responder.identify_timer = CoarseTimer_GetTime();
-      PLIB_PORTS_PinToggle(
-        PORTS_ID_0, g_rdm_responder.identify_port,
-        g_rdm_responder.identify_bit);
-    }
-  }
-
-  if (!g_rdm_responder.is_muted) {
-    if (CoarseTimer_HasElapsed(g_rdm_responder.mute_timer, FLASH_SLOW)) {
-      g_rdm_responder.mute_timer = CoarseTimer_GetTime();
-      PLIB_PORTS_PinToggle(
-        PORTS_ID_0, g_rdm_responder.mute_port,
-        g_rdm_responder.mute_bit);
-    }
-  }
+  return RDM_RESPONDER_NO_RESPONSE;
 }
