@@ -184,7 +184,7 @@ void Responder_Receive(const TransceiverEvent *event) {
             continue;
           }
         }
-        if (g_offset + 1u == (event->data[MESSAGE_LENGTH_OFFSET])) {
+        if (g_offset + 1u == event->data[MESSAGE_LENGTH_OFFSET]) {
           g_state = STATE_RDM_CHECKSUM_LO;
         }
         break;

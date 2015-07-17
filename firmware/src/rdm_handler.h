@@ -105,7 +105,7 @@ void RDMHandler_HandleRequest(const RDMHeader *header,
 
 /**
  * @brief Get the UID of the responder.
- * @param uid A pointer to copy the UID to; should be at least UID_LENGTH.
+ * @param[out] uid A pointer to copy the UID to; should be at least UID_LENGTH.
  *
  * If no model is active, the UID will be 0000:00000000.
  */

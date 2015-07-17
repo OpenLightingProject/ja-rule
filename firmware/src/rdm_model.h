@@ -93,7 +93,7 @@ typedef struct {
    * The deactivate function is called if this modle is active, and another
    * model becomes active via a call to RDMHandler_SetActiveModel().
    */
-  void (*deactivate_fn) ();
+  void (*deactivate_fn)();
 
   /**
    * @brief The generic catch-all function.
@@ -103,7 +103,7 @@ typedef struct {
    * @returns An int, the meaning of which depends on the ModelIoctl.
    * @sa ModelIoctl for a list of commands.
    */
-  int (*ioctl_fn) (ModelIoctl command, uint8_t *data, unsigned int length);
+  int (*ioctl_fn)(ModelIoctl command, uint8_t *data, unsigned int length);
 
   /**
    * @brief The function used to handle an RDM request.
@@ -113,14 +113,14 @@ typedef struct {
    * used to indicate if a break should be sent or not. Negative means no break,
    * positive will send a break. 0 means no response will be sent.
    */
-  int (*request_fn) (const RDMHeader *header, const uint8_t *param_data);
+  int (*request_fn)(const RDMHeader *header, const uint8_t *param_data);
 
   /**
    * @brief The tasks function.
    *
    * This is called periodically by RDMHandler_Tasks().
    */
-  void (*tasks_fn) ();
+  void (*tasks_fn)();
 } ModelEntry;
 
 #ifdef __cplusplus
