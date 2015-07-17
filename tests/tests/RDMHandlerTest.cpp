@@ -23,10 +23,10 @@
 
 #include "rdm_handler.h"
 
-using ::testing::Return;
-using ::testing::SetArrayArgument;
-using ::testing::StrictMock;
 using ::testing::_;
+using ::testing::Return;
+using ::testing::StrictMock;
+using ::testing::WithArgs;
 
 MATCHER_P(MatchesUID, expected_uid, "") {
   if (memcmp(arg, expected_uid, UID_LENGTH) == 0) {
@@ -38,6 +38,11 @@ MATCHER_P(MatchesUID, expected_uid, "") {
     *result_listener << ::testing::PrintToString(expected_uid[i]);
   }
   return false;
+}
+
+ACTION_P(CopyUID, src_uid) {
+  memcpy(arg0, src_uid, UID_LENGTH);
+  return 0;
 }
 
 namespace {
@@ -242,7 +247,7 @@ TEST_F(RDMHandlerTest, testDispatching) {
   testing::InSequence seq;
   EXPECT_CALL(m_first_model, Activate()).Times(1);
   EXPECT_CALL(m_first_model, Ioctl(IOCTL_GET_UID, _, UID_LENGTH))
-    .WillOnce(SetArrayArgument<1>(TEST_UID, TEST_UID + UID_LENGTH));
+    .WillOnce(WithArgs<1>(CopyUID(TEST_UID)));
   EXPECT_CALL(m_first_model, Request(_, nullptr)).Times(1);
   EXPECT_CALL(m_first_model, Tasks()).Times(1);
 
