@@ -23,9 +23,10 @@
 
 #include "constants.h"
 #include "iovec.h"
+#include "rdm_buffer.h"
 #include "rdm_frame.h"
 #include "rdm_util.h"
-#include "rdm_buffer.h"
+#include "syslog.h"
 #include "system_pipeline.h"
 
 #define MAX_RDM_MODELS 4
@@ -118,6 +119,7 @@ void RDMHandler_HandleRequest(const RDMHeader *header,
 
   int response_size = g_rdm_handler.active_model->request_fn(header,
                                                              param_data);
+  SysLog_Print(SYSLOG_INFO, "response_size %d\n", response_size);
   if (response_size) {
     IOVec iov;
     iov.base = g_rdm_buffer;

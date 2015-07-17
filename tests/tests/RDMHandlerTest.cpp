@@ -22,28 +22,12 @@
 #include <gmock/gmock.h>
 
 #include "rdm_handler.h"
+#include "Matchers.h"
 
 using ::testing::_;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
-
-MATCHER_P(MatchesUID, expected_uid, "") {
-  if (memcmp(arg, expected_uid, UID_LENGTH) == 0) {
-    return true;
-  }
-
-  *result_listener << ", expected: ";
-  for (unsigned int i = 0; i < UID_LENGTH; i++) {
-    *result_listener << ::testing::PrintToString(expected_uid[i]);
-  }
-  return false;
-}
-
-ACTION_P(CopyUID, src_uid) {
-  memcpy(arg0, src_uid, UID_LENGTH);
-  return 0;
-}
 
 namespace {
 

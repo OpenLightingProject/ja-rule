@@ -67,19 +67,19 @@ void RDMResponder_ResetToFactoryDefaults() {
   g_responder.dmx_start_address = 0xffff;
   g_responder.is_muted = false;
   g_responder.identify_on = false;
-  strncpy(g_responder.device_label,
-          g_responder.def->default_device_label,
-          RDMUtil_SafeStringLength(g_responder.def->default_device_label,
-                                   RDM_DEFAULT_STRING_SIZE));
+
+  if (g_responder.def) {
+    strncpy(g_responder.device_label,
+            g_responder.def->default_device_label,
+            RDMUtil_SafeStringLength(g_responder.def->default_device_label,
+                                     RDM_DEFAULT_STRING_SIZE));
+  }
+
   g_responder.using_factory_defaults = true;
 }
 
 void RDMResponder_GetUID(uint8_t *uid) {
   memcpy(uid, g_responder.uid, UID_LENGTH);
-}
-
-bool RDMResponder_UIDRequiresAction(const uint8_t uid[UID_LENGTH]) {
-  return RDMUtil_RequiresAction(&g_responder, uid);
 }
 
 int RDMResponder_HandleDUBRequest(const uint8_t *param_data,
@@ -131,13 +131,13 @@ void RDMResponder_BuildHeader(const RDMHeader *incoming_header,
   RDMHeader *outgoing_header = (RDMHeader*) g_rdm_buffer;
   outgoing_header->start_code = RDM_START_CODE;
   outgoing_header->sub_start_code = SUB_START_CODE;
-  outgoing_header->message_length = sizeof(outgoing_header) + param_data_length;
+  outgoing_header->message_length = sizeof(RDMHeader) + param_data_length;
   memcpy(outgoing_header->dest_uid, incoming_header->src_uid, UID_LENGTH);
   memcpy(outgoing_header->src_uid, g_responder.uid, UID_LENGTH);
   outgoing_header->transaction_number = incoming_header->transaction_number;
   outgoing_header->port_id = response_type;
   outgoing_header->message_count = g_responder.queued_message_count;
-  outgoing_header->sub_device = htons(SUBDEVICE_ROOT);
+  outgoing_header->sub_device = incoming_header->sub_device;
   outgoing_header->command_class = command_class;
   outgoing_header->param_id = htons(pid);
   outgoing_header->param_data_length = param_data_length;
@@ -277,12 +277,12 @@ int RDMResponder_GetManufacturerLabel(const RDMHeader *header,
                                RDM_DEFAULT_STRING_SIZE) + 1);
 }
 
-int RDMResponder_GetSoftwareVersion(const RDMHeader *header,
-                                    UNUSED const uint8_t *param_data) {
+int RDMResponder_GetSoftwareVersionLabel(const RDMHeader *header,
+                                         UNUSED const uint8_t *param_data) {
   const ResponderDefinition *definition = g_responder.def;
   return RDMResponder_GenericReturnString(
-      header, definition->software_label,
-      RDMUtil_SafeStringLength(definition->software_label,
+      header, definition->software_version_label,
+      RDMUtil_SafeStringLength(definition->software_version_label,
                                RDM_DEFAULT_STRING_SIZE) + 1);
 }
 

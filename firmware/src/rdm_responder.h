@@ -97,7 +97,7 @@ typedef struct {
 typedef struct {
   const PIDDescriptor *descriptors;
   const unsigned int descriptor_count;
-  const char *software_label;
+  const char *software_version_label;
   const char *manufacturer_label;
   const char *model_description;
   const char *default_device_label;
@@ -148,12 +148,6 @@ void RDMResponder_ResetToFactoryDefaults();
  * @param uid A pointer to copy the UID to; should be at least UID_LENGTH.
  */
 void RDMResponder_GetUID(uint8_t *uid);
-
-/**
- * @brief Check if a destination UID requires us to take action.
- * @returns True if a command sent to this UID is addressed to this responder.
- */
-bool RDMResponder_UIDRequiresAction(const uint8_t uid[UID_LENGTH]);
 
 /**
  * @brief Handle a Discovery-unique-branch request.
@@ -240,7 +234,7 @@ int RDMResponder_SetMute(const RDMHeader *incoming_header);
 int RDMResponder_SetUnMute(const RDMHeader *incoming_header);
 
 /**
- * @brief
+ * @brief Handle a GET PRODUCT_DETAIL_IDS request.
  * @param incoming_header The header of the incoming frame.
  * @param param_data The received parameter data.
  * @returns The size of the RDM response frame.
@@ -249,7 +243,7 @@ int RDMResponder_GetProductDetailIds(const RDMHeader *incoming_header,
                                      const uint8_t *param_data);
 
 /**
- * @brief
+ * @brief Handle a GET DEVICE_MODEL_DESCRIPTION request.
  * @param incoming_header The header of the incoming frame.
  * @param param_data The received parameter data.
  * @returns The size of the RDM response frame.
@@ -258,7 +252,7 @@ int RDMResponder_GetDeviceModelDescription(const RDMHeader *incoming_header,
                                            const uint8_t *param_data);
 
 /**
- * @brief
+ * @brief Handle a GET MANUFACTURER_LABEL request.
  * @param incoming_header The header of the incoming frame.
  * @param param_data The received parameter data.
  * @returns The size of the RDM response frame.
@@ -267,16 +261,16 @@ int RDMResponder_GetManufacturerLabel(const RDMHeader *incoming_header,
                                       const uint8_t *param_data);
 
 /**
- * @brief
+ * @brief Handle a GET SOFTWARE_VERSION_LABEL request.
  * @param incoming_header The header of the incoming frame.
  * @param param_data The received parameter data.
  * @returns The size of the RDM response frame.
  */
-int RDMResponder_GetSoftwareVersion(const RDMHeader *incoming_header,
-                                    const uint8_t *param_data);
+int RDMResponder_GetSoftwareVersionLabel(const RDMHeader *incoming_header,
+                                         const uint8_t *param_data);
 
 /**
- * @brief
+ * @brief Handle a GET DEVICE_LABEL request.
  * @param incoming_header The header of the incoming frame.
  * @param param_data The received parameter data.
  * @returns The size of the RDM response frame.
