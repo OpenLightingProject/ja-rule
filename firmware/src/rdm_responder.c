@@ -36,7 +36,6 @@
 #include "coarse_timer.h"
 #include "constants.h"
 #include "iovec.h"
-#include "peripheral/ports/plib_ports.h"
 #include "rdm_frame.h"
 #include "system_pipeline.h"
 #include "utils.h"
