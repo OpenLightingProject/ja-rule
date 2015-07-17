@@ -121,6 +121,8 @@
         <itemPath>../src/rdm_responder.c</itemPath>
         <itemPath>../src/random.c</itemPath>
         <itemPath>../src/spi_rgb.c</itemPath>
+        <itemPath>../src/rdm_handler.c</itemPath>
+        <itemPath>../src/rdm_util.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
