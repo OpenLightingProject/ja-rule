@@ -77,7 +77,7 @@ void RDMHandler_Initialize(const RDMHandlerSettings *settings);
 /**
  * @brief Add a model to the list of available models.
  * @brief model_entry The ModelEntry to add.
- * @returns true if the model was added, false if there wasn't enough slots or
+ * @returns true if the model was added, false if there weren't enough slots or
  * the model already existed.
  *
  * This should be called after to RDMHandler_Initialize().

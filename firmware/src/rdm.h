@@ -63,11 +63,6 @@ enum { MAX_PRODUCT_DETAILS = 6 };
 static const uint8_t SUB_START_CODE = 0x01;
 
 /**
- * @brief The maximum size of RDM parameter data.
- */
-static const uint8_t RDM_MAX_PARAM_DATA_SIZE = 231;
-
-/**
  * @brief The number of bytes in an RDM checksum
  */
 static const uint8_t RDM_CHECKSUM_LENGTH = 2;
@@ -126,8 +121,8 @@ enum {
  * @note See section 6.2.10 of ANSI E1.20 for more information.
  */
 typedef enum {
-  DISCOVER_COMMAND = 0x10, /**< Discovery Command */
-  DISCOVER_COMMAND_RESPONSE = 0x11, /**< Discovery Response */
+  DISCOVERY_COMMAND = 0x10, /**< Discovery Command */
+  DISCOVERY_COMMAND_RESPONSE = 0x11, /**< Discovery Response */
   GET_COMMAND = 0x20, /**< Get Command */
   GET_COMMAND_RESPONSE = 0x21, /**< Get Response */
   SET_COMMAND = 0x30, /**< Set Command */
