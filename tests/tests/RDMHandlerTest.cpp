@@ -152,7 +152,7 @@ const uint8_t RDMHandlerTest::SAMPLE_MESSAGE[] = {
   0x03, 0xdf
 };
 
-const ModelEntry RDMHandlerTest::FIRST_MODEL = {
+const ModelEntry RDMHandlerTest::FIRST_MODEL {
   .model_id = MODEL_ONE,
   .activate_fn = ActivateFirst,
   .deactivate_fn = DeactivateFirst,
@@ -160,7 +160,7 @@ const ModelEntry RDMHandlerTest::FIRST_MODEL = {
   .tasks_fn = TasksFirst
 };
 
-const ModelEntry RDMHandlerTest::SECOND_MODEL = {
+const ModelEntry RDMHandlerTest::SECOND_MODEL {
   .model_id = MODEL_TWO,
   .activate_fn = ActivateSecond,
   .deactivate_fn = DeactivateSecond,
