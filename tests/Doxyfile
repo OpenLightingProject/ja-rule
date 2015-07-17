@@ -655,7 +655,6 @@ WARN_LOGFILE           =
 
 INPUT                  = ../firmware/src \
                          ../firmware/src/system_config/default \
-                         mocks \
                          doxygen
 
 # This tag can be used to specify the character encoding of the source files

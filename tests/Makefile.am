@@ -19,6 +19,8 @@ noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
                      src/libflags.la \
                      src/libmessagehandler.la \
                      src/librandom.la \
+                     src/librdmbuffer.la \
+                     src/librdmhandler.la \
                      src/librdmresponder.la \
                      src/librdmutil.la \
                      src/libresponder.la \
@@ -57,6 +59,12 @@ src_libmessagehandler_la_CFLAGS = $(BUILD_FLAGS)
 
 src_librandom_la_SOURCES = src/random.c
 src_librandom_la_CFLAGS = $(BUILD_FLAGS)
+
+src_librdmbuffer_la_SOURCES = src/rdm_buffer.c
+src_librdmbuffer_la_CFLAGS = $(BUILD_FLAGS)
+
+src_librdmhandler_la_SOURCES = src/rdm_handler.c
+src_librdmhandler_la_CFLAGS = $(BUILD_FLAGS)
 
 src_librdmresponder_la_SOURCES = src/rdm_responder.c
 src_librdmresponder_la_CFLAGS = $(BUILD_FLAGS)

@@ -32,7 +32,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "transceiver.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,11 +61,6 @@ enum { MAX_PRODUCT_DETAILS = 6 };
  * @brief The RDM Sub Start Code.
  */
 static const uint8_t SUB_START_CODE = 0x01;
-
-/**
- * @brief The maximum size of RDM parameter data.
- */
-static const uint8_t RDM_MAX_PARAM_DATA_SIZE = 231;
 
 /**
  * @brief The number of bytes in an RDM checksum
@@ -102,6 +96,11 @@ enum { RDM_DEFAULT_STRING_SIZE = 32 };
  * @brief The size of a DUB response.
  */
 enum { DUB_RESPONSE_LENGTH = 24 };
+
+/**
+ * @brief The size of an RDM frame.
+ */
+enum { RDM_MAX_FRAME_SIZE = 257 };
 
 /**
  * @brief The length of UIDs.

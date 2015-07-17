@@ -32,7 +32,10 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "system_config.h"
+
 #include "iovec.h"
+#include "peripheral/ports/plib_ports.h"
 #include "rdm_frame.h"
 
 #ifdef __cplusplus
