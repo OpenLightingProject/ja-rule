@@ -36,7 +36,7 @@ extern "C" {
 /**
  * @brief The memory location used to build the RDM responder.
  *
- * Guaranteed to be at least RDM_FRAME_SIZE bytes.
+ * Guaranteed to be at least RDM_MAX_FRAME_SIZE bytes.
  */
 extern uint8_t *g_rdm_buffer;
 

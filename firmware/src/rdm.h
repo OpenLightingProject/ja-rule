@@ -32,7 +32,6 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "transceiver.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -106,7 +105,7 @@ enum { DUB_RESPONSE_LENGTH = 24 };
 /**
  * @brief The size of an RDM frame.
  */
-enum { RDM_FRAME_SIZE = 257 };
+enum { RDM_MAX_FRAME_SIZE = 257 };
 
 /**
  * @brief The length of UIDs.

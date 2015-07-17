@@ -34,7 +34,7 @@
 extern "C" {
 #endif
 
-static uint8_t RDM_BUFFER[RDM_FRAME_SIZE];
+static uint8_t RDM_BUFFER[RDM_MAX_FRAME_SIZE];
 
 uint8_t *g_rdm_buffer = RDM_BUFFER;
 
