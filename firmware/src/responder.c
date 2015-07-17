@@ -21,7 +21,8 @@
 
 #include "constants.h"
 #include "rdm_frame.h"
-#include "rdm_responder.h"
+#include "rdm_handler.h"
+#include "rdm_util.h"
 #include "spi_rgb.h"
 #include "syslog.h"
 #include "transceiver.h"
@@ -77,11 +78,9 @@ static inline void DispatchRDMRequest(const uint8_t *frame) {
                g_timing.request.break_time / 10,
                g_timing.request.mark_time / 10);
   RDMHeader *header = (RDMHeader*) frame;
-  uint8_t param_data_size = frame[RDM_PARAM_DATA_OFFSET - 1];
-  RDMResponder_HandleRequest(
+  RDMHandler_HandleRequest(
       header,
-      param_data_size ? frame + RDM_PARAM_DATA_OFFSET : NULL,
-      param_data_size);
+      header->param_data_length ? frame + RDM_PARAM_DATA_OFFSET : NULL);
 }
 
 // Public Functions
@@ -176,22 +175,16 @@ void Responder_Receive(const TransceiverEvent *event) {
         break;
       // data[2] is at least 24
       case STATE_RDM_BODY:
-        if (g_offset == 9) {
-          // We've received the dst UID, check it now.
-          if (!RDMResponder_UIDRequiresAction(event->data + 3)) {
-            g_state = STATE_DISCARD;
-          }
-        }
-        if (g_offset == RDM_PARAM_DATA_OFFSET - 1) {
-          if (b != event->data[2] - sizeof(RDMHeader)) {
+        if (g_offset == RDM_PARAM_DATA_LENGTH_OFFSET) {
+          if (b != event->data[MESSAGE_LENGTH_OFFSET] - sizeof(RDMHeader)) {
             SysLog_Print(SYSLOG_INFO, "Invalid RDM PDL: %d, msg len: %d",
-                         (int) b, event->data[2]);
+                         (int) b, event->data[MESSAGE_LENGTH_OFFSET]);
             g_state = STATE_DISCARD;
             g_responder_counters.rdm_param_data_len_invalid++;
             continue;
           }
         }
-        if (g_offset == (unsigned int) (event->data[2] - 1)) {
+        if (g_offset + 1u == event->data[MESSAGE_LENGTH_OFFSET]) {
           g_state = STATE_RDM_CHECKSUM_LO;
         }
         break;
@@ -199,7 +192,7 @@ void Responder_Receive(const TransceiverEvent *event) {
         g_state = STATE_RDM_CHECKSUM_HI;
         break;
       case STATE_RDM_CHECKSUM_HI:
-        if (RDMResponder_VerifyChecksum(event->data, event->length)) {
+        if (RDMUtil_VerifyChecksum(event->data, event->length)) {
           DispatchRDMRequest(event->data);
         } else {
           SysLog_Message(SYSLOG_ERROR, "Checksum mismatch");

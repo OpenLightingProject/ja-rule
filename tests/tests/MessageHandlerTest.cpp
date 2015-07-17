@@ -24,7 +24,7 @@
 #include "Array.h"
 #include "FlagsMock.h"
 #include "Matchers.h"
-#include "RDMResponderMock.h"
+#include "RDMHandlerMock.h"
 #include "TransceiverMock.h"
 #include "TransportMock.h"
 #include "constants.h"
@@ -207,14 +207,14 @@ class MessageHandlerTest : public testing::Test {
     Transport_SetMock(&m_transport_mock);
     Transceiver_SetMock(&m_transceiver_mock);
     MessageHandler_Initialize(Transport_Send);
-    RDMResponder_SetMock(&m_rdm_responder_mock);
+    RDMHandler_SetMock(&m_rdm_handler_mock);
   }
 
   void TearDown() {
     Transceiver_SetMock(nullptr);
     Flags_SetMock(nullptr);
     Transport_SetMock(nullptr);
-    RDMResponder_SetMock(nullptr);
+    RDMHandler_SetMock(nullptr);
   }
 
   void SendEvent(uint8_t token, TransceiverOperation op,
@@ -236,7 +236,7 @@ class MessageHandlerTest : public testing::Test {
  protected:
   MockTransport m_transport_mock;
   MockTransceiver m_transceiver_mock;
-  MockRDMResponder m_rdm_responder_mock;
+  MockRDMHandler m_rdm_handler_mock;
 
   static const uint8_t kToken = 0;
   static const uint8_t kEmptyDUBResponse[];
@@ -281,7 +281,7 @@ TEST_F(MessageHandlerTest, testGetUID) {
   EXPECT_CALL(m_transport_mock, Send(kToken, COMMAND_GET_UID, RC_OK, _, 1))
       .With(Args<3, 4>(PayloadIs(uid_data, arraysize(uid_data))))
       .WillOnce(Return(true));
-  EXPECT_CALL(m_rdm_responder_mock, GetUID(_))
+  EXPECT_CALL(m_rdm_handler_mock, GetUID(_))
       .WillOnce(SetArrayArgument<0>(uid_data, uid_data + UID_LENGTH));
 
   Message message = { kToken, COMMAND_GET_UID, 0, NULL};

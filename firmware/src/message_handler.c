@@ -23,7 +23,7 @@
 #include "constants.h"
 #include "flags.h"
 #include "rdm_frame.h"
-#include "rdm_responder.h"
+#include "rdm_handler.h"
 #include "syslog.h"
 #include "system_definitions.h"
 #include "system_pipeline.h"
@@ -72,7 +72,7 @@ static void GetUID(uint8_t token, unsigned int length) {
     return;
   }
   uint8_t uid[UID_LENGTH];
-  RDMResponder_GetUID(uid);
+  RDMHandler_GetUID(uid);
   IOVec iovec;
   iovec.base = (uint8_t*) uid;
   iovec.length = UID_LENGTH;

@@ -23,9 +23,27 @@
 
 #include "rdm_handler.h"
 
-using ::testing::StrictMock;
-using ::testing::Return;
 using ::testing::_;
+using ::testing::Return;
+using ::testing::StrictMock;
+using ::testing::WithArgs;
+
+MATCHER_P(MatchesUID, expected_uid, "") {
+  if (memcmp(arg, expected_uid, UID_LENGTH) == 0) {
+    return true;
+  }
+
+  *result_listener << ", expected: ";
+  for (unsigned int i = 0; i < UID_LENGTH; i++) {
+    *result_listener << ::testing::PrintToString(expected_uid[i]);
+  }
+  return false;
+}
+
+ACTION_P(CopyUID, src_uid) {
+  memcpy(arg0, src_uid, UID_LENGTH);
+  return 0;
+}
 
 namespace {
 
@@ -33,6 +51,8 @@ class MockModel {
  public:
   MOCK_METHOD0(Activate, void());
   MOCK_METHOD0(Deactivate, void());
+  MOCK_METHOD3(Ioctl,
+               int(ModelIoctl command, uint8_t *data, unsigned int length));
   MOCK_METHOD2(Request,
                int(const RDMHeader *header, const uint8_t *param_data));
   MOCK_METHOD0(Tasks, void());
@@ -51,6 +71,13 @@ void DeactivateFirst() {
   if (g_first_mock) {
     g_first_mock->Deactivate();
   }
+}
+
+int IoctlFirst(ModelIoctl command, uint8_t *data, unsigned int length) {
+  if (g_first_mock) {
+    return g_first_mock->Ioctl(command, data, length);
+  }
+  return 0;
 }
 
 int RequestFirst(const RDMHeader *header, const uint8_t *param_data) {
@@ -76,6 +103,13 @@ void DeactivateSecond() {
   if (g_second_mock) {
     g_second_mock->Deactivate();
   }
+}
+
+int IoctlSecond(ModelIoctl command, uint8_t *data, unsigned int length) {
+  if (g_second_mock) {
+    return g_second_mock->Ioctl(command, data, length);
+  }
+  return 0;
 }
 
 int RequestSecond(const RDMHeader *header, const uint8_t *param_data) {
@@ -124,11 +158,16 @@ class RDMHandlerTest : public testing::Test {
     g_sender = nullptr;
   }
 
+  void SetUID(uint8_t uid[UID_LENGTH]) {
+    // Set to any non-0 value
+    const uint8_t uninitialized_uid[UID_LENGTH] = {1, 2, 3, 4, 5, 6};
+    memcpy(uid, uninitialized_uid, UID_LENGTH);
+  }
+
  protected:
   StrictMock<MockModel> m_first_model;
   StrictMock<MockModel> m_second_model;
   StrictMock<MockSender> m_sender_mock;
-
 
   static const uint8_t OUR_UID[];
   static const uint8_t VENDORCAST_UID[];
@@ -144,6 +183,8 @@ class RDMHandlerTest : public testing::Test {
   static const uint16_t MODEL_THREE = 3;
 
   static const uint8_t SAMPLE_MESSAGE[];
+  static const uint8_t NULL_UID[UID_LENGTH];
+  static const uint8_t TEST_UID[UID_LENGTH];
 };
 
 const uint8_t RDMHandlerTest::SAMPLE_MESSAGE[] = {
@@ -152,20 +193,25 @@ const uint8_t RDMHandlerTest::SAMPLE_MESSAGE[] = {
   0x03, 0xdf
 };
 
-const ModelEntry RDMHandlerTest::FIRST_MODEL = {
-  .model_id = MODEL_ONE,
-  .activate_fn = ActivateFirst,
-  .deactivate_fn = DeactivateFirst,
-  .request_fn = RequestFirst,
-  .tasks_fn = TasksFirst
+const uint8_t RDMHandlerTest::NULL_UID[] = {0, 0, 0, 0, 0, 0};
+const uint8_t RDMHandlerTest::TEST_UID[] = {0x7a, 0x70, 0, 0, 0, 1};
+
+const ModelEntry RDMHandlerTest::FIRST_MODEL {
+  MODEL_ONE,
+  ActivateFirst,
+  DeactivateFirst,
+  IoctlFirst,
+  RequestFirst,
+  TasksFirst
 };
 
-const ModelEntry RDMHandlerTest::SECOND_MODEL = {
-  .model_id = MODEL_TWO,
-  .activate_fn = ActivateSecond,
-  .deactivate_fn = DeactivateSecond,
-  .request_fn = RequestSecond,
-  .tasks_fn = TasksSecond
+const ModelEntry RDMHandlerTest::SECOND_MODEL {
+  MODEL_TWO,
+  ActivateSecond,
+  DeactivateSecond,
+  IoctlSecond,
+  RequestSecond,
+  TasksSecond
 };
 
 TEST_F(RDMHandlerTest, testDispatching) {
@@ -173,10 +219,14 @@ TEST_F(RDMHandlerTest, testDispatching) {
     .default_model = NULL_MODEL,
     .send_callback = nullptr
   };
+  uint8_t uid[UID_LENGTH];
+  SetUID(uid);
 
   RDMHandler_Initialize(&settings);
 
   // No calls
+  RDMHandler_GetUID(uid);
+  EXPECT_THAT(uid, MatchesUID(NULL_UID));
   RDMHandler_HandleRequest(reinterpret_cast<const RDMHeader*>(SAMPLE_MESSAGE),
                            nullptr);
   RDMHandler_Tasks();
@@ -186,6 +236,9 @@ TEST_F(RDMHandlerTest, testDispatching) {
   EXPECT_FALSE(RDMHandler_AddModel(&SECOND_MODEL));
 
   // Still no calls
+  SetUID(uid);
+  RDMHandler_GetUID(uid);
+  EXPECT_THAT(uid, MatchesUID(NULL_UID));
   RDMHandler_HandleRequest(reinterpret_cast<const RDMHeader*>(SAMPLE_MESSAGE),
                            nullptr);
   RDMHandler_Tasks();
@@ -193,10 +246,17 @@ TEST_F(RDMHandlerTest, testDispatching) {
   // Switch active model
   testing::InSequence seq;
   EXPECT_CALL(m_first_model, Activate()).Times(1);
+  EXPECT_CALL(m_first_model, Ioctl(IOCTL_GET_UID, _, UID_LENGTH))
+    .WillOnce(WithArgs<1>(CopyUID(TEST_UID)));
   EXPECT_CALL(m_first_model, Request(_, nullptr)).Times(1);
   EXPECT_CALL(m_first_model, Tasks()).Times(1);
 
   EXPECT_TRUE(RDMHandler_SetActiveModel(MODEL_ONE));
+
+  SetUID(uid);
+  RDMHandler_GetUID(uid);
+  EXPECT_THAT(uid, MatchesUID(TEST_UID));
+
   RDMHandler_HandleRequest(reinterpret_cast<const RDMHeader*>(SAMPLE_MESSAGE),
                            nullptr);
   RDMHandler_Tasks();
