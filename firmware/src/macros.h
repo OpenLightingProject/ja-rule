@@ -26,9 +26,7 @@
  *
  * @examplepara
  *   @code
- *   void Foo(OLA_UNUSED int bar) {}
- *
- *   OLA_UNUSED typedef int Baz;
+ *   void Foo(UNUSED int bar) {}
  *   @endcode
  */
 #ifdef __GNUC__
