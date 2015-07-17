@@ -36,7 +36,7 @@ extern "C" {
 
 static uint8_t RDM_BUFFER[RDM_FRAME_SIZE];
 
-extern uint8_t *g_rdm_buffer = RDM_BUFFER;
+uint8_t *g_rdm_buffer = RDM_BUFFER;
 
 #ifdef __cplusplus
 }
