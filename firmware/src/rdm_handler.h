@@ -73,7 +73,6 @@ typedef struct {
 /**
  * @brief Initialize the RDM Handler sub-system.
  * @param settings The settings for this responder.
- * @param send_callback The callback to use for sending responses.
  */
 void RDMHandler_Initialize(const RDMHandlerSettings *settings);
 

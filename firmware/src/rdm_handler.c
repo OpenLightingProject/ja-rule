@@ -104,7 +104,6 @@ bool RDMHandler_UIDRequiresAction(const uint8_t uid[UID_LENGTH]) {
 
 void RDMHandler_HandleRequest(const RDMHeader *header,
                               const uint8_t *param_data) {
-
   // TODO(simon):
   // We need to intercept calls to the SET_MODEL_ID pid, and use them to change
   // the active model.
