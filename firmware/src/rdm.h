@@ -121,8 +121,8 @@ enum {
  * @note See section 6.2.10 of ANSI E1.20 for more information.
  */
 typedef enum {
-  DISCOVERY_COMMAND = 0x10, /**< Discovery Command */
-  DISCOVERY_COMMAND_RESPONSE = 0x11, /**< Discovery Response */
+  DISCOVER_COMMAND = 0x10, /**< Discovery Command */
+  DISCOVER_COMMAND_RESPONSE = 0x11, /**< Discovery Response */
   GET_COMMAND = 0x20, /**< Get Command */
   GET_COMMAND_RESPONSE = 0x21, /**< Get Response */
   SET_COMMAND = 0x30, /**< Set Command */
