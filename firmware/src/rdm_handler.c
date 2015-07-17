@@ -18,6 +18,9 @@
  */
 #include "rdm_handler.h"
 
+#include <stdio.h>   // TODO: REMOVE
+
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,6 +28,7 @@
 #include "iovec.h"
 #include "rdm_frame.h"
 #include "rdm_util.h"
+#include "rdm_buffer.h"
 #include "system_pipeline.h"
 
 #define MAX_RDM_MODELS 4
@@ -41,11 +45,10 @@ static RDMHandlerState g_rdm_handler;
 
 // Public Functions
 // ----------------------------------------------------------------------------
-void RDMHandler_Initialize(const RDMHandlerSettings *settings ) {
+void RDMHandler_Initialize(const RDMHandlerSettings *settings) {
   g_rdm_handler.default_model = settings->default_model;
   g_rdm_handler.active_model = NULL;
   g_rdm_handler.send_callback = settings->send_callback;
-  RDMResponder_Initialize(settings->uid);
 
   unsigned int i = 0;
   for (; i < MAX_RDM_MODELS; i++) {
@@ -53,20 +56,27 @@ void RDMHandler_Initialize(const RDMHandlerSettings *settings ) {
   }
 }
 
-void RDMHandler_AddModel(const ModelEntry *entry) {
+bool RDMHandler_AddModel(const ModelEntry *entry) {
   unsigned int i = 0;
   for (; i < MAX_RDM_MODELS; i++) {
-    if (g_models[i].model_id != NULL_MODEL) {
+    if (g_models[i].model_id == entry->model_id) {
+      return false;
+    }
+
+    if (g_models[i].model_id == NULL_MODEL) {
       g_models[i].model_id = entry->model_id;
       g_models[i].activate_fn = entry->activate_fn;
       g_models[i].deactivate_fn = entry->deactivate_fn;
       g_models[i].request_fn = entry->request_fn;
+      g_models[i].tasks_fn = entry->tasks_fn;
       if (entry->model_id == g_rdm_handler.default_model) {
         g_rdm_handler.active_model = &g_models[i];
-        g_responder.responder_def = g_rdm_handler.active_model->activate_fn();
+        g_rdm_handler.active_model->activate_fn();
       }
+      return true;
     }
   }
+  return false;
 }
 
 bool RDMHandler_SetActiveModel(uint16_t model_id) {
@@ -91,15 +101,11 @@ bool RDMHandler_SetActiveModel(uint16_t model_id) {
         g_rdm_handler.active_model->deactivate_fn();
       }
       g_rdm_handler.active_model = &g_models[i];
-      g_responder.responder_def = g_rdm_handler.active_model->activate_fn();
+      g_rdm_handler.active_model->activate_fn();
       return true;
     }
   }
   return false;
-}
-
-bool RDMHandler_UIDRequiresAction(const uint8_t uid[UID_LENGTH]) {
-  return RDMUtil_RequiresAction(&g_responder, uid);
 }
 
 void RDMHandler_HandleRequest(const RDMHeader *header,
@@ -112,11 +118,11 @@ void RDMHandler_HandleRequest(const RDMHeader *header,
     return;
   }
 
-  int response_size = g_rdm_handler.active_model->request_fn(
-      header, param_data);
+  int response_size = g_rdm_handler.active_model->request_fn(header,
+                                                             param_data);
   if (response_size) {
     IOVec iov;
-    iov.base = g_responder.buffer;
+    iov.base = g_rdm_buffer;
     iov.length = abs(response_size);
 
 #ifdef PIPELINE_RDMRESPONDER_SEND
@@ -125,14 +131,6 @@ void RDMHandler_HandleRequest(const RDMHeader *header,
     g_rdm_handler.send_callback(response_size < 0 ? false : true, &iov, 1);
 #endif
   }
-}
-
-bool RDMHandler_IsMuted() {
-  return g_responder.is_muted;
-}
-
-void RDMHandler_GetUID(uint8_t *uid) {
-  memcpy(uid, g_responder.uid, UID_LENGTH);
 }
 
 void RDMHandler_Tasks() {

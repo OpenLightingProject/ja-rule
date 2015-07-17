@@ -38,7 +38,6 @@
 #include "iovec.h"
 #include "rdm_frame.h"
 #include "rdm_model.h"
-#include "rdm_responder.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,7 +57,6 @@ typedef void (*RDMHandlerSendCallback)(bool include_break,
  * @brief The settings to use for the RDM Handler.
  */
 typedef struct {
-  uint8_t uid[UID_LENGTH];  //!< The responder's UID.
   uint16_t default_model;  //!< The default model to use
 
   /**
@@ -79,10 +77,12 @@ void RDMHandler_Initialize(const RDMHandlerSettings *settings);
 /**
  * @brief Add a model to the list of available models.
  * @brief model_entry The ModelEntry to add.
+ * @returns true if the model was added, false if there wasn't enough slots or
+ * the model already existed.
  *
  * This should be called after to RDMHandler_Initialize().
  */
-void RDMHandler_AddModel(const ModelEntry *entry);
+bool RDMHandler_AddModel(const ModelEntry *entry);
 
 /**
  * @brief Change the active model of responder.
@@ -90,12 +90,6 @@ void RDMHandler_AddModel(const ModelEntry *entry);
  * @return true if the new model was set, false if the new model doesn't exist.
  */
 bool RDMHandler_SetActiveModel(uint16_t model_id);
-
-/**
- * @brief Check if a destination UID requires us to take action.
- * @returns True if a command sent to this UID is addressed to this responder.
- */
-bool RDMHandler_UIDRequiresAction(const uint8_t uid[UID_LENGTH]);
 
 /**
  * @brief Handle a RDM Request.
@@ -108,18 +102,6 @@ bool RDMHandler_UIDRequiresAction(const uint8_t uid[UID_LENGTH]);
  */
 void RDMHandler_HandleRequest(const RDMHeader *header,
                               const uint8_t *param_data);
-
-/**
- * @brief Check if the responder is muted.
- * @returns true if this responder is currently muted.
- */
-bool RDMHandler_IsMuted();
-
-/**
- * @brief Get the UID of the responder.
- * @param uid A pointer to copy the UID to; should be at least UID_LENGTH.
- */
-void RDMHandler_GetUID(uint8_t *uid);
 
 /**
  * @brief Perform the periodic RDM Handler tasks.
