@@ -80,6 +80,6 @@
  * mocks/ directory. They work in the same way as the Harmony mocks; calls to
  * the module's functions are proxied to a Mock object.
  *
- * There is also a set of @ref testing "Matchers" that can be used to check
+ * There is also a set of Matchers that can be used to check
  * that binary data passed to functions matches what is expected.
  */

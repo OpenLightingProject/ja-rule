@@ -18,9 +18,6 @@
  */
 #include "rdm_handler.h"
 
-#include <stdio.h>   // TODO: REMOVE
-
-
 #include <stdlib.h>
 #include <string.h>
 
