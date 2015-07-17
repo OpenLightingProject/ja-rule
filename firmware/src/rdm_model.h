@@ -23,8 +23,8 @@
  * @file rdm_model.h
  * @brief The API for an RDM Model implementation.
  *
- * The Model API provides a flexible method of support multiple RDM models on a
- * single responder. Only one model may be active at once.
+ * The Model API provides a flexible method of supporting multiple RDM models
+ * on a single responder. Only one model may be active at once.
  *
  * Each model provides a ModelEntry struct, which contains function
  * pointers to the model's implementation. To add support for a new model,
