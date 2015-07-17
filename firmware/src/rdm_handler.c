@@ -64,6 +64,7 @@ bool RDMHandler_AddModel(const ModelEntry *entry) {
       g_models[i].model_id = entry->model_id;
       g_models[i].activate_fn = entry->activate_fn;
       g_models[i].deactivate_fn = entry->deactivate_fn;
+      g_models[i].ioctl_fn = entry->ioctl_fn;
       g_models[i].request_fn = entry->request_fn;
       g_models[i].tasks_fn = entry->tasks_fn;
       if (entry->model_id == g_rdm_handler.default_model) {
@@ -132,7 +133,7 @@ void RDMHandler_HandleRequest(const RDMHeader *header,
 
 void RDMHandler_GetUID(uint8_t *uid) {
   if (g_rdm_handler.active_model) {
-    g_rdm_handler.active_model->tasks_fn(uid, UID_LENGTH);
+    g_rdm_handler.active_model->ioctl_fn(IOCTL_GET_UID, uid, UID_LENGTH);
   } else {
     memset(uid, 0, UID_LENGTH);
   }
