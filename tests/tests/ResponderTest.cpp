@@ -26,7 +26,7 @@
 #include "responder.h"
 #include "Array.h"
 #include "Matchers.h"
-#include "RDMResponderMock.h"
+#include "RDMHandlerMock.h"
 #include "SPIRGBMock.h"
 
 using ::testing::StrictMock;
@@ -36,13 +36,13 @@ using ::testing::_;
 class ResponderTest : public testing::Test {
  public:
   void SetUp() {
-    RDMResponder_SetMock(&rdm_mock);
+    RDMHandler_SetMock(&handler_mock);
     SPIRGB_SetMock(&spi_mock);
     Responder_Initialize();
   }
 
   void TearDown() {
-    RDMResponder_SetMock(nullptr);
+    RDMHandler_SetMock(nullptr);
     SPIRGB_SetMock(nullptr);
   }
 
@@ -64,7 +64,7 @@ class ResponderTest : public testing::Test {
   }
 
  protected:
-  StrictMock<MockRDMResponder> rdm_mock;
+  StrictMock<MockRDMHandler> handler_mock;
   MockSPIRGB spi_mock;
 
   static const uint8_t ASC_FRAME[];
@@ -103,12 +103,8 @@ const uint8_t ResponderTest::RDM_FRAME[] = {
 TEST_F(ResponderTest, rxSequence) {
   // The important bit here is that by interleaving different frames, the RDM
   // handler continues to be called when appropriate.
-  EXPECT_CALL(rdm_mock, UIDRequiresAction(&RDM_FRAME[3]))
-    .WillRepeatedly(Return(true));
-  EXPECT_CALL(rdm_mock, VerifyChecksum(RDM_FRAME, arraysize(RDM_FRAME)))
-    .WillRepeatedly(Return(true));
-  EXPECT_CALL(rdm_mock, HandleRequest(
-        reinterpret_cast<const RDMHeader*>(RDM_FRAME), NULL, 0))
+  EXPECT_CALL(handler_mock, HandleRequest(
+        reinterpret_cast<const RDMHeader*>(RDM_FRAME), NULL))
     .Times(4);
 
   EXPECT_EQ(0, Responder_DMXFrames());
@@ -172,18 +168,13 @@ TEST_F(ResponderTest, rxSequence) {
   EXPECT_EQ(10, Responder_DMXMaximumSlotCount());
 }
 
-TEST_F(ResponderTest, rdmNotForUs) {
-  EXPECT_CALL(rdm_mock, UIDRequiresAction(&RDM_FRAME[3]))
-    .WillOnce(Return(false));
-  SendFrame(RDM_FRAME, arraysize(RDM_FRAME));
-}
-
 TEST_F(ResponderTest, rdmChecksumMismatch) {
-  EXPECT_CALL(rdm_mock, UIDRequiresAction(&RDM_FRAME[3]))
-    .WillOnce(Return(true));
-  EXPECT_CALL(rdm_mock, VerifyChecksum(RDM_FRAME, arraysize(RDM_FRAME)))
-    .WillOnce(Return(false));
-  SendFrame(RDM_FRAME, arraysize(RDM_FRAME));
+  const uint8_t bad_frame[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x02, 0x00,
+    0xAB, 0xCD
+  };
+  SendFrame(bad_frame, arraysize(bad_frame));
 
   EXPECT_EQ(1, Responder_RDMChecksumInvalidCounter());
 }
@@ -215,9 +206,6 @@ TEST_F(ResponderTest, paramDataLenMismatch) {
     0x01, 0x03, 0xe2
   };
 
-  EXPECT_CALL(rdm_mock, UIDRequiresAction(&frame[3]))
-    .WillOnce(Return(true));
-
   SendFrame(frame, arraysize(frame));
   EXPECT_EQ(1, Responder_RDMParamDataLenInvalidCounter());
 
@@ -226,9 +214,6 @@ TEST_F(ResponderTest, paramDataLenMismatch) {
     0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x02, 0x01,
     0x03, 0xdf
   };
-
-  EXPECT_CALL(rdm_mock, UIDRequiresAction(&frame2[3]))
-    .WillOnce(Return(true));
 
   SendFrame(frame2, arraysize(frame2));
   EXPECT_EQ(2, Responder_RDMParamDataLenInvalidCounter());

@@ -30,7 +30,7 @@ void RDMHandler_SetMock(MockRDMHandler* mock) {
 
 void RDMHandler_Initialize(RDMHandlerSettings *settings) {
   if (g_rdmhandler_mock) {
-    return g_rdmhandler_mock->Initialize(settings);
+    g_rdmhandler_mock->Initialize(settings);
   }
 }
 
@@ -39,6 +39,12 @@ bool RDMHandler_AddModel(const ModelEntry *entry) {
     return g_rdmhandler_mock->AddModel(entry);
   }
   return false;
+}
+
+void RDMHandler_GetUID(uint8_t *uid) {
+  if (g_rdmhandler_mock) {
+    g_rdmhandler_mock->GetUID(uid);
+  }
 }
 
 bool RDMHandler_SetActiveModel(uint16_t model_id) {

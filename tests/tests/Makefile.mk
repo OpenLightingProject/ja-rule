@@ -50,7 +50,7 @@ tests_message_handler_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
                                    mocks/libflagsmock.la \
                                    mocks/libloggermock.la \
                                    mocks/libmatchers.la \
-                                   mocks/librdmrespondermock.la \
+                                   mocks/librdmhandlermock.la \
                                    mocks/libsyslogmock.la \
                                    mocks/libtransceivermock.la \
                                    mocks/libtransportmock.la
@@ -81,9 +81,10 @@ tests_rdm_util_test_LDADD = $(TESTING_LIBS) \
 tests_responder_test_SOURCES = tests/ResponderTest.cpp
 tests_responder_test_CXXFLAGS = $(TESTING_CXXFLAGS)
 tests_responder_test_LDADD = $(TESTING_LIBS) \
+                             src/librdmutil.la \
                              src/libresponder.la \
                              mocks/libmatchers.la \
-                             mocks/librdmrespondermock.la \
+                             mocks/librdmhandlermock.la \
                              mocks/libspirgbmock.la \
                              mocks/libsyslogmock.la
 

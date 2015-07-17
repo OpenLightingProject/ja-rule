@@ -30,6 +30,7 @@ class MockRDMHandler {
   MOCK_METHOD1(Initialize, void(const RDMHandlerSettings *settings));
   MOCK_METHOD1(AddModel, bool(const ModelEntry *entry));
   MOCK_METHOD1(SetActiveModel, bool(uint16_t model_id));
+  MOCK_METHOD1(GetUID, void(uint8_t *uid));
   MOCK_METHOD2(HandleRequest, void(const RDMHeader *header,
                                    const uint8_t *param_data));
   MOCK_METHOD0(Tasks, void());

@@ -130,6 +130,14 @@ void RDMHandler_HandleRequest(const RDMHeader *header,
   }
 }
 
+void RDMHandler_GetUID(uint8_t *uid) {
+  if (g_rdm_handler.active_model) {
+    g_rdm_handler.active_model->tasks_fn(uid, UID_LENGTH);
+  } else {
+    memset(uid, 0, UID_LENGTH);
+  }
+}
+
 void RDMHandler_Tasks() {
   if (g_rdm_handler.active_model) {
     g_rdm_handler.active_model->tasks_fn();

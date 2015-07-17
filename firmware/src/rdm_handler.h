@@ -104,6 +104,14 @@ void RDMHandler_HandleRequest(const RDMHeader *header,
                               const uint8_t *param_data);
 
 /**
+ * @brief Get the UID of the responder.
+ * @param uid A pointer to copy the UID to; should be at least UID_LENGTH.
+ *
+ * If no model is active, the UID will be 0000:00000000.
+ */
+void RDMHandler_GetUID(uint8_t *uid);
+
+/**
  * @brief Perform the periodic RDM Handler tasks.
  *
  * This should be called in the main event loop, it delegates to the active
