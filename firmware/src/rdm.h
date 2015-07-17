@@ -104,6 +104,11 @@ enum { RDM_DEFAULT_STRING_SIZE = 32 };
 enum { DUB_RESPONSE_LENGTH = 24 };
 
 /**
+ * @brief The size of an RDM frame.
+ */
+enum { RDM_FRAME_SIZE = 257 };
+
+/**
  * @brief The length of UIDs.
  */
 enum {
