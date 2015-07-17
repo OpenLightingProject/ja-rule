@@ -22,7 +22,6 @@
 #include <gmock/gmock.h>
 
 #include "rdm_handler.h"
-#include "Array.h"
 
 using ::testing::StrictMock;
 using ::testing::Return;
@@ -223,14 +222,12 @@ TEST_F(RDMHandlerTest, testDispatching) {
   EXPECT_TRUE(RDMHandler_SetActiveModel(NULL_MODEL));
 }
 
-
 TEST_F(RDMHandlerTest, testSendResponse) {
   RDMHandlerSettings settings = {
     .default_model = MODEL_ONE,
     .send_callback = SendResponse
   };
   RDMHandler_Initialize(&settings);
-
 
   testing::InSequence seq;
   EXPECT_CALL(m_first_model, Activate()).Times(1);
@@ -245,5 +242,4 @@ TEST_F(RDMHandlerTest, testSendResponse) {
                            nullptr);
   RDMHandler_HandleRequest(reinterpret_cast<const RDMHeader*>(SAMPLE_MESSAGE),
                            nullptr);
-
 }
