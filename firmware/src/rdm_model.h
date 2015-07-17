@@ -34,7 +34,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "rdm_frame.h"
-#include "rdm_responder.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,13 +59,11 @@ typedef enum {
 
 /**
  * @brief The function used to activate an RDM Model.
- * @returns A ResponderDefinition which will be given to the RDMResponder
- *   module.
  *
  * The activate function is called when the model becomes active via a call to
  * RDMHandler_SetActiveModel().
  */
-typedef const ResponderDefinition* (*RDMModelActivateFunction)();
+typedef void (*RDMModelActivateFunction)();
 
 /**
  * @brief The function used to deactivate a RDM Model.
