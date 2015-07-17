@@ -39,6 +39,8 @@
         <itemPath>../src/utils.h</itemPath>
         <itemPath>../src/random.h</itemPath>
         <itemPath>../src/spi_rgb.h</itemPath>
+        <itemPath>../src/rdm_handler.h</itemPath>
+        <itemPath>../src/rdm_util.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
