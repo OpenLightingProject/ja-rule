@@ -35,13 +35,11 @@
 #include "MessageHandlerMock.h"
 
 using ola::rdm::UID;
-/*
+using ola::rdm::GetResponseFromData;
 using ola::rdm::NewDiscoveryUniqueBranchRequest;
 using ola::rdm::NewMuteRequest;
 using ola::rdm::NewUnMuteRequest;
 using ola::rdm::RDMDiscoveryRequest;
-*/
-using ola::rdm::GetResponseFromData;
 using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -72,6 +70,14 @@ int InvokeHandler(Func function, const RDMRequest *request) {
   data.push_back(RDM_START_CODE);
   EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
   return function(AsHeader(data.data()), request->ParamData());
+}
+
+template<typename Func>
+int InvokeMuteHandler(Func function, const RDMRequest *request) {
+  ola::io::ByteString data;
+  data.push_back(RDM_START_CODE);
+  EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
+  return function(AsHeader(data.data()));
 }
 
 class MockPIDHandler {
@@ -195,109 +201,79 @@ TEST_F(RDMResponderTest, DiscoveryUniqueBranch) {
 }
 
 TEST_F(RDMResponderTest, discoveryCommands) {
-  const uint8_t mute[] = {
-    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x02, 0x00
-  };
+  unique_ptr<RDMDiscoveryRequest> unmute(NewUnMuteRequest(
+      m_controller_uid, m_our_uid, 0));
+  unique_ptr<RDMDiscoveryRequest> discovery(NewDiscoveryUniqueBranchRequest(
+      m_controller_uid, UID(0, 0), UID::AllDevices(), 0));
+  unique_ptr<RDMDiscoveryRequest> mute(NewMuteRequest(
+      m_controller_uid, m_our_uid, 0));
 
-  const uint8_t unmute[] = {
-    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x03, 0x00
-  };
-
-  const uint8_t dub[] = {
-    0xcc, 0x01, 0x24, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0xff, 0xff, 0xff,
-    0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x01, 0x0c
-  };
-
-  const uint8_t dub_param_data[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff,
-    0xff, 0x09, 0xf0
-  };
-
-  EXPECT_EQ(28, RDMResponder_HandleDiscovery(AsHeader(mute), nullptr));
-  EXPECT_EQ(28,
-            RDMResponder_HandleDiscovery(AsHeader(unmute), nullptr));
+  EXPECT_EQ(28, InvokeHandler(RDMResponder_HandleDiscovery, unmute.get()));
   EXPECT_EQ(-DUB_RESPONSE_LENGTH,
-            RDMResponder_HandleDiscovery(AsHeader(dub), dub_param_data));
+            InvokeHandler(RDMResponder_HandleDiscovery, discovery.get()));
+  EXPECT_EQ(28, InvokeHandler(RDMResponder_HandleDiscovery, mute.get()));
 }
 
 TEST_F(RDMResponderTest, setUnMute) {
   RDMResponder_Initialize(TEST_UID);
 
-  const uint8_t unicast_unmute[] = {
-    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x03, 0x00
-  };
+  unique_ptr<RDMDiscoveryRequest> unicast_unmute(NewUnMuteRequest(
+      m_controller_uid, m_our_uid, 0));
 
-  const uint8_t expected_response[] = {
-    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
-    0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x03, 0x02,
-    0x00, 0x00, 0x03, 0xe5
-  };
+  uint8_t control_bits[2] = {0, 0};
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        unicast_unmute.get(), control_bits, arraysize(control_bits)));
 
   g_responder.is_muted = true;
-  EXPECT_EQ(28, RDMResponder_SetUnMute(AsHeader(unicast_unmute)));
+  int size = InvokeMuteHandler(RDMResponder_SetUnMute, unicast_unmute.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
   EXPECT_FALSE(g_responder.is_muted);
 
-  ArrayTuple tuple(g_rdm_buffer, 28);
-  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
-
   // Try with a broadcast
-  const uint8_t broadcast_unmute[] = {
-    0xcc, 0x01, 0x18, 0x7a, 0x70, 0xff, 0xff, 0xff, 0xff, 0x7a, 0x70, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x03, 0x00
-  };
+  unique_ptr<RDMDiscoveryRequest> broadcast_unmute(NewUnMuteRequest(
+      m_controller_uid, UID::AllDevices(), 0));
   g_responder.is_muted = true;
-  EXPECT_EQ(0, RDMResponder_SetUnMute(AsHeader(broadcast_unmute)));
+  EXPECT_EQ(0,
+            InvokeMuteHandler(RDMResponder_SetUnMute, broadcast_unmute.get()));
   EXPECT_FALSE(g_responder.is_muted);
 }
 
 TEST_F(RDMResponderTest, setMute) {
-  const uint8_t unicast_mute[] = {
-    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x02, 0x00
-  };
+  RDMResponder_Initialize(TEST_UID);
 
-  const uint8_t expected_response[] = {
-    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
-    0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x02, 0x02,
-    0x00, 0x00, 0x03, 0xe4
-  };
+  unique_ptr<RDMDiscoveryRequest> unicast_mute(NewMuteRequest(
+      m_controller_uid, m_our_uid, 0));
+
+  uint8_t control_bits[2] = {0, 0};
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        unicast_mute.get(), control_bits, arraysize(control_bits)));
 
   g_responder.is_muted = false;
-  EXPECT_EQ(28, RDMResponder_SetMute(AsHeader(unicast_mute)));
+  int size = InvokeMuteHandler(RDMResponder_SetMute, unicast_mute.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
   EXPECT_TRUE(g_responder.is_muted);
 
-  ArrayTuple tuple(g_rdm_buffer, 28);
-  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
-
-  // try a broadcast
-  const uint8_t broadcast_mute[] = {
-    0xcc, 0x01, 0x18, 0x7a, 0x70, 0xff, 0xff, 0xff, 0xff, 0x7a, 0x70, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x02, 0x00
-  };
+  // Try with a broadcast
+  unique_ptr<RDMDiscoveryRequest> broadcast_mute(NewMuteRequest(
+      m_controller_uid, UID::AllDevices(), 0));
   g_responder.is_muted = false;
-  EXPECT_EQ(0, RDMResponder_SetMute(AsHeader(broadcast_mute)));
+  EXPECT_EQ(0, InvokeMuteHandler(RDMResponder_SetMute, broadcast_mute.get()));
   EXPECT_TRUE(g_responder.is_muted);
 }
 
 TEST_F(RDMResponderTest, testBuildNack) {
-  const uint8_t request[] = {
-    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
-    0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00, 0x01, 0x20, 0x03, 0x43, 0x00,
-  };
+  unique_ptr<RDMRequest> request(new RDMGetRequest(
+      m_controller_uid, m_our_uid, 0, 0, 0, PID_SUPPORTED_PARAMETERS,
+      nullptr, 0));
 
-  const uint8_t expected_response[] = {
-    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
-    0x34, 0x56, 0x78, 0x12, 0x02, 0x00, 0x00, 0x01, 0x21, 0x03, 0x43, 0x02,
-    0x00, 0x00, 0x04, 0x4d
-  };
+  unique_ptr<RDMResponse> response(
+      ola::rdm::NackWithReason(request.get(), ola::rdm::NR_UNKNOWN_PID));
 
-  EXPECT_EQ(28, RDMResponder_BuildNack(AsHeader(request), NR_UNKNOWN_PID));
-
-  ArrayTuple tuple(g_rdm_buffer, 28);
-  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
+  ola::io::ByteString data;
+  data.push_back(RDM_START_CODE);
+  EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
+  int size = RDMResponder_BuildNack(AsHeader(data.data()), NR_UNKNOWN_PID);
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
 
 TEST_F(RDMResponderTest, testDispatch) {

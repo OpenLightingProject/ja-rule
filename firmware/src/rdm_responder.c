@@ -309,21 +309,6 @@ int RDMResponder_GetDeviceInfo(const RDMHeader *header,
     .sensor_count = g_responder.sensor_count
   };
 
-  /*
-  // TODO make this .foo format
-  struct device_info_s device_info;
-  device_info.rdm_version = htons(RDM_VERSION);
-  device_info.model = htons(g_responder.def->model_id);
-  device_info.product_category = htons(g_responder.def->product_category);
-  device_info.software_version = htonl(g_responder.def->software_version);
-  device_info.dmx_footprint = htons(g_responder.dmx_footprint);
-  device_info.current_personality = g_responder.current_personality;
-  device_info.personality_count = g_responder.personality_count;
-  device_info.dmx_start_address = htons(g_responder.dmx_start_address);
-  device_info.sub_device_count = htons(g_responder.sub_device_count);
-  device_info.sensor_count = g_responder.sensor_count;
-  */
-
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
                            PID_DEVICE_INFO, sizeof(device_info));
   memcpy(g_rdm_buffer + sizeof(RDMHeader),
