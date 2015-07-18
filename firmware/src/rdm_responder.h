@@ -96,7 +96,7 @@ typedef struct {
  */
 typedef struct {
   const PIDDescriptor *descriptors;
-  const unsigned int descriptor_count;
+  unsigned int descriptor_count;
   const char *software_version_label;
   const char *manufacturer_label;
   const char *model_description;
