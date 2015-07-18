@@ -189,15 +189,16 @@ int RDMResponder_DispatchPID(const RDMHeader *header,
 // ----------------------------------------------------------------------------
 int RDMResponder_GenericReturnString(const RDMHeader *header,
                                      const char *reply_string,
-                                     unsigned int string_size) {
+                                     unsigned int max_size) {
   if (header->param_data_length) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
   ReturnUnlessUnicast(header);
 
+  unsigned int length = RDMUtil_SafeStringLength(reply_string, max_size);
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id), string_size);
-  memcpy(g_rdm_buffer + sizeof(RDMHeader), reply_string, string_size);
+                           ntohs(header->param_id), length);
+  memcpy(g_rdm_buffer + sizeof(RDMHeader), reply_string, length);
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
@@ -253,7 +254,7 @@ int RDMResponder_GetProductDetailIds(const RDMHeader *header,
     }
   }
 
-  RDMResponder_BuildHeader(header, ACK, SET_COMMAND_RESPONSE,
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
                            PID_PRODUCT_DETAIL_ID_LIST, size);
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
@@ -261,36 +262,30 @@ int RDMResponder_GetProductDetailIds(const RDMHeader *header,
 int RDMResponder_GetDeviceModelDescription(const RDMHeader *header,
                                            UNUSED const uint8_t *param_data) {
   const ResponderDefinition *definition = g_responder.def;
-  return RDMResponder_GenericReturnString(
-      header, definition->model_description,
-      RDMUtil_SafeStringLength(definition->model_description,
-                               RDM_DEFAULT_STRING_SIZE) + 1);
+  return RDMResponder_GenericReturnString(header, definition->model_description,
+                                          RDM_DEFAULT_STRING_SIZE);
 }
 
 int RDMResponder_GetManufacturerLabel(const RDMHeader *header,
                                       UNUSED const uint8_t *param_data) {
   const ResponderDefinition *definition = g_responder.def;
-  return RDMResponder_GenericReturnString(
-      header, definition->manufacturer_label,
-      RDMUtil_SafeStringLength(definition->manufacturer_label,
-                               RDM_DEFAULT_STRING_SIZE) + 1);
+  return RDMResponder_GenericReturnString(header,
+                                          definition->manufacturer_label,
+                                          RDM_DEFAULT_STRING_SIZE);
 }
 
 int RDMResponder_GetSoftwareVersionLabel(const RDMHeader *header,
                                          UNUSED const uint8_t *param_data) {
   const ResponderDefinition *definition = g_responder.def;
-  return RDMResponder_GenericReturnString(
-      header, definition->software_version_label,
-      RDMUtil_SafeStringLength(definition->software_version_label,
-                               RDM_DEFAULT_STRING_SIZE) + 1);
+  return RDMResponder_GenericReturnString(header,
+                                          definition->software_version_label,
+                                          RDM_DEFAULT_STRING_SIZE);
 }
 
 int RDMResponder_GetDeviceLabel(const RDMHeader *header,
                                 UNUSED const uint8_t *param_data) {
-  return RDMResponder_GenericReturnString(
-      header, g_responder.device_label,
-      RDMUtil_SafeStringLength(g_responder.device_label,
-                               RDM_DEFAULT_STRING_SIZE) + 1);
+  return RDMResponder_GenericReturnString(header, g_responder.device_label,
+                                          RDM_DEFAULT_STRING_SIZE);
 }
 
 int RDMResponder_SetDeviceLabel(const RDMHeader *header,

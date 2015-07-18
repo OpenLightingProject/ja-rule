@@ -325,3 +325,102 @@ TEST_F(RDMResponderTest, testDispatch) {
   ArrayTuple tuple3(g_rdm_buffer, 28);
   EXPECT_THAT(tuple3, DataIs(unknown_pid, arraysize(unknown_pid)));
 }
+
+TEST_F(RDMResponderTest, productDetailIds) {
+  const uint8_t request[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x70, 0x00
+  };
+
+  const uint8_t expected_response[] = {
+    0xcc, 0x01, 0x1c, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x00, 0x70, 0x04,
+    0x09, 0x02, 0x09, 0x00, 0x04, 0x7a
+  };
+
+  const ProductDetailIds product_detail_id_list = {
+    .ids = {PRODUCT_DETAIL_TEST, PRODUCT_DETAIL_CHANGEOVER_MANUAL},
+    .size = 2
+  };
+
+  ResponderDefinition responder_def = {
+    .descriptors = nullptr,
+    .descriptor_count = 0,
+    .software_version_label = nullptr,
+    .manufacturer_label = nullptr,
+    .model_description = nullptr,
+    .default_device_label = nullptr,
+    .product_detail_ids = &product_detail_id_list
+  };
+  g_responder.def = &responder_def;
+
+  EXPECT_EQ(30, RDMResponder_GetProductDetailIds(AsHeader(request), nullptr));
+
+  ArrayTuple tuple(g_rdm_buffer, 30);
+  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
+}
+
+TEST_F(RDMResponderTest, deviceModelDescrption) {
+  const uint8_t request[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x80, 0x00
+  };
+
+  const uint8_t expected_response[] = {
+    0xcc, 0x01, 0x1b, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70,
+    0x12, 0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x00, 0x80,
+    0x03, 'f', 'o', 'o', 0x05, 0xb8
+  };
+
+  const char device_model_description[] = "foo";
+
+  ResponderDefinition responder_def = {
+    .descriptors = nullptr,
+    .descriptor_count = 0,
+    .software_version_label = nullptr,
+    .manufacturer_label = nullptr,
+    .model_description = device_model_description,
+    .default_device_label = nullptr,
+    .product_detail_ids = nullptr
+  };
+  g_responder.def = &responder_def;
+
+  EXPECT_EQ(29,
+            RDMResponder_GetDeviceModelDescription(AsHeader(request), nullptr));
+
+  ArrayTuple tuple(g_rdm_buffer, 29);
+  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
+}
+
+TEST_F(RDMResponderTest, manufacturerLabel) {
+  const uint8_t request[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x81, 0x00,
+    0x04, 0x6e
+  };
+
+  const uint8_t expected_response[] = {
+    0xcc, 0x01, 0x25, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x00, 0x81, 0x0d,
+   'O', 'p', 'e', 'n', ' ', 'L', 'i', 'g', 'h', 't', 'i', 'n', 'g',
+    0x09, 0x71
+  };
+
+  const char manufacturer_label[] = "Open Lighting";
+
+  ResponderDefinition responder_def = {
+    .descriptors = nullptr,
+    .descriptor_count = 0,
+    .software_version_label = nullptr,
+    .manufacturer_label = manufacturer_label,
+    .model_description = nullptr,
+    .default_device_label = nullptr,
+    .product_detail_ids = nullptr
+  };
+  g_responder.def = &responder_def;
+
+  EXPECT_EQ(39, RDMResponder_GetManufacturerLabel(AsHeader(request), nullptr));
+
+  ArrayTuple tuple(g_rdm_buffer, 39);
+  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
+}

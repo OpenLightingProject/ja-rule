@@ -435,7 +435,7 @@ typedef enum {
   PRODUCT_DETAIL_BATTERY = 0x0a01,
   PRODUCT_DETAIL_CONTROLLABLE_BREAKER = 0x0a02,
   PRODUCT_DETAIL_OTHER = 0x7fff,
-} RDMProductDetail;
+} __attribute__((packed)) RDMProductDetail;
 
 #ifdef __cplusplus
 }

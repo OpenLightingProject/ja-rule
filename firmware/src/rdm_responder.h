@@ -212,12 +212,13 @@ int RDMResponder_DispatchPID(const RDMHeader *incoming_header,
  * @brief Build a response containing a string.
  * @param incoming_header The header of the incoming frame.
  * @param reply_string The string to reply with
- * @param string_size The length of the string, including the terminating NULL.
+ * @param max_size The maximum size of the string. We may return a shorter
+ * string if it contains a NULL.
  * @returns The size of the RDM response frame.
  */
 int RDMResponder_GenericReturnString(const RDMHeader *incoming_header,
                                      const char *reply_string,
-                                     unsigned int string_size);
+                                     unsigned int max_size);
 
 /**
  * @brief Handle a SET MUTE request.
