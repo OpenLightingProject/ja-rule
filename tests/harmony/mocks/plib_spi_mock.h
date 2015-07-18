@@ -18,6 +18,8 @@ class MockPeripheralSPI {
   MOCK_METHOD1(IsBusy, bool(SPI_MODULE_ID index));
   MOCK_METHOD1(FIFOEnable, void(SPI_MODULE_ID index));
   MOCK_METHOD2(BufferWrite, void(SPI_MODULE_ID index, uint8_t data));
+  MOCK_METHOD1(SlaveSelectDisable, void(SPI_MODULE_ID index));
+  MOCK_METHOD2(PinDisable, void(SPI_MODULE_ID index, SPI_PIN pin));
 };
 
 void PLIB_SPI_SetMock(MockPeripheralSPI* mock);

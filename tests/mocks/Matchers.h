@@ -36,6 +36,21 @@
  * @brief Mock Matchers
  */
 
+
+/**
+ * @brief Compare two memory regions.
+ * @param data The actual data
+ * @param size The actual size
+ * @param expected_data The expected data
+ * @param expected_size The expected size
+ * @param listener The result listener
+ * @returns true if equal, false if not.
+ */
+bool MemoryCompare(const uint8_t *data, unsigned int size,
+                   const uint8_t *expected_data,
+                   unsigned int expected_size,
+                   testing::MatchResultListener* listener);
+
 /**
  * @brief An IOVec and it's associated length.
  */

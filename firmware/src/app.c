@@ -25,6 +25,7 @@
 #include "message_handler.h"
 #include "rdm.h"
 #include "rdm_handler.h"
+#include "simple_model.h"
 #include "spi_rgb.h"
 #include "stream_decoder.h"
 #include "syslog.h"
@@ -63,13 +64,25 @@ void APP_Initialize(void) {
   };
   Transceiver_Initialize(&transceiver_settings, NULL, NULL);
 
+  // Base RDM Responder
+  RDMResponder_Initialize(OUR_UID);
+
+  // RDM Handler
   RDMHandlerSettings rdm_handler_settings = {
     .default_model = BASIC_RESPONDER,
     .send_callback = NULL
   };
   RDMHandler_Initialize(&rdm_handler_settings);
 
-  RDMResponder_Initialize(OUR_UID);
+  // Initialize RDM Models
+  SimpleModelSettings simple_model_settings = {
+    .identify_port = RDM_RESPONDER_PORT,
+    .identify_bit = RDM_RESPONDER_IDENTIFY_PORT_BIT,
+    .mute_port = RDM_RESPONDER_PORT,
+    .mute_bit = RDM_RESPONDER_MUTE_PORT_BIT,
+  };
+  SimpleModel_Initialize(&simple_model_settings);
+  RDMHandler_AddModel(&SIMPLE_MODEL_ENTRY);
 
   // Initialize the Host message layers.
   MessageHandler_Initialize(NULL);
@@ -77,6 +90,7 @@ void APP_Initialize(void) {
 
   Flags_Initialize();
 
+  // SPI DMX Output
   SPIRGBConfiguration spi_config;
   spi_config.module_id = SPI_ID_1;
   spi_config.baud_rate = 1000000;

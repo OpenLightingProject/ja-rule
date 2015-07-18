@@ -66,6 +66,10 @@ TEST_F(SPIRGBTest, testSimpleMode) {
   EXPECT_CALL(spi_mock,
               ClockPolaritySelect(SPI_ID_1, SPI_CLOCK_POLARITY_IDLE_HIGH))
     .Times(1);
+  EXPECT_CALL(spi_mock, SlaveSelectDisable(SPI_ID_1))
+    .Times(1);
+  EXPECT_CALL(spi_mock, PinDisable(SPI_ID_1, SPI_PIN_SLAVE_SELECT))
+    .Times(1);
   EXPECT_CALL(spi_mock, Enable(SPI_ID_1))
     .Times(1);
   EXPECT_CALL(spi_mock, MasterEnable(SPI_ID_1))
@@ -122,6 +126,10 @@ TEST_F(SPIRGBTest, testEnhancedMode) {
               ClockPolaritySelect(SPI_ID_1, SPI_CLOCK_POLARITY_IDLE_HIGH))
     .Times(1);
   EXPECT_CALL(spi_mock, FIFOEnable(SPI_ID_1))
+    .Times(1);
+  EXPECT_CALL(spi_mock, SlaveSelectDisable(SPI_ID_1))
+    .Times(1);
+  EXPECT_CALL(spi_mock, PinDisable(SPI_ID_1, SPI_PIN_SLAVE_SELECT))
     .Times(1);
   EXPECT_CALL(spi_mock, Enable(SPI_ID_1))
     .Times(1);

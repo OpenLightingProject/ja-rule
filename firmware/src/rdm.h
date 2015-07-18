@@ -351,7 +351,7 @@ typedef enum {
   PRODUCT_CATEGORY_TEST_EQUIPMENT = 0x7101,
   PRODUCT_CATEGORY_TEST_EQUIPMENT_OTHER = 0x71ff,
   PRODUCT_CATEGORY_OTHER = 0x7fff,
-} RDMProductCategory;
+} __attribute__((packed)) RDMProductCategory;
 
 // product details
 typedef enum {

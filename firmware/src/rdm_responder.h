@@ -102,6 +102,9 @@ typedef struct {
   const char *model_description;
   const char *default_device_label;
   const ProductDetailIds *product_detail_ids;
+  uint32_t software_version;
+  uint16_t model_id;
+  RDMProductCategory product_category;
 } ResponderDefinition;
 
 /**
@@ -113,9 +116,14 @@ typedef struct {
    */
   const ResponderDefinition *def;
 
-  char device_label[RDM_DEFAULT_STRING_SIZE];  //!< Device label
+  char device_label[RDM_DEFAULT_STRING_SIZE + 1];  //!< Device label
   uint8_t uid[UID_LENGTH];  //!< Responder's UID
   uint16_t dmx_start_address;  //!< DMX start address
+  uint16_t dmx_footprint;  //!< The DMX footprint
+  uint16_t sub_device_count;  //!< The number of sub devices
+  uint8_t current_personality;  //!< Current DMX personality
+  uint8_t personality_count;  //!< The number of personalities.
+  uint8_t sensor_count;  //!< The number of sensors
   uint8_t queued_message_count;  //!< queued message count.
   bool is_muted;  //!< The mute state for the responder
   bool identify_on;  //!< The identify state for the responder.
@@ -233,6 +241,15 @@ int RDMResponder_SetMute(const RDMHeader *incoming_header);
  * @returns The size of the RDM response frame.
  */
 int RDMResponder_SetUnMute(const RDMHeader *incoming_header);
+
+/**
+ * @brief Handle a GET DEVICE_INFO request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetDeviceInfo(const RDMHeader *incoming_header,
+                               const uint8_t *param_data);
 
 /**
  * @brief Handle a SUPPORTED_PARAMETERS request.

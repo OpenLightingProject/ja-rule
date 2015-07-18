@@ -39,8 +39,11 @@
         <itemPath>../src/utils.h</itemPath>
         <itemPath>../src/random.h</itemPath>
         <itemPath>../src/spi_rgb.h</itemPath>
-        <itemPath>../src/rdm_handler.h</itemPath>
         <itemPath>../src/rdm_util.h</itemPath>
+        <itemPath>../src/rdm_handler.h</itemPath>
+        <itemPath>../src/simple_model.h</itemPath>
+        <itemPath>../src/rdm_model.h</itemPath>
+        <itemPath>../src/macros.h</itemPath>
         <itemPath>../src/rdm_buffer.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
@@ -124,8 +127,9 @@
         <itemPath>../src/rdm_responder.c</itemPath>
         <itemPath>../src/random.c</itemPath>
         <itemPath>../src/spi_rgb.c</itemPath>
-        <itemPath>../src/rdm_handler.c</itemPath>
         <itemPath>../src/rdm_util.c</itemPath>
+        <itemPath>../src/rdm_handler.c</itemPath>
+        <itemPath>../src/simple_model.c</itemPath>
         <itemPath>../src/rdm_buffer.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
