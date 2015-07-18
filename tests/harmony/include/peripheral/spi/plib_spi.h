@@ -32,6 +32,11 @@ typedef enum {
   SPI_CLOCK_POLARITY_IDLE_HIGH = 1
 } SPI_CLOCK_POLARITY;
 
+typedef enum {
+  SPI_PIN_SLAVE_SELECT = 0,
+  SPI_PIN_DATA_OUT = 1
+} SPI_PIN;
+
 void PLIB_SPI_Enable(SPI_MODULE_ID index);
 
 bool PLIB_SPI_TransmitBufferIsFull(SPI_MODULE_ID index);
@@ -51,6 +56,10 @@ bool PLIB_SPI_IsBusy(SPI_MODULE_ID index);
 void PLIB_SPI_FIFOEnable(SPI_MODULE_ID index);
 
 void PLIB_SPI_BufferWrite(SPI_MODULE_ID index, uint8_t data);
+
+void PLIB_SPI_SlaveSelectDisable(SPI_MODULE_ID index);
+
+void PLIB_SPI_PinDisable(SPI_MODULE_ID index, SPI_PIN pin);
 
 #ifdef  __cplusplus
 }

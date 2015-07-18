@@ -58,8 +58,10 @@ void SPIRGB_Init(const SPIRGBConfiguration *config) {
   if (g_spi.use_enhanced_buffering) {
     PLIB_SPI_FIFOEnable(g_spi.module_id);
   }
-  PLIB_SPI_Enable(g_spi.module_id);
+  PLIB_SPI_SlaveSelectDisable(g_spi.module_id);
+  PLIB_SPI_PinDisable(g_spi.module_id, SPI_PIN_SLAVE_SELECT);
   PLIB_SPI_MasterEnable(g_spi.module_id);
+  PLIB_SPI_Enable(g_spi.module_id);
 }
 
 void SPIRGB_BeginUpdate() {

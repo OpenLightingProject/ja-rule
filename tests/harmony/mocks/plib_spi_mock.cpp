@@ -67,3 +67,15 @@ void PLIB_SPI_BufferWrite(SPI_MODULE_ID index, uint8_t data) {
     g_plib_spi_mock->BufferWrite(index, data);
   }
 }
+
+void PLIB_SPI_SlaveSelectDisable(SPI_MODULE_ID index) {
+  if (g_plib_spi_mock) {
+    g_plib_spi_mock->SlaveSelectDisable(index);
+  }
+}
+
+void PLIB_SPI_PinDisable(SPI_MODULE_ID index, SPI_PIN pin) {
+  if (g_plib_spi_mock) {
+    g_plib_spi_mock->PinDisable(index, pin);
+  }
+}

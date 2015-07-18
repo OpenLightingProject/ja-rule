@@ -111,6 +111,7 @@ static void SimpleModel_Activate() {
   PLIB_PORTS_PinSet(PORTS_ID_0, g_simple_model.mute_port,
                     g_simple_model.mute_bit);
   g_responder.def = &RESPONDER_DEFINITION;
+  RDMResponder_ResetToFactoryDefaults();
 }
 
 static void SimpleModel_Deactivate() {

@@ -22,6 +22,50 @@
 
 #include <gmock/gmock.h>
 
+
+bool MemoryCompare(
+    const uint8_t *data, unsigned int size,
+    const uint8_t *expected_data, unsigned int expected_size,
+    testing::MatchResultListener* listener) {
+  if (size != expected_size) {
+    *listener << "data size was " << size;
+    return false;
+  }
+
+  if (data == nullptr && expected_data == nullptr) {
+    return true;
+  }
+
+  if (data == nullptr || expected_data == nullptr) {
+    *listener << "the data was NULL";
+    return false;
+  }
+
+  bool matched = true;
+  if (listener->IsInterested()) {
+    std::ios::fmtflags ostream_flags(listener->stream()->flags());
+    for (unsigned int i = 0; i < expected_size; i++) {
+      uint8_t actual = data[i];
+      uint8_t expected = reinterpret_cast<const uint8_t*>(expected_data)[i];
+
+      *listener
+         << "\n" << std::dec << i << ": 0x" << std::hex
+         << static_cast<int>(expected)
+         << (expected == actual ? " == " : " != ")
+         << "0x" << static_cast<int>(actual) << " ("
+         << ((expected >= '!' && expected <= '~') ?
+             static_cast<char>(expected) : ' ')
+         << (expected == actual ? " == " : " != ")
+         << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
+         << ")";
+
+      matched &= (expected == actual);
+    }
+    listener->stream()->flags(ostream_flags);
+  }
+  return matched;
+}
+
 // DataMatcher
 // ----------------------------------------------------------------------------
 
@@ -49,64 +93,14 @@ class DataMatcher :
  private:
   const uint8_t* m_expected_data;
   unsigned int m_expected_size;
-
-  bool InternalMatchAndExplain(
-      const ::testing::tuple<const uint8_t*, unsigned int>& args,
-      testing::MatchResultListener* listener) const;
 };
 
 bool DataMatcher::MatchAndExplain(
     ::testing::tuple<const void*, unsigned int> args,
     testing::MatchResultListener* listener) const {
-  ::testing::tuple<const uint8_t*, unsigned int> new_args(
-      reinterpret_cast<const uint8_t*>(::testing::get<0>(args)),
-      ::testing::get<1>(args));
-  return InternalMatchAndExplain(new_args, listener);
-}
-
-bool DataMatcher::InternalMatchAndExplain(
-    const ::testing::tuple<const uint8_t*, unsigned int>& args,
-    testing::MatchResultListener* listener) const {
-  const uint8_t* data = ::testing::get<0>(args);
-  unsigned int size = ::testing::get<1>(args);
-
-  if (size != m_expected_size) {
-    *listener << "data size was " << size;
-    return false;
-  }
-
-  if (data == nullptr && m_expected_data == nullptr) {
-    return true;
-  }
-
-  if (data == nullptr || m_expected_data == nullptr) {
-    *listener << "the data was NULL";
-    return false;
-  }
-
-  bool matched = true;
-  if (listener->IsInterested()) {
-    std::ios::fmtflags ostream_flags(listener->stream()->flags());
-    for (unsigned int i = 0; i < m_expected_size; i++) {
-      uint8_t actual = data[i];
-      uint8_t expected = reinterpret_cast<const uint8_t*>(m_expected_data)[i];
-
-      *listener
-         << "\n" << std::dec << i << ": 0x" << std::hex
-         << static_cast<int>(expected)
-         << (expected == actual ? " == " : " != ")
-         << "0x" << static_cast<int>(actual) << " ("
-         << ((expected >= '!' && expected <= '~') ?
-             static_cast<char>(expected) : ' ')
-         << (expected == actual ? " == " : " != ")
-         << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
-         << ")";
-
-      matched &= (expected == actual);
-    }
-    listener->stream()->flags(ostream_flags);
-  }
-  return matched;
+  return MemoryCompare(reinterpret_cast<const uint8_t*>(std::get<0>(args)),
+                       std::get<1>(args), m_expected_data, m_expected_size,
+                       listener);
 }
 
 testing::Matcher< ::testing::tuple<const void*, unsigned int> > DataIs(

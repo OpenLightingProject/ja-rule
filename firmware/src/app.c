@@ -64,15 +64,17 @@ void APP_Initialize(void) {
   };
   Transceiver_Initialize(&transceiver_settings, NULL, NULL);
 
+  // Base RDM Responder
   RDMResponder_Initialize(OUR_UID);
 
+  // RDM Handler
   RDMHandlerSettings rdm_handler_settings = {
     .default_model = BASIC_RESPONDER,
     .send_callback = NULL
   };
   RDMHandler_Initialize(&rdm_handler_settings);
 
-  // Initialize RDM Models & the RDM Handler.
+  // Initialize RDM Models
   SimpleModelSettings simple_model_settings = {
     .identify_port = RDM_RESPONDER_PORT,
     .identify_bit = RDM_RESPONDER_IDENTIFY_PORT_BIT,
@@ -88,8 +90,9 @@ void APP_Initialize(void) {
 
   Flags_Initialize();
 
+  // SPI DMX Output
   SPIRGBConfiguration spi_config;
-  spi_config.module_id = SPI_ID_2;
+  spi_config.module_id = SPI_ID_1;
   spi_config.baud_rate = 1000000;
   spi_config.use_enhanced_buffering = true;
   SPIRGB_Init(&spi_config);
