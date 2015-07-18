@@ -229,7 +229,6 @@ TEST_F(RDMResponderTest, testBuildNack) {
 
   ArrayTuple tuple(g_rdm_buffer, 28);
   EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
-
 }
 
 TEST_F(RDMResponderTest, testDispatch) {

@@ -64,7 +64,7 @@ void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]) {
 
 void RDMResponder_ResetToFactoryDefaults() {
   g_responder.queued_message_count = 0;
-  g_responder.dmx_start_address = 0xffff;
+  g_responder.dmx_start_address = INVALID_DMX_START_ADDRESS;
   g_responder.is_muted = false;
   g_responder.identify_on = false;
 
@@ -154,8 +154,7 @@ int RDMResponder_BuildNack(const RDMHeader *header, RDMNackReason reason) {
        GET_COMMAND_RESPONSE : SET_COMMAND_RESPONSE),
        ntohs(header->param_id),
        sizeof(param_data));
-  memcpy(g_rdm_buffer + sizeof(RDMHeader), &param_data,
-         sizeof(param_data));
+  memcpy(g_rdm_buffer + sizeof(RDMHeader), &param_data, sizeof(param_data));
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
@@ -213,7 +212,7 @@ int RDMResponder_SetMute(const RDMHeader *header) {
                            PID_DISC_MUTE, sizeof(uint16_t));
   uint8_t *param_data = g_rdm_buffer + sizeof(RDMHeader);
   param_data[0] = 0;  // set control field to 0
-  param_data[1] = 0;
+  param_data[1] = 0;  // set control field to 0
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
@@ -228,7 +227,7 @@ int RDMResponder_SetUnMute(const RDMHeader *header) {
                            PID_DISC_UN_MUTE, sizeof(uint16_t));
   uint8_t *param_data = g_rdm_buffer + sizeof(RDMHeader);
   param_data[0] = 0;  // set control field to 0
-  param_data[1] = 0;
+  param_data[1] = 0;  // set control field to 0
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
