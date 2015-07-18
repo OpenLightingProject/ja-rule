@@ -379,6 +379,7 @@ int RDMResponder_SetDeviceLabel(const RDMHeader *header,
   }
   unsigned int len = min(header->param_data_length, RDM_DEFAULT_STRING_SIZE);
   strncpy(g_responder.device_label, (const char*) param_data, len);
+  g_responder.device_label[len] = 0;
 
   ReturnUnlessUnicast(header);
   RDMResponder_BuildHeader(header, ACK, SET_COMMAND_RESPONSE,
