@@ -94,7 +94,7 @@ class RDMResponderTest : public testing::Test {
     memset(g_rdm_buffer, 0, DUB_RESPONSE_LENGTH);
   }
 
-  void InitDefinitiion(ResponderDefinition *def) {
+  void InitDefinition(ResponderDefinition *def) {
     def->descriptors = nullptr;
     def->descriptor_count = 0;
     def->software_version_label = nullptr;
@@ -102,7 +102,7 @@ class RDMResponderTest : public testing::Test {
     def->model_description = nullptr;
     def->default_device_label = nullptr;
     def->product_detail_ids = nullptr;
-  };
+  }
 
  protected:
   UID m_controller_uid;
@@ -275,7 +275,7 @@ TEST_F(RDMResponderTest, testDispatch) {
     {PID_RECORD_SENSORS, (PIDCommandHandler) nullptr, ClearSensors},
   };
   ResponderDefinition responder_def;
-  InitDefinitiion(&responder_def);
+  InitDefinition(&responder_def);
   responder_def.descriptors = pid_descriptors;
   responder_def.descriptor_count = arraysize(pid_descriptors),
   g_responder.def = &responder_def;
@@ -386,7 +386,7 @@ TEST_F(RDMResponderTest, supportedParameters) {
   };
 
   ResponderDefinition responder_def;
-  InitDefinitiion(&responder_def);
+  InitDefinition(&responder_def);
   responder_def.descriptors = pid_descriptors,
   responder_def.descriptor_count = arraysize(pid_descriptors),
   g_responder.def = &responder_def;
@@ -416,7 +416,7 @@ TEST_F(RDMResponderTest, productDetailIds) {
   };
 
   ResponderDefinition responder_def;
-  InitDefinitiion(&responder_def);
+  InitDefinition(&responder_def);
   responder_def.product_detail_ids = &product_detail_id_list;
   g_responder.def = &responder_def;
 
@@ -441,7 +441,7 @@ TEST_F(RDMResponderTest, deviceModelDescrption) {
   const char device_model_description[] = "foo";
 
   ResponderDefinition responder_def;
-  InitDefinitiion(&responder_def);
+  InitDefinition(&responder_def);
   responder_def.model_description = device_model_description;
   g_responder.def = &responder_def;
 
@@ -469,7 +469,7 @@ TEST_F(RDMResponderTest, manufacturerLabel) {
   const char manufacturer_label[] = "Open Lighting";
 
   ResponderDefinition responder_def;
-  InitDefinitiion(&responder_def);
+  InitDefinition(&responder_def);
   responder_def.manufacturer_label = manufacturer_label,
   g_responder.def = &responder_def;
 

@@ -217,6 +217,7 @@ int RDMResponder_SetMute(const RDMHeader *header) {
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
+// TODO(simon): combine with RDMResponder_SetMute above.
 int RDMResponder_SetUnMute(const RDMHeader *header) {
   if (header->param_data_length) {
     return RDM_RESPONDER_NO_RESPONSE;
