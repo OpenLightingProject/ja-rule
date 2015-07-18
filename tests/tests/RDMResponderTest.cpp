@@ -238,7 +238,12 @@ TEST_F(RDMResponderTest, testDispatch) {
   };
   ResponderDefinition responder_def = {
     .descriptors = reinterpret_cast<const PIDDescriptor*>(&pid_descriptors),
-    .descriptor_count = arraysize(pid_descriptors)
+    .descriptor_count = arraysize(pid_descriptors),
+    .software_version_label = nullptr,
+    .manufacturer_label = nullptr,
+    .model_description = nullptr,
+    .default_device_label = nullptr,
+    .product_detail_ids = nullptr
   };
   g_responder.def = &responder_def;
 
