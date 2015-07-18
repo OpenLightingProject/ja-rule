@@ -424,3 +424,47 @@ TEST_F(RDMResponderTest, manufacturerLabel) {
   ArrayTuple tuple(g_rdm_buffer, 39);
   EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
 }
+
+TEST_F(RDMResponderTest, supportedParameters) {
+  const uint8_t request[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x50, 0x00,
+    0x04, 0x3d
+  };
+
+  const uint8_t expected_response[] = {
+    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x00, 0x50, 0x02,
+    0x02, 0x02, 0x04, 0x46
+  };
+
+  const PIDDescriptor pid_descriptors[] = {
+    {PID_DISC_UNIQUE_BRANCH, nullptr, nullptr},
+    {PID_DISC_MUTE, nullptr, nullptr},
+    {PID_DISC_UN_MUTE, nullptr, nullptr},
+    {PID_SUPPORTED_PARAMETERS, nullptr, nullptr},
+    {PID_PARAMETER_DESCRIPTION, nullptr, nullptr},
+    {PID_DEVICE_INFO, nullptr, nullptr},
+    {PID_SOFTWARE_VERSION_LABEL, nullptr, nullptr},
+    {PID_DMX_START_ADDRESS, nullptr, nullptr},
+    {PID_IDENTIFY_DEVICE, nullptr, nullptr},
+    {PID_RECORD_SENSORS, nullptr, nullptr}
+  };
+
+  ResponderDefinition responder_def = {
+    .descriptors = pid_descriptors,
+    .descriptor_count = arraysize(pid_descriptors),
+    .software_version_label = nullptr,
+    .manufacturer_label = nullptr,
+    .model_description = nullptr,
+    .default_device_label = nullptr,
+    .product_detail_ids = nullptr
+  };
+  g_responder.def = &responder_def;
+
+  EXPECT_EQ(28,
+            RDMResponder_GetSupportedParameters(AsHeader(request), nullptr));
+
+  ArrayTuple tuple(g_rdm_buffer, 28);
+  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
+}

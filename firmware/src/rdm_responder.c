@@ -232,6 +232,42 @@ int RDMResponder_SetUnMute(const RDMHeader *header) {
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
+int RDMResponder_GetSupportedParameters(const RDMHeader *header,
+                                        UNUSED const uint8_t *param_data) {
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  ReturnUnlessUnicast(header);
+  const ResponderDefinition *definition = g_responder.def;
+
+  unsigned int i = 0;
+  unsigned int offset = sizeof(RDMHeader);
+  for (; i < definition->descriptor_count; i++) {
+    switch (definition->descriptors[i].pid) {
+      case PID_DISC_UNIQUE_BRANCH:
+      case PID_DISC_MUTE:
+      case PID_DISC_UN_MUTE:
+      case PID_SUPPORTED_PARAMETERS:
+      case PID_PARAMETER_DESCRIPTION:
+      case PID_DEVICE_INFO:
+      case PID_SOFTWARE_VERSION_LABEL:
+      case PID_DMX_START_ADDRESS:
+      case PID_IDENTIFY_DEVICE:
+        break;
+      default:
+        g_rdm_buffer[offset++] = ShortMSB(definition->descriptors[i].pid);
+        g_rdm_buffer[offset++] = ShortLSB(definition->descriptors[i].pid);
+    }
+  }
+
+  // TODO(simon): handle ack-overflow here
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           PID_SUPPORTED_PARAMETERS,
+                           offset - sizeof(RDMHeader));
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
 int RDMResponder_GetProductDetailIds(const RDMHeader *header,
                                      UNUSED const uint8_t *param_data) {
   if (header->param_data_length) {

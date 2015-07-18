@@ -235,6 +235,15 @@ int RDMResponder_SetMute(const RDMHeader *incoming_header);
 int RDMResponder_SetUnMute(const RDMHeader *incoming_header);
 
 /**
+ * @brief Handle a SUPPORTED_PARAMETERS request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetSupportedParameters(const RDMHeader *incoming_header,
+                                        const uint8_t *param_data);
+
+/**
  * @brief Handle a GET PRODUCT_DETAIL_IDS request.
  * @param incoming_header The header of the incoming frame.
  * @param param_data The received parameter data.
