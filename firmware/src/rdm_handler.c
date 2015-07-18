@@ -23,9 +23,10 @@
 
 #include "constants.h"
 #include "iovec.h"
+#include "rdm_buffer.h"
 #include "rdm_frame.h"
 #include "rdm_util.h"
-#include "rdm_buffer.h"
+#include "syslog.h"
 #include "system_pipeline.h"
 
 #define MAX_RDM_MODELS 4

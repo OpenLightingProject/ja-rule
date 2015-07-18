@@ -88,6 +88,11 @@ static const uint8_t RDM_PARAM_DATA_OFFSET = 24;
 static const uint16_t RDM_VERSION = 0x0100;
 
 /**
+ * @brief The 'unpatched' DMX start address.
+ */
+static const uint16_t INVALID_DMX_START_ADDRESS = 0xffff;
+
+/**
  * @brief The size of the default strings used in RDM.
  */
 enum { RDM_DEFAULT_STRING_SIZE = 32 };
@@ -103,7 +108,7 @@ enum { DUB_RESPONSE_LENGTH = 24 };
 enum { RDM_MAX_FRAME_SIZE = 257 };
 
 /**
- * @brief The length of UIDs.
+ * @brief The length of a UID.
  */
 enum {
   UID_LENGTH = 6  //!< The size of a UID.
@@ -121,8 +126,8 @@ enum {
  * @note See section 6.2.10 of ANSI E1.20 for more information.
  */
 typedef enum {
-  DISCOVER_COMMAND = 0x10, /**< Discovery Command */
-  DISCOVER_COMMAND_RESPONSE = 0x11, /**< Discovery Response */
+  DISCOVERY_COMMAND = 0x10, /**< Discovery Command */
+  DISCOVERY_COMMAND_RESPONSE = 0x11, /**< Discovery Response */
   GET_COMMAND = 0x20, /**< Get Command */
   GET_COMMAND_RESPONSE = 0x21, /**< Get Response */
   SET_COMMAND = 0x30, /**< Set Command */
@@ -430,7 +435,7 @@ typedef enum {
   PRODUCT_DETAIL_BATTERY = 0x0a01,
   PRODUCT_DETAIL_CONTROLLABLE_BREAKER = 0x0a02,
   PRODUCT_DETAIL_OTHER = 0x7fff,
-} RDMProductDetail;
+} __attribute__((packed)) RDMProductDetail;
 
 #ifdef __cplusplus
 }

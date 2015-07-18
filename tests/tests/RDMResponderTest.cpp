@@ -26,89 +26,50 @@
 #include <ola/rdm/RDMCommandSerializer.h>
 #include <memory>
 
+#include "rdm.h"
+#include "rdm_buffer.h"
 #include "rdm_responder.h"
 #include "Array.h"
 #include "Matchers.h"
 #include "MessageHandlerMock.h"
-#include "plib_ports_mock.h"
 
-using ::testing::Args;
-using ::testing::NiceMock;
+using ola::rdm::UID;
+using std::unique_ptr;
 using ::testing::StrictMock;
 using ::testing::Return;
-using ::testing::_;
-using ola::rdm::UID;
-using ola::rdm::NewDiscoveryUniqueBranchRequest;
-using ola::rdm::NewMuteRequest;
-using ola::rdm::NewUnMuteRequest;
-using ola::rdm::RDMDiscoveryRequest;
-using ola::rdm::RDMGetRequest;
-using ola::rdm::RDMRequest;
-using ola::rdm::RDMSetRequest;
-using std::unique_ptr;
 
-class MockSender {
+namespace {
+
+const RDMHeader *AsHeader(const uint8_t *data) {
+  return reinterpret_cast<const RDMHeader*>(data);
+}
+
+class MockPIDHandler {
  public:
-  MOCK_METHOD3(SendResponse, void(bool include_break,
-                                  const IOVec* data,
-                                  unsigned int iov_count));
+  MOCK_METHOD4(Call, int(RDMPid pid, bool is_get, const RDMHeader *header,
+                         const uint8_t *param_data));
 };
 
-MockSender *g_sender = NULL;
+MockPIDHandler *g_pid_handler = nullptr;
 
-void SendResponse(bool include_break,
-                  const IOVec* data,
-                  unsigned int iov_count) {
-  if (g_sender) {
-    g_sender->SendResponse(include_break, data, iov_count);
+int GetIdentifyDevice(const RDMHeader *header,
+                      const uint8_t *param_data) {
+  if (g_pid_handler) {
+    return g_pid_handler->Call(PID_IDENTIFY_DEVICE, true, header, param_data);
   }
+  return 0;
 }
 
-bool UIDRequiresAction(const UID &uid) {
-  uint8_t uid_data[UID_LENGTH];
-  uid.Pack(uid_data, UID_LENGTH);
-  return RDMResponder_UIDRequiresAction(uid_data);
+int ClearSensors(const RDMHeader *header,
+                      const uint8_t *param_data) {
+  if (g_pid_handler) {
+    return g_pid_handler->Call(PID_RECORD_SENSORS, false, header, param_data);
+  }
+  return 0;
 }
 
-// Tests for RDMResponder_VerifyChecksum
-//-----------------------------------------------------------------------------
-class ChecksumTest : public ::testing::TestWithParam<uint32_t> {
- public:
-  static const uint8_t sample_message[];
-};
+}  // namespace
 
-const uint8_t ChecksumTest::sample_message[] = {
-  0xcc, 0x01, 0x18, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12, 0x34,
-  0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x02, 0x00, 0x03, 0xdf
-};
-
-TEST_P(ChecksumTest, checksumFails) {
-  EXPECT_FALSE(RDMResponder_VerifyChecksum(sample_message, GetParam()));
-}
-
-INSTANTIATE_TEST_CASE_P(
-    sizeTooSmall,
-    ChecksumTest,
-    ::testing::Range(
-        0u,
-        static_cast<unsigned int>(arraysize(ChecksumTest::sample_message) - 1))
-);
-
-TEST_F(ChecksumTest, checksumPasses) {
-  EXPECT_TRUE(RDMResponder_VerifyChecksum(sample_message,
-                                          arraysize(sample_message)));
-}
-
-TEST_F(ChecksumTest, checksumMismatch) {
-  uint8_t bad_packet[arraysize(sample_message)];
-  memcpy(bad_packet, sample_message, arraysize(sample_message));
-  bad_packet[arraysize(sample_message) - 1]++;
-
-  EXPECT_FALSE(RDMResponder_VerifyChecksum(bad_packet, arraysize(bad_packet)));
-}
-
-// Tests for the rest of the RDMResponder module.
-//-----------------------------------------------------------------------------
 class RDMResponderTest : public testing::Test {
  public:
   RDMResponderTest()
@@ -117,364 +78,403 @@ class RDMResponderTest : public testing::Test {
   }
 
   void SetUp() {
-    PLIB_PORTS_SetMock(&m_ports_mock);
-    g_sender = &m_sender_mock;
-
-    m_default_settings.identify_port = PORT_CHANNEL_D;
-    m_default_settings.identify_bit = PORTS_BIT_POS_0;
-    m_default_settings.mute_port = PORT_CHANNEL_D;
-    m_default_settings.mute_bit = PORTS_BIT_POS_1;
-    m_our_uid.Pack(reinterpret_cast<uint8_t*>(&m_default_settings.uid),
-                   UID_LENGTH);
-
-    RDMResponder_Initialize(&m_default_settings, SendResponse);
+    g_pid_handler = &m_pid_handler;
   }
 
   void TearDown() {
-    PLIB_PORTS_SetMock(NULL);
-    g_sender = NULL;
+    g_pid_handler = nullptr;
   }
 
-  void SendRequest(const RDMRequest *request) {
-    ola::io::ByteString data;
-    data.push_back(RDM_START_CODE);
-    ASSERT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
-    RDMResponder_HandleRequest(
-        reinterpret_cast<const RDMHeader*>(data.data()),
-        request->ParamData(),
-        request->ParamDataSize());
+  void CreateDUBParamData(const UID &lower,
+                          const UID &upper,
+                          uint8_t *param_data) {
+    lower.Pack(param_data, UID_LENGTH);
+    upper.Pack(param_data + UID_LENGTH, UID_LENGTH);
+    // reset g_rdm_buffer here as well
+    memset(g_rdm_buffer, 0, DUB_RESPONSE_LENGTH);
+  }
+
+  void InitDefinition(ResponderDefinition *def) {
+    def->descriptors = nullptr;
+    def->descriptor_count = 0;
+    def->software_version_label = nullptr;
+    def->manufacturer_label = nullptr;
+    def->model_description = nullptr;
+    def->default_device_label = nullptr;
+    def->product_detail_ids = nullptr;
   }
 
  protected:
-  StrictMock<MockSender> m_sender_mock;
-  NiceMock<MockPeripheralPorts> m_ports_mock;
-  RDMResponderSettings m_default_settings;
-
   UID m_controller_uid;
   UID m_our_uid;
+  StrictMock<MockPIDHandler> m_pid_handler;
 
   static const uint8_t TEST_UID[UID_LENGTH];
 };
 
-const uint8_t RDMResponderTest::TEST_UID[] = {0x7a, 0x70, 1, 2, 3, 4};
+const uint8_t RDMResponderTest::TEST_UID[] = {
+  0x7a, 0x70, 0x12, 0x34, 0x56, 0x78
+};
 
-TEST_F(RDMResponderTest, requiresAction) {
-  RDMResponder_Initialize(&m_default_settings, nullptr);
-
-  EXPECT_FALSE(UIDRequiresAction(UID(0, 0)));
-  EXPECT_TRUE(UIDRequiresAction(UID::AllDevices()));
-  EXPECT_TRUE(UIDRequiresAction(m_our_uid));
-  EXPECT_TRUE(UIDRequiresAction(UID::VendorcastAddress(m_our_uid)));
-  EXPECT_FALSE(UIDRequiresAction(UID::VendorcastAddress(0x7a7a)));
+TEST_F(RDMResponderTest, getUID) {
+  RDMResponder_Initialize(TEST_UID);
+  uint8_t uid[UID_LENGTH];
+  RDMResponder_GetUID(uid);
+  EXPECT_THAT(uid, MatchesUID(TEST_UID));
 }
 
-TEST_F(RDMResponderTest, invalidCommand) {
-  const uint8_t expected_data[] = {
-    0xcc, 0x01, 0x1a,
-    0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
-    0x00, 0x02, 0x00, 0x00, 0x00,
-    0x21, 0x1f, 0xff, 0x2,
-    0x00, 0x00,
-    0x04, 0x18
-  };
+TEST_F(RDMResponderTest, DiscoveryUniqueBranch) {
+  RDMResponder_Initialize(TEST_UID);
 
-  EXPECT_CALL(m_sender_mock,
-              SendResponse(true, _, _))
-     .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data))))
-     .Times(1);
-
-  // 0x1fff isn't a PID (yet!)
-  unique_ptr<RDMRequest> request(new RDMGetRequest(
-      m_controller_uid, m_our_uid, 0, 0, 0, 0x1fff, NULL, 0));
-  SendRequest(request.get());
-}
-
-TEST_F(RDMResponderTest, discovery) {
   const uint8_t expected_data[] = {
     0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xaa,
-    0xfa, 0x7f, 0xfa, 0x75, 0xab, 0x55, 0xaa, 0x57,
-    0xab, 0x57, 0xae, 0x55, 0xae, 0x57, 0xee, 0xff
+    0xfa, 0x7f, 0xfa, 0x75, 0xba, 0x57, 0xbe, 0x75,
+    0xfe, 0x57, 0xfa, 0x7d, 0xaf, 0x57, 0xfa, 0xfd
   };
+  ArrayTuple tuple(g_rdm_buffer, DUB_RESPONSE_LENGTH);
 
-  EXPECT_CALL(m_sender_mock,
-              SendResponse(false, _, 1))
-     .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data))))
-     .Times(4);
+  uint8_t param_data[UID_LENGTH * 2];
+  CreateDUBParamData(UID(0, 0), UID::AllDevices(), param_data);
+  EXPECT_EQ(-DUB_RESPONSE_LENGTH,
+            RDMResponder_HandleDUBRequest(param_data, arraysize(param_data)));
+  EXPECT_THAT(tuple, DataIs(expected_data, arraysize(expected_data)));
 
-  unique_ptr<RDMDiscoveryRequest> request(NewDiscoveryUniqueBranchRequest(
-      m_controller_uid, UID(0, 0), UID::AllDevices(), 0));
-  SendRequest(request.get());
+  CreateDUBParamData(m_our_uid, m_our_uid, param_data);
+  EXPECT_EQ(-DUB_RESPONSE_LENGTH,
+            RDMResponder_HandleDUBRequest(param_data, arraysize(param_data)));
+  EXPECT_THAT(tuple, DataIs(expected_data, arraysize(expected_data)));
 
-  request.reset(NewDiscoveryUniqueBranchRequest(
-      m_controller_uid, m_our_uid, m_our_uid, 0));
-  SendRequest(request.get());
+  CreateDUBParamData(UID(m_our_uid.ManufacturerId(), 0),
+                     UID::AllDevices(), param_data);
+  EXPECT_EQ(-DUB_RESPONSE_LENGTH,
+            RDMResponder_HandleDUBRequest(param_data, arraysize(param_data)));
+  EXPECT_THAT(tuple, DataIs(expected_data, arraysize(expected_data)));
 
-  request.reset(NewDiscoveryUniqueBranchRequest(
-      m_controller_uid, UID(m_our_uid.ManufacturerId(), 0),
-      UID::AllDevices(), 0));
-  SendRequest(request.get());
-
-  request.reset(NewDiscoveryUniqueBranchRequest(
-      m_controller_uid, UID(m_our_uid.ManufacturerId(), 0),
-      UID::VendorcastAddress(m_our_uid), 0));
-  SendRequest(request.get());
+  CreateDUBParamData(UID(m_our_uid.ManufacturerId(), 0),
+                     UID::VendorcastAddress(m_our_uid), param_data);
+  EXPECT_EQ(-DUB_RESPONSE_LENGTH,
+            RDMResponder_HandleDUBRequest(param_data, arraysize(param_data)));
+  EXPECT_THAT(tuple, DataIs(expected_data, arraysize(expected_data)));
 
   // Check we don't respond if muted
-  EXPECT_FALSE(RDMResponder_IsMuted());
-  unique_ptr<RDMDiscoveryRequest> mute_request(NewMuteRequest(
-      m_controller_uid, UID::AllDevices(), 0));
-  SendRequest(mute_request.get());
-  EXPECT_TRUE(RDMResponder_IsMuted());
-
-  request.reset(NewDiscoveryUniqueBranchRequest(
-      m_controller_uid, UID(0, 0), UID::AllDevices(), 0));
-  SendRequest(request.get());
+  g_responder.is_muted = true;
+  CreateDUBParamData(UID(0, 0), UID::AllDevices(), param_data);
+  EXPECT_EQ(0,
+            RDMResponder_HandleDUBRequest(param_data, arraysize(param_data)));
 }
 
-TEST_F(RDMResponderTest, testMute) {
-  const uint8_t expected_data[] = {
-    0xcc, 0x01, 26,
-    0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x11, 0x00, 0x02, 0x02,
-    0x00, 0x00,
-    0x02, 0xea
+TEST_F(RDMResponderTest, discoveryCommands) {
+  const uint8_t mute[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x02, 0x00
   };
 
-  EXPECT_CALL(m_sender_mock, SendResponse(true, _, _))
-     .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data))))
-     .Times(1);
-  EXPECT_CALL(m_ports_mock,
-              PinClear(PORTS_ID_0, PORT_CHANNEL_D, PORTS_BIT_POS_1))
-     .Times(3);
+  const uint8_t unmute[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x03, 0x00
+  };
 
-  EXPECT_FALSE(RDMResponder_IsMuted());
-  unique_ptr<RDMDiscoveryRequest> request(NewMuteRequest(
-      m_controller_uid, m_our_uid, 0));
-  SendRequest(request.get());
-  EXPECT_TRUE(RDMResponder_IsMuted());
+  const uint8_t dub[] = {
+    0xcc, 0x01, 0x24, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0xff, 0xff, 0xff,
+    0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x01, 0x0c
+  };
 
-  // Broadcasts should return no response
-  request.reset(NewMuteRequest(m_controller_uid, UID::AllDevices(), 0));
-  SendRequest(request.get());
+  const uint8_t dub_param_data[] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff,
+    0xff, 0x09, 0xf0
+  };
 
-  // Similarly vendorcasts shouldn't trigger a response
-  request.reset(NewMuteRequest(
-      m_controller_uid, UID::VendorcastAddress(m_our_uid), 0));
-  SendRequest(request.get());
+  EXPECT_EQ(28, RDMResponder_HandleDiscovery(AsHeader(mute), nullptr));
+  EXPECT_EQ(28,
+            RDMResponder_HandleDiscovery(AsHeader(unmute), nullptr));
+  EXPECT_EQ(-DUB_RESPONSE_LENGTH,
+            RDMResponder_HandleDiscovery(AsHeader(dub), dub_param_data));
 }
 
-TEST_F(RDMResponderTest, testUnMute) {
-  const uint8_t expected_data[] = {
-    0xcc, 0x01, 26,
-    0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x11, 0x00, 0x03, 0x02,
-    0x00, 0x00,
-    0x02, 0xeb
+TEST_F(RDMResponderTest, setUnMute) {
+  RDMResponder_Initialize(TEST_UID);
+
+  const uint8_t unicast_unmute[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x03, 0x00
   };
 
-  // Send a broadcast mute first.
-  unique_ptr<RDMDiscoveryRequest> request(NewMuteRequest(
-      m_controller_uid, UID::AllDevices(), 0));
-  SendRequest(request.get());
-  EXPECT_TRUE(RDMResponder_IsMuted());
+  const uint8_t expected_response[] = {
+    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x03, 0x02,
+    0x00, 0x00, 0x03, 0xe5
+  };
 
-  EXPECT_CALL(m_sender_mock,
-              SendResponse(true, _, _))
-     .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data))))
-     .Times(1);
-  EXPECT_CALL(m_ports_mock,
-              PinSet(PORTS_ID_0, PORT_CHANNEL_D, PORTS_BIT_POS_1))
-     .Times(3);
+  g_responder.is_muted = true;
+  EXPECT_EQ(28, RDMResponder_SetUnMute(AsHeader(unicast_unmute)));
+  EXPECT_FALSE(g_responder.is_muted);
 
-  request.reset(NewUnMuteRequest(m_controller_uid, m_our_uid, 0));
-  SendRequest(request.get());
-  EXPECT_FALSE(RDMResponder_IsMuted());
+  ArrayTuple tuple(g_rdm_buffer, 28);
+  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
 
-  // Broadcasts should return no response
-  request.reset(NewUnMuteRequest(m_controller_uid, UID::AllDevices(), 0));
-  SendRequest(request.get());
-
-  request.reset(NewUnMuteRequest(
-      m_controller_uid, UID::VendorcastAddress(m_our_uid), 0));
-  SendRequest(request.get());
+  // Try with a broadcast
+  const uint8_t broadcast_unmute[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0xff, 0xff, 0xff, 0xff, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x03, 0x00
+  };
+  g_responder.is_muted = true;
+  EXPECT_EQ(0, RDMResponder_SetUnMute(AsHeader(broadcast_unmute)));
+  EXPECT_FALSE(g_responder.is_muted);
 }
 
-
-TEST_F(RDMResponderTest, subdeviceNack) {
-  const uint8_t expected_data[] = {
-    0xcc, 0x01, 0x1a,
-    0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
-    0x00, 0x02, 0x00, 0x00, 0x00,
-    0x21, 0x00, 0x60, 0x2,
-    0x00, 0x09,
-    0x03, 0x63
+TEST_F(RDMResponderTest, setMute) {
+  const uint8_t unicast_mute[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x02, 0x00
   };
 
-  EXPECT_CALL(m_sender_mock,
-              SendResponse(true, _, _))
-     .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data))))
-     .Times(1);
+  const uint8_t expected_response[] = {
+    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x02, 0x02,
+    0x00, 0x00, 0x03, 0xe4
+  };
 
-  unique_ptr<RDMRequest> request(new RDMGetRequest(
-      m_controller_uid, m_our_uid, 0, 0, 1, PID_DEVICE_INFO, NULL, 0));
-  SendRequest(request.get());
+  g_responder.is_muted = false;
+  EXPECT_EQ(28, RDMResponder_SetMute(AsHeader(unicast_mute)));
+  EXPECT_TRUE(g_responder.is_muted);
+
+  ArrayTuple tuple(g_rdm_buffer, 28);
+  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
+
+  // try a broadcast
+  const uint8_t broadcast_mute[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0xff, 0xff, 0xff, 0xff, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x02, 0x00
+  };
+  g_responder.is_muted = false;
+  EXPECT_EQ(0, RDMResponder_SetMute(AsHeader(broadcast_mute)));
+  EXPECT_TRUE(g_responder.is_muted);
+}
+
+TEST_F(RDMResponderTest, testBuildNack) {
+  const uint8_t request[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x12, 0x00, 0x00, 0x00, 0x01, 0x20, 0x03, 0x43, 0x00,
+  };
+
+  const uint8_t expected_response[] = {
+    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x12, 0x02, 0x00, 0x00, 0x01, 0x21, 0x03, 0x43, 0x02,
+    0x00, 0x00, 0x04, 0x4d
+  };
+
+  EXPECT_EQ(28, RDMResponder_BuildNack(AsHeader(request), NR_UNKNOWN_PID));
+
+  ArrayTuple tuple(g_rdm_buffer, 28);
+  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
+}
+
+TEST_F(RDMResponderTest, testDispatch) {
+  const PIDDescriptor pid_descriptors[] = {
+    {PID_IDENTIFY_DEVICE, GetIdentifyDevice, (PIDCommandHandler) nullptr},
+    {PID_RECORD_SENSORS, (PIDCommandHandler) nullptr, ClearSensors},
+  };
+  ResponderDefinition responder_def;
+  InitDefinition(&responder_def);
+  responder_def.descriptors = pid_descriptors;
+  responder_def.descriptor_count = arraysize(pid_descriptors),
+  g_responder.def = &responder_def;
+
+  const uint8_t get_identify_device_header[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x10, 0x00, 0x00
+  };
+
+  EXPECT_CALL(m_pid_handler,
+              Call(PID_IDENTIFY_DEVICE, true,
+                   AsHeader(get_identify_device_header), nullptr))
+    .WillOnce(Return(27));
+  EXPECT_EQ(27, RDMResponder_DispatchPID(AsHeader(get_identify_device_header),
+                                         nullptr));
+
+  // SET PID_IDENTIFY_DEVICE (no handler)
+  const uint8_t set_identify_device_header[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x10, 0x00, 0x00
+  };
+
+  const uint8_t unsupported_set_command[] = {
+    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x00, 0x02, 0x00, 0x00, 0x00, 0x31, 0x10, 0x00, 0x02,
+    0x00, 0x05, 0x04, 0x19
+  };
+
+  EXPECT_EQ(28, RDMResponder_DispatchPID(AsHeader(set_identify_device_header),
+                                         nullptr));
+  ArrayTuple tuple(g_rdm_buffer, 28);
+  EXPECT_THAT(tuple,
+              DataIs(unsupported_set_command,
+                     arraysize(unsupported_set_command)));
+
+  const uint8_t get_record_sensors[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0x00, 0x01, 0x20, 0x02, 0x02, 0x00
+  };
+
+  const uint8_t unsupported_get_command[] = {
+    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x09, 0x02, 0x00, 0x00, 0x01, 0x21, 0x02, 0x02, 0x02,
+    0x00, 0x05, 0x04, 0x07
+  };
+
+  EXPECT_EQ(28, RDMResponder_DispatchPID(AsHeader(get_record_sensors),
+                                         nullptr));
+  ArrayTuple tuple2(g_rdm_buffer, 28);
+  EXPECT_THAT(tuple2,
+              DataIs(unsupported_get_command,
+                     arraysize(unsupported_get_command)));
+
+  const uint8_t set_record_sensors[] = {
+    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x11, 0x00, 0x00, 0x00, 0x05, 0x30, 0x02, 0x02, 0x02,
+  };
+
+  EXPECT_CALL(m_pid_handler,
+              Call(PID_RECORD_SENSORS, false,
+                   AsHeader(set_record_sensors), nullptr))
+    .WillOnce(Return(26));
+  EXPECT_EQ(26, RDMResponder_DispatchPID(AsHeader(set_record_sensors),
+                                         nullptr));
+
+  // try an unsupported PID
+  const uint8_t get_device_info[] = {
+    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x60, 0x02
+  };
+
+  const uint8_t unknown_pid[] = {
+    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x00, 0x02, 0x00, 0x00, 0x00, 0x21, 0x00, 0x60, 0x02,
+    0x00, 0x00, 0x04, 0x54
+  };
+
+  EXPECT_EQ(28, RDMResponder_DispatchPID(AsHeader(get_device_info),
+                                         nullptr));
+  ArrayTuple tuple3(g_rdm_buffer, 28);
+  EXPECT_THAT(tuple3, DataIs(unknown_pid, arraysize(unknown_pid)));
 }
 
 TEST_F(RDMResponderTest, supportedParameters) {
-  const uint8_t expected_data[] = {
-    0xcc, 0x01, 0x1c,
-    0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x21, 0x00, 0x50, 0x4,
-    0x00, 0x80, 0x0, 0x81,
-    0x04, 0x4d
+  const uint8_t request[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x50, 0x00,
+    0x04, 0x3d
   };
 
-  EXPECT_CALL(m_sender_mock,
-              SendResponse(true, _, _))
-     .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data))))
-     .Times(1);
+  const uint8_t expected_response[] = {
+    0xcc, 0x01, 0x1a, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x00, 0x50, 0x02,
+    0x02, 0x02, 0x04, 0x46
+  };
 
-  unique_ptr<RDMRequest> request(new RDMGetRequest(
-      m_controller_uid, m_our_uid, 0, 0, 0, PID_SUPPORTED_PARAMETERS, NULL, 0));
-  SendRequest(request.get());
+  const PIDDescriptor pid_descriptors[] = {
+    {PID_DISC_UNIQUE_BRANCH, nullptr, nullptr},
+    {PID_DISC_MUTE, nullptr, nullptr},
+    {PID_DISC_UN_MUTE, nullptr, nullptr},
+    {PID_SUPPORTED_PARAMETERS, nullptr, nullptr},
+    {PID_PARAMETER_DESCRIPTION, nullptr, nullptr},
+    {PID_DEVICE_INFO, nullptr, nullptr},
+    {PID_SOFTWARE_VERSION_LABEL, nullptr, nullptr},
+    {PID_DMX_START_ADDRESS, nullptr, nullptr},
+    {PID_IDENTIFY_DEVICE, nullptr, nullptr},
+    {PID_RECORD_SENSORS, nullptr, nullptr}
+  };
+
+  ResponderDefinition responder_def;
+  InitDefinition(&responder_def);
+  responder_def.descriptors = pid_descriptors,
+  responder_def.descriptor_count = arraysize(pid_descriptors),
+  g_responder.def = &responder_def;
+
+  EXPECT_EQ(28,
+            RDMResponder_GetSupportedParameters(AsHeader(request), nullptr));
+
+  ArrayTuple tuple(g_rdm_buffer, 28);
+  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
 }
 
-TEST_F(RDMResponderTest, deviceInfo) {
-  const uint8_t expected_data[] = {
-    0xcc, 0x01, 43,
-    0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x21, 0x00, 0x60, 0x13,
-    0x1, 0, 0x1, 0, 0x71, 0x01,
-    0, 0, 0, 0,
-    0, 0, 0, 0, 0xff, 0xff,
-    0, 0, 0,
-    0x05, 0xec
+TEST_F(RDMResponderTest, productDetailIds) {
+  const uint8_t request[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x70, 0x00
   };
 
-  EXPECT_CALL(m_sender_mock,
-              SendResponse(true, _, _))
-     .With(Args<1, 2>(PayloadIs(expected_data, arraysize(expected_data))))
-     .Times(1);
+  const uint8_t expected_response[] = {
+    0xcc, 0x01, 0x1c, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x00, 0x70, 0x04,
+    0x09, 0x02, 0x09, 0x00, 0x04, 0x7a
+  };
 
-  unique_ptr<RDMRequest> request(new RDMGetRequest(
-      m_controller_uid, m_our_uid, 0, 0, 0, PID_DEVICE_INFO, NULL, 0));
-  SendRequest(request.get());
+  const ProductDetailIds product_detail_id_list = {
+    .ids = {PRODUCT_DETAIL_TEST, PRODUCT_DETAIL_CHANGEOVER_MANUAL},
+    .size = 2
+  };
+
+  ResponderDefinition responder_def;
+  InitDefinition(&responder_def);
+  responder_def.product_detail_ids = &product_detail_id_list;
+  g_responder.def = &responder_def;
+
+  EXPECT_EQ(30, RDMResponder_GetProductDetailIds(AsHeader(request), nullptr));
+
+  ArrayTuple tuple(g_rdm_buffer, 30);
+  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
 }
 
-TEST_F(RDMResponderTest, deviceModelDescription) {
-  const uint8_t response[] = {
-    0xcc, 0x01, 0x29,
-    0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x21, 0x00, 0x80, 0x11,
-    'J', 'a', ' ', 'R', 'u', 'l', 'e', ' ',
-    'R', 'e', 's', 'p', 'o', 'n', 'd', 'e', 'r',
-    0x09, 0xcb
+TEST_F(RDMResponderTest, deviceModelDescrption) {
+  const uint8_t request[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x80, 0x00
   };
 
-  EXPECT_CALL(m_sender_mock,
-              SendResponse(true, _, _))
-     .With(Args<1, 2>(PayloadIs(response, arraysize(response))))
-     .Times(1);
+  const uint8_t expected_response[] = {
+    0xcc, 0x01, 0x1b, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70,
+    0x12, 0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x00, 0x80,
+    0x03, 'f', 'o', 'o', 0x05, 0xb8
+  };
 
-  unique_ptr<RDMRequest> request(new RDMGetRequest(
-      m_controller_uid, m_our_uid, 0, 0, 0, PID_DEVICE_MODEL_DESCRIPTION,
-      NULL, 0));
-  SendRequest(request.get());
+  const char device_model_description[] = "foo";
+
+  ResponderDefinition responder_def;
+  InitDefinition(&responder_def);
+  responder_def.model_description = device_model_description;
+  g_responder.def = &responder_def;
+
+  EXPECT_EQ(29,
+            RDMResponder_GetDeviceModelDescription(AsHeader(request), nullptr));
+
+  ArrayTuple tuple(g_rdm_buffer, 29);
+  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
 }
 
 TEST_F(RDMResponderTest, manufacturerLabel) {
-  const uint8_t response[] = {
-    0xcc, 0x01, 0x2d,
-    0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x21, 0x00, 0x81, 0x15,
-    'O', 'p', 'e', 'n', ' ', 'L', 'i', 'g',
-    'h', 't', 'i', 'n', 'g', ' ', 'P', 'r', 'o',
-    'j', 'e', 'c', 't',
-    0x0b, 0x7e
+  const uint8_t request[] = {
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x12, 0x34, 0x56, 0x78, 0x7a, 0x70, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x81, 0x00,
+    0x04, 0x6e
   };
 
-  EXPECT_CALL(m_sender_mock,
-              SendResponse(true, _, _))
-     .With(Args<1, 2>(PayloadIs(response, arraysize(response))))
-     .Times(1);
-
-  unique_ptr<RDMRequest> request(new RDMGetRequest(
-      m_controller_uid, m_our_uid, 0, 0, 0, PID_MANUFACTURER_LABEL,
-      NULL, 0));
-  SendRequest(request.get());
-}
-
-TEST_F(RDMResponderTest, softwareVersionLabel) {
-  const uint8_t response[] = {
-    0xcc, 0x01, 29,
-    0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x21, 0x00, 0xc0, 0x05,
-    'A', 'l', 'p', 'h', 'a',
-    0x05, 0xa4
+  const uint8_t expected_response[] = {
+    0xcc, 0x01, 0x25, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0x00, 0x81, 0x0d,
+    'O', 'p', 'e', 'n', ' ', 'L', 'i', 'g', 'h', 't', 'i', 'n', 'g',
+    0x09, 0x71
   };
 
-  EXPECT_CALL(m_sender_mock,
-              SendResponse(true, _, _))
-     .With(Args<1, 2>(PayloadIs(response, arraysize(response))))
-     .Times(1);
+  const char manufacturer_label[] = "Open Lighting";
 
-  unique_ptr<RDMRequest> request(new RDMGetRequest(
-      m_controller_uid, m_our_uid, 0, 0, 0, PID_SOFTWARE_VERSION_LABEL,
-      NULL, 0));
-  SendRequest(request.get());
-}
+  ResponderDefinition responder_def;
+  InitDefinition(&responder_def);
+  responder_def.manufacturer_label = manufacturer_label,
+  g_responder.def = &responder_def;
 
-TEST_F(RDMResponderTest, identifyDevice) {
-  const uint8_t response[] = {
-    0xcc, 0x01, 25,
-    0x7a, 0x70, 0x10, 0x00, 0x00, 0x00,  // dst UID
-    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,  // src UID
-    0x00, 0x00, 0x00, 0x00, 0x00,
-    0x21, 0x10, 0x00, 0x01, 0x00,
-    0x03, 0x06,
-  };
+  EXPECT_EQ(39, RDMResponder_GetManufacturerLabel(AsHeader(request), nullptr));
 
-  EXPECT_CALL(m_sender_mock,
-              SendResponse(true, _, _))
-     .With(Args<1, 2>(PayloadIs(response, arraysize(response))))
-     .Times(1);
-  EXPECT_CALL(m_ports_mock,
-              PinSet(PORTS_ID_0, PORT_CHANNEL_D, PORTS_BIT_POS_0))
-     .Times(1);
-  EXPECT_CALL(m_ports_mock,
-              PinClear(PORTS_ID_0, PORT_CHANNEL_D, PORTS_BIT_POS_0))
-     .Times(1);
-
-  unique_ptr<RDMRequest> request(new RDMGetRequest(
-      m_controller_uid, m_our_uid, 0, 0, 0, PID_IDENTIFY_DEVICE,
-      NULL, 0));
-  SendRequest(request.get());
-
-  uint8_t identify_command = 1;
-  request.reset(new RDMSetRequest(
-      m_controller_uid, UID::AllDevices(), 0, 0, 0, PID_IDENTIFY_DEVICE,
-      &identify_command, sizeof(identify_command)));
-  SendRequest(request.get());
-
-  identify_command = 0;
-  request.reset(new RDMSetRequest(
-      m_controller_uid, UID::AllDevices(), 0, 0, 0, PID_IDENTIFY_DEVICE,
-      &identify_command, sizeof(identify_command)));
-  SendRequest(request.get());
+  ArrayTuple tuple(g_rdm_buffer, 39);
+  EXPECT_THAT(tuple, DataIs(expected_response, arraysize(expected_response)));
 }

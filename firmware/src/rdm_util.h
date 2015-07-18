@@ -42,26 +42,6 @@ extern "C" {
 #endif
 
 /**
- * @brief Responder information common to all responder models.
- *
- * It contains the minimum information required for an RDM responder.
- */
-typedef struct {
-  uint8_t uid[UID_LENGTH];  //!< Responder's UID
-  uint8_t queued_message_count;  //!< queued message count.
-  uint16_t dmx_start_address;  //!< DMX start address
-  bool is_muted;  //!< The mute state for the responder
-  bool identify_on;  //!< The identify state for the responder.
-  char device_label[RDM_DEFAULT_STRING_SIZE];  //!< Device label
-  bool using_factory_defaults;  //!< True if using factory defaults.
-
-  /**
-   * @brief The shared buffer we use to construct the response.
-   */
-  uint8_t buffer[sizeof(RDMHeader) + MAX_PARAM_DATA_SIZE + 2];
-} RDMResponder;
-
-/**
  * @brief Compare two UIDs.
  * @param uid1 The first uid.
  * @param uid2 The second uid.

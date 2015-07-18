@@ -24,6 +24,7 @@
 #include <gmock/gmock.h>
 #include <stdint.h>
 #include "iovec.h"
+#include "rdm.h"
 
 /**
  * @defgroup testing Testing Utilities
@@ -41,6 +42,11 @@
 typedef ::testing::tuple<const IOVec*, unsigned int> IOVecTuple;
 
 /**
+ * @brief A raw pointer and it's associated length.
+ */
+typedef ::testing::tuple<const void*, unsigned int> ArrayTuple;
+
+/**
  * @brief Check that a {pointer, length} tuple matches the expected data.
  * @param expected_data A pointer to the expected data.
  * @param expected_size The size of the expected data.
@@ -51,7 +57,7 @@ typedef ::testing::tuple<const IOVec*, unsigned int> IOVecTuple;
  *       .With(Args<1, 2>(DataIs(ptr, length));
  * ~~~~~~~~~~~~~~~~~~~~~
  */
-testing::Matcher< ::testing::tuple<const void*, unsigned int> > DataIs(
+testing::Matcher<ArrayTuple> DataIs(
     const uint8_t* expected_data,
     unsigned int expected_size);
 
@@ -79,6 +85,31 @@ testing::Matcher<IOVecTuple> PayloadIs(const uint8_t* expected_data,
  * ~~~~~~~~~~~~~~~~~~~~~
  */
 testing::Matcher<IOVecTuple> EmptyPayload();
+
+/**
+ * @brief Check that the UID argument matches a value.
+ * @param expected_uid The expected UID.
+ */
+MATCHER_P(MatchesUID, expected_uid, "") {
+  if (memcmp(arg, expected_uid, UID_LENGTH) == 0) {
+    return true;
+  }
+
+  *result_listener << ", expected: ";
+  for (unsigned int i = 0; i < UID_LENGTH; i++) {
+    *result_listener << ::testing::PrintToString(expected_uid[i]);
+  }
+  return false;
+}
+
+/**
+ * @brief Save a UID argument.
+ * @param src_uid The location to save the UID to.
+ */
+ACTION_P(CopyUID, src_uid) {
+  memcpy(arg0, src_uid, UID_LENGTH);
+  return 0;
+}
 
 /**
  * @}

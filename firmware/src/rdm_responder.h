@@ -18,13 +18,24 @@
  */
 
 /**
- * @defgroup rdm_responder RDM Responder
- * @brief The RDM Responder Subsystem.
- *
- * @addtogroup rdm_responder
+ * @addtogroup rdm
  * @{
  * @file rdm_responder.h
- * @brief The RDM Responder Subsystem.
+ * @brief The base RDM Responder.
+ *
+ * The base RDM Responder provides the building blocks for implementing
+ * responder models. You can think of it as a base class if we were using C++.
+ *
+ * It consists of a couple of parts:
+ *  - the global g_responder object, which holds basic state like mute,
+ *    identify etc.
+ *  - The PID dispatching mechanism, where we specifiy a table of function
+ *    pointers and then call RDMResponder_DispatchPID().
+ *  - Functions for various common PIDs.
+ *
+ * When implementing a model, you can reference the PID functions in the
+ * dispatch table, or point to your own functions that (optionally) wrap the
+ * PID functions.
  */
 
 #ifndef FIRMWARE_SRC_RDM_RESPONDER_H_
@@ -32,10 +43,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "system_config.h"
 
-#include "iovec.h"
-#include "peripheral/ports/plib_ports.h"
+#include "rdm.h"
 #include "rdm_frame.h"
 
 #ifdef __cplusplus
@@ -43,73 +52,96 @@ extern "C" {
 #endif
 
 /**
- * @brief The settings to use for the RDM Responder.
+ * @brief The common MANUFACTURER_LABEL.
+ */
+extern const char MANUFACTURER_LABEL[];
+
+/**
+ * @brief A PID handler.
+ * @param incoming_header The header for the request.
+ * @param param_data The parameter data, or NULL if there isn't any.
+ * @returns The size of the RDM response in g_rdm_buffer. Use
+ * RDM_RESPONDER_NO_RESPONSE if there is no response.
+ */
+typedef int (*PIDCommandHandler)(const RDMHeader *incoming_header,
+                                 const uint8_t *param_data);
+
+/**
+ * @brief A descriptor for a PID.
+ *
+ * This contains the PID, and a GET / SET handler.
  */
 typedef struct {
-  PORTS_CHANNEL identify_port;  //!< The port to use for the identify signal.
-  PORTS_BIT_POS identify_bit;  //!< The port bit to use for the identify signal.
-  PORTS_CHANNEL mute_port;  //!< The port to use to indicate mute state.
-  PORTS_BIT_POS mute_bit;  //!< The port bit used to indicate mute state.
-  uint8_t uid[UID_LENGTH];  //!< The responder's UID.
-} RDMResponderSettings;
+  uint16_t pid;  //!< The parameter ID.
+  PIDCommandHandler get_handler;  //!< The GET handler.
+  PIDCommandHandler set_handler;  //!< The SET handler.
+} PIDDescriptor;
 
 /**
- * @brief The callback used to send RDM responses.
- * @param include_break true if a break should be used for the response
- * @param data the raw data to send in the response
- * @param iov_count the number of IOVec that make up the response
+ * @brief The Product Detail IDs for the responder.
  */
-typedef void (*RDMResponderSendCallback)(bool include_break,
-                                         const IOVec* data,
-                                         unsigned int iov_count);
-
-
+typedef struct {
+  /**
+   * @brief An array of Product Detail IDs.
+   */
+  RDMProductDetail ids[MAX_PRODUCT_DETAILS];
+  uint8_t size;  //!< The number of ids in the array.
+} ProductDetailIds;
 
 /**
- * @brief Initialize the RDM Responder sub-system.
- * @param settings The settings for this responder.
- * @param send_callback The callback to use for sending responses.
+ * @brief The definition of a responder.
  *
- * If PIPELINE_RDMRESPONDER_SEND is defined this will override the
- * send_callback.
+ * This contains the PID dispatch table, and read-only variables, like the
+ * manufacturer name, device model etc.
  */
-void RDMResponder_Initialize(const RDMResponderSettings *settings,
-                             RDMResponderSendCallback send_callback);
+typedef struct {
+  const PIDDescriptor *descriptors;
+  unsigned int descriptor_count;
+  const char *software_version_label;
+  const char *manufacturer_label;
+  const char *model_description;
+  const char *default_device_label;
+  const ProductDetailIds *product_detail_ids;
+} ResponderDefinition;
 
 /**
- * @brief Check if a destination UID requires us to take action.
- * @returns True if a command sent to this UID is addressed to this responder.
+ * @brief A base implementation of a responder.
  */
-bool RDMResponder_UIDRequiresAction(const uint8_t uid[UID_LENGTH]);
+typedef struct {
+  /**
+   * @brief The ResponderDefinition
+   */
+  const ResponderDefinition *def;
+
+  char device_label[RDM_DEFAULT_STRING_SIZE];  //!< Device label
+  uint8_t uid[UID_LENGTH];  //!< Responder's UID
+  uint16_t dmx_start_address;  //!< DMX start address
+  uint8_t queued_message_count;  //!< queued message count.
+  bool is_muted;  //!< The mute state for the responder
+  bool identify_on;  //!< The identify state for the responder.
+  bool using_factory_defaults;  //!< True if using factory defaults.
+} RDMResponder;
 
 /**
- * @brief Validate the checksum for an RDM frame.
- * @param frame The frame data, starting with the start code.
- * @param size The length of the frame data.
- * @returns True if the checksum was valid, false otherwise.
+ * @brief The global RDMResponder object.
  */
-bool RDMResponder_VerifyChecksum(const uint8_t *frame, unsigned int size);
+extern RDMResponder g_responder;
 
 /**
- * @brief Handle a RDM Request.
- * @pre Sub-Start-Code is SUB_START_CODE.
- * @pre message_length is valid.
- * @pre RDMResponder_UIDRequiresAction() returned true.
- * @pre The checksum of the command is correct
- * @param header The RDM command header.
- * @param param_data the parameter data
- * @param length The length of parameter data.
+ * @brief Indicates there is no response required for the request.
  */
-void RDMResponder_HandleRequest(const RDMHeader *header,
-                                const uint8_t *param_data,
-                                unsigned int length);
-
+static const int RDM_RESPONDER_NO_RESPONSE = 0;
 
 /**
- * @brief Check if the responder is muted.
- * @returns true if this responder is currently muted.
+ * @brief Initialize an RDMResponder struct.
+ * @param uid The UID to use for the responder.
  */
-bool RDMResponder_IsMuted();
+void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]);
+
+/**
+ * @brief Reset an RDMResponder to the factory defaults.
+ */
+void RDMResponder_ResetToFactoryDefaults();
 
 /**
  * @brief Get the UID of the responder.
@@ -118,11 +150,170 @@ bool RDMResponder_IsMuted();
 void RDMResponder_GetUID(uint8_t *uid);
 
 /**
- * @brief Perform the periodic RDM Responder tasks.
- *
- * This should be called in the main event loop.
+ * @brief Handle a Discovery-unique-branch request.
+ * @param param_data The DUB request param_data.
+ * @param param_data_length The size of the param_data.
+ * @returns The size of the RDM response frame, this will be negative to
+ *   indicate no break should be sent.
  */
-void RDMResponder_Tasks();
+int RDMResponder_HandleDUBRequest(const uint8_t *param_data,
+                                  unsigned int param_data_length);
+
+/**
+ * @brief Build the RDM header in the output buffer.
+ * @param incoming_header The header of the incoming frame.
+ * @param response_type The response type to use.
+ * @param command_class The command class to use.
+ * @param pid the PID to use.
+ * @param param_data_length The length of the parameter data.
+ */
+void RDMResponder_BuildHeader(const RDMHeader *incoming_header,
+                              RDMResponseType response_type,
+                              RDMCommandClass command_class,
+                              RDMPid pid,
+                              unsigned int param_data_length);
+
+/**
+ * @brief Handle discovery commands.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame. A negative value means no break
+ *   should be sent.
+ */
+int RDMResponder_HandleDiscovery(const RDMHeader *incoming_header,
+                                 const uint8_t *param_data);
+
+/**
+ * @brief Send a RDM NACK.
+ * @param incoming_header The header of the incoming frame.
+ * @param reason The NACK reason code.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_BuildNack(const RDMHeader *incoming_header,
+                           RDMNackReason reason);
+
+/**
+ * @brief Invoke a PID handler from the ResponderDefinition.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ *
+ * This checks the ResponderDefinition for a matching PID handler of the
+ * correct command class. If one isn't found, it'll NACK with
+ * NR_UNSUPPORTED_COMMAND_CLASS or NR_UNKNOWN_PID.
+ */
+int RDMResponder_DispatchPID(const RDMHeader *incoming_header,
+                             const uint8_t *param_data);
+
+// PID Handlers
+// ----------------------------------------------------------------------------
+
+/**
+ * @brief Build a response containing a string.
+ * @param incoming_header The header of the incoming frame.
+ * @param reply_string The string to reply with
+ * @param max_size The maximum size of the string. We may return a shorter
+ * string if it contains a NULL.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GenericReturnString(const RDMHeader *incoming_header,
+                                     const char *reply_string,
+                                     unsigned int max_size);
+
+/**
+ * @brief Handle a SET MUTE request.
+ * @param incoming_header The header of the incoming frame.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_SetMute(const RDMHeader *incoming_header);
+
+/**
+ * @brief Handle a SET UN_MUTE request.
+ * @param incoming_header The header of the incoming frame.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_SetUnMute(const RDMHeader *incoming_header);
+
+/**
+ * @brief Handle a SUPPORTED_PARAMETERS request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetSupportedParameters(const RDMHeader *incoming_header,
+                                        const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET PRODUCT_DETAIL_IDS request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetProductDetailIds(const RDMHeader *incoming_header,
+                                     const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET DEVICE_MODEL_DESCRIPTION request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetDeviceModelDescription(const RDMHeader *incoming_header,
+                                           const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET MANUFACTURER_LABEL request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetManufacturerLabel(const RDMHeader *incoming_header,
+                                      const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET SOFTWARE_VERSION_LABEL request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetSoftwareVersionLabel(const RDMHeader *incoming_header,
+                                         const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET DEVICE_LABEL request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetDeviceLabel(const RDMHeader *incoming_header,
+                                const uint8_t *param_data);
+
+/**
+ * @brief
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_SetDeviceLabel(const RDMHeader *incoming_header,
+                                const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET IDENTIFY_DEVICE request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetIdentifyDevice(const RDMHeader *incoming_header,
+                                   const uint8_t *param_data);
+
+/**
+ * @brief Handle a SET IDENTIFY_DEVICE request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_SetIdentifyDevice(const RDMHeader *incoming_header,
+                                   const uint8_t *param_data);
 
 #ifdef __cplusplus
 }
