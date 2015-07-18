@@ -201,17 +201,17 @@ const ModelEntry SIMPLE_MODEL_ENTRY = {
 
 static const PIDDescriptor PID_DESCRIPTORS[] = {
   {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters,
-   (PIDCommandHandler) NULL},
+    (PIDCommandHandler) NULL},
   {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, (PIDCommandHandler) NULL},
   {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds,
-   (PIDCommandHandler) NULL},
+    (PIDCommandHandler) NULL},
   {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription,
-   (PIDCommandHandler) NULL},
+    (PIDCommandHandler) NULL},
   {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel,
-   (PIDCommandHandler) NULL},
+    (PIDCommandHandler) NULL},
   {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, RDMResponder_SetDeviceLabel},
   {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel,
-   (PIDCommandHandler) NULL},
+    (PIDCommandHandler) NULL},
   {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, SetIdentifyDevice}
 };
 
