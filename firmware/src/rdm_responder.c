@@ -65,6 +65,11 @@ void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]) {
 void RDMResponder_ResetToFactoryDefaults() {
   g_responder.queued_message_count = 0;
   g_responder.dmx_start_address = INVALID_DMX_START_ADDRESS;
+  g_responder.dmx_footprint = 0;
+  g_responder.sub_device_count = 0;
+  g_responder.sensor_count = 0;
+  g_responder.current_personality = 0;
+  g_responder.personality_count = 0;
   g_responder.is_muted = false;
   g_responder.identify_on = false;
 
@@ -73,6 +78,7 @@ void RDMResponder_ResetToFactoryDefaults() {
             g_responder.def->default_device_label,
             RDMUtil_SafeStringLength(g_responder.def->default_device_label,
                                      RDM_DEFAULT_STRING_SIZE));
+    g_responder.device_label[RDM_DEFAULT_STRING_SIZE] = 0;
   }
 
   g_responder.using_factory_defaults = true;
@@ -269,6 +275,62 @@ int RDMResponder_GetSupportedParameters(const RDMHeader *header,
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
+int RDMResponder_GetDeviceInfo(const RDMHeader *header,
+                               UNUSED const uint8_t *param_data) {
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  ReturnUnlessUnicast(header);
+
+  struct device_info_s {
+    uint16_t rdm_version;
+    uint16_t model;
+    uint16_t product_category;
+    uint32_t software_version;
+    uint16_t dmx_footprint;
+    uint8_t current_personality;
+    uint8_t personality_count;
+    uint16_t dmx_start_address;
+    uint16_t sub_device_count;
+    uint8_t sensor_count;
+  } __attribute__((packed));
+
+  struct device_info_s device_info = {
+    .rdm_version = htons(RDM_VERSION),
+    .model = htons(g_responder.def->model_id),
+    .product_category = htons(g_responder.def->product_category),
+    .software_version = htonl(g_responder.def->software_version),
+    .dmx_footprint = htons(g_responder.dmx_footprint),
+    .current_personality = g_responder.current_personality,
+    .personality_count = g_responder.personality_count,
+    .dmx_start_address = htons(g_responder.dmx_start_address),
+    .sub_device_count = htons(g_responder.sub_device_count),
+    .sensor_count = g_responder.sensor_count
+  };
+
+  /*
+  // TODO make this .foo format
+  struct device_info_s device_info;
+  device_info.rdm_version = htons(RDM_VERSION);
+  device_info.model = htons(g_responder.def->model_id);
+  device_info.product_category = htons(g_responder.def->product_category);
+  device_info.software_version = htonl(g_responder.def->software_version);
+  device_info.dmx_footprint = htons(g_responder.dmx_footprint);
+  device_info.current_personality = g_responder.current_personality;
+  device_info.personality_count = g_responder.personality_count;
+  device_info.dmx_start_address = htons(g_responder.dmx_start_address);
+  device_info.sub_device_count = htons(g_responder.sub_device_count);
+  device_info.sensor_count = g_responder.sensor_count;
+  */
+
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           PID_DEVICE_INFO, sizeof(device_info));
+  memcpy(g_rdm_buffer + sizeof(RDMHeader),
+         (const uint8_t*) &device_info, sizeof(device_info));
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
 int RDMResponder_GetProductDetailIds(const RDMHeader *header,
                                      UNUSED const uint8_t *param_data) {
   if (header->param_data_length) {
@@ -345,6 +407,7 @@ int RDMResponder_GetIdentifyDevice(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
+  ReturnUnlessUnicast(header);
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
                            PID_IDENTIFY_DEVICE, sizeof(uint8_t));
   g_rdm_buffer[sizeof(RDMHeader)] = g_responder.identify_on;
@@ -367,6 +430,7 @@ int RDMResponder_SetIdentifyDevice(const RDMHeader *header,
       return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
+  ReturnUnlessUnicast(header);
   RDMResponder_BuildHeader(header, ACK, SET_COMMAND_RESPONSE,
                            PID_IDENTIFY_DEVICE, 0);
   return RDMUtil_AppendChecksum(g_rdm_buffer);
