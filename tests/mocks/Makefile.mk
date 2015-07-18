@@ -8,7 +8,6 @@ noinst_LTLIBRARIES += mocks/libappmock.la \
                       mocks/libmatchers.la \
                       mocks/libmessagehandlermock.la \
                       mocks/librdmhandlermock.la \
-                      mocks/librdmrespondermock.la \
                       mocks/libspirgbmock.la \
                       mocks/libstreamdecodermock.la \
                       mocks/libsyslogmock.la \
@@ -49,11 +48,6 @@ mocks_librdmhandlermock_la_SOURCES = mocks/RDMHandlerMock.h \
                                      mocks/RDMHandlerMock.cpp
 mocks_librdmhandlermock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
 mocks_librdmhandlermock_la_LIBADD = $(MOCK_LIBS)
-
-mocks_librdmrespondermock_la_SOURCES = mocks/RDMResponderMock.h \
-                                       mocks/RDMResponderMock.cpp
-mocks_librdmrespondermock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
-mocks_librdmrespondermock_la_LIBADD = $(MOCK_LIBS)
 
 mocks_libspirgbmock_la_SOURCES = mocks/SPIRGBMock.h mocks/SPIRGBMock.cpp
 mocks_libspirgbmock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
