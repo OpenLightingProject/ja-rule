@@ -49,8 +49,8 @@ tests_rdm_handler_test_SOURCES = tests/RDMHandlerTest.cpp
 tests_rdm_handler_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_rdm_handler_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                mocks/libmatchers.la \
-                               src/librdmresponder.la \
                                src/librdmhandler.la \
+                               src/librdmresponder.la \
                                src/librdmbuffer.la \
                                src/librdmutil.la
 
