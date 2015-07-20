@@ -148,7 +148,6 @@ static int GetModelList(const RDMHeader *header) {
     i++;
   }
 
-  SysLog_Print(SYSLOG_INFO, "len is %d\n", size);
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
                            PID_DEVICE_MODEL_LIST, size);
   return RDMUtil_AppendChecksum(g_rdm_buffer);
