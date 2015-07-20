@@ -403,6 +403,7 @@ void USBConsole_Tasks() {
           SysLog_Message(SYSLOG_INFO, "----------------------");
           SysLog_Message(SYSLOG_INFO, "c   Dump Counters");
           SysLog_Message(SYSLOG_INFO, "r   Reset");
+          SysLog_Message(SYSLOG_INFO, "t   Transceiver Settings");
           SysLog_Message(SYSLOG_INFO, "h   Show help message");
           SysLog_Message(SYSLOG_INFO, "m   Get operating mode");
           SysLog_Message(SYSLOG_INFO, "M   Switch operating mode");
@@ -424,6 +425,18 @@ void USBConsole_Tasks() {
           break;
         case 'r':
           APP_Reset();
+          break;
+        case 't':
+          SysLog_Print(SYSLOG_INFO, "Break: %dus", Transceiver_GetBreakTime());
+          SysLog_Print(SYSLOG_INFO, "Mark: %dus", Transceiver_GetMarkTime());
+          SysLog_Print(SYSLOG_INFO, "RDM Bcast timeout: %d / 10 us",
+                       Transceiver_GetRDMBroadcastTimeout());
+          SysLog_Print(SYSLOG_INFO, "RDM timeout: %d / 10 us",
+                       Transceiver_GetRDMResponseTimeout());
+          SysLog_Print(SYSLOG_INFO, "RDM responder delay: %d / 10 us",
+                       Transceiver_GetRDMResponderDelay());
+          SysLog_Print(SYSLOG_INFO, "RDM responder jitter: %d / 10 us",
+                       Transceiver_GetRDMResponderJitter());
           break;
         case 'w':
           SysLog_Message(SYSLOG_WARN, "warning");

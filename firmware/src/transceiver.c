@@ -45,7 +45,7 @@
 #define MARK_FUDGE_FACTOR 217
 
 // TODO(simon): retime this.
-#define RESPONSE_FUDGE_FACTOR 18
+#define RESPONSE_FUDGE_FACTOR 38
 
 #define INPUT_CAPTURE_MODULE IC_ID_2
 

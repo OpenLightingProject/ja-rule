@@ -29,6 +29,7 @@
 #include "rdm_buffer.h"
 #include "rdm_handler.h"
 #include "utils.h"
+#include "Array.h"
 #include "Matchers.h"
 #include "TestHelpers.h"
 
@@ -407,4 +408,36 @@ TEST_F(RDMHandlerTest, testGetSetModelId) {
 
   CallRDMHandler(second_set_request.get());
   EXPECT_EQ(MODEL_TWO, RDMHandler_ActiveModel());
+}
+
+TEST_F(RDMHandlerTest, testGetModelList) {
+  RDMHandlerSettings settings = {
+    .default_model = MODEL_ONE,
+    .send_callback = SendResponse
+  };
+  RDMHandler_Initialize(&settings);
+
+  testing::InSequence seq;
+  EXPECT_CALL(m_first_model, Activate()).Times(1);
+  EXPECT_CALL(m_first_model, Ioctl(IOCTL_GET_UID, _, UID_LENGTH))
+    .WillRepeatedly(WithArgs<1>(CopyUID(TEST_UID)));
+
+  EXPECT_TRUE(RDMHandler_AddModel(&FIRST_MODEL));
+  EXPECT_TRUE(RDMHandler_AddModel(&SECOND_MODEL));
+
+  unique_ptr<RDMRequest> get_request(new RDMGetRequest(
+      m_controller_uid, m_our_uid, 0, 0, 0, PID_DEVICE_MODEL_LIST,
+      nullptr, 0));
+
+  uint8_t model_list[] = {
+    0x00, 0x01,
+    0x00, 0x02
+  };
+  unique_ptr<RDMResponse> get_response(GetResponseFromData(
+        get_request.get(), model_list, arraysize(model_list)));
+
+  EXPECT_CALL(m_sender_mock, SendResponse(true, _, 1))
+      .With(testing::Args<1, 2>(IOVecResponseIs(get_response.get())));
+
+  CallRDMHandler(get_request.get());
 }

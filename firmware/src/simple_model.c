@@ -32,7 +32,7 @@
 #define FLASH_FAST 1000
 #define FLASH_SLOW 10000
 
-static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Responder";
+static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule LED Driver";
 static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
 

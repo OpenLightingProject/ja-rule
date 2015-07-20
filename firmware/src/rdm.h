@@ -268,7 +268,8 @@ typedef enum {
  * @brief Open Lighting Project manufacturer PIDs.
  */
 typedef enum {
-  PID_DEVICE_MODEL = 0x8002
+  PID_DEVICE_MODEL = 0x8002,
+  PID_DEVICE_MODEL_LIST = 0x8003
 } OpenLightingManufacturerPID;
 
 /**

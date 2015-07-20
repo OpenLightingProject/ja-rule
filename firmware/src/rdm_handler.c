@@ -114,6 +114,46 @@ static int GetSetModelId(const RDMHeader *header,
   return RDM_RESPONDER_NO_RESPONSE;
 }
 
+static int GetModelList(const RDMHeader *header) {
+  uint8_t our_uid[UID_LENGTH];
+  RDMHandler_GetUID(our_uid);
+
+  if (RDMUtil_UIDCompare(our_uid, header->dest_uid)) {
+    return RDM_RESPONDER_NO_RESPONSE;
+  }
+
+  uint16_t sub_device = ntohs(header->sub_device);
+  // No subdevice support for now.
+  if (sub_device != SUBDEVICE_ROOT) {
+    return RDMResponder_BuildNack(header, NR_SUB_DEVICE_OUT_OF_RANGE);
+  }
+
+  if (header->command_class != GET_COMMAND) {
+    return RDMResponder_BuildNack(header, NR_UNSUPPORTED_COMMAND_CLASS);
+  }
+
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  unsigned int size = 0;
+  unsigned int i = 0;
+  unsigned int offset = sizeof(RDMHeader);
+  while (i < MAX_RDM_MODELS) {
+    if (g_models[i].model_id != NULL_MODEL_ID) {
+      g_rdm_buffer[offset++] = ShortMSB(g_models[i].model_id);
+      g_rdm_buffer[offset++] = ShortLSB(g_models[i].model_id);
+      size+= 2;
+    }
+    i++;
+  }
+
+  SysLog_Print(SYSLOG_INFO, "len is %d\n", size);
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           PID_DEVICE_MODEL_LIST, size);
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
 // Public Functions
 // ----------------------------------------------------------------------------
 void RDMHandler_Initialize(const RDMHandlerSettings *settings) {
@@ -193,7 +233,8 @@ void RDMHandler_HandleRequest(const RDMHeader *header,
 
   if (ntohs(header->param_id) == PID_DEVICE_MODEL) {
     response_size = GetSetModelId(header, param_data);
-
+  } else if (ntohs(header->param_id) == PID_DEVICE_MODEL_LIST) {
+    response_size = GetModelList(header);
   } else {
     if (!g_rdm_handler.active_model) {
       return;
