@@ -162,7 +162,7 @@ TEST_F(USBTransportTest, doubleSendResponse) {
   EXPECT_TRUE(USBTransport_SendResponse(kToken, COMMAND_ECHO, RC_OK, NULL, 0));
   // Try to send a second message while the first is pending.
   EXPECT_FALSE(
-      USBTransport_SendResponse( kToken + 1, COMMAND_ECHO, RC_OK, NULL, 0));
+      USBTransport_SendResponse(kToken + 1, COMMAND_ECHO, RC_OK, NULL, 0));
   EXPECT_TRUE(USBTransport_WritePending());
 
   CompleteWrite();
