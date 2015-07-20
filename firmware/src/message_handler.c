@@ -50,7 +50,7 @@ static void Echo(const Message *message) {
   IOVec iovec;
   iovec.base = message->payload;
   iovec.length = message->length;
-  SendMessage(message->token, ECHO, RC_OK, &iovec, 1);
+  SendMessage(message->token, COMMAND_ECHO, RC_OK, &iovec, 1);
 }
 
 static void SetMode(uint8_t token,
@@ -288,7 +288,7 @@ void MessageHandler_Initialize(TransportTXFunction tx_cb) {
 
 void MessageHandler_HandleMessage(const Message *message) {
   switch (message->command) {
-    case ECHO:
+    case COMMAND_ECHO:
       Echo(message);
       break;
     case TX_DMX:

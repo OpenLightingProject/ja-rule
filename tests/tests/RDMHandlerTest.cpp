@@ -28,6 +28,7 @@
 
 #include "rdm_buffer.h"
 #include "rdm_handler.h"
+#include "util.h"
 #include "Matchers.h"
 #include "TestHelpers.h"
 

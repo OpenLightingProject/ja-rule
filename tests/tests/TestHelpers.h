@@ -20,6 +20,9 @@
 
 #include <gtest/gtest.h>
 
+#ifndef TESTS_TESTS_TESTHELPERS_H_
+#define TESTS_TESTS_TESTHELPERS_H_
+
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMCommandSerializer.h>
 
@@ -63,3 +66,5 @@ int InvokeMuteHandler(Func function, const ola::rdm::RDMRequest *request) {
   EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
   return function(AsHeader(data.data()));
 }
+
+#endif  // TESTS_TESTS_TESTHELPERS_H_
