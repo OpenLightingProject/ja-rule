@@ -57,14 +57,11 @@ TEST_F(RDMUtilTest, testUIDCompare) {
 }
 
 TEST_F(RDMUtilTest, testRequiresAction) {
-  RDMResponder responder;
-  memcpy(responder.uid, OUR_UID, UID_LENGTH);
-
-  EXPECT_TRUE(RDMUtil_RequiresAction(&responder, OUR_UID));
-  EXPECT_TRUE(RDMUtil_RequiresAction(&responder, VENDORCAST_UID));
-  EXPECT_TRUE(RDMUtil_RequiresAction(&responder, BROADCAST_UID));
-  EXPECT_FALSE(RDMUtil_RequiresAction(&responder, OTHER_VENDORCAST_UID));
-  EXPECT_FALSE(RDMUtil_RequiresAction(&responder, OTHER_UID));
+  EXPECT_TRUE(RDMUtil_RequiresAction(OUR_UID, OUR_UID));
+  EXPECT_TRUE(RDMUtil_RequiresAction(OUR_UID, VENDORCAST_UID));
+  EXPECT_TRUE(RDMUtil_RequiresAction(OUR_UID, BROADCAST_UID));
+  EXPECT_FALSE(RDMUtil_RequiresAction(OUR_UID, OTHER_VENDORCAST_UID));
+  EXPECT_FALSE(RDMUtil_RequiresAction(OUR_UID, OTHER_UID));
 }
 
 TEST_F(RDMUtilTest, testRequiresResponse) {

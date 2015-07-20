@@ -178,7 +178,7 @@ int RDMResponder_HandleDUBRequest(const uint8_t *param_data,
 void RDMResponder_BuildHeader(const RDMHeader *incoming_header,
                               RDMResponseType response_type,
                               RDMCommandClass command_class,
-                              RDMPid pid,
+                              uint16_t pid,
                               unsigned int param_data_length);
 
 /**

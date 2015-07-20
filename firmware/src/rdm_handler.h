@@ -92,6 +92,12 @@ bool RDMHandler_AddModel(const ModelEntry *entry);
 bool RDMHandler_SetActiveModel(uint16_t model_id);
 
 /**
+ * @brief Get the active model id.
+ * @returns the active model id.
+ */
+uint16_t RDMHandler_ActiveModel();
+
+/**
  * @brief Handle a RDM Request.
  * @pre Sub-Start-Code is SUB_START_CODE.
  * @pre message_length is valid.

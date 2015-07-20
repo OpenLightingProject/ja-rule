@@ -22,6 +22,17 @@
 
 #include <stdint.h>
 
+#if HAVE_CONFIG_H
+// We're in the test environment
+#include <config.h>
+#else
+#include <machine/endian.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

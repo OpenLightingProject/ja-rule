@@ -46,9 +46,10 @@ tests_message_handler_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
                                    mocks/libtransportmock.la
 
 tests_rdm_handler_test_SOURCES = tests/RDMHandlerTest.cpp
-tests_rdm_handler_test_CXXFLAGS = $(TESTING_CXXFLAGS)
-tests_rdm_handler_test_LDADD = $(TESTING_LIBS) \
+tests_rdm_handler_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
+tests_rdm_handler_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                mocks/libmatchers.la \
+                               src/librdmresponder.la \
                                src/librdmhandler.la \
                                src/librdmbuffer.la \
                                src/librdmutil.la

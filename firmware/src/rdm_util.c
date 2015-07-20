@@ -35,9 +35,9 @@ static uint16_t Checksum(const uint8_t *data, unsigned int length) {
   return checksum;
 }
 
-bool RDMUtil_RequiresAction(const RDMResponder *responder,
+bool RDMUtil_RequiresAction(const uint8_t our_uid[UID_LENGTH],
                             const uint8_t uid[UID_LENGTH]) {
-  if (RDMUtil_UIDCompare(responder->uid, uid) == 0) {
+  if (RDMUtil_UIDCompare(our_uid, uid) == 0) {
     return true;
   }
 
@@ -46,7 +46,7 @@ bool RDMUtil_RequiresAction(const RDMResponder *responder,
     return false;
   }
 
-  return (uid[0] == responder->uid[0] && uid[1] == responder->uid[1]) ||
+  return (uid[0] == our_uid[0] && uid[1] == our_uid[1]) ||
          (uid[0] == 0xff && uid[1] == 0xff);
 }
 

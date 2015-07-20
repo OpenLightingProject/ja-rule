@@ -18,17 +18,6 @@
  */
 #include "rdm_responder.h"
 
-#if HAVE_CONFIG_H
-// We're in the test environment
-#include <config.h>
-#else
-#include <machine/endian.h>
-#endif
-
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
-
 #include <string.h>
 
 #include "constants.h"
@@ -50,11 +39,6 @@ const char MANUFACTURER_LABEL[] = "Open Lighting Project";
 #define FE_CONSTANT 0xfe
 
 RDMResponder g_responder;
-
-#define ReturnUnlessUnicast(header) \
-if (!RDMUtil_RequiresResponse(&g_responder, header->dest_uid)) {\
-  return RDM_RESPONDER_NO_RESPONSE; \
-}
 
 void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]) {
   memcpy(g_responder.uid, uid, UID_LENGTH);
@@ -132,14 +116,14 @@ int RDMResponder_HandleDUBRequest(const uint8_t *param_data,
 void RDMResponder_BuildHeader(const RDMHeader *incoming_header,
                               RDMResponseType response_type,
                               RDMCommandClass command_class,
-                              RDMPid pid,
+                              uint16_t pid,
                               unsigned int param_data_length) {
   RDMHeader *outgoing_header = (RDMHeader*) g_rdm_buffer;
   outgoing_header->start_code = RDM_START_CODE;
   outgoing_header->sub_start_code = SUB_START_CODE;
   outgoing_header->message_length = sizeof(RDMHeader) + param_data_length;
   memcpy(outgoing_header->dest_uid, incoming_header->src_uid, UID_LENGTH);
-  memcpy(outgoing_header->src_uid, g_responder.uid, UID_LENGTH);
+  memcpy(outgoing_header->src_uid, incoming_header->dest_uid, UID_LENGTH);
   outgoing_header->transaction_number = incoming_header->transaction_number;
   outgoing_header->port_id = response_type;
   outgoing_header->message_count = g_responder.queued_message_count;

@@ -18,17 +18,6 @@
  */
 #include "simple_model.h"
 
-#if HAVE_CONFIG_H
-// We're in the test environment
-#include <config.h>
-#else
-#include <machine/endian.h>
-#endif
-
-#ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
-#endif
-
 #include <stdlib.h>
 
 #include "coarse_timer.h"
@@ -36,9 +25,9 @@
 #include "rdm_frame.h"
 #include "rdm_responder.h"
 #include "rdm_util.h"
+#include "utils.h"
 
 // Various constants
-#define MODEL_ID 0x0100
 #define SOFTWARE_VERSION 0x00000000
 #define FLASH_FAST 1000
 #define FLASH_SLOW 10000
@@ -137,7 +126,7 @@ static int SimpleModel_Ioctl(ModelIoctl command, uint8_t *data,
 
 static int SimpleModel_HandleRequest(const RDMHeader *header,
                                      const uint8_t *param_data) {
-  if (!RDMUtil_RequiresAction(&g_responder, header->dest_uid)) {
+  if (!RDMUtil_RequiresAction(g_responder.uid, header->dest_uid)) {
     return RDM_RESPONDER_NO_RESPONSE;
   }
 
@@ -192,7 +181,7 @@ static void SimpleModel_Tasks() {
 }
 
 const ModelEntry SIMPLE_MODEL_ENTRY = {
-  .model_id = BASIC_RESPONDER,
+  .model_id = BASIC_RESPONDER_MODEL_ID,
   .activate_fn = SimpleModel_Activate,
   .deactivate_fn = SimpleModel_Deactivate,
   .ioctl_fn = SimpleModel_Ioctl,
@@ -228,8 +217,8 @@ static const ResponderDefinition RESPONDER_DEFINITION = {
   .manufacturer_label = MANUFACTURER_LABEL,
   .model_description = DEVICE_MODEL_DESCRIPTION,
   .product_detail_ids = &PRODUCT_DETAIL_ID_LIST,
-  .default_device_label = &DEFAULT_DEVICE_LABEL,
+  .default_device_label = DEFAULT_DEVICE_LABEL,
   .software_version = SOFTWARE_VERSION,
-  .model_id = MODEL_ID,
+  .model_id = BASIC_RESPONDER_MODEL_ID,
   .product_category = PRODUCT_CATEGORY_TEST_EQUIPMENT
 };

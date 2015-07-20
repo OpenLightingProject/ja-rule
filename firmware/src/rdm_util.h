@@ -53,7 +53,7 @@ static inline int RDMUtil_UIDCompare(const uint8_t *uid1, const uint8_t *uid2) {
 
 /**
  * @brief Check if a RDM request sent to a UID requires us to take action.
- * @param responder The RDMResponder to check the UID against.
+ * @param our_uid The UID of the responder to check
  * @param uid The UID to check.
  * @returns true if we should process the RDM request, false otherwise.
  *
@@ -62,7 +62,7 @@ static inline int RDMUtil_UIDCompare(const uint8_t *uid1, const uint8_t *uid2) {
  *  - The UID is the broadcast UID (ffff:ffffffff)
  *  - The UID is a vendorcast UID, and the manufacturer ID matches ours.
  */
-bool RDMUtil_RequiresAction(const RDMResponder *responder,
+bool RDMUtil_RequiresAction(const uint8_t our_uid[UID_LENGTH],
                             const uint8_t uid[UID_LENGTH]);
 
 /*

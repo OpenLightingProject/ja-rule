@@ -48,17 +48,22 @@ extern "C" {
  * @sa https://wiki.openlighting.org/index.php/Open_Lighting_Allocations.
  */
 typedef enum {
-  NULL_MODEL = 0x0000,  //!< No model set
+  NULL_MODEL_ID = 0x0000,  //!< No model set
 
   /**
    * @brief A simple RDM responder.
    */
-  BASIC_RESPONDER = 0x0100,
+  BASIC_RESPONDER_MODEL_ID = 0x0100,
 
   /**
    * @brief A responder that acts as a proxy.
    */
-  PROXY_RESPONDER = 0x0101
+  PROXY_MODEL_ID = 0x0101,
+
+  /**
+   * @brief A responder that acts a moving light
+   */
+  MOVING_LIGHT_MODEL_ID = 0x0102
 } ResponderModel;
 
 /**

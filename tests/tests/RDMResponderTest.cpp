@@ -33,6 +33,7 @@
 #include "Array.h"
 #include "Matchers.h"
 #include "MessageHandlerMock.h"
+#include "TestHelpers.h"
 
 using ola::rdm::UID;
 using ola::rdm::GetResponseFromData;
@@ -48,37 +49,7 @@ using std::unique_ptr;
 using ::testing::StrictMock;
 using ::testing::Return;
 
-MATCHER_P(ResponseIs, expected_response, "") {
-  ola::io::ByteString data;
-  data.push_back(RDM_START_CODE);
-  EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*expected_response, &data));
-
-  return MemoryCompare(reinterpret_cast<const uint8_t*>(std::get<0>(arg)),
-                       std::get<1>(arg), data.data(), data.size(),
-                       result_listener);
-}
-
 namespace {
-
-const RDMHeader *AsHeader(const uint8_t *data) {
-  return reinterpret_cast<const RDMHeader*>(data);
-}
-
-template<typename Func>
-int InvokeHandler(Func function, const RDMRequest *request) {
-  ola::io::ByteString data;
-  data.push_back(RDM_START_CODE);
-  EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
-  return function(AsHeader(data.data()), request->ParamData());
-}
-
-template<typename Func>
-int InvokeMuteHandler(Func function, const RDMRequest *request) {
-  ola::io::ByteString data;
-  data.push_back(RDM_START_CODE);
-  EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
-  return function(AsHeader(data.data()));
-}
 
 class MockPIDHandler {
  public:
