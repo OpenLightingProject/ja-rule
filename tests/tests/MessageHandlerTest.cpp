@@ -249,11 +249,13 @@ const uint8_t MessageHandlerTest::kEmptyRDMResponse[] = {0, 0, 0, 0, 0, 0};
 TEST_F(MessageHandlerTest, testEcho) {
   const uint8_t echo_payload[] = {1, 3, 4, 4};
 
-  EXPECT_CALL(m_transport_mock, Send(kToken, ECHO, RC_OK, _, 1))
+  EXPECT_CALL(m_transport_mock, Send(kToken, COMMAND_ECHO, RC_OK, _, 1))
       .With(Args<3, 4>(PayloadIs(echo_payload, arraysize(echo_payload))))
       .WillOnce(Return(true));
 
-  Message message = { kToken, ECHO, arraysize(echo_payload), &echo_payload[0] };
+  Message message = {
+    kToken, COMMAND_ECHO, arraysize(echo_payload), &echo_payload[0]
+  };
   MessageHandler_HandleMessage(&message);
 }
 

@@ -18,18 +18,49 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <memory>
+#include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMCommandSerializer.h>
+#include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/UID.h>
 
+#include "rdm_buffer.h"
 #include "rdm_handler.h"
+#include "utils.h"
+#include "Array.h"
 #include "Matchers.h"
+#include "TestHelpers.h"
 
-using ::testing::_;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
+using ::testing::_;
+using ola::rdm::GetResponseFromData;
+using ola::rdm::RDMGetRequest;
+using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
+using ola::rdm::RDMSetRequest;
+using ola::rdm::UID;
+using std::unique_ptr;
+
+MATCHER_P(IOVecResponseIs, expected_response, "") {
+  ola::io::ByteString data;
+  data.push_back(RDM_START_CODE);
+  EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*expected_response, &data));
+  EXPECT_THAT(arg, PayloadIs(data.data(), data.size()));
+  return true;
+}
 
 namespace {
+
+void CallRDMHandler(const ola::rdm::RDMRequest *request) {
+  ola::io::ByteString data;
+  data.push_back(RDM_START_CODE);
+  EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
+  RDMHandler_HandleRequest(AsHeader(data.data()), request->ParamData());
+}
 
 class MockModel {
  public:
@@ -130,6 +161,11 @@ void SendResponse(bool include_break,
 
 class RDMHandlerTest : public testing::Test {
  public:
+  RDMHandlerTest()
+     : m_controller_uid(0x7a70, 0x00000000),
+       m_our_uid(TEST_UID) {
+  }
+
   void SetUp() {
     g_first_mock = &m_first_model;
     g_second_mock = &m_second_model;
@@ -149,6 +185,9 @@ class RDMHandlerTest : public testing::Test {
   }
 
  protected:
+  UID m_controller_uid;
+  UID m_our_uid;
+
   StrictMock<MockModel> m_first_model;
   StrictMock<MockModel> m_second_model;
   StrictMock<MockSender> m_sender_mock;
@@ -162,14 +201,18 @@ class RDMHandlerTest : public testing::Test {
   static const ModelEntry FIRST_MODEL;
   static const ModelEntry SECOND_MODEL;
 
-  static const uint16_t MODEL_ONE = 1;
-  static const uint16_t MODEL_TWO = 2;
-  static const uint16_t MODEL_THREE = 3;
+  static const uint16_t MODEL_ONE;
+  static const uint16_t MODEL_TWO;
+  static const uint16_t MODEL_THREE;
 
   static const uint8_t SAMPLE_MESSAGE[];
   static const uint8_t NULL_UID[UID_LENGTH];
   static const uint8_t TEST_UID[UID_LENGTH];
 };
+
+const uint16_t RDMHandlerTest::MODEL_ONE = 1;
+const uint16_t RDMHandlerTest::MODEL_TWO = 2;
+const uint16_t RDMHandlerTest::MODEL_THREE = 3;
 
 const uint8_t RDMHandlerTest::SAMPLE_MESSAGE[] = {
   0xcc, 0x01, 0x18, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
@@ -200,7 +243,7 @@ const ModelEntry RDMHandlerTest::SECOND_MODEL {
 
 TEST_F(RDMHandlerTest, testDispatching) {
   RDMHandlerSettings settings = {
-    .default_model = NULL_MODEL,
+    .default_model = NULL_MODEL_ID,
     .send_callback = nullptr
   };
   uint8_t uid[UID_LENGTH];
@@ -263,7 +306,7 @@ TEST_F(RDMHandlerTest, testDispatching) {
 
   // Switch back to the nullptr model
   EXPECT_CALL(m_second_model, Deactivate()).Times(1);
-  EXPECT_TRUE(RDMHandler_SetActiveModel(NULL_MODEL));
+  EXPECT_TRUE(RDMHandler_SetActiveModel(NULL_MODEL_ID));
 }
 
 TEST_F(RDMHandlerTest, testSendResponse) {
@@ -286,4 +329,115 @@ TEST_F(RDMHandlerTest, testSendResponse) {
                            nullptr);
   RDMHandler_HandleRequest(reinterpret_cast<const RDMHeader*>(SAMPLE_MESSAGE),
                            nullptr);
+}
+
+TEST_F(RDMHandlerTest, testGetSetModelId) {
+  RDMHandlerSettings settings = {
+    .default_model = MODEL_ONE,
+    .send_callback = SendResponse
+  };
+  RDMHandler_Initialize(&settings);
+
+  testing::InSequence seq;
+  EXPECT_CALL(m_first_model, Activate()).Times(1);
+  EXPECT_CALL(m_first_model, Ioctl(IOCTL_GET_UID, _, UID_LENGTH))
+    .WillRepeatedly(WithArgs<1>(CopyUID(TEST_UID)));
+
+  EXPECT_TRUE(RDMHandler_AddModel(&FIRST_MODEL));
+  EXPECT_TRUE(RDMHandler_AddModel(&SECOND_MODEL));
+
+  unique_ptr<RDMRequest> get_request(new RDMGetRequest(
+      m_controller_uid, m_our_uid, 0, 0, 0, PID_DEVICE_MODEL,
+      nullptr, 0));
+
+  uint16_t model_id = htons(MODEL_ONE);
+  unique_ptr<RDMResponse> get_response(GetResponseFromData(
+        get_request.get(),
+        reinterpret_cast<const uint8_t*>(&model_id), sizeof(model_id)));
+
+  EXPECT_CALL(m_sender_mock, SendResponse(true, _, 1))
+      .With(testing::Args<1, 2>(IOVecResponseIs(get_response.get())));
+
+  CallRDMHandler(get_request.get());
+
+  // Now try a set
+  uint16_t new_model_id = htons(MODEL_TWO);
+  unique_ptr<RDMRequest> set_request(new RDMSetRequest(
+      m_controller_uid, m_our_uid, 0, 0, 0, PID_DEVICE_MODEL,
+      reinterpret_cast<const uint8_t*>(&new_model_id),
+      sizeof(new_model_id)));
+  unique_ptr<RDMResponse> set_response(GetResponseFromData(set_request.get()));
+
+  EXPECT_CALL(m_first_model, Ioctl(IOCTL_GET_UID, _, UID_LENGTH))
+    .WillRepeatedly(WithArgs<1>(CopyUID(TEST_UID)));
+  EXPECT_CALL(m_first_model, Deactivate()).Times(1);
+  EXPECT_CALL(m_second_model, Activate()).Times(1);
+  EXPECT_CALL(m_sender_mock, SendResponse(true, _, 1))
+      .With(testing::Args<1, 2>(IOVecResponseIs(set_response.get())));
+
+  CallRDMHandler(set_request.get());
+  EXPECT_EQ(MODEL_TWO, RDMHandler_ActiveModel());
+
+  // Perform another get
+  model_id = htons(MODEL_TWO);
+  unique_ptr<RDMResponse> second_get_response(GetResponseFromData(
+        get_request.get(),
+        reinterpret_cast<const uint8_t*>(&model_id), sizeof(model_id)));
+
+  EXPECT_CALL(m_second_model, Ioctl(IOCTL_GET_UID, _, UID_LENGTH))
+    .WillRepeatedly(WithArgs<1>(CopyUID(TEST_UID)));
+  EXPECT_CALL(m_sender_mock, SendResponse(true, _, 1))
+      .With(testing::Args<1, 2>(IOVecResponseIs(second_get_response.get())));
+
+  CallRDMHandler(get_request.get());
+
+  // Now try a set for an invalid model
+  new_model_id = MODEL_THREE;
+  unique_ptr<RDMRequest> second_set_request(new RDMSetRequest(
+      m_controller_uid, m_our_uid, 0, 0, 0, PID_DEVICE_MODEL,
+      reinterpret_cast<const uint8_t*>(&new_model_id),
+      sizeof(new_model_id)));
+  unique_ptr<RDMResponse> nack_response(
+      ola::rdm::NackWithReason(second_set_request.get(),
+                               ola::rdm::NR_DATA_OUT_OF_RANGE));
+
+  EXPECT_CALL(m_second_model, Ioctl(IOCTL_GET_UID, _, UID_LENGTH))
+    .WillRepeatedly(WithArgs<1>(CopyUID(TEST_UID)));
+  EXPECT_CALL(m_sender_mock, SendResponse(true, _, 1))
+      .With(testing::Args<1, 2>(IOVecResponseIs(nack_response.get())));
+
+  CallRDMHandler(second_set_request.get());
+  EXPECT_EQ(MODEL_TWO, RDMHandler_ActiveModel());
+}
+
+TEST_F(RDMHandlerTest, testGetModelList) {
+  RDMHandlerSettings settings = {
+    .default_model = MODEL_ONE,
+    .send_callback = SendResponse
+  };
+  RDMHandler_Initialize(&settings);
+
+  testing::InSequence seq;
+  EXPECT_CALL(m_first_model, Activate()).Times(1);
+  EXPECT_CALL(m_first_model, Ioctl(IOCTL_GET_UID, _, UID_LENGTH))
+    .WillRepeatedly(WithArgs<1>(CopyUID(TEST_UID)));
+
+  EXPECT_TRUE(RDMHandler_AddModel(&FIRST_MODEL));
+  EXPECT_TRUE(RDMHandler_AddModel(&SECOND_MODEL));
+
+  unique_ptr<RDMRequest> get_request(new RDMGetRequest(
+      m_controller_uid, m_our_uid, 0, 0, 0, PID_DEVICE_MODEL_LIST,
+      nullptr, 0));
+
+  uint8_t model_list[] = {
+    0x00, 0x01,
+    0x00, 0x02
+  };
+  unique_ptr<RDMResponse> get_response(GetResponseFromData(
+        get_request.get(), model_list, arraysize(model_list)));
+
+  EXPECT_CALL(m_sender_mock, SendResponse(true, _, 1))
+      .With(testing::Args<1, 2>(IOVecResponseIs(get_response.get())));
+
+  CallRDMHandler(get_request.get());
 }

@@ -35,4 +35,13 @@
 #define UNUSED
 #endif
 
+/**
+ * @brief A helper to return if the request does not merit a response.
+ * @param header The RDMHeader of the request.
+ */
+#define ReturnUnlessUnicast(header) \
+if (!RDMUtil_RequiresResponse(&g_responder, header->dest_uid)) {\
+  return RDM_RESPONDER_NO_RESPONSE; \
+}
+
 #endif  // FIRMWARE_SRC_MACROS_H_

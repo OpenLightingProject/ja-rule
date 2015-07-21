@@ -235,7 +235,7 @@ typedef enum {
   COMMAND_RDM_BROADCAST_REQUEST = 0x42,
 
   // Experimental / testing
-  ECHO = 0xf0,  //!< Echo the data back. See @ref message_cmd_echo
+  COMMAND_ECHO = 0xf0,  //!< Echo the data back. See @ref message_cmd_echo
   GET_FLAGS = 0xf2,  //!< Get the flags state
 } Command;
 

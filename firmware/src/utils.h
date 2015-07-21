@@ -22,6 +22,17 @@
 
 #include <stdint.h>
 
+#if HAVE_CONFIG_H
+// We're in the test environment
+#include <config.h>
+#else
+#include <machine/endian.h>
+#endif
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -42,6 +53,16 @@ static inline uint8_t ShortLSB(uint16_t s) {
  */
 static inline uint8_t ShortMSB(uint16_t s) {
   return s >> 8;
+}
+
+/**
+ * @brief Combine two 8-bit values to a 16-bit value.
+ * @param upper the MSB,
+ * @param lower the LSB,
+ * @returns A 16-bit value.
+ */
+static inline uint16_t JoinShort(uint8_t upper, uint8_t lower) {
+  return (upper << 8) + lower;
 }
 
 #ifdef __cplusplus
