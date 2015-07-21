@@ -98,17 +98,19 @@ bool RDMUtil_VerifyChecksum(const uint8_t *frame, unsigned int size);
 int RDMUtil_AppendChecksum(uint8_t *frame);
 
 /**
- * @brief Copy at most N bytes from src to dst.
+ * @brief Copy a string from one location to another.
  * @param dst The location to copy to.
+ * @param dest_size The maximum number of bytes to copy to dst.
  * @param src The location to copy from.
  * @param max_size The maximum number of characters to copy.
- * @returns The size of the resultant string, excluding the NULL.
+ * @returns The size of the final string, excluding any NULL if there is one.
  *
- * Since RDM strings may be missing the NULL terminator, this should be used
- * when copying strings.
+ * RDM strings are not required to have a NULL terminator, which means we can't
+ * use the usual string functions like strncpy(). This function should
+ * be used when copying strings.
  */
-unsigned int RDMUtil_StringCopy(char *dst, const char *src,
-                                unsigned int max_size);
+unsigned int RDMUtil_StringCopy(char *dst, unsigned int dest_size,
+                                const char *src, unsigned int max_size);
 
 /**
  * @brief Calculate the size of the string, but never scan beyond max_size.

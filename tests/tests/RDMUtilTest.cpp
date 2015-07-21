@@ -22,6 +22,7 @@
 
 #include "rdm_util.h"
 #include "Array.h"
+#include "Matchers.h"
 
 const uint8_t SAMPLE_MESSAGE[] = {
   0xcc, 0x01, 0x18, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12, 0x34,
@@ -85,6 +86,57 @@ TEST_F(RDMUtilTest, testAppendChecksum) {
   EXPECT_EQ(26, RDMUtil_AppendChecksum(bad_packet));
   EXPECT_EQ(0x03, bad_packet[24]);
   EXPECT_EQ(0xdf, bad_packet[25]);
+}
+
+TEST_F(RDMUtilTest, StringCopy) {
+  const unsigned int DEST_SIZE = 10;
+  char dest[DEST_SIZE];
+
+  const char short_string[] = "foobar";
+
+  // A non NULL terminated string, shorter than the dest.
+  memset(dest, 0xff, DEST_SIZE);
+  const char expected1[] = "foo\0\xff\xff\xff\xff\xff\xff";
+  EXPECT_EQ(3, RDMUtil_StringCopy(dest, DEST_SIZE, short_string, 3));
+  EXPECT_THAT(ArrayTuple(dest, DEST_SIZE), StringIs(expected1, DEST_SIZE));
+
+  // A NULL terminated string, shorter than the dest.
+  memset(dest, 0xff, DEST_SIZE);
+  const char expected2[] = "foobar\0\xff\xff\xff";
+  EXPECT_EQ(6, RDMUtil_StringCopy(dest, DEST_SIZE, short_string, 6));
+  EXPECT_THAT(ArrayTuple(dest, DEST_SIZE), StringIs(expected2, DEST_SIZE));
+
+  // A non-null terminated string, equal in size to DEST
+  memset(dest, 0xff, DEST_SIZE);
+  const char equal_string[] = "0123456789";
+  const char expected3[] = "0123456789";
+  EXPECT_EQ(DEST_SIZE, RDMUtil_StringCopy(dest, DEST_SIZE, equal_string,
+                                          strlen(equal_string)));
+  EXPECT_THAT(ArrayTuple(dest, DEST_SIZE), StringIs(expected3, DEST_SIZE));
+
+  // A null terminated string, equal in size to DEST
+  const char equal_with_null[] = "012345678";
+  memset(dest, 0xff, DEST_SIZE);
+  const char expected4[] = "012345678";
+  EXPECT_EQ(9, RDMUtil_StringCopy(dest, DEST_SIZE, equal_with_null,
+                                  arraysize(equal_with_null)));
+  EXPECT_THAT(ArrayTuple(dest, DEST_SIZE), StringIs(expected4, DEST_SIZE));
+
+  // A non-NULL terminated string, longer than dest
+  const char long_string[] = "this is a test";
+  memset(dest, 0xff, DEST_SIZE);
+  const char expected5[] = "this is a ";
+  EXPECT_EQ(DEST_SIZE,
+            RDMUtil_StringCopy(dest, DEST_SIZE, long_string,
+                               strlen(long_string)));
+  EXPECT_THAT(ArrayTuple(dest, DEST_SIZE), StringIs(expected5, DEST_SIZE));
+
+  // A non-NULL terminated string, longer than dest
+  memset(dest, 0xff, DEST_SIZE);
+  EXPECT_EQ(DEST_SIZE,
+            RDMUtil_StringCopy(dest, DEST_SIZE, long_string,
+                               arraysize(long_string)));
+  EXPECT_THAT(ArrayTuple(dest, DEST_SIZE), StringIs(expected5, DEST_SIZE));
 }
 
 TEST_F(RDMUtilTest, testSafeStringLength) {

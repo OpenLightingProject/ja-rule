@@ -159,7 +159,7 @@ typedef struct {
    */
   SensorData *sensors;
 
-  char device_label[RDM_DEFAULT_STRING_SIZE + 1];  //!< Device label
+  char device_label[RDM_DEFAULT_STRING_SIZE];  //!< Device label
   uint8_t uid[UID_LENGTH];  //!< Responder's UID
   uint16_t dmx_start_address;  //!< DMX start address
   uint16_t dmx_footprint;  //!< The DMX footprint

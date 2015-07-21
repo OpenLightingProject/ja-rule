@@ -109,6 +109,13 @@ testing::Matcher< ::testing::tuple<const void*, unsigned int> > DataIs(
   return testing::MakeMatcher(new DataMatcher(expected_data, expected_size));
 }
 
+testing::Matcher< ::testing::tuple<const void*, unsigned int> > StringIs(
+    const char* expected_data,
+    unsigned int expected_size) {
+  return testing::MakeMatcher(new DataMatcher(
+        reinterpret_cast<const uint8_t*>(expected_data), expected_size));
+}
+
 
 // PayloadMatcher
 // ----------------------------------------------------------------------------

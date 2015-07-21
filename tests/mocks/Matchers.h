@@ -70,10 +70,29 @@ typedef ::testing::tuple<const void*, unsigned int> ArrayTuple;
  * ~~~~~~~~~~~~~~~~~~~~~
  *   EXPECT_CALL(mock, Send(...))
  *       .With(Args<1, 2>(DataIs(ptr, length));
+ *   EXPECT_THAT(ArrayTuple(data, len),
+ *               DataIs(expected, expected_size));
  * ~~~~~~~~~~~~~~~~~~~~~
  */
 testing::Matcher<ArrayTuple> DataIs(
     const uint8_t* expected_data,
+    unsigned int expected_size);
+
+/**
+ * @brief Check that a {pointer, length} tuple matches the expected data.
+ * @param expected_data A pointer to the expected data.
+ * @param expected_size The size of the expected data.
+ *
+ * @examplepara
+ * ~~~~~~~~~~~~~~~~~~~~~
+ *   EXPECT_CALL(mock, Send(...))
+ *       .With(Args<1, 2>(StringIs(ptr, length));
+ *   EXPECT_THAT(ArrayTuple(data, len),
+ *               StringIs(expected, expected_size));
+ * ~~~~~~~~~~~~~~~~~~~~~
+ */
+testing::Matcher<ArrayTuple> StringIs(
+    const char* expected_data,
     unsigned int expected_size);
 
 /**

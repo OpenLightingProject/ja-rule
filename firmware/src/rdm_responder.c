@@ -42,7 +42,7 @@ const char MANUFACTURER_LABEL[] = "Open Lighting Project";
 RDMResponder g_responder;
 
 /*
- * @brief Reset the sensor at the specified index.
+ * @brief Record the sensor at the specified index.
  */
 static inline void RecordSensor(unsigned int i) {
   if (g_responder.def->sensors[i].recorded_value_support &
@@ -52,6 +52,9 @@ static inline void RecordSensor(unsigned int i) {
   }
 }
 
+/*
+ * @brief Reset the sensor at the specified index.
+ */
 static void ResetSensor(unsigned int i) {
   if (g_responder.def->sensors[i].recorded_value_support &
       SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK) {
@@ -71,6 +74,9 @@ static void ResetSensor(unsigned int i) {
   }
 }
 
+/*
+ * @brief Build a SENSOR_VALUE response.
+ */
 static void BuildSensorValueResponse(uint8_t index, const SensorData *sensor) {
   unsigned int offset = sizeof(RDMHeader);
   g_rdm_buffer[offset++] = index;
@@ -84,6 +90,8 @@ static void BuildSensorValueResponse(uint8_t index, const SensorData *sensor) {
   g_rdm_buffer[offset++] = ShortLSB(sensor->recorded_value);
 }
 
+// Public Functions
+// ----------------------------------------------------------------------------
 void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]) {
   memcpy(g_responder.uid, uid, UID_LENGTH);
   g_responder.def = NULL;
@@ -102,10 +110,12 @@ void RDMResponder_ResetToFactoryDefaults() {
   g_responder.sensors = NULL;
 
   if (g_responder.def) {
-    strncpy(g_responder.device_label,
-            g_responder.def->default_device_label,
-            RDM_DEFAULT_STRING_SIZE);
-    g_responder.device_label[RDM_DEFAULT_STRING_SIZE] = 0;
+    unsigned int len = RDMUtil_StringCopy(
+        g_responder.device_label,
+        RDM_DEFAULT_STRING_SIZE,
+        g_responder.def->default_device_label,
+        RDM_DEFAULT_STRING_SIZE);
+    g_responder.device_label[len] = 0;
   }
 
   g_responder.using_factory_defaults = true;
@@ -493,10 +503,8 @@ int RDMResponder_SetDeviceLabel(const RDMHeader *header,
   if (header->param_data_length > RDM_DEFAULT_STRING_SIZE) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
-  unsigned int len = min(header->param_data_length, RDM_DEFAULT_STRING_SIZE);
-  strncpy(g_responder.device_label, (const char*) param_data, len);
-  g_responder.device_label[len] = 0;
-
+  RDMUtil_StringCopy(g_responder.device_label, RDM_DEFAULT_STRING_SIZE,
+                     (const char*) param_data, header->param_data_length);
   return RDMResponder_BuildSetAck(header);
 }
 
@@ -542,7 +550,8 @@ int RDMResponder_GetSensorDefinition(const RDMHeader *header,
 
   // copy description
   unsigned int str_len = RDMUtil_StringCopy(
-      sensor_def.description, sensor_ptr->description, RDM_DEFAULT_STRING_SIZE);
+      sensor_def.description, RDM_DEFAULT_STRING_SIZE, sensor_ptr->description,
+      RDM_DEFAULT_STRING_SIZE);
 
   unsigned int param_data_size = sizeof(sensor_def) - RDM_DEFAULT_STRING_SIZE +
                                  str_len;
