@@ -87,7 +87,7 @@ static int GetSetModelId(const RDMHeader *header,
     }
 
     // take action
-    uint16_t new_model = (param_data[0] << 8) + param_data[1];
+    uint16_t new_model = JoinShort(param_data[0], param_data[1]);
     bool ok = RDMHandler_SetActiveModel(new_model);
 
     if (RDMUtil_UIDCompare(our_uid, header->dest_uid)) {
@@ -96,12 +96,8 @@ static int GetSetModelId(const RDMHeader *header,
 
     if (!ok) {
       uint16_t nack_reason = htons(NR_DATA_OUT_OF_RANGE);
-      RDMResponder_BuildHeader(
-          header, NACK_REASON,
-          (header->command_class == GET_COMMAND ?
-           GET_COMMAND_RESPONSE : SET_COMMAND_RESPONSE),
-           ntohs(header->param_id),
-           sizeof(nack_reason));
+      RDMResponder_BuildHeader(header, NACK_REASON, SET_COMMAND_RESPONSE,
+                               ntohs(header->param_id), sizeof(nack_reason));
       memcpy(g_rdm_buffer + sizeof(RDMHeader), &nack_reason,
              sizeof(nack_reason));
       return RDMUtil_AppendChecksum(g_rdm_buffer);
@@ -148,7 +144,6 @@ static int GetModelList(const RDMHeader *header) {
     i++;
   }
 
-  SysLog_Print(SYSLOG_INFO, "len is %d\n", size);
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
                            PID_DEVICE_MODEL_LIST, size);
   return RDMUtil_AppendChecksum(g_rdm_buffer);
