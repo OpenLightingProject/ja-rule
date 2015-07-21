@@ -18,7 +18,7 @@
  */
 
 /**
- * @defgroup moving_light Moving Light
+ * @defgroup moving_light Moving Light Model
  * @brief An RDM Model for a moving light.
  *
  * @addtogroup moving_light

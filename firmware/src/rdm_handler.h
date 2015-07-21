@@ -21,8 +21,14 @@
  * @defgroup rdm_handler RDM Request Handler
  * @brief The handler for RDM requests.
  *
- * This represents the entry point for RDM request handling. The handler
- * dispaches the request to the appropriate model.
+ * The RDM Handler manages dispatching the RDM requests to the correct model.
+ * This allows the physical device to simulate different types of RDM devices
+ * from LED drivers and moving lights to sensor-only devices and fog machines.
+ *
+ * Only a single model can be active at once, the PID_DEVICE_MODEL parameter
+ * can be used to change models at run time. Note that PID_DEVICE_MODEL and
+ * PID_DEVICE_MODEL_LIST aren't included in SUPPORTED_PARAMETERS so they are
+ * 'hidden' PIDs.
  *
  * @addtogroup rdm_handler
  * @{
@@ -70,7 +76,7 @@ typedef struct {
 
 /**
  * @brief Initialize the RDM Handler sub-system.
- * @param settings The settings for this responder.
+ * @param settings The settings for the handler.
  */
 void RDMHandler_Initialize(const RDMHandlerSettings *settings);
 
@@ -87,7 +93,7 @@ bool RDMHandler_AddModel(const ModelEntry *entry);
 /**
  * @brief Change the active model of responder.
  * @param model_id the new model to use.
- * @return true if the new model was set, false if the new model doesn't exist.
+ * @returns true if the new model was set, false if the new model doesn't exist.
  */
 bool RDMHandler_SetActiveModel(uint16_t model_id);
 
@@ -101,7 +107,6 @@ uint16_t RDMHandler_ActiveModel();
  * @brief Handle a RDM Request.
  * @pre Sub-Start-Code is SUB_START_CODE.
  * @pre message_length is valid.
- * @pre RDMHandler_UIDRequiresAction() returned true.
  * @pre The checksum of the command is correct
  * @param header The RDM command header.
  * @param param_data the parameter data
@@ -120,8 +125,8 @@ void RDMHandler_GetUID(uint8_t *uid);
 /**
  * @brief Perform the periodic RDM Handler tasks.
  *
- * This should be called in the main event loop, it delegates to the active
- * model.
+ * This should be called in the main event loop, it delegates to calling the
+ * tasks_fn on the active model.
  */
 void RDMHandler_Tasks();
 
