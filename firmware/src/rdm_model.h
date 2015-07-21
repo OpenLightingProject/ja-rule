@@ -23,12 +23,13 @@
  * @file rdm_model.h
  * @brief The API for an RDM Model implementation.
  *
- * The Model API provides a flexible method of supporting multiple RDM models
- * on a single responder. Only one model may be active at once.
+ * In combination with the RDMHandler, the Model API provides a flexible method
+ * of supporting multiple RDM models on a single physical device. Only one model
+ * may be active at once.
  *
  * Each model provides a ModelEntry struct, which contains function
- * pointers to the model's implementation. To add support for a new model,
- * implement the functions within ModelEntry and then add the ModelEntry to the
+ * pointers for the model's implementation. To add a new model, implement the
+ * functions within ModelEntry and then add the ModelEntry to the
  * RDMHandler by calling RDMHandler_AddModel().
  */
 
@@ -63,11 +64,19 @@ typedef enum {
   /**
    * @brief A responder that acts a moving light
    */
-  MOVING_LIGHT_MODEL_ID = 0x0102
+  MOVING_LIGHT_MODEL_ID = 0x0102,
+
+  /**
+   * @brief A responder that contains only sensors.
+   */
+  SENSOR_MODEL_ID = 0x0103
 } ResponderModel;
 
 /**
  * @brief Model ioctl enums.
+ *
+ * Ioctls are the generic 'catch-all' operations. We use them so we can reduce
+ * the number of functions we need to implement each models.
  */
 typedef enum {
   /**
@@ -81,6 +90,8 @@ typedef enum {
 
 /**
  * @brief The function table entry for a particular responder model.
+ *
+ * This can be registered with the RDMHandler by calling RDMHandler_AddModel().
  */
 typedef struct {
   uint16_t model_id;  //!< The model ID.
