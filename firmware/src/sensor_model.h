@@ -34,13 +34,6 @@
 #ifndef FIRMWARE_SRC_SENSOR_MODEL_H_
 #define FIRMWARE_SRC_SENSOR_MODEL_H_
 
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "system_config.h"
-
-#include "peripheral/ports/plib_ports.h"
-#include "rdm.h"
 #include "rdm_model.h"
 
 #ifdef __cplusplus

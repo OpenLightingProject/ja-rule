@@ -142,7 +142,6 @@ static int SensorModel_HandleRequest(const RDMHeader *header,
 static void SensorModel_Tasks() {
   if (CoarseTimer_HasElapsed(g_sensor_model.sensor_sample_time,
                              SENSOR_SAMPLE_RATE)) {
-    BSP_LEDToggle(BSP_LED_2);
     SampleSensors();
   }
 }
@@ -197,7 +196,7 @@ static const SensorDefinition SENSOR_DEFINITIONS[] = {
   },
   {
     .description = SENSOR_NAME2,
-    .normal_maximum_value = 196, // +1G
+    .normal_maximum_value = 196,  // +1G
     .normal_minimum_value = 0,  // -1G
     .range_maximum_value = 882,  // +8G
     .range_minimum_value = -686,  // -8G

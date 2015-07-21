@@ -352,5 +352,7 @@ static const ResponderDefinition RESPONDER_DEFINITION = {
   .default_device_label = DEFAULT_DEVICE_LABEL,
   .software_version = SOFTWARE_VERSION,
   .model_id = MOVING_LIGHT_MODEL_ID,
-  .product_category = PRODUCT_CATEGORY_TEST_EQUIPMENT
+  .product_category = PRODUCT_CATEGORY_TEST_EQUIPMENT,
+  .sensors = NULL,
+  .sensor_count = 0
 };

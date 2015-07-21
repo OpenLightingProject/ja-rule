@@ -28,7 +28,7 @@ bool MemoryCompare(
     const uint8_t *expected_data, unsigned int expected_size,
     testing::MatchResultListener* listener) {
   if (size != expected_size) {
-    *listener << "data size was " << size;
+    *listener << "data size was " << size << ", expected " << expected_size;
     return false;
   }
 
