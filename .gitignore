@@ -59,3 +59,5 @@ ja-rule.X/nbproject/private/*
 /tests/test-driver
 /tests/tests/.libs/
 /tests/tests/*_test
+/firmware/ja-rule.X/build/mx_795_512l/
+/firmware/ja-rule.X/dist/mx_795_512l/

@@ -37,8 +37,52 @@ const char MANUFACTURER_LABEL[] = "Open Lighting Project";
 #define FIVE5_CONSTANT 0x55
 #define AA_CONSTANT 0xaa
 #define FE_CONSTANT 0xfe
+#define SENSOR_VALUE_PARAM_DATA_LENGTH 9
 
 RDMResponder g_responder;
+
+/*
+ * @brief Reset the sensor at the specified index.
+ */
+static inline void RecordSensor(unsigned int i) {
+  if (g_responder.def->sensors[i].recorded_value_support &
+      SENSOR_SUPPORTS_RECORDING_MASK) {
+    g_responder.sensors[i].recorded_value =
+      g_responder.sensors[i].present_value;
+  }
+}
+
+static void ResetSensor(unsigned int i) {
+  if (g_responder.def->sensors[i].recorded_value_support &
+      SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK) {
+    g_responder.sensors[i].lowest_value = g_responder.sensors[i].present_value;
+    g_responder.sensors[i].highest_value = g_responder.sensors[i].present_value;
+  } else {
+    g_responder.sensors[i].lowest_value = 0;
+    g_responder.sensors[i].highest_value = 0;
+  }
+
+  if (g_responder.def->sensors[i].recorded_value_support &
+      SENSOR_SUPPORTS_RECORDING_MASK) {
+    g_responder.sensors[i].recorded_value =
+      g_responder.sensors[i].present_value;
+  } else {
+    g_responder.sensors[i].recorded_value = 0;
+  }
+}
+
+static void BuildSensorValueResponse(uint8_t index, const SensorData *sensor) {
+  unsigned int offset = sizeof(RDMHeader);
+  g_rdm_buffer[offset++] = index;
+  g_rdm_buffer[offset++] = ShortMSB(sensor->present_value);
+  g_rdm_buffer[offset++] = ShortLSB(sensor->present_value);
+  g_rdm_buffer[offset++] = ShortMSB(sensor->lowest_value);
+  g_rdm_buffer[offset++] = ShortLSB(sensor->lowest_value);
+  g_rdm_buffer[offset++] = ShortMSB(sensor->highest_value);
+  g_rdm_buffer[offset++] = ShortLSB(sensor->highest_value);
+  g_rdm_buffer[offset++] = ShortMSB(sensor->recorded_value);
+  g_rdm_buffer[offset++] = ShortLSB(sensor->recorded_value);
+}
 
 void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]) {
   memcpy(g_responder.uid, uid, UID_LENGTH);
@@ -51,17 +95,16 @@ void RDMResponder_ResetToFactoryDefaults() {
   g_responder.dmx_start_address = INVALID_DMX_START_ADDRESS;
   g_responder.dmx_footprint = 0;
   g_responder.sub_device_count = 0;
-  g_responder.sensor_count = 0;
   g_responder.current_personality = 0;
   g_responder.personality_count = 0;
   g_responder.is_muted = false;
   g_responder.identify_on = false;
+  g_responder.sensors = NULL;
 
   if (g_responder.def) {
     strncpy(g_responder.device_label,
             g_responder.def->default_device_label,
-            RDMUtil_SafeStringLength(g_responder.def->default_device_label,
-                                     RDM_DEFAULT_STRING_SIZE));
+            RDM_DEFAULT_STRING_SIZE);
     g_responder.device_label[RDM_DEFAULT_STRING_SIZE] = 0;
   }
 
@@ -290,7 +333,7 @@ int RDMResponder_SetMute(const RDMHeader *header) {
 
   ReturnUnlessUnicast(header);
   RDMResponder_BuildHeader(header, ACK, DISCOVERY_COMMAND_RESPONSE,
-                           PID_DISC_MUTE, sizeof(uint16_t));
+                           ntohs(header->param_id), sizeof(uint16_t));
   uint8_t *param_data = g_rdm_buffer + sizeof(RDMHeader);
   param_data[0] = 0;  // set control field to 0
   param_data[1] = 0;  // set control field to 0
@@ -306,7 +349,7 @@ int RDMResponder_SetUnMute(const RDMHeader *header) {
 
   ReturnUnlessUnicast(header);
   RDMResponder_BuildHeader(header, ACK, DISCOVERY_COMMAND_RESPONSE,
-                           PID_DISC_UN_MUTE, sizeof(uint16_t));
+                           ntohs(header->param_id), sizeof(uint16_t));
   uint8_t *param_data = g_rdm_buffer + sizeof(RDMHeader);
   param_data[0] = 0;  // set control field to 0
   param_data[1] = 0;  // set control field to 0
@@ -344,8 +387,7 @@ int RDMResponder_GetSupportedParameters(const RDMHeader *header,
 
   // TODO(simon): handle ack-overflow here
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           PID_SUPPORTED_PARAMETERS,
-                           offset - sizeof(RDMHeader));
+                           ntohs(header->param_id), offset - sizeof(RDMHeader));
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
@@ -380,11 +422,11 @@ int RDMResponder_GetDeviceInfo(const RDMHeader *header,
     .personality_count = g_responder.personality_count,
     .dmx_start_address = htons(g_responder.dmx_start_address),
     .sub_device_count = htons(g_responder.sub_device_count),
-    .sensor_count = g_responder.sensor_count
+    .sensor_count = g_responder.def ? g_responder.def->sensor_count : 0
   };
 
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           PID_DEVICE_INFO, sizeof(device_info));
+                           ntohs(header->param_id), sizeof(device_info));
   memcpy(g_rdm_buffer + sizeof(RDMHeader),
          (const uint8_t*) &device_info, sizeof(device_info));
   return RDMUtil_AppendChecksum(g_rdm_buffer);
@@ -413,7 +455,7 @@ int RDMResponder_GetProductDetailIds(const RDMHeader *header,
   }
 
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           PID_PRODUCT_DETAIL_ID_LIST, size);
+                           ntohs(header->param_id), size);
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
@@ -458,36 +500,153 @@ int RDMResponder_SetDeviceLabel(const RDMHeader *header,
   return RDMResponder_BuildSetAck(header);
 }
 
-int RDMResponder_GetIdentifyDevice(const RDMHeader *header,
-                                   UNUSED const uint8_t *param_data) {
-  if (header->param_data_length) {
+int RDMResponder_GetSensorDefinition(const RDMHeader *header,
+                                     const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  ReturnUnlessUnicast(header);
+
+  uint8_t sensor_index = param_data[0];
+
+  if (sensor_index >= g_responder.def->sensor_count) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  const SensorDefinition *sensor_ptr = &g_responder.def->sensors[sensor_index];
+
+  struct sensor_definition_s {
+    uint8_t index;
+    uint8_t type;
+    uint8_t unit;
+    uint8_t prefix;
+    int16_t range_minimum_value;
+    int16_t range_maximum_value;
+    int16_t normal_minimum_value;
+    int16_t normal_maximum_value;
+    uint8_t recorded_value_support;
+    char description[RDM_DEFAULT_STRING_SIZE];
+  } __attribute__((packed));
+
+  struct sensor_definition_s sensor_def = {
+    .index = sensor_index,
+    .type = sensor_ptr->type,
+    .unit = sensor_ptr->unit,
+    .prefix = sensor_ptr->prefix,
+    .range_minimum_value = htons(sensor_ptr->range_minimum_value),
+    .range_maximum_value = htons(sensor_ptr->range_maximum_value),
+    .normal_minimum_value = htons(sensor_ptr->normal_minimum_value),
+    .normal_maximum_value = htons(sensor_ptr->normal_maximum_value),
+    .recorded_value_support = sensor_ptr->recorded_value_support
+  };
+
+  // copy description
+  unsigned int str_len = RDMUtil_StringCopy(
+      sensor_def.description, sensor_ptr->description, RDM_DEFAULT_STRING_SIZE);
+
+  unsigned int param_data_size = sizeof(sensor_def) - RDM_DEFAULT_STRING_SIZE +
+                                 str_len;
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           ntohs(header->param_id), param_data_size);
+  memcpy(g_rdm_buffer + sizeof(RDMHeader),
+         (const uint8_t*) &sensor_def, param_data_size);
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_GetSensorValue(const RDMHeader *header,
+                                const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  ReturnUnlessUnicast(header);
+
+  uint8_t sensor_index = param_data[0];
+
+  if (sensor_index >= g_responder.def->sensor_count) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  SensorData *sensor_ptr = &g_responder.sensors[sensor_index];
+
+  if (sensor_ptr->should_nack) {
+    return RDMResponder_BuildNack(header, sensor_ptr->nack_reason);
+  }
+
+  BuildSensorValueResponse(sensor_index, sensor_ptr);
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           ntohs(header->param_id),
+                           SENSOR_VALUE_PARAM_DATA_LENGTH);
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_SetSensorValue(const RDMHeader *header,
+                                const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
+  uint8_t sensor_index = param_data[0];
+  if (sensor_index < g_responder.def->sensor_count) {
+    ResetSensor(sensor_index);
+  } else if (sensor_index == ALL_SENSORS) {
+    unsigned int i = 0;
+    for (; i < g_responder.def->sensor_count; i++) {
+      ResetSensor(i);
+    }
+  } else {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
   ReturnUnlessUnicast(header);
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           PID_IDENTIFY_DEVICE, sizeof(uint8_t));
-  g_rdm_buffer[sizeof(RDMHeader)] = g_responder.identify_on;
+
+  unsigned int offset = sizeof(RDMHeader);
+  if (sensor_index == ALL_SENSORS) {
+    memset(g_rdm_buffer + offset, 0, SENSOR_VALUE_PARAM_DATA_LENGTH);
+  } else {
+    BuildSensorValueResponse(sensor_index, &g_responder.sensors[sensor_index]);
+  }
+
+  RDMResponder_BuildHeader(header, ACK, SET_COMMAND_RESPONSE,
+                           ntohs(header->param_id),
+                           SENSOR_VALUE_PARAM_DATA_LENGTH);
   return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_SetRecordSensor(const RDMHeader *header,
+                                 const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  uint8_t sensor_index = param_data[0];
+  if (sensor_index < g_responder.def->sensor_count) {
+    if (g_responder.def->sensors[sensor_index].recorded_value_support &
+        SENSOR_SUPPORTS_RECORDING_MASK) {
+      RecordSensor(sensor_index);
+      return RDMResponder_BuildSetAck(header);
+    } else {
+      return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+    }
+  } else if (sensor_index == ALL_SENSORS) {
+    unsigned int i = 0;
+    for (; i < g_responder.def->sensor_count; i++) {
+      ResetSensor(i);
+    }
+    return RDMResponder_BuildSetAck(header);
+  } else {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+}
+
+int RDMResponder_GetIdentifyDevice(const RDMHeader *header,
+                                   UNUSED const uint8_t *param_data) {
+  return RDMResponder_GenericGetBool(header, g_responder.identify_on);
 }
 
 int RDMResponder_SetIdentifyDevice(const RDMHeader *header,
                                    const uint8_t *param_data) {
-  if (header->param_data_length != sizeof(uint8_t)) {
-    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
-  }
-  switch (param_data[0]) {
-    case 0:
-      g_responder.identify_on = false;
-      break;
-    case 1:
-      g_responder.identify_on = true;
-      break;
-    default:
-      return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
-  }
-
-  return RDMResponder_BuildSetAck(header);
+  return RDMResponder_GenericSetBool(header, param_data,
+                                     &g_responder.identify_on);
 }
 
 int RDMResponder_HandleDiscovery(const RDMHeader *header,

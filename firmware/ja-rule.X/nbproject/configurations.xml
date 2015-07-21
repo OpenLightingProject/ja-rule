@@ -23,29 +23,30 @@
           </logicalFolder>
         </logicalFolder>
         <itemPath>../src/app.h</itemPath>
-        <itemPath>../src/constants.h</itemPath>
-        <itemPath>../src/message_handler.h</itemPath>
-        <itemPath>../src/stream_decoder.h</itemPath>
-        <itemPath>../src/transport.h</itemPath>
-        <itemPath>../src/flags.h</itemPath>
-        <itemPath>../src/usb_transport.h</itemPath>
-        <itemPath>../src/syslog.h</itemPath>
-        <itemPath>../src/usb_console.h</itemPath>
-        <itemPath>../src/transceiver.h</itemPath>
-        <itemPath>../src/iovec.h</itemPath>
         <itemPath>../src/coarse_timer.h</itemPath>
-        <itemPath>../src/responder.h</itemPath>
-        <itemPath>../src/rdm_responder.h</itemPath>
-        <itemPath>../src/utils.h</itemPath>
-        <itemPath>../src/random.h</itemPath>
-        <itemPath>../src/spi_rgb.h</itemPath>
-        <itemPath>../src/rdm_util.h</itemPath>
-        <itemPath>../src/rdm_handler.h</itemPath>
-        <itemPath>../src/simple_model.h</itemPath>
-        <itemPath>../src/rdm_model.h</itemPath>
+        <itemPath>../src/constants.h</itemPath>
+        <itemPath>../src/flags.h</itemPath>
+        <itemPath>../src/iovec.h</itemPath>
         <itemPath>../src/macros.h</itemPath>
-        <itemPath>../src/rdm_buffer.h</itemPath>
+        <itemPath>../src/message_handler.h</itemPath>
         <itemPath>../src/moving_light.h</itemPath>
+        <itemPath>../src/random.h</itemPath>
+        <itemPath>../src/rdm_buffer.h</itemPath>
+        <itemPath>../src/rdm_handler.h</itemPath>
+        <itemPath>../src/rdm_model.h</itemPath>
+        <itemPath>../src/rdm_responder.h</itemPath>
+        <itemPath>../src/rdm_util.h</itemPath>
+        <itemPath>../src/responder.h</itemPath>
+        <itemPath>../src/sensor_model.h</itemPath>
+        <itemPath>../src/simple_model.h</itemPath>
+        <itemPath>../src/spi_rgb.h</itemPath>
+        <itemPath>../src/stream_decoder.h</itemPath>
+        <itemPath>../src/syslog.h</itemPath>
+        <itemPath>../src/transceiver.h</itemPath>
+        <itemPath>../src/transport.h</itemPath>
+        <itemPath>../src/usb_console.h</itemPath>
+        <itemPath>../src/usb_transport.h</itemPath>
+        <itemPath>../src/utils.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -115,24 +116,25 @@
           </logicalFolder>
         </logicalFolder>
         <itemPath>../src/app.c</itemPath>
+        <itemPath>../src/coarse_timer.c</itemPath>
+        <itemPath>../src/flags.c</itemPath>
         <itemPath>../src/main.c</itemPath>
         <itemPath>../src/message_handler.c</itemPath>
-        <itemPath>../src/stream_decoder.c</itemPath>
-        <itemPath>../src/flags.c</itemPath>
-        <itemPath>../src/usb_transport.c</itemPath>
-        <itemPath>../src/syslog.c</itemPath>
-        <itemPath>../src/usb_console.c</itemPath>
-        <itemPath>../src/transceiver.c</itemPath>
-        <itemPath>../src/coarse_timer.c</itemPath>
-        <itemPath>../src/responder.c</itemPath>
-        <itemPath>../src/rdm_responder.c</itemPath>
-        <itemPath>../src/random.c</itemPath>
-        <itemPath>../src/spi_rgb.c</itemPath>
-        <itemPath>../src/rdm_util.c</itemPath>
-        <itemPath>../src/rdm_handler.c</itemPath>
-        <itemPath>../src/simple_model.c</itemPath>
-        <itemPath>../src/rdm_buffer.c</itemPath>
         <itemPath>../src/moving_light.c</itemPath>
+        <itemPath>../src/random.c</itemPath>
+        <itemPath>../src/rdm_buffer.c</itemPath>
+        <itemPath>../src/rdm_handler.c</itemPath>
+        <itemPath>../src/rdm_responder.c</itemPath>
+        <itemPath>../src/rdm_util.c</itemPath>
+        <itemPath>../src/responder.c</itemPath>
+        <itemPath>../src/sensor_model.c</itemPath>
+        <itemPath>../src/simple_model.c</itemPath>
+        <itemPath>../src/spi_rgb.c</itemPath>
+        <itemPath>../src/stream_decoder.c</itemPath>
+        <itemPath>../src/syslog.c</itemPath>
+        <itemPath>../src/transceiver.c</itemPath>
+        <itemPath>../src/usb_console.c</itemPath>
+        <itemPath>../src/usb_transport.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"

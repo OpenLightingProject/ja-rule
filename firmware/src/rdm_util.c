@@ -70,6 +70,15 @@ int RDMUtil_AppendChecksum(uint8_t *frame) {
   return message_length + RDM_CHECKSUM_LENGTH;
 }
 
+unsigned int RDMUtil_StringCopy(char *dst, const char *src,
+                                unsigned int max_size) {
+  unsigned int size = 0;
+  while ((*dst = *src++) && size < max_size) {
+    size++;
+  }
+  return size;
+}
+
 unsigned int RDMUtil_SafeStringLength(const char *str, unsigned int max_size) {
   unsigned int size = 0;
   while (*str++ && size < max_size) {

@@ -122,6 +122,21 @@ enum {
 };
 
 /**
+ * @brief The recording mask for the recorded value support bit field.
+ */
+enum { SENSOR_SUPPORTS_RECORDING_MASK = 0x01 };
+
+/**
+ * @brief The lowest / highest mask for the recorded value support bit field.
+ */
+enum { SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK = 0x02 };
+
+/**
+ * @brief The all-sensors value.
+ */
+static const uint8_t ALL_SENSORS = 0xff;
+
+/**
  * @brief RDM Command Classes from E1.20.
  * @note See section 6.2.10 of ANSI E1.20 for more information.
  */
@@ -460,7 +475,6 @@ typedef enum {
   LAMP_ON_MODE_ON = 0x02,
   LAMP_ON_MODE_ON_AFTER_CAL = 0x03,
 } RDMLampMode;
-
 
 typedef enum {
   DISPLAY_INVERT_OFF = 0x00,
