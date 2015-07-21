@@ -230,8 +230,8 @@ void MovingLightModel_Initialize(const MovingLightModelSettings *settings) {
   g_moving_light.lamp_strikes = 0;
   g_moving_light.device_power_cycles = 0;
   g_moving_light.lamp_strike_time = 0;
-  g_moving_light.lamp_state = LAMP_OFF ;
-  g_moving_light.lamp_on_mode = LAMP_ON_MODE_ON ;
+  g_moving_light.lamp_state = LAMP_OFF;
+  g_moving_light.lamp_on_mode = LAMP_ON_MODE_ON;
   g_moving_light.display_level = 255;
   g_moving_light.display_invert = false;
   g_moving_light.power_state = POWER_STATE_NORMAL;
