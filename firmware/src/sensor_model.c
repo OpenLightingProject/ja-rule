@@ -29,7 +29,7 @@
 
 // Various constants
 #define SOFTWARE_VERSION 0x00000000
-#define SENSOR_SAMPLE_RATE 100000
+#define SENSOR_SAMPLE_RATE 10000
 
 enum { NUMBER_OF_SENSORS = 3 };
 
