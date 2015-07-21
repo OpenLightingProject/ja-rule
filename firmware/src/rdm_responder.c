@@ -133,6 +133,13 @@ void RDMResponder_BuildHeader(const RDMHeader *incoming_header,
   outgoing_header->param_data_length = param_data_length;
 }
 
+int RDMResponder_BuildSetAck(const RDMHeader *header) {
+  ReturnUnlessUnicast(header);
+  RDMResponder_BuildHeader(header, ACK, SET_COMMAND_RESPONSE,
+                           ntohs(header->param_id), 0);
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
 int RDMResponder_BuildNack(const RDMHeader *header, RDMNackReason reason) {
   ReturnUnlessUnicast(header);
 
@@ -190,6 +197,89 @@ int RDMResponder_GenericReturnString(const RDMHeader *header,
                            ntohs(header->param_id), length);
   memcpy(g_rdm_buffer + sizeof(RDMHeader), reply_string, length);
   return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_GenericGetBool(const RDMHeader *header, bool value) {
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  ReturnUnlessUnicast(header);
+
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           ntohs(header->param_id),
+                           sizeof(uint8_t));
+  g_rdm_buffer[sizeof(RDMHeader)] = value;
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+
+int RDMResponder_GenericSetBool(const RDMHeader *header,
+                                const uint8_t *param_data,
+                                bool *value) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  switch (param_data[0]) {
+    case 0:
+      *value = false;
+      break;
+    case 1:
+      *value = true;
+      break;
+    default:
+      return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+  return RDMResponder_BuildSetAck(header);
+}
+
+int RDMResponder_GenericGetUInt8(const RDMHeader *header, uint8_t value) {
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  ReturnUnlessUnicast(header);
+
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           ntohs(header->param_id),
+                           sizeof(uint8_t));
+  g_rdm_buffer[sizeof(RDMHeader)] = value;
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_GenericSetUInt8(const RDMHeader *header,
+                                 const uint8_t *param_data,
+                                 uint8_t *value) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  *value = param_data[0];
+  return RDMResponder_BuildSetAck(header);
+}
+
+int RDMResponder_GenericGetUInt32(const RDMHeader *header, uint32_t value) {
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  ReturnUnlessUnicast(header);
+
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           ntohs(header->param_id),
+                           sizeof(uint32_t));
+  g_rdm_buffer[sizeof(RDMHeader)] = (value & 0xff000000) >> 24;
+  g_rdm_buffer[sizeof(RDMHeader) + 1] = (value & 0xff0000) >> 16;
+  g_rdm_buffer[sizeof(RDMHeader) + 2] = (value & 0xff00) >> 8;
+  g_rdm_buffer[sizeof(RDMHeader) + 3] = (value & 0xff);
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_GenericSetUInt32(const RDMHeader *header,
+                                  const uint8_t *param_data,
+                                  uint32_t *value) {
+  if (header->param_data_length != sizeof(uint32_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  *value = (param_data[0] << 24) + (param_data[1] << 16) +
+           (param_data[2] << 8) + param_data[3];
+  return RDMResponder_BuildSetAck(header);
 }
 
 int RDMResponder_SetMute(const RDMHeader *header) {
@@ -365,10 +455,7 @@ int RDMResponder_SetDeviceLabel(const RDMHeader *header,
   strncpy(g_responder.device_label, (const char*) param_data, len);
   g_responder.device_label[len] = 0;
 
-  ReturnUnlessUnicast(header);
-  RDMResponder_BuildHeader(header, ACK, SET_COMMAND_RESPONSE,
-                           PID_DEVICE_LABEL, 0);
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_BuildSetAck(header);
 }
 
 int RDMResponder_GetIdentifyDevice(const RDMHeader *header,
@@ -400,10 +487,7 @@ int RDMResponder_SetIdentifyDevice(const RDMHeader *header,
       return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  ReturnUnlessUnicast(header);
-  RDMResponder_BuildHeader(header, ACK, SET_COMMAND_RESPONSE,
-                           PID_IDENTIFY_DEVICE, 0);
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_BuildSetAck(header);
 }
 
 int RDMResponder_HandleDiscovery(const RDMHeader *header,

@@ -445,6 +445,36 @@ typedef enum {
   PRODUCT_DETAIL_OTHER = 0x7fff,
 } __attribute__((packed)) RDMProductDetail;
 
+typedef enum {
+  LAMP_OFF = 0x00,
+  LAMP_ON = 0x01,
+  LAMP_STRIKE = 0x02,
+  LAMP_STANDBY = 0x03,
+  LAMP_NOT_PRESENT = 0x04,
+  LAMP_ERROR = 0x7f,
+} RDMLampState;
+
+typedef enum {
+  LAMP_ON_MODE_OFF = 0x00,
+  LAMP_ON_MODE_DMX = 0x01,
+  LAMP_ON_MODE_ON = 0x02,
+  LAMP_ON_MODE_ON_AFTER_CAL = 0x03,
+} RDMLampMode;
+
+
+typedef enum {
+  DISPLAY_INVERT_OFF = 0x00,
+  DISPLAY_INVERT_ON = 0x01,
+  DISPLAY_INVERT_AUTO = 0x02,
+} RDMDisplayInvert;
+
+typedef enum {
+  POWER_STATE_FULL_OFF = 0x00,
+  POWER_STATE_SHUTDOWN = 0x01,
+  POWER_STATE_STANDBY = 0x02,
+  POWER_STATE_NORMAL = 0xff,
+} RDMPowerState;
+
 #ifdef __cplusplus
 }
 #endif

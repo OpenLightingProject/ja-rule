@@ -45,6 +45,7 @@
         <itemPath>../src/rdm_model.h</itemPath>
         <itemPath>../src/macros.h</itemPath>
         <itemPath>../src/rdm_buffer.h</itemPath>
+        <itemPath>../src/moving_light.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -131,6 +132,7 @@
         <itemPath>../src/rdm_handler.c</itemPath>
         <itemPath>../src/simple_model.c</itemPath>
         <itemPath>../src/rdm_buffer.c</itemPath>
+        <itemPath>../src/moving_light.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
