@@ -23,6 +23,7 @@
 
 #include "coarse_timer.h"
 #include "message_handler.h"
+#include "moving_light.h"
 #include "rdm.h"
 #include "rdm_handler.h"
 #include "simple_model.h"
@@ -83,6 +84,10 @@ void APP_Initialize(void) {
   };
   SimpleModel_Initialize(&simple_model_settings);
   RDMHandler_AddModel(&SIMPLE_MODEL_ENTRY);
+
+  MovingLightModelSettings moving_light_settings = {};
+  MovingLightModel_Initialize(&moving_light_settings);
+  RDMHandler_AddModel(&MOVING_LIGHT_MODEL_ENTRY);
 
   // Initialize the Host message layers.
   MessageHandler_Initialize(NULL);

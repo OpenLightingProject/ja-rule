@@ -192,7 +192,14 @@ int RDMResponder_HandleDiscovery(const RDMHeader *incoming_header,
                                  const uint8_t *param_data);
 
 /**
- * @brief Send a RDM NACK.
+ * @brief Build an RDM Set ACK with no param data.
+ * @param incoming_header The header of the incoming frame.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_BuildSetAck(const RDMHeader *incoming_header);
+
+/**
+ * @brief Build an RDM NACK.
  * @param incoming_header The header of the incoming frame.
  * @param reason The NACK reason code.
  * @returns The size of the RDM response frame.
@@ -227,6 +234,66 @@ int RDMResponder_DispatchPID(const RDMHeader *incoming_header,
 int RDMResponder_GenericReturnString(const RDMHeader *incoming_header,
                                      const char *reply_string,
                                      unsigned int max_size);
+
+/**
+ * @brief Handle a request to get a bool value.
+ * @param incoming_header The header of the incoming frame.
+ * @param value The bool value
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GenericGetBool(const RDMHeader *incoming_header,
+                                bool value);
+
+/**
+ * @brief Handle a request to set a bool value.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @param value The bool value to set
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GenericSetBool(const RDMHeader *incoming_header,
+                                const uint8_t *param_data,
+                                bool *value);
+
+/**
+ * @brief Handle a request to get a uint8_t value.
+ * @param incoming_header The header of the incoming frame.
+ * @param value The uint8_t value to return.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GenericGetUInt8(const RDMHeader *incoming_header,
+                                 uint8_t value);
+
+/**
+ * @brief Handle a request to set a uint8_t value.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @param value The uint8_t value to set.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GenericSetUInt8(const RDMHeader *incoming_header,
+                                 const uint8_t *param_data,
+                                 uint8_t *value);
+
+/**
+ * @brief Handle a request to get a uint32_t value.
+ * @param incoming_header The header of the incoming frame.
+ * @param value The unsigned int value
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GenericGetUInt32(const RDMHeader *incoming_header,
+                                  uint32_t value);
+
+/**
+ * @brief Handle a request to set a uint32_t value.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @param value The uint32_t value to set
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GenericSetUInt32(const RDMHeader *incoming_header,
+                                  const uint8_t *param_data,
+                                  uint32_t *value);
 
 /**
  * @brief Handle a SET MUTE request.
