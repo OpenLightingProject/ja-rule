@@ -76,7 +76,7 @@ typedef enum {
  * @brief Model ioctl enums.
  *
  * Ioctls are the generic 'catch-all' operations. We use them so we can reduce
- * the number of functions we need to implement each models.
+ * the number of functions we need to implement when adding a new model.
  */
 typedef enum {
   /**

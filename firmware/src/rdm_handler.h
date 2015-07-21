@@ -27,7 +27,7 @@
  *
  * Only a single model can be active at once, the PID_DEVICE_MODEL parameter
  * can be used to change models at run time. Note that PID_DEVICE_MODEL and
- * PID_DEVICE_MODEL_LIST aren't included in SUPPORTED_PARAMETERS so there are
+ * PID_DEVICE_MODEL_LIST aren't included in SUPPORTED_PARAMETERS so they are
  * 'hidden' PIDs.
  *
  * @addtogroup rdm_handler
