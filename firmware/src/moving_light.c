@@ -63,7 +63,6 @@ static MovingLightModel g_moving_light;
 // ----------------------------------------------------------------------------
 int MovingLightModel_GetBool(const RDMHeader *header,
                              UNUSED const uint8_t *param_data) {
-  uint16_t pid = ntohs(header->param_id);
   switch (ntohs(header->param_id)) {
     case PID_PAN_INVERT:
       return RDMResponder_GenericGetBool(header, g_moving_light.pan_invert);
@@ -93,17 +92,16 @@ int MovingLightModel_SetBool(const RDMHeader *header,
   }
 }
 
-int MovingLightModel_GetUint8(const RDMHeader *header,
+int MovingLightModel_GetUInt8(const RDMHeader *header,
                               UNUSED const uint8_t *param_data) {
-  uint16_t pid = ntohs(header->param_id);
   switch (ntohs(header->param_id)) {
     case PID_LAMP_STATE:
       return RDMResponder_GenericGetUInt8(header, g_moving_light.lamp_state);
     case PID_LAMP_ON_MODE:
       return RDMResponder_GenericGetUInt8(header, g_moving_light.lamp_on_mode);
     case PID_DISPLAY_INVERT:
-      return RDMResponder_GenericGetUInt8(
-          header, g_moving_light.display_invert);
+      return RDMResponder_GenericGetUInt8(header,
+                                          g_moving_light.display_invert);
     case PID_DISPLAY_LEVEL:
       return RDMResponder_GenericGetUInt8(header, g_moving_light.display_level);
     case PID_POWER_STATE:
@@ -113,9 +111,8 @@ int MovingLightModel_GetUint8(const RDMHeader *header,
   }
 }
 
-int MovingLightModel_SetUint8(const RDMHeader *header,
+int MovingLightModel_SetUInt8(const RDMHeader *header,
                               const uint8_t *param_data) {
-  uint16_t pid = ntohs(header->param_id);
   switch (ntohs(header->param_id)) {
     case PID_DISPLAY_LEVEL:
       return RDMResponder_GenericSetUInt8(header, param_data,
@@ -125,9 +122,8 @@ int MovingLightModel_SetUint8(const RDMHeader *header,
   }
 }
 
-int MovingLightModel_GetUint32(const RDMHeader *header,
+int MovingLightModel_GetUInt32(const RDMHeader *header,
                                UNUSED const uint8_t *param_data) {
-  uint16_t pid = ntohs(header->param_id);
   switch (ntohs(header->param_id)) {
     case PID_DEVICE_HOURS:
       return RDMResponder_GenericGetUInt32(header, g_moving_light.device_hours);
@@ -143,7 +139,7 @@ int MovingLightModel_GetUint32(const RDMHeader *header,
   }
 }
 
-int MovingLightModel_SetUint32(const RDMHeader *header,
+int MovingLightModel_SetUInt32(const RDMHeader *header,
                                const uint8_t *param_data) {
   switch (ntohs(header->param_id)) {
     case PID_DEVICE_HOURS:
@@ -322,27 +318,28 @@ static const PIDDescriptor PID_DESCRIPTORS[] = {
   {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, RDMResponder_SetDeviceLabel},
   {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_HOURS, MovingLightModel_GetUint32, MovingLightModel_SetUint32},
-  {PID_LAMP_HOURS, MovingLightModel_GetUint32, MovingLightModel_SetUint32},
-  {PID_LAMP_STRIKES, MovingLightModel_GetUint32, MovingLightModel_SetUint32},
-  {PID_LAMP_STATE, MovingLightModel_GetUint8, MovingLightModel_SetLampState},
-  {PID_LAMP_ON_MODE, MovingLightModel_GetUint8, MovingLightModel_SetLampOnMode},
-  {PID_DEVICE_POWER_CYCLES, MovingLightModel_GetUint32,
-    MovingLightModel_SetUint32},
-  {PID_DISPLAY_INVERT, MovingLightModel_GetUint8,
+  {PID_DEVICE_HOURS, MovingLightModel_GetUInt32, MovingLightModel_SetUInt32},
+  {PID_LAMP_HOURS, MovingLightModel_GetUInt32, MovingLightModel_SetUInt32},
+  {PID_LAMP_STRIKES, MovingLightModel_GetUInt32, MovingLightModel_SetUInt32},
+  {PID_LAMP_STATE, MovingLightModel_GetUInt8, MovingLightModel_SetLampState},
+  {PID_LAMP_ON_MODE, MovingLightModel_GetUInt8, MovingLightModel_SetLampOnMode},
+  {PID_DEVICE_POWER_CYCLES, MovingLightModel_GetUInt32,
+    MovingLightModel_SetUInt32},
+  {PID_DISPLAY_INVERT, MovingLightModel_GetUInt8,
     MovingLightModel_SetDisplayInvert},
-  {PID_DISPLAY_LEVEL, MovingLightModel_GetUint8, MovingLightModel_SetUint8},
+  {PID_DISPLAY_LEVEL, MovingLightModel_GetUInt8, MovingLightModel_SetUInt8},
   {PID_PAN_INVERT, MovingLightModel_GetBool, MovingLightModel_SetBool},
   {PID_TILT_INVERT, MovingLightModel_GetBool, MovingLightModel_SetBool},
   {PID_PAN_TILT_SWAP, MovingLightModel_GetBool, MovingLightModel_SetBool},
   {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice,
     RDMResponder_SetIdentifyDevice},
-  {PID_POWER_STATE, MovingLightModel_GetUint8, MovingLightModel_SetPowerState}
+  {PID_POWER_STATE, MovingLightModel_GetUInt8, MovingLightModel_SetPowerState}
 };
 
 static const ProductDetailIds PRODUCT_DETAIL_ID_LIST = {
-  .ids = {PRODUCT_DETAIL_TEST, PRODUCT_DETAIL_CHANGEOVER_MANUAL},
-  .size = 2
+  .ids = {PRODUCT_DETAIL_TEST, PRODUCT_DETAIL_CHANGEOVER_MANUAL,
+          PRODUCT_DETAIL_LED},
+  .size = 3
 };
 
 static const ResponderDefinition RESPONDER_DEFINITION = {
