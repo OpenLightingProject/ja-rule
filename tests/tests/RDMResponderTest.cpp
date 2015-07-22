@@ -24,6 +24,7 @@
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMCommandSerializer.h>
+#include <ola/network/NetworkUtils.h>
 #include <string.h>
 #include <memory>
 
@@ -35,6 +36,7 @@
 #include "MessageHandlerMock.h"
 #include "TestHelpers.h"
 
+using ola::network::HostToNetwork;
 using ola::rdm::UID;
 using ola::rdm::GetResponseFromData;
 using ola::rdm::NewDiscoveryUniqueBranchRequest;
@@ -556,7 +558,7 @@ TEST_F(RDMResponderTest, testGenericUInt32) {
       nullptr, 0));
 
   uint32_t level = 12345;
-  uint32_t network_order_level = htonl(level);
+  uint32_t network_order_level = HostToNetwork(level);
 
   unique_ptr<RDMResponse> response(GetResponseFromData(
         request.get(), reinterpret_cast<const uint8_t*>(&network_order_level),
@@ -567,7 +569,7 @@ TEST_F(RDMResponderTest, testGenericUInt32) {
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
   level = 1000000;
-  network_order_level = htonl(level);
+  network_order_level = HostToNetwork(level);
   request.reset(new RDMSetRequest(
       m_controller_uid, m_our_uid, 0, 0, 0, PID_LAMP_HOURS,
       reinterpret_cast<const uint8_t*>(&network_order_level),
