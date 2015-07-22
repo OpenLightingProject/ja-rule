@@ -48,7 +48,7 @@ static inline void RecordSensor(unsigned int i) {
   if (g_responder.def->sensors[i].recorded_value_support &
       SENSOR_SUPPORTS_RECORDING_MASK) {
     g_responder.sensors[i].recorded_value =
-      g_responder.sensors[i].present_value;
+        g_responder.sensors[i].present_value;
   }
 }
 
@@ -61,8 +61,8 @@ static void ResetSensor(unsigned int i) {
     g_responder.sensors[i].lowest_value = g_responder.sensors[i].present_value;
     g_responder.sensors[i].highest_value = g_responder.sensors[i].present_value;
   } else {
-    g_responder.sensors[i].lowest_value = 0;
-    g_responder.sensors[i].highest_value = 0;
+    g_responder.sensors[i].lowest_value = SENSOR_VALUE_UNSUPPORTED;
+    g_responder.sensors[i].highest_value = SENSOR_VALUE_UNSUPPORTED;
   }
 
   if (g_responder.def->sensors[i].recorded_value_support &
@@ -70,7 +70,7 @@ static void ResetSensor(unsigned int i) {
     g_responder.sensors[i].recorded_value =
       g_responder.sensors[i].present_value;
   } else {
-    g_responder.sensors[i].recorded_value = 0;
+    g_responder.sensors[i].recorded_value = SENSOR_VALUE_UNSUPPORTED;
   }
 }
 
@@ -110,12 +110,9 @@ void RDMResponder_ResetToFactoryDefaults() {
   g_responder.sensors = NULL;
 
   if (g_responder.def) {
-    unsigned int len = RDMUtil_StringCopy(
-        g_responder.device_label,
-        RDM_DEFAULT_STRING_SIZE,
-        g_responder.def->default_device_label,
-        RDM_DEFAULT_STRING_SIZE);
-    g_responder.device_label[len] = 0;
+    RDMUtil_StringCopy(g_responder.device_label, RDM_DEFAULT_STRING_SIZE,
+                       g_responder.def->default_device_label,
+                       RDM_DEFAULT_STRING_SIZE);
   }
 
   g_responder.using_factory_defaults = true;
@@ -639,7 +636,7 @@ int RDMResponder_SetRecordSensor(const RDMHeader *header,
   } else if (sensor_index == ALL_SENSORS) {
     unsigned int i = 0;
     for (; i < g_responder.def->sensor_count; i++) {
-      ResetSensor(i);
+      RecordSensor(i);
     }
     return RDMResponder_BuildSetAck(header);
   } else {

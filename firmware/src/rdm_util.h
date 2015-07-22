@@ -123,6 +123,17 @@ unsigned int RDMUtil_StringCopy(char *dst, unsigned int dest_size,
  */
 unsigned int RDMUtil_SafeStringLength(const char *str, unsigned int max_size);
 
+/**
+ * @brief Update the value of a sensor, setting the lowest / highest values if
+ * appropriate.
+ * @param sensor The sensor to update
+ * @param recorded_value_support The bitfield to check if the sensor supports
+ *   recording.
+ * @param new_value The new value of the sensor.
+ */
+void RDMUtil_UpdateSensor(SensorData *sensor, uint8_t recorded_value_support,
+                          int16_t new_value);
+
 #ifdef __cplusplus
 }
 #endif

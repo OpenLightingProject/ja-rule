@@ -21,6 +21,7 @@
 #include <gtest/gtest.h>
 
 #include "rdm_util.h"
+#include "rdm_responder.h"
 #include "Array.h"
 #include "Matchers.h"
 
@@ -143,6 +144,42 @@ TEST_F(RDMUtilTest, testSafeStringLength) {
   const char test_string[] = "this is a test";
   EXPECT_EQ(4u, RDMUtil_SafeStringLength(test_string, 4));
   EXPECT_EQ(14u, RDMUtil_SafeStringLength(test_string, arraysize(test_string)));
+}
+
+TEST_F(RDMUtilTest, testUpdateSensor) {
+  SensorData sensor = {
+    .present_value = 14,
+    .lowest_value = SENSOR_VALUE_UNSUPPORTED,
+    .highest_value = SENSOR_VALUE_UNSUPPORTED
+  };
+
+  int16_t new_value = 99;
+  // A sensor that doesn't support recording
+  RDMUtil_UpdateSensor(&sensor, 0, new_value);
+  EXPECT_EQ(new_value, sensor.present_value);
+  EXPECT_EQ(0, sensor.lowest_value);
+  EXPECT_EQ(0, sensor.highest_value);
+
+  // A sensor that supports recording
+  new_value = 52;
+  sensor.lowest_value = sensor.present_value;
+  sensor.highest_value = sensor.present_value;
+  RDMUtil_UpdateSensor(&sensor, SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK, new_value);
+  EXPECT_EQ(new_value, sensor.present_value);
+  EXPECT_EQ(52, sensor.lowest_value);
+  EXPECT_EQ(99, sensor.highest_value);
+
+  new_value = 434;
+  RDMUtil_UpdateSensor(&sensor, SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK, new_value);
+  EXPECT_EQ(new_value, sensor.present_value);
+  EXPECT_EQ(52, sensor.lowest_value);
+  EXPECT_EQ(434, sensor.highest_value);
+
+  new_value = 7;
+  RDMUtil_UpdateSensor(&sensor, SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK, new_value);
+  EXPECT_EQ(new_value, sensor.present_value);
+  EXPECT_EQ(7, sensor.lowest_value);
+  EXPECT_EQ(434, sensor.highest_value);
 }
 
 // Tests for RDMUtil_VerifyChecksum

@@ -137,6 +137,11 @@ enum { SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK = 0x02 };
 static const uint8_t ALL_SENSORS = 0xff;
 
 /**
+ * @brief Indicates that recorded / highest / lowest values aren't supported.
+ */
+static const uint16_t SENSOR_VALUE_UNSUPPORTED = 0;
+
+/**
  * @brief RDM Command Classes from E1.20.
  * @note See section 6.2.10 of ANSI E1.20 for more information.
  */

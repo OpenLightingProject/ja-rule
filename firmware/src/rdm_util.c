@@ -90,3 +90,15 @@ unsigned int RDMUtil_SafeStringLength(const char *str, unsigned int max_size) {
   return size;
 }
 
+void RDMUtil_UpdateSensor(SensorData *sensor, uint8_t recorded_value_support,
+                          int16_t new_value) {
+  sensor->present_value = new_value;
+  if (recorded_value_support & SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK) {
+    if (new_value < sensor->lowest_value) {
+      sensor->lowest_value = new_value;
+    }
+    if (new_value > sensor->highest_value) {
+      sensor->highest_value = new_value;
+    }
+  }
+}

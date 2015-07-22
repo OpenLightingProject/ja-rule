@@ -61,13 +61,10 @@ void SampleSensors() {
         RESPONDER_DEFINITION.sensors[i].range_maximum_value -
         RESPONDER_DEFINITION.sensors[i].range_minimum_value)) +
         RESPONDER_DEFINITION.sensors[i].range_minimum_value;
-    g_sensor_model.sensors[i].present_value = new_value;
-    if (new_value < g_sensor_model.sensors[i].lowest_value) {
-      g_sensor_model.sensors[i].lowest_value = new_value;
-    }
-    if (new_value > g_sensor_model.sensors[i].highest_value) {
-      g_sensor_model.sensors[i].highest_value = new_value;
-    }
+    RDMUtil_UpdateSensor(
+        &g_sensor_model.sensors[i],
+        RESPONDER_DEFINITION.sensors[i].recorded_value_support,
+        new_value);
   }
 }
 
@@ -84,7 +81,7 @@ static void SensorModel_Activate() {
     g_sensor_model.sensors[i].highest_value = 0;
     g_sensor_model.sensors[i].recorded_value = 0;
     if (i == 1) {
-      // Sensor 1 always nacks with a HARDWARE_FAULT
+      // The 2nd sensor (index 1) always nacks with a HARDWARE_FAULT
       g_sensor_model.sensors[i].should_nack = true;
       g_sensor_model.sensors[i].nack_reason = NR_HARDWARE_FAULT;
     } else {
