@@ -88,6 +88,11 @@ static const uint8_t RDM_PARAM_DATA_OFFSET = 24;
 static const uint16_t RDM_VERSION = 0x0100;
 
 /**
+ * @brief The maximum value for a DMX start address.
+ */
+static const uint16_t MAX_DMX_START_ADDRESS = 512;
+
+/**
  * @brief The 'unpatched' DMX start address.
  */
 static const uint16_t INVALID_DMX_START_ADDRESS = 0xffff;

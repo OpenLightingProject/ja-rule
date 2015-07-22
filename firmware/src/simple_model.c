@@ -213,6 +213,10 @@ static const ProductDetailIds PRODUCT_DETAIL_ID_LIST = {
 static const ResponderDefinition RESPONDER_DEFINITION = {
   .descriptors = PID_DESCRIPTORS,
   .descriptor_count = sizeof(PID_DESCRIPTORS) / sizeof(PIDDescriptor),
+  .sensors = NULL,
+  .sensor_count = 0,
+  .personalities = NULL,
+  .personality_count = 0,
   .software_version_label = SOFTWARE_LABEL,
   .manufacturer_label = MANUFACTURER_LABEL,
   .model_description = DEVICE_MODEL_DESCRIPTION,
@@ -221,6 +225,4 @@ static const ResponderDefinition RESPONDER_DEFINITION = {
   .software_version = SOFTWARE_VERSION,
   .model_id = BASIC_RESPONDER_MODEL_ID,
   .product_category = PRODUCT_CATEGORY_TEST_EQUIPMENT,
-  .sensors = NULL,
-  .sensor_count = 0
 };
