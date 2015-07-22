@@ -150,7 +150,10 @@ TEST_F(RDMUtilTest, testUpdateSensor) {
   SensorData sensor = {
     .present_value = 14,
     .lowest_value = SENSOR_VALUE_UNSUPPORTED,
-    .highest_value = SENSOR_VALUE_UNSUPPORTED
+    .highest_value = SENSOR_VALUE_UNSUPPORTED,
+    .recorded_value = 0,
+    .nack_reason = NR_HARDWARE_FAULT,
+    .should_nack = false
   };
 
   int16_t new_value = 99;
