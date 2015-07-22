@@ -243,10 +243,6 @@ void MovingLightModel_Initialize(const MovingLightModelSettings *settings) {
 static void MovingLightModel_Activate() {
   g_responder.def = &RESPONDER_DEFINITION;
   RDMResponder_ResetToFactoryDefaults();
-
-  g_moving_light.pan_invert = false;
-  g_moving_light.tilt_invert = false;
-  g_moving_light.pan_tilt_swap = false;
 }
 
 static void MovingLightModel_Deactivate() {
@@ -328,6 +324,12 @@ static const PIDDescriptor PID_DESCRIPTORS[] = {
     (PIDCommandHandler) NULL},
   {PID_DMX_START_ADDRESS, RDMResponder_GetDMXStartAddress,
     RDMResponder_SetDMXStartAddress},
+  {PID_SLOT_INFO, RDMResponder_GetSlotInfo,
+    (PIDCommandHandler) NULL},
+  {PID_SLOT_DESCRIPTION, RDMResponder_GetSlotDescription,
+    (PIDCommandHandler) NULL},
+  {PID_DEFAULT_SLOT_VALUE, RDMResponder_GetDefaultSlotValue,
+    (PIDCommandHandler) NULL},
   {PID_DEVICE_HOURS, MovingLightModel_GetUInt32, MovingLightModel_SetUInt32},
   {PID_LAMP_HOURS, MovingLightModel_GetUInt32, MovingLightModel_SetUInt32},
   {PID_LAMP_STRIKES, MovingLightModel_GetUInt32, MovingLightModel_SetUInt32},
@@ -352,14 +354,91 @@ static const ProductDetailIds PRODUCT_DETAIL_ID_LIST = {
   .size = 3
 };
 
+static const char SLOT_DIMMER_DESCRIPTION[] = "Dimmer";
+static const char SLOT_PAN_DESCRIPTION[] = "Pan";
+static const char SLOT_PAN_FINE_DESCRIPTION[] = "Pan (Fine)";
+static const char SLOT_TILT_DESCRIPTION[] = "Tilt";
+static const char SLOT_TILT_FINE_DESCRIPTION[] = "Tilt (Fine)";
+static const char SLOT_COLOR_DESCRIPTION[] = "Color Wheel";
+
+static const SlotDefinition PERSONALITY_SLOTS1[] = {
+  {
+    .description = SLOT_DIMMER_DESCRIPTION,
+    .slot_label_id = SD_INTENSITY,
+    .slot_type = ST_PRIMARY,
+    .default_value = 0,
+  },
+  {
+    .description = SLOT_PAN_DESCRIPTION,
+    .slot_label_id = SD_PAN,
+    .slot_type = ST_PRIMARY,
+    .default_value = 0,
+  },
+  {
+    .description = SLOT_TILT_DESCRIPTION,
+    .slot_label_id = SD_TILT,
+    .slot_type = ST_PRIMARY,
+    .default_value = 0,
+  },
+  {
+    .description = SLOT_COLOR_DESCRIPTION,
+    .slot_label_id = SD_COLOR_WHEEL,
+    .slot_type = ST_PRIMARY,
+    .default_value = 0,
+  }
+};
+
+static const SlotDefinition PERSONALITY_SLOTS2[] = {
+  {
+    .description = SLOT_DIMMER_DESCRIPTION,
+    .slot_label_id = SD_INTENSITY,
+    .slot_type = ST_PRIMARY,
+    .default_value = 0,
+  },
+  {
+    .description = SLOT_PAN_DESCRIPTION,
+    .slot_label_id = SD_PAN,
+    .slot_type = ST_PRIMARY,
+    .default_value = 0,
+  },
+  {
+    .description = SLOT_PAN_FINE_DESCRIPTION,
+    .slot_label_id = 1,
+    .slot_type = ST_SEC_FINE,
+    .default_value = 0,
+  },
+  {
+    .description = SLOT_TILT_DESCRIPTION,
+    .slot_label_id = SD_TILT,
+    .slot_type = ST_PRIMARY,
+    .default_value = 0,
+  },
+  {
+    .description = SLOT_TILT_FINE_DESCRIPTION,
+    .slot_label_id = 3,
+    .slot_type = ST_SEC_FINE,
+    .default_value = 0,
+  },
+  {
+    .description = SLOT_COLOR_DESCRIPTION,
+    .slot_label_id = SD_COLOR_WHEEL,
+    .slot_type = ST_PRIMARY,
+    .default_value = 0,
+  }
+};
+
 static const PersonalityDefinition PERSONALITIES[PERSONALITY_COUNT] = {
   {
     .dmx_footprint = 4,
-    .description = PERSONALITY_DESCRIPTION1
+    .description = PERSONALITY_DESCRIPTION1,
+    .slots = PERSONALITY_SLOTS1,
+    .slot_count = 4
   },
   {
     .dmx_footprint = 6,
-    .description = PERSONALITY_DESCRIPTION2
+    .description = PERSONALITY_DESCRIPTION2,
+    .slots = PERSONALITY_SLOTS2,
+    .slot_count = 6
   }
 };
 
