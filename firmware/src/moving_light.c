@@ -32,9 +32,13 @@
 #define LAMP_STRIKE_DELAY 50000
 #define SOFTWARE_VERSION 0x00000000
 
+enum {PERSONALITY_COUNT = 2};
+
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Moving Light";
 static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Default Label";
+static const char PERSONALITY_DESCRIPTION1[] = "8-bit mode";
+static const char PERSONALITY_DESCRIPTION2[] = "16-bit mode";
 
 static const ResponderDefinition RESPONDER_DEFINITION;
 
@@ -318,6 +322,12 @@ static const PIDDescriptor PID_DESCRIPTORS[] = {
   {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, RDMResponder_SetDeviceLabel},
   {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel,
     (PIDCommandHandler) NULL},
+  {PID_DMX_PERSONALITY, RDMResponder_GetDMXPersonality,
+    RDMResponder_SetDMXPersonality},
+  {PID_DMX_PERSONALITY_DESCRIPTION, RDMResponder_GetDMXPersonalityDescription,
+    (PIDCommandHandler) NULL},
+  {PID_DMX_START_ADDRESS, RDMResponder_GetDMXStartAddress,
+    RDMResponder_SetDMXStartAddress},
   {PID_DEVICE_HOURS, MovingLightModel_GetUInt32, MovingLightModel_SetUInt32},
   {PID_LAMP_HOURS, MovingLightModel_GetUInt32, MovingLightModel_SetUInt32},
   {PID_LAMP_STRIKES, MovingLightModel_GetUInt32, MovingLightModel_SetUInt32},
@@ -342,9 +352,24 @@ static const ProductDetailIds PRODUCT_DETAIL_ID_LIST = {
   .size = 3
 };
 
+static const PersonalityDefinition PERSONALITIES[PERSONALITY_COUNT] = {
+  {
+    .dmx_footprint = 4,
+    .description = PERSONALITY_DESCRIPTION1
+  },
+  {
+    .dmx_footprint = 6,
+    .description = PERSONALITY_DESCRIPTION2
+  }
+};
+
 static const ResponderDefinition RESPONDER_DEFINITION = {
   .descriptors = PID_DESCRIPTORS,
   .descriptor_count = sizeof(PID_DESCRIPTORS) / sizeof(PIDDescriptor),
+  .sensors = NULL,
+  .sensor_count = 0,
+  .personalities = PERSONALITIES,
+  .personality_count = PERSONALITY_COUNT,
   .software_version_label = SOFTWARE_LABEL,
   .manufacturer_label = MANUFACTURER_LABEL,
   .model_description = DEVICE_MODEL_DESCRIPTION,
@@ -352,7 +377,5 @@ static const ResponderDefinition RESPONDER_DEFINITION = {
   .default_device_label = DEFAULT_DEVICE_LABEL,
   .software_version = SOFTWARE_VERSION,
   .model_id = MOVING_LIGHT_MODEL_ID,
-  .product_category = PRODUCT_CATEGORY_TEST_EQUIPMENT,
-  .sensors = NULL,
-  .sensor_count = 0
+  .product_category = PRODUCT_CATEGORY_TEST_EQUIPMENT
 };

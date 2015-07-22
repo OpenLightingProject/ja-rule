@@ -101,10 +101,8 @@ void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]) {
 void RDMResponder_ResetToFactoryDefaults() {
   g_responder.queued_message_count = 0;
   g_responder.dmx_start_address = INVALID_DMX_START_ADDRESS;
-  g_responder.dmx_footprint = 0;
   g_responder.sub_device_count = 0;
   g_responder.current_personality = 0;
-  g_responder.personality_count = 0;
   g_responder.is_muted = false;
   g_responder.identify_on = false;
   g_responder.sensors = NULL;
@@ -113,6 +111,10 @@ void RDMResponder_ResetToFactoryDefaults() {
     RDMUtil_StringCopy(g_responder.device_label, RDM_DEFAULT_STRING_SIZE,
                        g_responder.def->default_device_label,
                        RDM_DEFAULT_STRING_SIZE);
+    if (g_responder.def->personality_count) {
+      g_responder.current_personality = 1;
+      g_responder.dmx_start_address = 1;
+    }
   }
 
   g_responder.using_factory_defaults = true;
@@ -419,17 +421,23 @@ int RDMResponder_GetDeviceInfo(const RDMHeader *header,
     uint8_t sensor_count;
   } __attribute__((packed));
 
+  uint16_t dmx_footprint = 0;
+  if (g_responder.def->personalities) {
+    dmx_footprint = g_responder.def->personalities[
+        g_responder.current_personality - 1].dmx_footprint;
+  }
+
   struct device_info_s device_info = {
     .rdm_version = htons(RDM_VERSION),
     .model = htons(g_responder.def->model_id),
     .product_category = htons(g_responder.def->product_category),
     .software_version = htonl(g_responder.def->software_version),
-    .dmx_footprint = htons(g_responder.dmx_footprint),
+    .dmx_footprint = htons(dmx_footprint),
     .current_personality = g_responder.current_personality,
-    .personality_count = g_responder.personality_count,
+    .personality_count = g_responder.def->personality_count,
     .dmx_start_address = htons(g_responder.dmx_start_address),
     .sub_device_count = htons(g_responder.sub_device_count),
-    .sensor_count = g_responder.def ? g_responder.def->sensor_count : 0
+    .sensor_count = g_responder.def->sensor_count,
   };
 
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
@@ -502,6 +510,104 @@ int RDMResponder_SetDeviceLabel(const RDMHeader *header,
   }
   RDMUtil_StringCopy(g_responder.device_label, RDM_DEFAULT_STRING_SIZE,
                      (const char*) param_data, header->param_data_length);
+  return RDMResponder_BuildSetAck(header);
+}
+
+int RDMResponder_GetDMXPersonality(const RDMHeader *header,
+                                   UNUSED const uint8_t *param_data) {
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  ReturnUnlessUnicast(header);
+
+  unsigned int offset = sizeof(RDMHeader);
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           ntohs(header->param_id), sizeof(uint16_t));
+  g_rdm_buffer[offset++] = g_responder.current_personality;
+  g_rdm_buffer[offset++] = g_responder.def->personality_count;
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_SetDMXPersonality(const RDMHeader *header,
+                                   const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  uint8_t new_personality = param_data[0];
+  if (new_personality == 0 ||
+      new_personality > g_responder.def->personality_count) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  g_responder.current_personality = new_personality;
+  return RDMResponder_BuildSetAck(header);
+}
+
+int RDMResponder_GetDMXPersonalityDescription(const RDMHeader *header,
+                                              const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  uint8_t index = param_data[0];
+  if (index == 0 || index > g_responder.def->personality_count) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  if (!g_responder.def->personalities) {
+    return RDMResponder_BuildNack(header, NR_HARDWARE_FAULT);
+  }
+
+  ReturnUnlessUnicast(header);
+  const PersonalityDefinition *personality =
+      &g_responder.def->personalities[index - 1];
+
+
+  unsigned int offset = sizeof(RDMHeader);
+  g_rdm_buffer[offset++] = index;
+  g_rdm_buffer[offset++] = ShortMSB(personality->dmx_footprint);
+  g_rdm_buffer[offset++] = ShortLSB(personality->dmx_footprint);
+  offset += RDMUtil_StringCopy((char*) g_rdm_buffer + offset,
+                               RDM_DEFAULT_STRING_SIZE,
+                               personality->description,
+                               RDM_DEFAULT_STRING_SIZE);
+
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           ntohs(header->param_id),
+                           offset - sizeof(RDMHeader));
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_GetDMXStartAddress(const RDMHeader *header,
+                                    UNUSED const uint8_t *param_data) {
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  ReturnUnlessUnicast(header);
+
+  unsigned int offset = sizeof(RDMHeader);
+  g_rdm_buffer[offset++] = ShortMSB(g_responder.dmx_start_address);
+  g_rdm_buffer[offset++] = ShortLSB(g_responder.dmx_start_address);
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           ntohs(header->param_id),
+                           offset - sizeof(RDMHeader));
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_SetDMXStartAddress(const RDMHeader *header,
+                                    const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint16_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  uint16_t address = JoinShort(param_data[0], param_data[1]);
+  if (address == 0 || address > MAX_DMX_START_ADDRESS) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  g_responder.dmx_start_address = address;
   return RDMResponder_BuildSetAck(header);
 }
 

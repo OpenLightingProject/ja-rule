@@ -23,15 +23,22 @@
  * @file rdm_responder.h
  * @brief The base RDM Responder.
  *
- * The base RDM Responder provides the building blocks for implementing
- * responder models. You can think of it as a base class if we were using C++.
+ * The base RDM Responder provides the common RDM handling code used by many of
+ * the responder models. This allows much of the responder's functionality to be
+ * specified with a declarative style, rather that reimplementing the PID
+ * handlers many times over.
  *
  * It consists of a couple of parts:
- *  - the global g_responder object, which holds basic state like mute,
- *    identify etc.
+ *  - A ResponderDefinition, a static tree of data structures that describe
+ *    how the responder should behave. This contains the responder's
+ *    manufacturer id, model id, sensors definitions, personalities definitions,
+ *    supported parameters list etc.
+ *  - the global RDMResponder g_responder object, which holds basic state like
+ *    mute, identify etc.
  *  - The PID dispatching mechanism, where we specifiy a table of function
- *    pointers and then call RDMResponder_DispatchPID().
- *  - Functions for various common PIDs.
+ *    pointers as part of the responder definition and then later, when a RDM
+ *    request arrives, RDMResponder_DispatchPID() is called which invokes the
+ *    correct function. You can think of this like a vtable in C++.
  *
  * When implementing a model, you can reference the PID functions in the
  * dispatch table, or point to your own functions that (optionally) wrap the
@@ -69,16 +76,33 @@ typedef int (*PIDCommandHandler)(const RDMHeader *incoming_header,
 /**
  * @brief A descriptor for a PID.
  *
- * This contains the PID, and a GET / SET handler.
+ * This contains the value of the parameter, and a GET / SET function pointer.
  */
 typedef struct {
-  uint16_t pid;  //!< The parameter ID.
-  PIDCommandHandler get_handler;  //!< The GET handler.
-  PIDCommandHandler set_handler;  //!< The SET handler.
+  /**
+   * @brief The parameter ID.
+   */
+  uint16_t pid;
+
+  /**
+   * @brief The handler to use for GET requests.
+   *
+   * If NULL, NR_UNSUPPORTED_COMMAND_CLASS will be returned instead.
+   */
+  PIDCommandHandler get_handler;
+
+  /**
+   * @brief The handler to use for SET requests.
+   *
+   * If NULL, NR_UNSUPPORTED_COMMAND_CLASS will be returned instead.
+   */
+  PIDCommandHandler set_handler;
 } PIDDescriptor;
 
 /**
  * @brief The Product Detail IDs for the responder.
+ *
+ * This is used in PRODUCT_DETAIL_ID_LIST.
  */
 typedef struct {
   /**
@@ -88,8 +112,28 @@ typedef struct {
   uint8_t size;  //!< The number of ids in the array.
 } ProductDetailIds;
 
+
+/**
+ * @brief The definition of a DMX512 personality.
+ */
+typedef struct {
+  /**
+   * @brief The number of slots this personality requires.
+   */
+  uint16_t dmx_footprint;
+
+  /**
+   * @brief The string description of the personality.
+   */
+  const char *description;
+
+  // TODO(simon): Add slot information in here as well.
+} PersonalityDefinition;
+
 /**
  * @brief An RDM sensor definition.
+ *
+ * This contains all the information found in SENSOR_DEFINITION.
  */
 typedef struct {
   const char *description;  //!< Pointer to the sensor description
@@ -122,28 +166,63 @@ typedef struct {
 /**
  * @brief The definition of a responder.
  *
- * This contains the PID dispatch table, and read-only variables, like the
- * manufacturer name, device model etc.
+ * This contains the PID dispatch table, and const data, like the
+ * manufacturer name, device model etc, sensor definitions, etc.
  */
 typedef struct {
+  /**
+   * @brief The descriptor table.
+   */
   const PIDDescriptor *descriptors;
+
+  /**
+   * @brief The number of descriptors in the table.
+   */
   unsigned int descriptor_count;
 
-  const SensorDefinition *sensors;  //!< Pointer to an array of sensors.
+  /**
+   * @brief The sensor definitions table.
+   *
+   * This may be NULL if the responder does not have sensors.
+   */
+  const SensorDefinition *sensors;
+
+  /**
+   * @brief The number of sensor definitions in the table.
+   */
   uint8_t sensor_count;  //!< The number of sensors
 
-  const char *software_version_label;
-  const char *manufacturer_label;
-  const char *model_description;
-  const char *default_device_label;
+  /**
+   * @brief The personality definition table.
+   *
+   * This may be NULL if the responder does not have personalities.
+   */
+  const PersonalityDefinition *personalities;
+
+  /**
+   * @brief The number of personality definitions in the table.
+   */
+  unsigned int personality_count;
+
+  const char *software_version_label;  //!< The software version label.
+  const char *manufacturer_label;  //!< The manufacturer label.
+  const char *model_description;  //!< The model description.
+  const char *default_device_label;  //!< The defaut device label.
+
+  /**
+   * @brief The list of product IDs.
+   */
   const ProductDetailIds *product_detail_ids;
-  uint32_t software_version;
-  uint16_t model_id;
-  RDMProductCategory product_category;
+
+  uint32_t software_version;  //!< The Software version.
+  uint16_t model_id;  //!< The model ID.
+  RDMProductCategory product_category;  //!< The product category.
 } ResponderDefinition;
 
 /**
- * @brief A base implementation of a responder.
+ * @brief A core implementation of a responder.
+ *
+ * This contains the mutable state for a responder.
  */
 typedef struct {
   /**
@@ -162,10 +241,8 @@ typedef struct {
   char device_label[RDM_DEFAULT_STRING_SIZE];  //!< Device label
   uint8_t uid[UID_LENGTH];  //!< Responder's UID
   uint16_t dmx_start_address;  //!< DMX start address
-  uint16_t dmx_footprint;  //!< The DMX footprint
   uint16_t sub_device_count;  //!< The number of sub devices
-  uint8_t current_personality;  //!< Current DMX personality
-  uint8_t personality_count;  //!< The number of personalities.
+  uint8_t current_personality;  //!< Current DMX personality, 1-indexed.
   uint8_t sensor_count;  //!< The number of sensors
   uint8_t queued_message_count;  //!< queued message count.
   bool is_muted;  //!< The mute state for the responder
@@ -423,6 +500,51 @@ int RDMResponder_GetDeviceLabel(const RDMHeader *incoming_header,
  */
 int RDMResponder_SetDeviceLabel(const RDMHeader *incoming_header,
                                 const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET DMX_PERSONALITY request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetDMXPersonality(const RDMHeader *incoming_header,
+                                   const uint8_t *param_data);
+
+/**
+ * @brief Handle a SET DMX_PERSONALITY request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_SetDMXPersonality(const RDMHeader *incoming_header,
+                                   const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET DMX_PERSONALITY_DESCRIPTION request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetDMXPersonalityDescription(const RDMHeader *incoming_header,
+                                              const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET DMX_START_ADDRESS request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetDMXStartAddress(const RDMHeader *incoming_header,
+                                    const uint8_t *param_data);
+
+/**
+ * @brief Handle a SET DMX_START_ADDRESS request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_SetDMXStartAddress(const RDMHeader *incoming_header,
+                                    const uint8_t *param_data);
 
 /**
  * @brief Handle a GET SENSOR_DEFINITION request.
