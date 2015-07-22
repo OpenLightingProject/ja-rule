@@ -98,6 +98,21 @@ bool RDMUtil_VerifyChecksum(const uint8_t *frame, unsigned int size);
 int RDMUtil_AppendChecksum(uint8_t *frame);
 
 /**
+ * @brief Copy a string from one location to another.
+ * @param dst The location to copy to.
+ * @param dest_size The maximum number of bytes to copy to dst.
+ * @param src The location to copy from.
+ * @param max_size The maximum number of characters to copy.
+ * @returns The size of the final string, excluding any NULL if there is one.
+ *
+ * RDM strings are not required to have a NULL terminator, which means we can't
+ * use the usual string functions like strncpy(). This function should
+ * be used when copying strings.
+ */
+unsigned int RDMUtil_StringCopy(char *dst, unsigned int dest_size,
+                                const char *src, unsigned int max_size);
+
+/**
  * @brief Calculate the size of the string, but never scan beyond max_size.
  * @param str The string
  * @param max_size The max size of the string.
@@ -107,6 +122,17 @@ int RDMUtil_AppendChecksum(uint8_t *frame);
  * when determining string lengths.
  */
 unsigned int RDMUtil_SafeStringLength(const char *str, unsigned int max_size);
+
+/**
+ * @brief Update the value of a sensor, setting the lowest / highest values if
+ * appropriate.
+ * @param sensor The sensor to update
+ * @param recorded_value_support The bitfield to check if the sensor supports
+ *   recording.
+ * @param new_value The new value of the sensor.
+ */
+void RDMUtil_UpdateSensor(SensorData *sensor, uint8_t recorded_value_support,
+                          int16_t new_value);
 
 #ifdef __cplusplus
 }

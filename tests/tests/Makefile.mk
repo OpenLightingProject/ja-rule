@@ -68,7 +68,8 @@ tests_rdm_responder_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
 tests_rdm_util_test_SOURCES = tests/RDMUtilTest.cpp
 tests_rdm_util_test_CXXFLAGS = $(TESTING_CXXFLAGS)
 tests_rdm_util_test_LDADD = $(TESTING_LIBS) \
-                            src/librdmutil.la
+                            src/librdmutil.la \
+                            mocks/libmatchers.la
 
 tests_responder_test_SOURCES = tests/ResponderTest.cpp
 tests_responder_test_CXXFLAGS = $(TESTING_CXXFLAGS)

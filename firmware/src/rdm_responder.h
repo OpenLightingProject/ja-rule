@@ -89,6 +89,37 @@ typedef struct {
 } ProductDetailIds;
 
 /**
+ * @brief An RDM sensor definition.
+ */
+typedef struct {
+  const char *description;  //!< Pointer to the sensor description
+  int16_t range_maximum_value;  //!< The max value of the sensor
+  int16_t range_minimum_value;  //!< The min value of the sensor
+  int16_t normal_maximum_value;  //!< The max normal range of the sensor
+  int16_t normal_minimum_value;  //!< The min normal range of the sensor
+  uint8_t recorded_value_support;  //!< Recorded support bitfield (see E1.20)
+  RDMSensorType type;  //!< The sensor type
+  RDMUnit unit;  //!< The units for the sensor values.
+  RDMPrefix prefix;  //!< The prefix for the sensor values.
+} SensorDefinition;
+
+/**
+ * @brief Data for an RDM Sensor.
+ */
+typedef struct {
+  int16_t present_value;  //!< The current value of the sensor
+  int16_t lowest_value;  //!< The lowest recorded value.
+  int16_t highest_value;  //!< The highest recorded value.
+  int16_t recorded_value;  //!< The saved 'snapshot' value.
+  /**
+   * @brief Optional NACK reason, used if should_nack is true.
+   */
+  RDMNackReason nack_reason;
+
+  bool should_nack;  //!< True if we should NACK SENSOR_VALUE requests.
+} SensorData;
+
+/**
  * @brief The definition of a responder.
  *
  * This contains the PID dispatch table, and read-only variables, like the
@@ -97,6 +128,10 @@ typedef struct {
 typedef struct {
   const PIDDescriptor *descriptors;
   unsigned int descriptor_count;
+
+  const SensorDefinition *sensors;  //!< Pointer to an array of sensors.
+  uint8_t sensor_count;  //!< The number of sensors
+
   const char *software_version_label;
   const char *manufacturer_label;
   const char *model_description;
@@ -116,7 +151,15 @@ typedef struct {
    */
   const ResponderDefinition *def;
 
-  char device_label[RDM_DEFAULT_STRING_SIZE + 1];  //!< Device label
+  /**
+   * @brief A pointer to an array of SensorData structs.
+   *
+   * The array must be the same size as the SensorDefinitions in
+   * ResponderDefinition.
+   */
+  SensorData *sensors;
+
+  char device_label[RDM_DEFAULT_STRING_SIZE];  //!< Device label
   uint8_t uid[UID_LENGTH];  //!< Responder's UID
   uint16_t dmx_start_address;  //!< DMX start address
   uint16_t dmx_footprint;  //!< The DMX footprint
@@ -380,6 +423,42 @@ int RDMResponder_GetDeviceLabel(const RDMHeader *incoming_header,
  */
 int RDMResponder_SetDeviceLabel(const RDMHeader *incoming_header,
                                 const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET SENSOR_DEFINITION request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetSensorDefinition(const RDMHeader *incoming_header,
+                                     const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET SENSOR_VALUE request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetSensorValue(const RDMHeader *incoming_header,
+                                const uint8_t *param_data);
+
+/**
+ * @brief Handle a SET SENSOR_VALUE request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_SetSensorValue(const RDMHeader *incoming_header,
+                                const uint8_t *param_data);
+
+/**
+ * @brief Handle a SET RECORD_SENSOR request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_SetRecordSensor(const RDMHeader *incoming_header,
+                                 const uint8_t *param_data);
 
 /**
  * @brief Handle a GET IDENTIFY_DEVICE request.

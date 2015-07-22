@@ -70,6 +70,18 @@ int RDMUtil_AppendChecksum(uint8_t *frame) {
   return message_length + RDM_CHECKSUM_LENGTH;
 }
 
+unsigned int RDMUtil_StringCopy(char *dst, unsigned int dest_size,
+                                const char *src, unsigned int src_size) {
+  unsigned int size = 0;
+  while (size < src_size && size < dest_size && (*dst++ = *src++)) {
+    size++;
+  }
+  if (size < dest_size - 1) {
+    *dst = 0;
+  }
+  return size;
+}
+
 unsigned int RDMUtil_SafeStringLength(const char *str, unsigned int max_size) {
   unsigned int size = 0;
   while (*str++ && size < max_size) {
@@ -78,3 +90,15 @@ unsigned int RDMUtil_SafeStringLength(const char *str, unsigned int max_size) {
   return size;
 }
 
+void RDMUtil_UpdateSensor(SensorData *sensor, uint8_t recorded_value_support,
+                          int16_t new_value) {
+  sensor->present_value = new_value;
+  if (recorded_value_support & SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK) {
+    if (new_value < sensor->lowest_value) {
+      sensor->lowest_value = new_value;
+    }
+    if (new_value > sensor->highest_value) {
+      sensor->highest_value = new_value;
+    }
+  }
+}

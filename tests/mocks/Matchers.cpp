@@ -28,7 +28,7 @@ bool MemoryCompare(
     const uint8_t *expected_data, unsigned int expected_size,
     testing::MatchResultListener* listener) {
   if (size != expected_size) {
-    *listener << "data size was " << size;
+    *listener << "data size was " << size << ", expected " << expected_size;
     return false;
   }
 
@@ -107,6 +107,13 @@ testing::Matcher< ::testing::tuple<const void*, unsigned int> > DataIs(
     const uint8_t* expected_data,
     unsigned int expected_size) {
   return testing::MakeMatcher(new DataMatcher(expected_data, expected_size));
+}
+
+testing::Matcher< ::testing::tuple<const void*, unsigned int> > StringIs(
+    const char* expected_data,
+    unsigned int expected_size) {
+  return testing::MakeMatcher(new DataMatcher(
+        reinterpret_cast<const uint8_t*>(expected_data), expected_size));
 }
 
 

@@ -21,7 +21,9 @@
 #include <gtest/gtest.h>
 
 #include "rdm_util.h"
+#include "rdm_responder.h"
 #include "Array.h"
+#include "Matchers.h"
 
 const uint8_t SAMPLE_MESSAGE[] = {
   0xcc, 0x01, 0x18, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12, 0x34,
@@ -87,10 +89,100 @@ TEST_F(RDMUtilTest, testAppendChecksum) {
   EXPECT_EQ(0xdf, bad_packet[25]);
 }
 
+TEST_F(RDMUtilTest, StringCopy) {
+  const unsigned int DEST_SIZE = 10;
+  char dest[DEST_SIZE];
+
+  const char short_string[] = "foobar";
+
+  // A non NULL terminated string, shorter than the dest.
+  memset(dest, 0xff, DEST_SIZE);
+  const char expected1[] = "foo\0\xff\xff\xff\xff\xff\xff";
+  EXPECT_EQ(3, RDMUtil_StringCopy(dest, DEST_SIZE, short_string, 3));
+  EXPECT_THAT(ArrayTuple(dest, DEST_SIZE), StringIs(expected1, DEST_SIZE));
+
+  // A NULL terminated string, shorter than the dest.
+  memset(dest, 0xff, DEST_SIZE);
+  const char expected2[] = "foobar\0\xff\xff\xff";
+  EXPECT_EQ(6, RDMUtil_StringCopy(dest, DEST_SIZE, short_string, 6));
+  EXPECT_THAT(ArrayTuple(dest, DEST_SIZE), StringIs(expected2, DEST_SIZE));
+
+  // A non-null terminated string, equal in size to DEST
+  memset(dest, 0xff, DEST_SIZE);
+  const char equal_string[] = "0123456789";
+  const char expected3[] = "0123456789";
+  EXPECT_EQ(DEST_SIZE, RDMUtil_StringCopy(dest, DEST_SIZE, equal_string,
+                                          strlen(equal_string)));
+  EXPECT_THAT(ArrayTuple(dest, DEST_SIZE), StringIs(expected3, DEST_SIZE));
+
+  // A null terminated string, equal in size to DEST
+  const char equal_with_null[] = "012345678";
+  memset(dest, 0xff, DEST_SIZE);
+  const char expected4[] = "012345678";
+  EXPECT_EQ(9, RDMUtil_StringCopy(dest, DEST_SIZE, equal_with_null,
+                                  arraysize(equal_with_null)));
+  EXPECT_THAT(ArrayTuple(dest, DEST_SIZE), StringIs(expected4, DEST_SIZE));
+
+  // A non-NULL terminated string, longer than dest
+  const char long_string[] = "this is a test";
+  memset(dest, 0xff, DEST_SIZE);
+  const char expected5[] = "this is a ";
+  EXPECT_EQ(DEST_SIZE,
+            RDMUtil_StringCopy(dest, DEST_SIZE, long_string,
+                               strlen(long_string)));
+  EXPECT_THAT(ArrayTuple(dest, DEST_SIZE), StringIs(expected5, DEST_SIZE));
+
+  // A non-NULL terminated string, longer than dest
+  memset(dest, 0xff, DEST_SIZE);
+  EXPECT_EQ(DEST_SIZE,
+            RDMUtil_StringCopy(dest, DEST_SIZE, long_string,
+                               arraysize(long_string)));
+  EXPECT_THAT(ArrayTuple(dest, DEST_SIZE), StringIs(expected5, DEST_SIZE));
+}
+
 TEST_F(RDMUtilTest, testSafeStringLength) {
   const char test_string[] = "this is a test";
   EXPECT_EQ(4u, RDMUtil_SafeStringLength(test_string, 4));
   EXPECT_EQ(14u, RDMUtil_SafeStringLength(test_string, arraysize(test_string)));
+}
+
+TEST_F(RDMUtilTest, testUpdateSensor) {
+  SensorData sensor = {
+    .present_value = 14,
+    .lowest_value = SENSOR_VALUE_UNSUPPORTED,
+    .highest_value = SENSOR_VALUE_UNSUPPORTED,
+    .recorded_value = 0,
+    .nack_reason = NR_HARDWARE_FAULT,
+    .should_nack = false
+  };
+
+  int16_t new_value = 99;
+  // A sensor that doesn't support recording
+  RDMUtil_UpdateSensor(&sensor, 0, new_value);
+  EXPECT_EQ(new_value, sensor.present_value);
+  EXPECT_EQ(0, sensor.lowest_value);
+  EXPECT_EQ(0, sensor.highest_value);
+
+  // A sensor that supports recording
+  new_value = 52;
+  sensor.lowest_value = sensor.present_value;
+  sensor.highest_value = sensor.present_value;
+  RDMUtil_UpdateSensor(&sensor, SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK, new_value);
+  EXPECT_EQ(new_value, sensor.present_value);
+  EXPECT_EQ(52, sensor.lowest_value);
+  EXPECT_EQ(99, sensor.highest_value);
+
+  new_value = 434;
+  RDMUtil_UpdateSensor(&sensor, SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK, new_value);
+  EXPECT_EQ(new_value, sensor.present_value);
+  EXPECT_EQ(52, sensor.lowest_value);
+  EXPECT_EQ(434, sensor.highest_value);
+
+  new_value = 7;
+  RDMUtil_UpdateSensor(&sensor, SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK, new_value);
+  EXPECT_EQ(new_value, sensor.present_value);
+  EXPECT_EQ(7, sensor.lowest_value);
+  EXPECT_EQ(434, sensor.highest_value);
 }
 
 // Tests for RDMUtil_VerifyChecksum
