@@ -51,6 +51,24 @@ using ::testing::Return;
 
 namespace {
 
+template<typename Func, typename Arg>
+int InvokeGetHandler(Func function, const ola::rdm::RDMRequest *request,
+                     Arg arg) {
+  ola::io::ByteString data;
+  data.push_back(RDM_START_CODE);
+  EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
+  return function(AsHeader(data.data()), arg);
+}
+
+template<typename Func, typename Arg>
+int InvokeSetHandler(Func function, const ola::rdm::RDMRequest *request,
+                     Arg arg) {
+  ola::io::ByteString data;
+  data.push_back(RDM_START_CODE);
+  EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
+  return function(AsHeader(data.data()), request->ParamData(), arg);
+}
+
 class MockPIDHandler {
  public:
   MOCK_METHOD4(Call, int(RDMPid pid, bool is_get, const RDMHeader *header,
@@ -502,4 +520,63 @@ TEST_F(RDMResponderTest, identifyDevice) {
   response.reset(GetResponseFromData(request.get()));
   size = InvokeHandler(RDMResponder_SetIdentifyDevice, request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+// Generic Tests
+TEST_F(RDMResponderTest, testGenericUInt8) {
+  unique_ptr<RDMRequest> request(new RDMGetRequest(
+      m_controller_uid, m_our_uid, 0, 0, 0, PID_DISPLAY_LEVEL,
+      nullptr, 0));
+
+  uint8_t level = 78;
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), &level, sizeof(level)));
+
+  int size = InvokeGetHandler(RDMResponder_GenericGetUInt8, request.get(),
+                              level);
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  level = 100;
+  request.reset(new RDMSetRequest(
+      m_controller_uid, m_our_uid, 0, 0, 0, PID_DISPLAY_LEVEL, &level,
+      sizeof(level)));
+
+  response.reset(GetResponseFromData(request.get()));
+  uint8_t new_level = 0;
+  size = InvokeSetHandler(RDMResponder_GenericSetUInt8, request.get(),
+                          &new_level);
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+  EXPECT_EQ(level, new_level);
+}
+
+TEST_F(RDMResponderTest, testGenericUInt32) {
+  unique_ptr<RDMRequest> request(new RDMGetRequest(
+      m_controller_uid, m_our_uid, 0, 0, 0, PID_LAMP_HOURS,
+      nullptr, 0));
+
+  uint32_t level = 12345;
+  uint32_t network_order_level = htonl(level);
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), reinterpret_cast<const uint8_t*>(&network_order_level),
+        sizeof(network_order_level)));
+
+  int size = InvokeGetHandler(RDMResponder_GenericGetUInt32, request.get(),
+                              level);
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  level = 1000000;
+  network_order_level = htonl(level);
+  request.reset(new RDMSetRequest(
+      m_controller_uid, m_our_uid, 0, 0, 0, PID_LAMP_HOURS,
+      reinterpret_cast<const uint8_t*>(&network_order_level),
+      sizeof(network_order_level)));
+
+  response.reset(GetResponseFromData(request.get()));
+  uint32_t new_level = 0;
+  size = InvokeSetHandler(RDMResponder_GenericSetUInt32, request.get(),
+                          &new_level);
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+  EXPECT_EQ(level, new_level);
 }
