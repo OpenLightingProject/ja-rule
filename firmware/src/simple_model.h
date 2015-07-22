@@ -18,10 +18,7 @@
  */
 
 /**
- * @defgroup simple_model Simple RDM Model
- * @brief A simple RDM Model for controlling RGB pixels.
- *
- * @addtogroup simple_model
+ * @addtogroup rdm_models
  * @{
  * @file simple_model.h
  * @brief A simple RDM Model for controlling RGB pixels.
@@ -44,7 +41,7 @@ extern "C" {
 #endif
 
 /**
- * @brief The ModelEntry for this model.
+ * @brief The ModelEntry for the Simple Model
  */
 extern const ModelEntry SIMPLE_MODEL_ENTRY;
 

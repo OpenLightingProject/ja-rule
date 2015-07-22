@@ -18,10 +18,7 @@
  */
 
 /**
- * @defgroup moving_light Moving Light Model
- * @brief An RDM Model for a moving light.
- *
- * @addtogroup moving_light
+ * @addtogroup rdm_models
  * @{
  * @file moving_light.h
  * @brief An RDM Model for a moving light.
@@ -39,7 +36,7 @@ extern "C" {
 #endif
 
 /**
- * @brief The ModelEntry for this model.
+ * @brief The ModelEntry for a Moving Light.
  */
 extern const ModelEntry MOVING_LIGHT_MODEL_ENTRY;
 
@@ -50,7 +47,7 @@ typedef struct {
 } MovingLightModelSettings;
 
 /**
- * @brief Initialize the simple model.
+ * @brief Initialize the Moving Light Model.
  * @param settings The settings for this model.
  */
 void MovingLightModel_Initialize(const MovingLightModelSettings *settings);

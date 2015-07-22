@@ -6,10 +6,10 @@
  *
  * @section test_Overview Overview
  *
- * In order to maintain software quality and speed development we unit test the
- * code. Even though the project is written in C, we use <a
+ * In order to maintain software quality and speed development the code is unit
+ * tested. Even though the project is written in C, we use <a
  * href="https://en.wikipedia.org/wiki/Mock_object">Mock Objects</a> to
- * unittest the code.
+ * intercept function calls and set expectations.
  *
  * @section test_setup Initial Setup
  *
@@ -62,7 +62,7 @@
  *   void TearDown() {
  *     PLIB_TMR_SetMock(NULL);
  *   }
- *    m_mock;
+ *   MockPeripheralTimer m_mock;
  * };
  *
  * TEST(TimerTest, testZeroCounter) {
@@ -76,7 +76,7 @@
  * @subsection test_mocks_jarule Ja Rule Module Mocks
  *
  * When one Ja Rule module depends on another, it's often useful to be able to
- * mock out the included module. Ja Rule module mocks can be found in the
+ * mock out the dependency. Ja Rule module mocks can be found in the
  * mocks/ directory. They work in the same way as the Harmony mocks; calls to
  * the module's functions are proxied to a Mock object.
  *
