@@ -335,7 +335,7 @@ int RDMResponder_SetMute(const RDMHeader *header) {
   ReturnUnlessUnicast(header);
 
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
-  ptr = PushUInt16(ptr, 0);  // set control fiels to 0
+  ptr = PushUInt16(ptr, 0);  // set control fields to 0
   RDMResponder_BuildHeader(header, ACK, DISCOVERY_COMMAND_RESPONSE,
                            ntohs(header->param_id),
                            (ptr - g_rdm_buffer) - sizeof(RDMHeader));
@@ -352,7 +352,7 @@ int RDMResponder_SetUnMute(const RDMHeader *header) {
   ReturnUnlessUnicast(header);
 
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
-  ptr = PushUInt16(ptr, 0);  // set control fiels to 0
+  ptr = PushUInt16(ptr, 0);  // set control fields to 0
   RDMResponder_BuildHeader(header, ACK, DISCOVERY_COMMAND_RESPONSE,
                            ntohs(header->param_id),
                            (ptr - g_rdm_buffer) - sizeof(RDMHeader));
@@ -636,7 +636,7 @@ int RDMResponder_GetSensorDefinition(const RDMHeader *header,
   ptr = PushUInt16(ptr, sensor_ptr->normal_maximum_value);
 
   ptr += RDMUtil_StringCopy((char*) ptr, RDM_DEFAULT_STRING_SIZE,
-                             sensor_ptr->description, RDM_DEFAULT_STRING_SIZE);
+                            sensor_ptr->description, RDM_DEFAULT_STRING_SIZE);
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
                            ntohs(header->param_id),
                            (ptr - g_rdm_buffer) - sizeof(RDMHeader));
