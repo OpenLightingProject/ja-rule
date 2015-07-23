@@ -125,9 +125,10 @@ static inline uint32_t ExtractUInt32(const uint8_t *ptr) {
 }
 
 /**
- * @brief Extract a uint32_t in network-byte order from a memory location.
+ * @brief Copy a 16-bit value to a memory location in network-byte order.
  * @param ptr A pointer to the memory.
- * @returns A 32-bit value.
+ * @param value The value to push.
+ * @returns A pointer to the next byte after the last one that was copied.
  */
 static inline uint8_t* PushUInt16(uint8_t *ptr, uint16_t value) {
   *ptr++ = (value >> 8);
@@ -135,6 +136,12 @@ static inline uint8_t* PushUInt16(uint8_t *ptr, uint16_t value) {
   return ptr;
 }
 
+/*
+ * @brief Copy a 32-bit value to a memory location in network-byte order.
+ * @param ptr A pointer to the memory.
+ * @param value The value to push.
+ * @returns A pointer to the next byte after the last one that was copied.
+ */
 static inline uint8_t* PushUInt32(uint8_t *ptr, uint32_t value) {
   *ptr++ = (value >> 24);
   *ptr++ = (value >> 16);
