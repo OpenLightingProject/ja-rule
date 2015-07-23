@@ -26,7 +26,8 @@
  *    This allows RDM controllers to be tested without having access to a large
  *    number of devices. The code can act as:
  *    - An LED Driver
- *    - A moving light
+ *    - A Moving Light
+ *    - An E1.37-2 Network Device.
  *    - A sensor only device (No DMX footprint)
  *  - Configurable RDM response delay, with an option to introduce jitter
  *  - Identify & Mute status indicators.
