@@ -112,6 +112,30 @@ typedef struct {
   uint8_t size;  //!< The number of ids in the array.
 } ProductDetailIds;
 
+/**
+ * @brief The definition of a DMX slot.
+ */
+typedef struct {
+  /**
+   * @brief The string description of the slot.
+   */
+  const char *description;
+
+  /**
+   * @brief The slot label id.
+   */
+  uint16_t slot_label_id;
+
+  /**
+   * @brief The slot type.
+   */
+  uint8_t slot_type;
+
+  /**
+   * @brief The default slot value.
+   */
+  uint8_t default_value;
+} SlotDefinition;
 
 /**
  * @brief The definition of a DMX512 personality.
@@ -127,7 +151,17 @@ typedef struct {
    */
   const char *description;
 
-  // TODO(simon): Add slot information in here as well.
+  /**
+   * @brief The slot definitions.
+   *
+   * This may be NULL if slot definitions aren't provided.
+   */
+  const SlotDefinition *slots;
+
+  /**
+   * @brief The number of slot definitions.
+   */
+  unsigned int slot_count;
 } PersonalityDefinition;
 
 /**
@@ -545,6 +579,34 @@ int RDMResponder_GetDMXStartAddress(const RDMHeader *incoming_header,
  */
 int RDMResponder_SetDMXStartAddress(const RDMHeader *incoming_header,
                                     const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET SLOT_INFO request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetSlotInfo(const RDMHeader *incoming_header,
+                             const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET SLOT_DESCRIPTION request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetSlotDescription(const RDMHeader *incoming_header,
+                                    const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET DEFAULT_SLOT_VALUE request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetDefaultSlotValue(const RDMHeader *incoming_header,
+                                     const uint8_t *param_data);
+
 
 /**
  * @brief Handle a GET SENSOR_DEFINITION request.
