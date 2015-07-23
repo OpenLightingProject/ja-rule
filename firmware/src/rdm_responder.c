@@ -420,7 +420,7 @@ int RDMResponder_GetProductDetailIds(const RDMHeader *header,
     unsigned int i = 0;
     unsigned int count = min(definition->product_detail_ids->size,
                              MAX_PRODUCT_DETAILS);
-    for (;i < count; i++) {
+    for (; i < count; i++) {
       ptr = PushUInt16(ptr, definition->product_detail_ids->ids[i]);
     }
   }

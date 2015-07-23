@@ -472,7 +472,6 @@ int NetworkModel_ApplyInterfaceConfiguration(const RDMHeader *header,
 
 int NetworkModel_GetDefaultRoute(const RDMHeader *header,
                                  UNUSED const uint8_t *param_data) {
-
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt32(ptr, g_network_model.default_interface_route);
   ptr = PushUInt32(ptr, g_network_model.default_route);
