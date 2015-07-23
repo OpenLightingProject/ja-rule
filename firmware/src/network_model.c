@@ -325,7 +325,8 @@ int NetworkModel_SetDHCPMode(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_ACTION_NOT_SUPPORTED);
   }
 
-  g_network_model.interfaces[index].configured_dhcp_mode = param_data[4];
+  g_network_model.interfaces[index].configured_dhcp_mode =
+      param_data[INTERFACE_ID_SIZE];
 
   return RDMResponder_BuildSetAck(header);
 }
@@ -368,7 +369,8 @@ int NetworkModel_SetZeroconfMode(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_ACTION_NOT_SUPPORTED);
   }
 
-  g_network_model.interfaces[index].configured_zeroconf_mode = param_data[4];
+  g_network_model.interfaces[index].configured_zeroconf_mode =
+      param_data[INTERFACE_ID_SIZE];
 
   return RDMResponder_BuildSetAck(header);
 }
@@ -634,7 +636,8 @@ int NetworkModel_GetHostname(const RDMHeader *header,
 
 int NetworkModel_SetHostName(const RDMHeader *header,
                              const uint8_t *param_data) {
-  if (header->param_data_length == 0) {
+  if (header->param_data_length == 0 ||
+      header->param_data > DNS_HOST_NAME_SIZE) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
