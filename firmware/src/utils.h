@@ -20,6 +20,11 @@
 #ifndef FIRMWARE_SRC_UTILS_H_
 #define FIRMWARE_SRC_UTILS_H_
 
+/**
+ * @file utils.h
+ * @brief Helper utilities.
+ */
+
 #include <stdint.h>
 
 #if HAVE_CONFIG_H

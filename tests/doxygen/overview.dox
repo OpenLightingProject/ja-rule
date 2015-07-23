@@ -5,7 +5,9 @@
  *
  * @section sec_Overview Overview
  *
- * Ja Rule is an open source DMX512 / RDM stack for PIC32 MCUs.
+ * Ja Rule is an open source DMX512 / RDM stack for PIC32 MCUs. It contains
+ * code to function as either an DMX / RDM controller (transmitter) or as an
+ * DMX receiver / RDM responder.
  *
  * @section sec_Features Features
  *
@@ -20,18 +22,25 @@
  *    - Response delay
  *
  * @subsection sec_features_responder DMX512 / RDM Receiver
+ *  - The ability to simulate many different types of @ref rdm_models.
+ *    This allows RDM controllers to be tested without having access to a large
+ *    number of devices. The code can act as:
+ *    - An LED Driver
+ *    - A moving light
+ *    - A sensor only device (No DMX footprint)
  *  - Configurable RDM response delay, with an option to introduce jitter
  *  - Identify & Mute status indicators.
  *  - RGB Pixel control using SPI (LPD8806 only for now).
  *
  * @subsection sec_features_common Common
  *  - \ref usb_logger, with adjustable log levels.
+ *  - Extensive @ref unit_testing.
  *
  * @section sec_Platforms Supported Platforms
  *
- * This code is targeted at the PIC32 series MCUs. It uses the Harmony
- * framework, so it's unlikely to work with other platforms without some
- * serious porting effort.
+ * This code is targeted at the PIC32 series MCUs. It uses the parts of the
+ * Harmony framework, so it won't work on other platforms without some
+ * porting effort.
  *
  * @section sec_Terminology Terminology
  *

@@ -18,17 +18,15 @@
  */
 
 /**
- * @defgroup sensor_model Sensor RDM Model
- * @brief A sensor RDM Model.
- *
- * This model is provided because some controllers have difficulty when RDM
- * devices report 0 for a DMX512 footprint. The Sensor Model doesn't use DMX at
- * all, instead it just reports back values from various (simulated) sensors.
- *
- * @addtogroup sensor_model
+ * @addtogroup rdm_models
  * @{
  * @file sensor_model.h
  * @brief A sensor-only RDM Model.
+ *
+ * This model is provided because some RDM controllers have difficulty when an
+ * RDM device reports 0 for a DMX512 footprint. The Sensor Model doesn't use
+ * DMX at all, instead it just reports back values from various (simulated)
+ * sensors.
  */
 
 #ifndef FIRMWARE_SRC_SENSOR_MODEL_H_
@@ -41,7 +39,7 @@ extern "C" {
 #endif
 
 /**
- * @brief The ModelEntry for the Sensor model.
+ * @brief The ModelEntry for the Sensor-only model.
  */
 extern const ModelEntry SENSOR_MODEL_ENTRY;
 

@@ -21,8 +21,13 @@
 #define FIRMWARE_SRC_MACROS_H_
 
 /**
+ * @file macros.h
+ * @brief Macros used throughout the code.
+ */
+
+/**
  * @def UNUSED
- * @brief Mark unused arguments & types.
+ * @brief Mark unused arguments & types to suppress compiler warnings.
  *
  * @examplepara
  *   @code
@@ -36,7 +41,8 @@
 #endif
 
 /**
- * @brief A helper to return if the request does not merit a response.
+ * @brief A helper to return if the RDM Request does not require an RDM
+ *   response.
  * @param header The RDMHeader of the request.
  */
 #define ReturnUnlessUnicast(header) \
