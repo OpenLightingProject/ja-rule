@@ -143,24 +143,6 @@ static int LookupIndex(unsigned int id) {
 }
 
 /*
- * @brief Check a request that contains an interface id.
- * @returns -1 if the id was found and index was set, otherwise the size of the
- * RDM response that was created.
- */
-static int CheckInterfaceRequest(const RDMHeader *header,
-                                 const uint8_t *param_data,
-                                 unsigned int *index) {
-  unsigned int id = JoinUInt32(param_data[0], param_data[1],
-                               param_data[2], param_data[3]);
-  int found_index = LookupIndex(id);
-  if (found_index < 0) {
-    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
-  }
-  *index = found_index;
-  return -1;
-}
-
-/*
  * @brief Simulate getting an DHCP address.
  *
  * This randomly fails and returns 0.0.0.0.
@@ -212,28 +194,23 @@ static void ConfigureInterface(InterfaceState *interface) {
 // ----------------------------------------------------------------------------
 int NetworkModel_GetListInterfaces(const RDMHeader *header,
                                    UNUSED const uint8_t *param_data) {
-  unsigned int offset = sizeof(RDMHeader);
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   unsigned int i = 0;
   for (; i < g_network_model.interface_count; i++) {
-    g_rdm_buffer[offset++] = UInt32Byte0(INTERFACE_DEFINITIONS[i].id);
-    g_rdm_buffer[offset++] = UInt32Byte1(INTERFACE_DEFINITIONS[i].id);
-    g_rdm_buffer[offset++] = UInt32Byte2(INTERFACE_DEFINITIONS[i].id);
-    g_rdm_buffer[offset++] = UInt32Byte3(INTERFACE_DEFINITIONS[i].id);
-    g_rdm_buffer[offset++] = ShortMSB(INTERFACE_DEFINITIONS[i].hardware_type);
-    g_rdm_buffer[offset++] = ShortLSB(INTERFACE_DEFINITIONS[i].hardware_type);
+    ptr = PushUInt32(ptr, INTERFACE_DEFINITIONS[i].id);
+    ptr = PushUInt16(ptr, INTERFACE_DEFINITIONS[i].hardware_type);
   }
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
                            ntohs(header->param_id),
-                           offset - sizeof(RDMHeader));
+                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
 int NetworkModel_GetInterfaceLabel(const RDMHeader *header,
                                    const uint8_t *param_data) {
-  unsigned int index = 0;
-  int r = CheckInterfaceRequest(header, param_data, &index);
-  if (r >= 0) {
-    return r;
+  const int index = LookupIndex(ExtractUInt32(param_data));
+  if (index < 0) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
   unsigned int offset = sizeof(RDMHeader);
@@ -251,10 +228,9 @@ int NetworkModel_GetInterfaceLabel(const RDMHeader *header,
 
 int NetworkModel_GetHardwareAddress(const RDMHeader *header,
                                     const uint8_t *param_data) {
-  unsigned int index = 0;
-  int r = CheckInterfaceRequest(header, param_data, &index);
-  if (r >= 0) {
-    return r;
+  const int index = LookupIndex(ExtractUInt32(param_data));
+  if (index < 0) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
   if (INTERFACE_DEFINITIONS[index].hardware_type != ETHERNET_HARDWARE_TYPE) {
@@ -275,10 +251,9 @@ int NetworkModel_GetHardwareAddress(const RDMHeader *header,
 
 int NetworkModel_GetDHCPMode(const RDMHeader *header,
                              const uint8_t *param_data) {
-  unsigned int index = 0;
-  int r = CheckInterfaceRequest(header, param_data, &index);
-  if (r >= 0) {
-    return r;
+  const int index = LookupIndex(ExtractUInt32(param_data));
+  if (index < 0) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
   unsigned int offset = sizeof(RDMHeader);
@@ -298,9 +273,7 @@ int NetworkModel_SetDHCPMode(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
-  unsigned int id = JoinUInt32(param_data[0], param_data[1],
-                               param_data[2], param_data[3]);
-  int index = LookupIndex(id);
+  const int index = LookupIndex(ExtractUInt32(param_data));
   if (index < 0) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
@@ -317,10 +290,9 @@ int NetworkModel_SetDHCPMode(const RDMHeader *header,
 
 int NetworkModel_GetZeroconfMode(const RDMHeader *header,
                                  const uint8_t *param_data) {
-  unsigned int index = 0;
-  int r = CheckInterfaceRequest(header, param_data, &index);
-  if (r >= 0) {
-    return r;
+  const int index = LookupIndex(ExtractUInt32(param_data));
+  if (index < 0) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
   unsigned int offset = sizeof(RDMHeader);
@@ -340,9 +312,7 @@ int NetworkModel_SetZeroconfMode(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
-  unsigned int id = JoinUInt32(param_data[0], param_data[1],
-                               param_data[2], param_data[3]);
-  int index = LookupIndex(id);
+  const int index = LookupIndex(ExtractUInt32(param_data));
   if (index < 0) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
@@ -359,56 +329,50 @@ int NetworkModel_SetZeroconfMode(const RDMHeader *header,
 
 int NetworkModel_GetCurrentAddress(const RDMHeader *header,
                                    const uint8_t *param_data) {
-  unsigned int index = 0;
-  int r = CheckInterfaceRequest(header, param_data, &index);
-  if (r >= 0) {
-    return r;
+  const int index = LookupIndex(ExtractUInt32(param_data));
+  if (index < 0) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
   InterfaceState *interface = &g_network_model.interfaces[index];
 
-  unsigned int offset = sizeof(RDMHeader);
-  memcpy(g_rdm_buffer + offset, param_data, INTERFACE_ID_SIZE);
-  offset += INTERFACE_ID_SIZE;
-  g_rdm_buffer[offset++] = UInt32Byte0(interface->current_ip);
-  g_rdm_buffer[offset++] = UInt32Byte1(interface->current_ip);
-  g_rdm_buffer[offset++] = UInt32Byte2(interface->current_ip);
-  g_rdm_buffer[offset++] = UInt32Byte3(interface->current_ip);
-  g_rdm_buffer[offset++] = interface->current_netmask;
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  memcpy(ptr, param_data, INTERFACE_ID_SIZE);
+  ptr += INTERFACE_ID_SIZE;
+  ptr = PushUInt32(ptr, interface->current_ip);
+  *ptr++ = interface->current_netmask;
   if (index == IPSEC_INTERFACE_ID) {
-    g_rdm_buffer[offset++] = DHCP_MODE_UNKNOWN;
+    *ptr++ = DHCP_MODE_UNKNOWN;
   } else {
-    g_rdm_buffer[offset++] = (interface->config_source == CONFIG_SOURCE_DHCP ?
-                              DHCP_MODE_ACTIVE : DHCP_MODE_INACTIVE);
+    *ptr++ = (interface->config_source == CONFIG_SOURCE_DHCP ?
+              DHCP_MODE_ACTIVE : DHCP_MODE_INACTIVE);
   }
 
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
                            ntohs(header->param_id),
-                           offset - sizeof(RDMHeader));
+                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
 int NetworkModel_GetStaticAddress(const RDMHeader *header,
                                   const uint8_t *param_data) {
-  unsigned int index = 0;
-  int r = CheckInterfaceRequest(header, param_data, &index);
-  if (r >= 0) {
-    return r;
+  const int index = LookupIndex(ExtractUInt32(param_data));
+  if (index < 0) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
   InterfaceState *interface = &g_network_model.interfaces[index];
-  unsigned int offset = sizeof(RDMHeader);
-  memcpy(g_rdm_buffer + offset, param_data, INTERFACE_ID_SIZE);
-  offset += INTERFACE_ID_SIZE;
-  g_rdm_buffer[offset++] = UInt32Byte0(interface->configured_ip);
-  g_rdm_buffer[offset++] = UInt32Byte1(interface->configured_ip);
-  g_rdm_buffer[offset++] = UInt32Byte2(interface->configured_ip);
-  g_rdm_buffer[offset++] = UInt32Byte3(interface->configured_ip);
-  g_rdm_buffer[offset++] = interface->configured_netmask;
+
+
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  memcpy(ptr, param_data, INTERFACE_ID_SIZE);
+  ptr += INTERFACE_ID_SIZE;
+  ptr = PushUInt32(ptr, interface->configured_ip);
+  *ptr++ = interface->configured_netmask;
 
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
                            ntohs(header->param_id),
-                           offset - sizeof(RDMHeader));
+                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
@@ -418,16 +382,13 @@ int NetworkModel_SetStaticAddress(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
-  unsigned int id = JoinUInt32(param_data[0], param_data[1],
-                               param_data[2], param_data[3]);
-  int index = LookupIndex(id);
+  const int index = LookupIndex(ExtractUInt32(param_data));
   if (index < 0) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  uint32_t ip = JoinUInt32(param_data[4], param_data[5],
-                           param_data[6], param_data[7]);
-  uint8_t netmask = param_data[8];
+  const uint32_t ip = ExtractUInt32(&param_data[4]);
+  const uint8_t netmask = param_data[8];
 
   if (netmask > MAX_NETMASK) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
@@ -439,16 +400,13 @@ int NetworkModel_SetStaticAddress(const RDMHeader *header,
   return RDMResponder_BuildSetAck(header);
 }
 
-
 int NetworkModel_RenewDHCP(const RDMHeader *header,
                            const uint8_t *param_data) {
   if (header->param_data_length != sizeof(uint32_t)) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
-  unsigned int id = JoinUInt32(param_data[0], param_data[1],
-                               param_data[2], param_data[3]);
-  int index = LookupIndex(id);
+  const int index = LookupIndex(ExtractUInt32(param_data));
   if (index < 0) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
@@ -483,9 +441,7 @@ int NetworkModel_ReleaseDHCP(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
-  unsigned int id = JoinUInt32(param_data[0], param_data[1],
-                               param_data[2], param_data[3]);
-  int index = LookupIndex(id);
+  const int index = LookupIndex(ExtractUInt32(param_data));
   if (index < 0) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
@@ -505,9 +461,7 @@ int NetworkModel_ApplyInterfaceConfiguration(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
-  unsigned int id = JoinUInt32(param_data[0], param_data[1],
-                               param_data[2], param_data[3]);
-  int index = LookupIndex(id);
+  const int index = LookupIndex(ExtractUInt32(param_data));
   if (index < 0) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
@@ -518,18 +472,13 @@ int NetworkModel_ApplyInterfaceConfiguration(const RDMHeader *header,
 
 int NetworkModel_GetDefaultRoute(const RDMHeader *header,
                                  UNUSED const uint8_t *param_data) {
-  unsigned int offset = sizeof(RDMHeader);
-  g_rdm_buffer[offset++] = UInt32Byte0(g_network_model.default_interface_route);
-  g_rdm_buffer[offset++] = UInt32Byte1(g_network_model.default_interface_route);
-  g_rdm_buffer[offset++] = UInt32Byte2(g_network_model.default_interface_route);
-  g_rdm_buffer[offset++] = UInt32Byte3(g_network_model.default_interface_route);
-  g_rdm_buffer[offset++] = UInt32Byte0(g_network_model.default_route);
-  g_rdm_buffer[offset++] = UInt32Byte1(g_network_model.default_route);
-  g_rdm_buffer[offset++] = UInt32Byte2(g_network_model.default_route);
-  g_rdm_buffer[offset++] = UInt32Byte3(g_network_model.default_route);
+
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  ptr = PushUInt32(ptr, g_network_model.default_interface_route);
+  ptr = PushUInt32(ptr, g_network_model.default_route);
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
                            ntohs(header->param_id),
-                           offset - sizeof(RDMHeader));
+                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
@@ -539,10 +488,8 @@ int NetworkModel_SetDefaultRoute(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
-  uint32_t interface_id = JoinUInt32(param_data[0], param_data[1],
-                                     param_data[2], param_data[3]);
-  uint32_t ip = JoinUInt32(param_data[4], param_data[5], param_data[6],
-                           param_data[7]);
+  const uint32_t interface_id = ExtractUInt32(param_data);
+  const uint32_t ip = ExtractUInt32(&param_data[4]);
 
   if (interface_id != NO_DEFAULT_ROUTE && ip != NO_DEFAULT_ROUTE) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
@@ -560,22 +507,17 @@ int NetworkModel_SetDefaultRoute(const RDMHeader *header,
 
 int NetworkModel_GetNameServer(const RDMHeader *header,
                                const uint8_t *param_data) {
-  uint8_t index = param_data[0];
+  const uint8_t index = param_data[0];
   if (index >= NUMBER_OF_NAMESERVERS) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  uint32_t ip = g_network_model.nameservers[index];
-
-  unsigned int offset = sizeof(RDMHeader);
-  g_rdm_buffer[offset++] = index;
-  g_rdm_buffer[offset++] = UInt32Byte0(ip);
-  g_rdm_buffer[offset++] = UInt32Byte1(ip);
-  g_rdm_buffer[offset++] = UInt32Byte2(ip);
-  g_rdm_buffer[offset++] = UInt32Byte3(ip);
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  *ptr++ = index;
+  ptr = PushUInt32(ptr, g_network_model.nameservers[index]);
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
                            ntohs(header->param_id),
-                           offset - sizeof(RDMHeader));
+                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
@@ -585,15 +527,12 @@ int NetworkModel_SetNameServer(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
-  uint8_t index = param_data[0];
+  const uint8_t index = param_data[0];
   if (index >= NUMBER_OF_NAMESERVERS) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  uint32_t ip = JoinUInt32(param_data[1], param_data[2],
-                           param_data[3], param_data[4]);
-
-  g_network_model.nameservers[index] = ip;
+  g_network_model.nameservers[index] = ExtractUInt32(&param_data[1]);
   return RDMResponder_BuildSetAck(header);
 }
 

@@ -18,7 +18,8 @@ TESTS += tests/coarse_timer_test \
          tests/spirgb_test \
          tests/stream_decoder_test \
          tests/transceiver_test \
-         tests/usb_transport_test
+         tests/usb_transport_test \
+         tests/utils_test
 
 tests_coarse_timer_test_SOURCES = tests/CoarseTimerTest.cpp
 tests_coarse_timer_test_CXXFLAGS = $(TESTING_CXXFLAGS)
@@ -111,3 +112,7 @@ tests_transceiver_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
                                mocks/libcoarsetimermock.la \
                                mocks/libsyslogmock.la
 
+tests_utils_test_SOURCES = tests/UtilsTest.cpp
+tests_utils_test_CXXFLAGS = $(TESTING_CXXFLAGS)
+tests_utils_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
+                         mocks/libmatchers.la
