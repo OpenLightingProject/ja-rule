@@ -3,7 +3,7 @@
  * @brief RDM Models that simulate different types of responders.
  *
  * The Ja Rule code can simulate different types of RDM Responder Models. This
- * allows RDM controllers to be well tested, without having to go out an buy a
+ * allows RDM controllers to be well tested, without having to go out and buy a
  * lot of different gear.
  *
  * RDM can be used to select which model to use, two manufacturer PIDs are
