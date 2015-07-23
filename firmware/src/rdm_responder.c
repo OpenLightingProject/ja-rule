@@ -42,6 +42,17 @@ const char MANUFACTURER_LABEL[] = "Open Lighting Project";
 RDMResponder g_responder;
 
 /*
+ * @brief Get the current personality.
+ * @returns The current personality definition, or NULL if there isn't one.
+ */
+static inline const PersonalityDefinition* CurrentPersonality() {
+  if (g_responder.def->personalities) {
+    return &g_responder.def->personalities[g_responder.current_personality - 1];
+  }
+  return NULL;
+}
+
+/*
  * @brief Record the sensor at the specified index.
  */
 static inline void RecordSensor(unsigned int i) {
@@ -421,11 +432,8 @@ int RDMResponder_GetDeviceInfo(const RDMHeader *header,
     uint8_t sensor_count;
   } __attribute__((packed));
 
-  uint16_t dmx_footprint = 0;
-  if (g_responder.def->personalities) {
-    dmx_footprint = g_responder.def->personalities[
-        g_responder.current_personality - 1].dmx_footprint;
-  }
+  const PersonalityDefinition *personality = CurrentPersonality();
+  uint16_t dmx_footprint = personality ? personality->dmx_footprint : 0;
 
   struct device_info_s device_info = {
     .rdm_version = htons(RDM_VERSION),
@@ -564,7 +572,6 @@ int RDMResponder_GetDMXPersonalityDescription(const RDMHeader *header,
   const PersonalityDefinition *personality =
       &g_responder.def->personalities[index - 1];
 
-
   unsigned int offset = sizeof(RDMHeader);
   g_rdm_buffer[offset++] = index;
   g_rdm_buffer[offset++] = ShortMSB(personality->dmx_footprint);
@@ -609,6 +616,96 @@ int RDMResponder_SetDMXStartAddress(const RDMHeader *header,
 
   g_responder.dmx_start_address = address;
   return RDMResponder_BuildSetAck(header);
+}
+
+int RDMResponder_GetSlotInfo(const RDMHeader *header,
+                             UNUSED const uint8_t *param_data) {
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  ReturnUnlessUnicast(header);
+
+  const PersonalityDefinition *personality = CurrentPersonality();
+  if (!personality || !personality->slots) {
+    return RDMResponder_BuildNack(header, NR_HARDWARE_FAULT);
+  }
+
+  // TODO(simon): If we have more than 46 slots we'll need to ACK_OVERFLOW
+  unsigned int slot_count = min(MAX_SLOT_INFO_PER_FRAME,
+                                personality->slot_count);
+  unsigned int offset = sizeof(RDMHeader);
+  unsigned int i = 0;
+  for (; i < slot_count; i++) {
+    g_rdm_buffer[offset++] = ShortMSB(i);
+    g_rdm_buffer[offset++] = ShortLSB(i);
+    g_rdm_buffer[offset++] = personality->slots[i].slot_type;
+    g_rdm_buffer[offset++] = ShortMSB(personality->slots[i].slot_label_id);
+    g_rdm_buffer[offset++] = ShortLSB(personality->slots[i].slot_label_id);
+  }
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           ntohs(header->param_id),
+                           offset - sizeof(RDMHeader));
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_GetSlotDescription(const RDMHeader *header,
+                                    UNUSED const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint16_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  ReturnUnlessUnicast(header);
+
+  uint16_t slot_index = JoinShort(param_data[0], param_data[1]);
+
+  const PersonalityDefinition *personality = CurrentPersonality();
+  if (!personality || !personality->slots) {
+    return RDMResponder_BuildNack(header, NR_HARDWARE_FAULT);
+  }
+
+  if (slot_index >= personality->slot_count) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  unsigned int offset = sizeof(RDMHeader);
+  g_rdm_buffer[offset++] = ShortMSB(slot_index);
+  g_rdm_buffer[offset++] = ShortLSB(slot_index);
+  offset += RDMUtil_StringCopy(
+      (char*) (g_rdm_buffer + offset), RDM_DEFAULT_STRING_SIZE,
+      personality->slots[slot_index].description,
+      RDM_DEFAULT_STRING_SIZE);
+
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           ntohs(header->param_id),
+                           offset - sizeof(RDMHeader));
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+int RDMResponder_GetDefaultSlotValue(const RDMHeader *header,
+                                     UNUSED const uint8_t *param_data) {
+  if (header->param_data_length) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  ReturnUnlessUnicast(header);
+
+  const PersonalityDefinition *personality = CurrentPersonality();
+  if (!personality || !personality->slots) {
+    return RDMResponder_BuildNack(header, NR_HARDWARE_FAULT);
+  }
+
+  // TODO(simon): If we have more than 77 slots we'll need to ACK_OVERFLOW
+  unsigned int slot_count = min(MAX_DEFAULT_SLOT_VALUE_PER_FRAME,
+                                personality->slot_count);
+  unsigned int offset = sizeof(RDMHeader);
+  unsigned int i = 0;
+  for (; i < slot_count; i++) {
+    g_rdm_buffer[offset++] = ShortMSB(i);
+    g_rdm_buffer[offset++] = ShortLSB(i);
+    g_rdm_buffer[offset++] = personality->slots[i].default_value;
+  }
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           ntohs(header->param_id),
+                           offset - sizeof(RDMHeader));
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
 int RDMResponder_GetSensorDefinition(const RDMHeader *header,

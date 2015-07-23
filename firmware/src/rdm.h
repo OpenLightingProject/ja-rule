@@ -146,6 +146,16 @@ static const uint8_t ALL_SENSORS = 0xff;
  */
 static const uint16_t SENSOR_VALUE_UNSUPPORTED = 0;
 
+/*
+ * @brief The maximum number of slot info entries in a RDM frame.
+ */
+static const unsigned int MAX_SLOT_INFO_PER_FRAME = 46;
+
+/**
+ * @brief The maximum number of default slot value entries in a RDM frame.
+ */
+static const unsigned int MAX_DEFAULT_SLOT_VALUE_PER_FRAME = 77;
+
 /**
  * @brief The size of the DNS Host Name field from E1.37-2.
  */
@@ -174,7 +184,6 @@ typedef enum {
   DHCP_MODE_ACTIVE = 0x01,
   DHCP_MODE_UNKNOWN = 0x02
 } DHCPMode;
-
 
 /**
  * @brief RDM Command Classes from E1.20.
@@ -621,6 +630,68 @@ typedef enum {
   PREFIX_ZETTA = 0x19,
   PREFIX_YOTTA = 0x1a,
 } __attribute__((packed)) RDMPrefix;
+
+/**
+ * @brief The RDM slot types, from table C-1 of the standard.
+ */
+typedef enum {
+  ST_PRIMARY = 0x00,
+  ST_SEC_FINE = 0x01,
+  ST_SEC_TIMING = 0x02,
+  ST_SEC_SPEED = 0x03,
+  ST_SEC_CONTROL = 0x04,
+  ST_SEC_INDEX = 0x05,
+  ST_SEC_ROTATION = 0x06,
+  ST_SEC_INDEX_ROTATE = 0x07,
+  ST_SEC_UNDEFINED = 0xff,
+} RDMSlotType;
+
+typedef enum {
+  SD_INTENSITY = 0x0001,
+  SD_INTENSITY_MASTER = 0x0002,
+  SD_PAN = 0x0101,
+  SD_TILT = 0x0102,
+  SD_COLOR_WHEEL = 0x0201,
+  SD_COLOR_SUB_CYAN = 0x0202,
+  SD_COLOR_SUB_YELLOW = 0x0203,
+  SD_COLOR_SUB_MAGENTA = 0x0204,
+  SD_COLOR_ADD_RED = 0x0205,
+  SD_COLOR_ADD_GREEN = 0x0206,
+  SD_COLOR_ADD_BLUE = 0x0207,
+  SD_COLOR_CORRECTION = 0x0208,
+  SD_COLOR_SCROLL = 0x0209,
+  SD_COLOR_SEMAPHORE = 0x0210,
+  SD_COLOR_ADD_AMBER = 0x0211,
+  SD_COLOR_ADD_WHITE = 0x0212,
+  SD_COLOR_ADD_WARM_WHITE = 0x0213,
+  SD_COLOR_ADD_COOL_WHITE = 0x0214,
+  SD_COLOR_SUB_UV = 0x0215,
+  SD_COLOR_HUE = 0x0216,
+  SD_COLOR_SATURATION = 0x0217,
+  SD_STATIC_GOBO_WHEEL = 0x0301,
+  SD_ROTO_GOBO_WHEEL = 0x0302,
+  SD_PRISM_WHEEL = 0x0303,
+  SD_EFFECTS_WHEEL = 0x0304,
+  SD_BEAM_SIZE_IRIS = 0x0401,
+  SD_EDGE = 0x0402,
+  SD_FROST = 0x0403,
+  SD_STROBE = 0x0404,
+  SD_ZOOM = 0x0405,
+  SD_FRAMING_SHUTTER = 0x0406,
+  SD_SHUTTER_ROTATE = 0x0407,
+  SD_DOUSER = 0x0408,
+  SD_BARN_DOOR = 0x0409,
+  SD_LAMP_CONTROL = 0x0501,
+  SD_FIXTURE_CONTROL = 0x0502,
+  SD_FIXTURE_SPEED = 0x0503,
+  SD_MACRO = 0x0504,
+  SD_POWER_CONTROL = 0x0505,
+  SD_FAN_CONTROL = 0x0506,
+  SD_HEATER_CONTROL = 0x0507,
+  SD_FOUNTAIN_CONTROL = 0x0508,
+  SD_UNDEFINED = 0xffff,
+} RDMSlotCategory;
+
 
 #ifdef __cplusplus
 }
