@@ -203,7 +203,6 @@ int RDMResponder_BuildSetAck(const RDMHeader *header) {
 int RDMResponder_BuildNack(const RDMHeader *header, RDMNackReason reason) {
   ReturnUnlessUnicast(header);
 
-  uint16_t param_data = htons(reason);
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt16(ptr, reason);
   RDMResponder_BuildHeader(
