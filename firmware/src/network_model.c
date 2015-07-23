@@ -200,10 +200,7 @@ int NetworkModel_GetListInterfaces(const RDMHeader *header,
     ptr = PushUInt32(ptr, INTERFACE_DEFINITIONS[i].id);
     ptr = PushUInt16(ptr, INTERFACE_DEFINITIONS[i].hardware_type);
   }
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int NetworkModel_GetInterfaceLabel(const RDMHeader *header,
@@ -220,10 +217,7 @@ int NetworkModel_GetInterfaceLabel(const RDMHeader *header,
                                RDM_DEFAULT_STRING_SIZE,
                                INTERFACE_DEFINITIONS[index].label,
                                RDM_DEFAULT_STRING_SIZE);
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           offset - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, offset);
 }
 
 int NetworkModel_GetHardwareAddress(const RDMHeader *header,
@@ -243,10 +237,7 @@ int NetworkModel_GetHardwareAddress(const RDMHeader *header,
   memcpy(g_rdm_buffer + offset, INTERFACE_DEFINITIONS[index].hardware_address,
          MAC_ADDRESS_SIZE);
   offset += MAC_ADDRESS_SIZE;
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           offset - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, offset);
 }
 
 int NetworkModel_GetDHCPMode(const RDMHeader *header,
@@ -260,11 +251,8 @@ int NetworkModel_GetDHCPMode(const RDMHeader *header,
   memcpy(g_rdm_buffer + offset, param_data, INTERFACE_ID_SIZE);
   offset += INTERFACE_ID_SIZE;
   g_rdm_buffer[offset++] =
-      g_network_model.interfaces[index].configured_dhcp_mode;
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           offset - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+     g_network_model.interfaces[index].configured_dhcp_mode;
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, offset);
 }
 
 int NetworkModel_SetDHCPMode(const RDMHeader *header,
@@ -300,10 +288,7 @@ int NetworkModel_GetZeroconfMode(const RDMHeader *header,
   offset += INTERFACE_ID_SIZE;
   g_rdm_buffer[offset++] =
       g_network_model.interfaces[index].configured_zeroconf_mode;
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           offset - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, offset);
 }
 
 int NetworkModel_SetZeroconfMode(const RDMHeader *header,
@@ -348,10 +333,7 @@ int NetworkModel_GetCurrentAddress(const RDMHeader *header,
               DHCP_MODE_ACTIVE : DHCP_MODE_INACTIVE);
   }
 
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int NetworkModel_GetStaticAddress(const RDMHeader *header,
@@ -370,10 +352,7 @@ int NetworkModel_GetStaticAddress(const RDMHeader *header,
   ptr = PushUInt32(ptr, interface->configured_ip);
   *ptr++ = interface->configured_netmask;
 
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int NetworkModel_SetStaticAddress(const RDMHeader *header,
@@ -475,10 +454,7 @@ int NetworkModel_GetDefaultRoute(const RDMHeader *header,
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt32(ptr, g_network_model.default_interface_route);
   ptr = PushUInt32(ptr, g_network_model.default_route);
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int NetworkModel_SetDefaultRoute(const RDMHeader *header,
@@ -514,10 +490,7 @@ int NetworkModel_GetNameServer(const RDMHeader *header,
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   *ptr++ = index;
   ptr = PushUInt32(ptr, g_network_model.nameservers[index]);
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int NetworkModel_SetNameServer(const RDMHeader *header,
