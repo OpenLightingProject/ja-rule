@@ -150,10 +150,6 @@ static int LookupIndex(unsigned int id) {
 static int CheckInterfaceRequest(const RDMHeader *header,
                                  const uint8_t *param_data,
                                  unsigned int *index) {
-  if (header->param_data_length != sizeof(uint32_t)) {
-    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
-  }
-
   unsigned int id = JoinUInt32(param_data[0], param_data[1],
                                param_data[2], param_data[3]);
   int found_index = LookupIndex(id);
@@ -216,12 +212,6 @@ static void ConfigureInterface(InterfaceState *interface) {
 // ----------------------------------------------------------------------------
 int NetworkModel_GetListInterfaces(const RDMHeader *header,
                                    UNUSED const uint8_t *param_data) {
-  if (header->param_data_length) {
-    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
-  }
-
-  ReturnUnlessUnicast(header);
-
   unsigned int offset = sizeof(RDMHeader);
   unsigned int i = 0;
   for (; i < g_network_model.interface_count; i++) {
@@ -245,8 +235,6 @@ int NetworkModel_GetInterfaceLabel(const RDMHeader *header,
   if (r >= 0) {
     return r;
   }
-
-  ReturnUnlessUnicast(header);
 
   unsigned int offset = sizeof(RDMHeader);
   memcpy(g_rdm_buffer + offset, param_data, INTERFACE_ID_SIZE);
@@ -273,8 +261,6 @@ int NetworkModel_GetHardwareAddress(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  ReturnUnlessUnicast(header);
-
   unsigned int offset = sizeof(RDMHeader);
   memcpy(g_rdm_buffer + offset, param_data, INTERFACE_ID_SIZE);
   offset += INTERFACE_ID_SIZE;
@@ -294,8 +280,6 @@ int NetworkModel_GetDHCPMode(const RDMHeader *header,
   if (r >= 0) {
     return r;
   }
-
-  ReturnUnlessUnicast(header);
 
   unsigned int offset = sizeof(RDMHeader);
   memcpy(g_rdm_buffer + offset, param_data, INTERFACE_ID_SIZE);
@@ -339,8 +323,6 @@ int NetworkModel_GetZeroconfMode(const RDMHeader *header,
     return r;
   }
 
-  ReturnUnlessUnicast(header);
-
   unsigned int offset = sizeof(RDMHeader);
   memcpy(g_rdm_buffer + offset, param_data, INTERFACE_ID_SIZE);
   offset += INTERFACE_ID_SIZE;
@@ -383,7 +365,6 @@ int NetworkModel_GetCurrentAddress(const RDMHeader *header,
     return r;
   }
 
-  ReturnUnlessUnicast(header);
   InterfaceState *interface = &g_network_model.interfaces[index];
 
   unsigned int offset = sizeof(RDMHeader);
@@ -414,8 +395,6 @@ int NetworkModel_GetStaticAddress(const RDMHeader *header,
   if (r >= 0) {
     return r;
   }
-
-  ReturnUnlessUnicast(header);
 
   InterfaceState *interface = &g_network_model.interfaces[index];
   unsigned int offset = sizeof(RDMHeader);
@@ -539,11 +518,6 @@ int NetworkModel_ApplyInterfaceConfiguration(const RDMHeader *header,
 
 int NetworkModel_GetDefaultRoute(const RDMHeader *header,
                                  UNUSED const uint8_t *param_data) {
-  if (header->param_data_length) {
-    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
-  }
-  ReturnUnlessUnicast(header);
-
   unsigned int offset = sizeof(RDMHeader);
   g_rdm_buffer[offset++] = UInt32Byte0(g_network_model.default_interface_route);
   g_rdm_buffer[offset++] = UInt32Byte1(g_network_model.default_interface_route);
@@ -586,16 +560,11 @@ int NetworkModel_SetDefaultRoute(const RDMHeader *header,
 
 int NetworkModel_GetNameServer(const RDMHeader *header,
                                const uint8_t *param_data) {
-  if (header->param_data_length != sizeof(uint8_t)) {
-    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
-  }
-
   uint8_t index = param_data[0];
   if (index >= NUMBER_OF_NAMESERVERS) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  ReturnUnlessUnicast(header);
   uint32_t ip = g_network_model.nameservers[index];
 
   unsigned int offset = sizeof(RDMHeader);
@@ -765,44 +734,47 @@ const ModelEntry NETWORK_MODEL_ENTRY = {
 };
 
 static const PIDDescriptor PID_DESCRIPTORS[] = {
-  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters,
+  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, (PIDCommandHandler) NULL},
-  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds,
+  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0, (PIDCommandHandler) NULL},
+  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription,
+  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0,
     (PIDCommandHandler) NULL},
-  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel,
+  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, RDMResponder_SetDeviceLabel},
-  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel,
+  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0,
+    RDMResponder_SetDeviceLabel},
+  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0,
     (PIDCommandHandler) NULL},
-  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice,
+  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0,
     RDMResponder_SetIdentifyDevice},
-
-  {PID_LIST_INTERFACES, NetworkModel_GetListInterfaces,
+  {PID_LIST_INTERFACES, NetworkModel_GetListInterfaces, 0,
     (PIDCommandHandler) NULL},
-  {PID_INTERFACE_LABEL, NetworkModel_GetInterfaceLabel,
+  {PID_INTERFACE_LABEL, NetworkModel_GetInterfaceLabel, 4,
     (PIDCommandHandler) NULL},
-  {PID_INTERFACE_HARDWARE_ADDRESS_TYPE1, NetworkModel_GetHardwareAddress,
+  {PID_INTERFACE_HARDWARE_ADDRESS_TYPE1, NetworkModel_GetHardwareAddress, 4,
     (PIDCommandHandler) NULL},
-  {PID_IPV4_DHCP_MODE, NetworkModel_GetDHCPMode, NetworkModel_SetDHCPMode},
-  {PID_IPV4_ZEROCONF_MODE, NetworkModel_GetZeroconfMode,
+  {PID_IPV4_DHCP_MODE, NetworkModel_GetDHCPMode, 4, NetworkModel_SetDHCPMode},
+  {PID_IPV4_ZEROCONF_MODE, NetworkModel_GetZeroconfMode, 4,
     NetworkModel_SetZeroconfMode},
-  {PID_IPV4_CURRENT_ADDRESS, NetworkModel_GetCurrentAddress,
+  {PID_IPV4_CURRENT_ADDRESS, NetworkModel_GetCurrentAddress, 4,
     (PIDCommandHandler) NULL},
-  {PID_IPV4_STATIC_ADDRESS, NetworkModel_GetStaticAddress,
+  {PID_IPV4_STATIC_ADDRESS, NetworkModel_GetStaticAddress, 4,
     NetworkModel_SetStaticAddress},
-  {PID_INTERFACE_RENEW_DHCP, (PIDCommandHandler) NULL, NetworkModel_RenewDHCP},
-  {PID_INTERFACE_RELEASE_DHCP, (PIDCommandHandler) NULL,
+  {PID_INTERFACE_RENEW_DHCP, (PIDCommandHandler) NULL, 0,
+    NetworkModel_RenewDHCP},
+  {PID_INTERFACE_RELEASE_DHCP, (PIDCommandHandler) NULL, 0,
     NetworkModel_ReleaseDHCP},
-  {PID_INTERFACE_APPLY_CONFIGURATION, (PIDCommandHandler) NULL,
+  {PID_INTERFACE_APPLY_CONFIGURATION, (PIDCommandHandler) NULL, 4,
     NetworkModel_ApplyInterfaceConfiguration},
-  {PID_IPV4_DEFAULT_ROUTE, NetworkModel_GetDefaultRoute,
+  {PID_IPV4_DEFAULT_ROUTE, NetworkModel_GetDefaultRoute, 0,
     NetworkModel_SetDefaultRoute},
-  {PID_DNS_NAME_SERVER, NetworkModel_GetNameServer, NetworkModel_SetNameServer},
-  {PID_DNS_HOSTNAME, NetworkModel_GetHostname, NetworkModel_SetHostName},
-  {PID_DNS_DOMAIN_NAME, NetworkModel_GetDomainName, NetworkModel_SetDomainName},
+  {PID_DNS_NAME_SERVER, NetworkModel_GetNameServer, 1,
+    NetworkModel_SetNameServer},
+  {PID_DNS_HOSTNAME, NetworkModel_GetHostname, 0, NetworkModel_SetHostName},
+  {PID_DNS_DOMAIN_NAME, NetworkModel_GetDomainName, 0,
+    NetworkModel_SetDomainName},
 };
 
 static const ProductDetailIds PRODUCT_DETAIL_ID_LIST = {

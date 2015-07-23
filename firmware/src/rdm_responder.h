@@ -92,6 +92,11 @@ typedef struct {
   PIDCommandHandler get_handler;
 
   /**
+   * @brief The size of the parameter data for GET requests.
+   */
+  uint8_t get_param_size;
+
+  /**
    * @brief The handler to use for SET requests.
    *
    * If NULL, NR_UNSUPPORTED_COMMAND_CLASS will be returned instead.
