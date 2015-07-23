@@ -30,12 +30,10 @@
 #include "utils.h"
 
 // Various constants
-enum { ETHERNET_HARDWARE_TYPE = 1};
-enum { IPSEC_HARDWARE_TYPE = 31 };
 enum { NUMBER_OF_NAMESERVERS = 3 };
 enum { NUMBER_OF_INTERFACES = 3 };
-enum { MAC_SIZE = 6 };
 enum { INTERFACE_ID_SIZE = 4 };
+enum { SOFTWARE_VERSION = 0 };
 
 typedef enum {
   CONFIG_SOURCE_STATIC = 0x00,
@@ -50,13 +48,11 @@ typedef enum {
   WLAN_INTERFACE_ID = 4
 } InterfaceId;
 
-enum { SOFTWARE_VERSION = 0 };
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Network Device";
 static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
 static const char DEFAULT_HOSTNAME[] = "responder";
 static const char DEFAULT_DOMAINNAME[] = "local";
-static const uint8_t MAX_NETMASK = 32;
 static const uint32_t DHCP_FAILURE_RATIO = 3;  // Fail 1 / n DHCP requests.
 
 static const ResponderDefinition RESPONDER_DEFINITION;
@@ -68,7 +64,7 @@ typedef struct {
   const char *label;
   uint32_t id;
   uint16_t hardware_type;
-  uint8_t hardware_address[MAC_SIZE];
+  uint8_t hardware_address[MAC_ADDRESS_SIZE];
 } InterfaceDefinition;
 
 /*
@@ -110,7 +106,7 @@ static const InterfaceDefinition INTERFACE_DEFINITIONS[] = {
     .label = ETHERNET_INTERFACE_NAME,
     .id = LAN_INTERFACE_ID,
     .hardware_type = ETHERNET_HARDWARE_TYPE,
-    // Local admin MAC address
+    // Locally administered MAC address
     .hardware_address = {0x52, 0x12, 0x34, 0x56, 0x78, 0x9a},
   },
   {
@@ -283,8 +279,8 @@ int NetworkModel_GetHardwareAddress(const RDMHeader *header,
   memcpy(g_rdm_buffer + offset, param_data, INTERFACE_ID_SIZE);
   offset += INTERFACE_ID_SIZE;
   memcpy(g_rdm_buffer + offset, INTERFACE_DEFINITIONS[index].hardware_address,
-         MAC_SIZE);
-  offset += MAC_SIZE;
+         MAC_ADDRESS_SIZE);
+  offset += MAC_ADDRESS_SIZE;
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
                            ntohs(header->param_id),
                            offset - sizeof(RDMHeader));
