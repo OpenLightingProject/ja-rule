@@ -24,6 +24,7 @@
 #include "coarse_timer.h"
 #include "message_handler.h"
 #include "moving_light.h"
+#include "network_model.h"
 #include "rdm.h"
 #include "rdm_handler.h"
 #include "sensor_model.h"
@@ -76,7 +77,7 @@ void APP_Initialize(void) {
   };
   RDMHandler_Initialize(&rdm_handler_settings);
 
-  // Initialize RDM Models
+  // Initialize RDM Models, keep these in Model ID order.
   SimpleModelSettings simple_model_settings = {
     .identify_port = RDM_RESPONDER_PORT,
     .identify_bit = RDM_RESPONDER_IDENTIFY_PORT_BIT,
@@ -93,6 +94,10 @@ void APP_Initialize(void) {
   SensorModelSettings sensor_model_settings = {};
   SensorModel_Initialize(&sensor_model_settings);
   RDMHandler_AddModel(&SENSOR_MODEL_ENTRY);
+
+  NetworkModelSettings network_settings = {};
+  NetworkModel_Initialize(&network_settings);
+  RDMHandler_AddModel(&NETWORK_MODEL_ENTRY);
 
   // Initialize the Host message layers.
   MessageHandler_Initialize(NULL);

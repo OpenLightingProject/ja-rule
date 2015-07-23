@@ -69,7 +69,12 @@ typedef enum {
   /**
    * @brief A responder that contains only sensors.
    */
-  SENSOR_MODEL_ID = 0x0103
+  SENSOR_MODEL_ID = 0x0103,
+
+  /**
+   * @brief A responder that presents network interfaces.
+   */
+  NETWORK_MODEL_ID = 0x0104
 } ResponderModel;
 
 /**
