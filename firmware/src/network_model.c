@@ -30,22 +30,12 @@
 #include "utils.h"
 
 // Various constants
-#define SOFTWARE_VERSION 0x00000000
-
 enum { ETHERNET_HARDWARE_TYPE = 1};
 enum { IPSEC_HARDWARE_TYPE = 31 };
 enum { NUMBER_OF_NAMESERVERS = 3 };
 enum { NUMBER_OF_INTERFACES = 3 };
-enum { DNS_HOST_NAME_SIZE = 63 };
-enum { DNS_DOMAIN_NAME_SIZE = 231 };
 enum { MAC_SIZE = 6 };
 enum { INTERFACE_ID_SIZE = 4 };
-
-typedef enum {
-  DHCP_MODE_INACTIVE = 0x00,
-  DHCP_MODE_ACTIVE = 0x01,
-  DHCP_MODE_UNKNOWN = 0x02
-} DHCPMode;
 
 typedef enum {
   CONFIG_SOURCE_STATIC = 0x00,
@@ -60,15 +50,14 @@ typedef enum {
   WLAN_INTERFACE_ID = 4
 } InterfaceId;
 
+enum { SOFTWARE_VERSION = 0 };
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Network Device";
 static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
 static const char DEFAULT_HOSTNAME[] = "responder";
 static const char DEFAULT_DOMAINNAME[] = "local";
-static const uint32_t NO_DEFAULT_ROUTE = 0;
 static const uint8_t MAX_NETMASK = 32;
-static const uint32_t IPV4_UNCONFIGURED = 0;
-static const uint32_t DHCP_FAILURE_RATIO = 3; // Fail 1 / n DHCP requests.
+static const uint32_t DHCP_FAILURE_RATIO = 3;  // Fail 1 / n DHCP requests.
 
 static const ResponderDefinition RESPONDER_DEFINITION;
 
@@ -118,25 +107,25 @@ static const char WIFI_INTERFACE_NAME[] = "wlan0";
 
 static const InterfaceDefinition INTERFACE_DEFINITIONS[] = {
   {
-   .label = ETHERNET_INTERFACE_NAME,
-   .id = LAN_INTERFACE_ID,
-   .hardware_type = ETHERNET_HARDWARE_TYPE,
-   // Local admin MAC address
-   .hardware_address = {0x52, 0x12, 0x34, 0x56, 0x78, 0x9a},
+    .label = ETHERNET_INTERFACE_NAME,
+    .id = LAN_INTERFACE_ID,
+    .hardware_type = ETHERNET_HARDWARE_TYPE,
+    // Local admin MAC address
+    .hardware_address = {0x52, 0x12, 0x34, 0x56, 0x78, 0x9a},
   },
   {
-   .label = IPSEC_INTERFACE_NAME,
-   .id = IPSEC_INTERFACE_ID,
-   .hardware_type = IPSEC_HARDWARE_TYPE,
-   // No h/w address for ptp links
-   .hardware_address = {0, 0, 0, 0, 0, 0},
+    .label = IPSEC_INTERFACE_NAME,
+    .id = IPSEC_INTERFACE_ID,
+    .hardware_type = IPSEC_HARDWARE_TYPE,
+    // No h/w address for ptp links
+    .hardware_address = {0, 0, 0, 0, 0, 0},
   },
   {
-   .label = WIFI_INTERFACE_NAME,
-   .id = WLAN_INTERFACE_ID,
-   .hardware_type = ETHERNET_HARDWARE_TYPE,
-   // Local admin MAC address
-   .hardware_address = {0x52, 0xab, 0xcd, 0xef, 0x01, 0x23},
+    .label = WIFI_INTERFACE_NAME,
+    .id = WLAN_INTERFACE_ID,
+    .hardware_type = ETHERNET_HARDWARE_TYPE,
+    // Local admin MAC address
+    .hardware_address = {0x52, 0xab, 0xcd, 0xef, 0x01, 0x23},
   },
 };
 
@@ -699,7 +688,7 @@ void NetworkModel_Initialize(const NetworkModelSettings *settings) {
   g_network_model.interface_count = NUMBER_OF_INTERFACES;
   g_network_model.interfaces = g_interfaces;
 
-  unsigned int i =0;
+  unsigned int i = 0;
   for (; i < g_network_model.interface_count; i++) {
     ConfigureInterface(&g_network_model.interfaces[i]);
   }

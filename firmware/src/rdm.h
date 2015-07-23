@@ -147,6 +147,36 @@ static const uint8_t ALL_SENSORS = 0xff;
 static const uint16_t SENSOR_VALUE_UNSUPPORTED = 0;
 
 /**
+ * @brief The size of the DNS Host Name field from E1.37-2.
+ */
+enum { DNS_HOST_NAME_SIZE = 63 };
+
+/**
+ * @brief The size of the DNS Domain Name field from E1.37-2.
+ */
+enum { DNS_DOMAIN_NAME_SIZE = 231 };
+
+/**
+ * @brief Indicates no route is assigned.
+ */
+static const uint32_t NO_DEFAULT_ROUTE = 0;
+
+/**
+ * @brief Indicates no IP address is configured.
+ */
+static const uint32_t IPV4_UNCONFIGURED = 0;
+
+/**
+ * @brief DHCP Modes
+ */
+typedef enum {
+  DHCP_MODE_INACTIVE = 0x00,
+  DHCP_MODE_ACTIVE = 0x01,
+  DHCP_MODE_UNKNOWN = 0x02
+} DHCPMode;
+
+
+/**
  * @brief RDM Command Classes from E1.20.
  * @note See section 6.2.10 of ANSI E1.20 for more information.
  */
