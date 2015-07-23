@@ -108,10 +108,10 @@ static inline uint8_t UInt32Byte3(uint32_t s) {
 
 /**
  * @brief Combine four 8-bit values to a 32-bit value.
- * @param byte0, the MSB
+ * @param byte0 the MSB
  * @param byte1
  * @param byte2
- * @param byte3, the LSB
+ * @param byte3 the LSB
  * @returns A 32-bit value.
  */
 static inline uint32_t JoinUInt32(uint8_t byte0, uint8_t byte1, uint8_t byte2,
