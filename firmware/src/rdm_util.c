@@ -50,6 +50,11 @@ bool RDMUtil_RequiresAction(const uint8_t our_uid[UID_LENGTH],
          (uid[0] == 0xff && uid[1] == 0xff);
 }
 
+bool RDMUtil_RequiresResponse(const uint8_t uid[UID_LENGTH]) {
+  return !(uid[2] == 0xff && uid[3] == 0xff && uid[4] == 0xff &&
+           uid[5] == 0xff);
+}
+
 bool RDMUtil_VerifyChecksum(const uint8_t *frame, unsigned int size) {
   if (size < sizeof(RDMHeader) + (unsigned int) RDM_CHECKSUM_LENGTH ||
       frame[2] + (unsigned int) RDM_CHECKSUM_LENGTH != size) {
