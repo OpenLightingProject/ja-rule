@@ -637,7 +637,7 @@ int NetworkModel_GetHostname(const RDMHeader *header,
 int NetworkModel_SetHostName(const RDMHeader *header,
                              const uint8_t *param_data) {
   if (header->param_data_length == 0 ||
-      header->param_data > DNS_HOST_NAME_SIZE) {
+      header->param_data_length > DNS_HOST_NAME_SIZE) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -655,6 +655,10 @@ int NetworkModel_GetDomainName(const RDMHeader *header,
 
 int NetworkModel_SetDomainName(const RDMHeader *header,
                                const uint8_t *param_data) {
+  if (header->param_data_length > DNS_DOMAIN_NAME_SIZE) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
   RDMUtil_StringCopy(g_network_model.domain_name, DNS_DOMAIN_NAME_SIZE,
                      (const char*) param_data,
                      header->param_data_length);
