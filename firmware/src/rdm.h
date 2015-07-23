@@ -146,7 +146,7 @@ static const uint8_t ALL_SENSORS = 0xff;
  */
 static const uint16_t SENSOR_VALUE_UNSUPPORTED = 0;
 
-/**
+/*
  * @brief The maximum number of slot info entries in a RDM frame.
  */
 static const unsigned int MAX_SLOT_INFO_PER_FRAME = 46;
@@ -155,6 +155,53 @@ static const unsigned int MAX_SLOT_INFO_PER_FRAME = 46;
  * @brief The maximum number of default slot value entries in a RDM frame.
  */
 static const unsigned int MAX_DEFAULT_SLOT_VALUE_PER_FRAME = 77;
+
+/**
+ * @brief The size of the DNS Host Name field from E1.37-2.
+ */
+enum { DNS_HOST_NAME_SIZE = 63 };
+
+/**
+ * @brief The size of the DNS Domain Name field from E1.37-2.
+ */
+enum { DNS_DOMAIN_NAME_SIZE = 231 };
+
+/**
+ * @brief Interface hardware types.
+ */
+enum {
+  ETHERNET_HARDWARE_TYPE = 1,  //!< Ethernet
+  IPSEC_HARDWARE_TYPE = 31  //!< IPSEC
+};
+
+/**
+ * @brief Indicates no route is assigned.
+ */
+static const uint32_t NO_DEFAULT_ROUTE = 0;
+
+/**
+ * @brief Indicates no IP address is configured.
+ */
+static const uint32_t IPV4_UNCONFIGURED = 0;
+
+/**
+ * @brief The maximum netmask value.
+ */
+static const uint8_t MAX_NETMASK = 32;
+
+/**
+ * @brief The size of a MAC address
+ */
+enum { MAC_ADDRESS_SIZE = 6 };
+
+/**
+ * @brief DHCP Modes
+ */
+typedef enum {
+  DHCP_MODE_INACTIVE = 0x00,
+  DHCP_MODE_ACTIVE = 0x01,
+  DHCP_MODE_UNKNOWN = 0x02
+} DHCPMode;
 
 /**
  * @brief RDM Command Classes from E1.20.
