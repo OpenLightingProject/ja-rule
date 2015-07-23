@@ -204,14 +204,14 @@ int RDMResponder_BuildNack(const RDMHeader *header, RDMNackReason reason) {
   ReturnUnlessUnicast(header);
 
   uint16_t param_data = htons(reason);
-
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  ptr = PushUInt16(ptr, reason);
   RDMResponder_BuildHeader(
       header, NACK_REASON,
       (header->command_class == GET_COMMAND ?
        GET_COMMAND_RESPONSE : SET_COMMAND_RESPONSE),
        ntohs(header->param_id),
-       sizeof(param_data));
-  memcpy(g_rdm_buffer + sizeof(RDMHeader), &param_data, sizeof(param_data));
+       (ptr - g_rdm_buffer) - sizeof(RDMHeader));
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
