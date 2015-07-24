@@ -106,6 +106,7 @@ static uint8_t *BuildSensorValueResponse(uint8_t *ptr, uint8_t index,
 void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]) {
   memcpy(g_responder->uid, uid, UID_LENGTH);
   g_responder->def = NULL;
+  g_responder->is_subdevice = false;
   RDMResponder_ResetToFactoryDefaults();
 }
 
@@ -397,6 +398,9 @@ int RDMResponder_GetSupportedParameters(const RDMHeader *header,
       case PID_SOFTWARE_VERSION_LABEL:
       case PID_DMX_START_ADDRESS:
       case PID_IDENTIFY_DEVICE:
+        if (g_responder->is_subdevice) {
+          ptr = PushUInt16(ptr, definition->descriptors[i].pid);
+        }
         break;
       default:
         ptr = PushUInt16(ptr, definition->descriptors[i].pid);

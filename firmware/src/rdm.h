@@ -731,6 +731,13 @@ typedef enum {
 } RDMSlotCategory;
 
 
+typedef enum {
+  IDENTIFY_MODE_QUIET = 0x00,
+  IDENTIFY_MODE_LOUD = 0xff,
+} RDMIdentifyMode;
+
+
+
 #ifdef __cplusplus
 }
 #endif

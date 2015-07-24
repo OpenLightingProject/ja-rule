@@ -21,6 +21,7 @@
 #include <stdlib.h>
 
 #include "constants.h"
+#include "macros.h"
 #include "rdm_frame.h"
 #include "rdm_responder.h"
 #include "rdm_util.h"
@@ -41,10 +42,35 @@ static const ResponderDefinition SUBDEVICE_RESPONDER_DEFINITION;
 typedef struct {
   RDMResponder responder;
   uint16_t index;
+
+  uint8_t identify_mode;
 } DimmerSubDevice;
 
-// TODO: see if we can make this const
 static DimmerSubDevice g_subdevices[NUMBER_OF_SUB_DEVICES];
+
+DimmerSubDevice *g_active_device = NULL;
+
+// PID Handlers
+// ----------------------------------------------------------------------------
+int DimmerModel_GetIdentifyMode(const RDMHeader *header,
+                                UNUSED const uint8_t *param_data) {
+  return RDMResponder_GenericGetUInt8(header, g_active_device->identify_mode);
+}
+
+int DimmerModel_SetIdentifyMode(const RDMHeader *header,
+                                const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  uint8_t mode = param_data[0];
+  if (mode != IDENTIFY_MODE_QUIET && mode != IDENTIFY_MODE_LOUD) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  g_active_device->identify_mode = mode;
+  return RDMResponder_BuildSetAck(header);
+}
 
 // Public Functions
 // ----------------------------------------------------------------------------
@@ -58,6 +84,7 @@ void DimmerModel_Initialize(const DimmerModelSettings *settings) {
     g_responder = &g_subdevices[i].responder;
     memcpy(g_responder->uid, temp->uid, UID_LENGTH);
     RDMResponder_ResetToFactoryDefaults();
+    g_responder->is_subdevice = true;
     g_responder->sub_device_count = NUMBER_OF_SUB_DEVICES;
   }
 
@@ -117,6 +144,7 @@ static int DimmerModel_HandleRequest(const RDMHeader *header,
   int response_size = RDM_RESPONDER_NO_RESPONSE;
   for (; i < NUMBER_OF_SUB_DEVICES; i++) {
     if (sub_device == g_subdevices[i].index || sub_device == SUBDEVICE_ALL) {
+      g_active_device = &g_subdevices[i];
       g_responder = &g_subdevices[i].responder;
       response_size = RDMResponder_DispatchPID(header, param_data);
       handled = true;
@@ -207,7 +235,9 @@ static const PIDDescriptor SUBDEVICE_PID_DESCRIPTORS[] = {
   {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0,
     (PIDCommandHandler) NULL},
   {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0,
-    RDMResponder_SetIdentifyDevice}
+    RDMResponder_SetIdentifyDevice},
+  {PID_IDENTIFY_MODE, DimmerModel_GetIdentifyMode, 0,
+    DimmerModel_SetIdentifyMode}
 };
 
 static const ProductDetailIds SUBDEVICE_PRODUCT_DETAIL_ID_LIST = {
