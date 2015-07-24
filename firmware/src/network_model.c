@@ -251,7 +251,7 @@ int NetworkModel_GetDHCPMode(const RDMHeader *header,
   memcpy(g_rdm_buffer + offset, param_data, INTERFACE_ID_SIZE);
   offset += INTERFACE_ID_SIZE;
   g_rdm_buffer[offset++] =
-     g_network_model.interfaces[index].configured_dhcp_mode;
+      g_network_model.interfaces[index].configured_dhcp_mode;
   return RDMResponder_AddHeaderAndChecksum(header, ACK, offset);
 }
 
