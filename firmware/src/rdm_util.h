@@ -70,7 +70,7 @@ bool RDMUtil_RequiresAction(const uint8_t our_uid[UID_LENGTH],
  * @param responder The responder information
  * @param uid The destination UID to check.
  * @returns true if the UIDs match, false otherwise.
- * @pre This assumes that RDMUtil_RequiresAction already returned true.
+ * @pre RDMUtil_RequiresAction() returned true.
  *
  * A response is only required if the last four bytes of the UID are not
  * 0xffffffff.
