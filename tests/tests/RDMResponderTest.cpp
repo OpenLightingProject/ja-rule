@@ -129,7 +129,7 @@ class RDMResponderTest : public testing::Test {
     def->model_description = nullptr;
     def->default_device_label = nullptr;
     def->product_detail_ids = nullptr;
-    g_responder.def = def;
+    g_responder->def = def;
   }
 
  protected:
@@ -185,7 +185,7 @@ TEST_F(RDMResponderTest, DiscoveryUniqueBranch) {
   EXPECT_THAT(tuple, DataIs(expected_data, arraysize(expected_data)));
 
   // Check we don't respond if muted
-  g_responder.is_muted = true;
+  g_responder->is_muted = true;
   CreateDUBParamData(UID(0, 0), UID::AllDevices(), param_data);
   EXPECT_EQ(0,
             RDMResponder_HandleDUBRequest(param_data, arraysize(param_data)));
@@ -215,18 +215,18 @@ TEST_F(RDMResponderTest, setUnMute) {
   unique_ptr<RDMResponse> response(GetResponseFromData(
         unicast_unmute.get(), control_bits, arraysize(control_bits)));
 
-  g_responder.is_muted = true;
+  g_responder->is_muted = true;
   int size = InvokeMuteHandler(RDMResponder_SetUnMute, unicast_unmute.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
-  EXPECT_FALSE(g_responder.is_muted);
+  EXPECT_FALSE(g_responder->is_muted);
 
   // Try with a broadcast
   unique_ptr<RDMDiscoveryRequest> broadcast_unmute(NewUnMuteRequest(
       m_controller_uid, UID::AllDevices(), 0));
-  g_responder.is_muted = true;
+  g_responder->is_muted = true;
   EXPECT_EQ(0,
             InvokeMuteHandler(RDMResponder_SetUnMute, broadcast_unmute.get()));
-  EXPECT_FALSE(g_responder.is_muted);
+  EXPECT_FALSE(g_responder->is_muted);
 }
 
 TEST_F(RDMResponderTest, setMute) {
@@ -239,17 +239,17 @@ TEST_F(RDMResponderTest, setMute) {
   unique_ptr<RDMResponse> response(GetResponseFromData(
         unicast_mute.get(), control_bits, arraysize(control_bits)));
 
-  g_responder.is_muted = false;
+  g_responder->is_muted = false;
   int size = InvokeMuteHandler(RDMResponder_SetMute, unicast_mute.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
-  EXPECT_TRUE(g_responder.is_muted);
+  EXPECT_TRUE(g_responder->is_muted);
 
   // Try with a broadcast
   unique_ptr<RDMDiscoveryRequest> broadcast_mute(NewMuteRequest(
       m_controller_uid, UID::AllDevices(), 0));
-  g_responder.is_muted = false;
+  g_responder->is_muted = false;
   EXPECT_EQ(0, InvokeMuteHandler(RDMResponder_SetMute, broadcast_mute.get()));
-  EXPECT_TRUE(g_responder.is_muted);
+  EXPECT_TRUE(g_responder->is_muted);
 }
 
 TEST_F(RDMResponderTest, testBuildNack) {
