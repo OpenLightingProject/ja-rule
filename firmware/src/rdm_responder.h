@@ -291,7 +291,7 @@ typedef struct {
 /**
  * @brief The global RDMResponder object.
  */
-extern RDMResponder g_responder;
+extern RDMResponder *g_responder;
 
 /**
  * @brief Indicates there is no response required for the request.

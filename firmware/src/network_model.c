@@ -588,7 +588,7 @@ void NetworkModel_Initialize(const NetworkModelSettings *settings) {
 }
 
 static void NetworkModel_Activate() {
-  g_responder.def = &RESPONDER_DEFINITION;
+  g_responder->def = &RESPONDER_DEFINITION;
   RDMResponder_ResetToFactoryDefaults();
 }
 
@@ -610,7 +610,7 @@ static int NetworkModel_Ioctl(ModelIoctl command, uint8_t *data,
 
 static int NetworkModel_HandleRequest(const RDMHeader *header,
                                      const uint8_t *param_data) {
-  if (!RDMUtil_RequiresAction(g_responder.uid, header->dest_uid)) {
+  if (!RDMUtil_RequiresAction(g_responder->uid, header->dest_uid)) {
     return RDM_RESPONDER_NO_RESPONSE;
   }
 

@@ -39,15 +39,18 @@ const char MANUFACTURER_LABEL[] = "Open Lighting Project";
 #define FE_CONSTANT 0xfe
 #define SENSOR_VALUE_PARAM_DATA_LENGTH 9
 
-RDMResponder g_responder;
+static RDMResponder root_responder;
+
+RDMResponder *g_responder = &root_responder;
+
 
 /*
  * @brief Get the current personality.
  * @returns The current personality definition, or NULL if there isn't one.
  */
 static inline const PersonalityDefinition* CurrentPersonality() {
-  if (g_responder.def->personalities) {
-    return &g_responder.def->personalities[g_responder.current_personality - 1];
+  if (g_responder->def->personalities) {
+    return &g_responder->def->personalities[g_responder->current_personality - 1];
   }
   return NULL;
 }
@@ -56,10 +59,10 @@ static inline const PersonalityDefinition* CurrentPersonality() {
  * @brief Record the sensor at the specified index.
  */
 static inline void RecordSensor(unsigned int i) {
-  if (g_responder.def->sensors[i].recorded_value_support &
+  if (g_responder->def->sensors[i].recorded_value_support &
       SENSOR_SUPPORTS_RECORDING_MASK) {
-    g_responder.sensors[i].recorded_value =
-        g_responder.sensors[i].present_value;
+    g_responder->sensors[i].recorded_value =
+        g_responder->sensors[i].present_value;
   }
 }
 
@@ -67,21 +70,21 @@ static inline void RecordSensor(unsigned int i) {
  * @brief Reset the sensor at the specified index.
  */
 static void ResetSensor(unsigned int i) {
-  if (g_responder.def->sensors[i].recorded_value_support &
+  if (g_responder->def->sensors[i].recorded_value_support &
       SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK) {
-    g_responder.sensors[i].lowest_value = g_responder.sensors[i].present_value;
-    g_responder.sensors[i].highest_value = g_responder.sensors[i].present_value;
+    g_responder->sensors[i].lowest_value = g_responder->sensors[i].present_value;
+    g_responder->sensors[i].highest_value = g_responder->sensors[i].present_value;
   } else {
-    g_responder.sensors[i].lowest_value = SENSOR_VALUE_UNSUPPORTED;
-    g_responder.sensors[i].highest_value = SENSOR_VALUE_UNSUPPORTED;
+    g_responder->sensors[i].lowest_value = SENSOR_VALUE_UNSUPPORTED;
+    g_responder->sensors[i].highest_value = SENSOR_VALUE_UNSUPPORTED;
   }
 
-  if (g_responder.def->sensors[i].recorded_value_support &
+  if (g_responder->def->sensors[i].recorded_value_support &
       SENSOR_SUPPORTS_RECORDING_MASK) {
-    g_responder.sensors[i].recorded_value =
-      g_responder.sensors[i].present_value;
+    g_responder->sensors[i].recorded_value =
+      g_responder->sensors[i].present_value;
   } else {
-    g_responder.sensors[i].recorded_value = SENSOR_VALUE_UNSUPPORTED;
+    g_responder->sensors[i].recorded_value = SENSOR_VALUE_UNSUPPORTED;
   }
 }
 
@@ -101,64 +104,64 @@ static uint8_t *BuildSensorValueResponse(uint8_t *ptr, uint8_t index,
 // Public Functions
 // ----------------------------------------------------------------------------
 void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]) {
-  memcpy(g_responder.uid, uid, UID_LENGTH);
-  g_responder.def = NULL;
+  memcpy(g_responder->uid, uid, UID_LENGTH);
+  g_responder->def = NULL;
   RDMResponder_ResetToFactoryDefaults();
 }
 
 void RDMResponder_ResetToFactoryDefaults() {
-  g_responder.queued_message_count = 0;
-  g_responder.dmx_start_address = INVALID_DMX_START_ADDRESS;
-  g_responder.sub_device_count = 0;
-  g_responder.current_personality = 0;
-  g_responder.is_muted = false;
-  g_responder.identify_on = false;
-  g_responder.sensors = NULL;
+  g_responder->queued_message_count = 0;
+  g_responder->dmx_start_address = INVALID_DMX_START_ADDRESS;
+  g_responder->sub_device_count = 0;
+  g_responder->current_personality = 0;
+  g_responder->is_muted = false;
+  g_responder->identify_on = false;
+  g_responder->sensors = NULL;
 
-  if (g_responder.def) {
-    RDMUtil_StringCopy(g_responder.device_label, RDM_DEFAULT_STRING_SIZE,
-                       g_responder.def->default_device_label,
+  if (g_responder->def) {
+    RDMUtil_StringCopy(g_responder->device_label, RDM_DEFAULT_STRING_SIZE,
+                       g_responder->def->default_device_label,
                        RDM_DEFAULT_STRING_SIZE);
-    if (g_responder.def->personality_count) {
-      g_responder.current_personality = 1;
-      g_responder.dmx_start_address = 1;
+    if (g_responder->def->personality_count) {
+      g_responder->current_personality = 1;
+      g_responder->dmx_start_address = 1;
     }
   }
 
-  g_responder.using_factory_defaults = true;
+  g_responder->using_factory_defaults = true;
 }
 
 void RDMResponder_GetUID(uint8_t *uid) {
-  memcpy(uid, g_responder.uid, UID_LENGTH);
+  memcpy(uid, g_responder->uid, UID_LENGTH);
 }
 
 int RDMResponder_HandleDUBRequest(const uint8_t *param_data,
                                   unsigned int param_data_length) {
-  if (g_responder.is_muted || param_data_length != 2 * UID_LENGTH) {
+  if (g_responder->is_muted || param_data_length != 2 * UID_LENGTH) {
     return RDM_RESPONDER_NO_RESPONSE;
   }
 
-  if (!(RDMUtil_UIDCompare(param_data, g_responder.uid) <= 0 &&
-        RDMUtil_UIDCompare(g_responder.uid, param_data + UID_LENGTH) <= 0)) {
+  if (!(RDMUtil_UIDCompare(param_data, g_responder->uid) <= 0 &&
+        RDMUtil_UIDCompare(g_responder->uid, param_data + UID_LENGTH) <= 0)) {
     return RDM_RESPONDER_NO_RESPONSE;
   }
 
   uint8_t *response = (uint8_t*) g_rdm_buffer;
   memset(response, FE_CONSTANT, 7);
   response[7] = AA_CONSTANT;
-  response[8] = g_responder.uid[0] | AA_CONSTANT;
-  response[9] = g_responder.uid[0] | FIVE5_CONSTANT;
-  response[10] = g_responder.uid[1] | AA_CONSTANT;
-  response[11] = g_responder.uid[1] | FIVE5_CONSTANT;
+  response[8] = g_responder->uid[0] | AA_CONSTANT;
+  response[9] = g_responder->uid[0] | FIVE5_CONSTANT;
+  response[10] = g_responder->uid[1] | AA_CONSTANT;
+  response[11] = g_responder->uid[1] | FIVE5_CONSTANT;
 
-  response[12] = g_responder.uid[2] | AA_CONSTANT;
-  response[13] = g_responder.uid[2] | FIVE5_CONSTANT;
-  response[14] = g_responder.uid[3] | AA_CONSTANT;
-  response[15] = g_responder.uid[3] | FIVE5_CONSTANT;
-  response[16] = g_responder.uid[4] | AA_CONSTANT;
-  response[17] = g_responder.uid[4] | FIVE5_CONSTANT;
-  response[18] = g_responder.uid[5] | AA_CONSTANT;
-  response[19] = g_responder.uid[5] | FIVE5_CONSTANT;
+  response[12] = g_responder->uid[2] | AA_CONSTANT;
+  response[13] = g_responder->uid[2] | FIVE5_CONSTANT;
+  response[14] = g_responder->uid[3] | AA_CONSTANT;
+  response[15] = g_responder->uid[3] | FIVE5_CONSTANT;
+  response[16] = g_responder->uid[4] | AA_CONSTANT;
+  response[17] = g_responder->uid[4] | FIVE5_CONSTANT;
+  response[18] = g_responder->uid[5] | AA_CONSTANT;
+  response[19] = g_responder->uid[5] | FIVE5_CONSTANT;
 
   uint16_t checksum = 0;
   unsigned int i;
@@ -186,7 +189,7 @@ void RDMResponder_BuildHeader(const RDMHeader *incoming_header,
   memcpy(outgoing_header->src_uid, incoming_header->dest_uid, UID_LENGTH);
   outgoing_header->transaction_number = incoming_header->transaction_number;
   outgoing_header->port_id = response_type;
-  outgoing_header->message_count = g_responder.queued_message_count;
+  outgoing_header->message_count = g_responder->queued_message_count;
   outgoing_header->sub_device = incoming_header->sub_device;
   outgoing_header->command_class = command_class;
   outgoing_header->param_id = htons(pid);
@@ -221,7 +224,7 @@ int RDMResponder_AddHeaderAndChecksum(const RDMHeader *header,
   ptr += UID_LENGTH;
   *ptr++ = header->transaction_number;
   *ptr++ = response_type;
-  *ptr++ = g_responder.queued_message_count;
+  *ptr++ = g_responder->queued_message_count;
   ptr = PushUInt16(ptr, ntohs(header->sub_device));
   *ptr++ = response_command_class;
   ptr = PushUInt16(ptr, ntohs(header->param_id));
@@ -245,7 +248,7 @@ int RDMResponder_BuildNack(const RDMHeader *header, RDMNackReason reason) {
 
 int RDMResponder_DispatchPID(const RDMHeader *header,
                              const uint8_t *param_data) {
-  const ResponderDefinition *definition = g_responder.def;
+  const ResponderDefinition *definition = g_responder->def;
   uint16_t pid = ntohs(header->param_id);
   unsigned int i = 0;
   // TODO(simon): convert to binary search if the list gets long.
@@ -351,12 +354,13 @@ int RDMResponder_SetMute(const RDMHeader *header) {
   if (header->param_data_length) {
     return RDM_RESPONDER_NO_RESPONSE;
   }
-  g_responder.is_muted = true;
+  g_responder->is_muted = true;
 
   ReturnUnlessUnicast(header);
 
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
-  ptr = PushUInt16(ptr, 0);  // set control fields to 0
+  ptr = PushUInt16(ptr,
+                   g_responder->sub_device_count ? MUTE_SUBDEVICE_FLAG : 0);
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
@@ -365,18 +369,19 @@ int RDMResponder_SetUnMute(const RDMHeader *header) {
   if (header->param_data_length) {
     return RDM_RESPONDER_NO_RESPONSE;
   }
-  g_responder.is_muted = false;
+  g_responder->is_muted = false;
 
   ReturnUnlessUnicast(header);
 
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
-  ptr = PushUInt16(ptr, 0);  // set control fields to 0
+  ptr = PushUInt16(ptr,
+                   g_responder->sub_device_count ? MUTE_SUBDEVICE_FLAG : 0);
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_GetSupportedParameters(const RDMHeader *header,
                                         UNUSED const uint8_t *param_data) {
-  const ResponderDefinition *definition = g_responder.def;
+  const ResponderDefinition *definition = g_responder->def;
 
   // TODO(simon): handle ack-overflow here
   unsigned int i = 0;
@@ -407,22 +412,22 @@ int RDMResponder_GetDeviceInfo(const RDMHeader *header,
 
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt16(ptr, RDM_VERSION);
-  ptr = PushUInt16(ptr, g_responder.def->model_id);
-  ptr = PushUInt16(ptr, g_responder.def->product_category);
-  ptr = PushUInt32(ptr, g_responder.def->software_version);
+  ptr = PushUInt16(ptr, g_responder->def->model_id);
+  ptr = PushUInt16(ptr, g_responder->def->product_category);
+  ptr = PushUInt32(ptr, g_responder->def->software_version);
   ptr = PushUInt16(ptr, personality ? personality->dmx_footprint : 0);
-  *ptr++ = g_responder.current_personality;
-  *ptr++ = g_responder.def->personality_count;
-  ptr = PushUInt16(ptr, g_responder.dmx_start_address);
-  ptr = PushUInt16(ptr, g_responder.sub_device_count);
-  *ptr++ = g_responder.def->sensor_count;
+  *ptr++ = g_responder->current_personality;
+  *ptr++ = g_responder->def->personality_count;
+  ptr = PushUInt16(ptr, g_responder->dmx_start_address);
+  ptr = PushUInt16(ptr, g_responder->sub_device_count);
+  *ptr++ = g_responder->def->sensor_count;
 
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_GetProductDetailIds(const RDMHeader *header,
                                      UNUSED const uint8_t *param_data) {
-  const ResponderDefinition *definition = g_responder.def;
+  const ResponderDefinition *definition = g_responder->def;
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   if (definition->product_detail_ids) {
     unsigned int i = 0;
@@ -438,14 +443,14 @@ int RDMResponder_GetProductDetailIds(const RDMHeader *header,
 
 int RDMResponder_GetDeviceModelDescription(const RDMHeader *header,
                                            UNUSED const uint8_t *param_data) {
-  const ResponderDefinition *definition = g_responder.def;
+  const ResponderDefinition *definition = g_responder->def;
   return RDMResponder_GenericReturnString(header, definition->model_description,
                                           RDM_DEFAULT_STRING_SIZE);
 }
 
 int RDMResponder_GetManufacturerLabel(const RDMHeader *header,
                                       UNUSED const uint8_t *param_data) {
-  const ResponderDefinition *definition = g_responder.def;
+  const ResponderDefinition *definition = g_responder->def;
   return RDMResponder_GenericReturnString(header,
                                           definition->manufacturer_label,
                                           RDM_DEFAULT_STRING_SIZE);
@@ -453,7 +458,7 @@ int RDMResponder_GetManufacturerLabel(const RDMHeader *header,
 
 int RDMResponder_GetSoftwareVersionLabel(const RDMHeader *header,
                                          UNUSED const uint8_t *param_data) {
-  const ResponderDefinition *definition = g_responder.def;
+  const ResponderDefinition *definition = g_responder->def;
   return RDMResponder_GenericReturnString(header,
                                           definition->software_version_label,
                                           RDM_DEFAULT_STRING_SIZE);
@@ -461,7 +466,7 @@ int RDMResponder_GetSoftwareVersionLabel(const RDMHeader *header,
 
 int RDMResponder_GetDeviceLabel(const RDMHeader *header,
                                 UNUSED const uint8_t *param_data) {
-  return RDMResponder_GenericReturnString(header, g_responder.device_label,
+  return RDMResponder_GenericReturnString(header, g_responder->device_label,
                                           RDM_DEFAULT_STRING_SIZE);
 }
 
@@ -470,7 +475,7 @@ int RDMResponder_SetDeviceLabel(const RDMHeader *header,
   if (header->param_data_length > RDM_DEFAULT_STRING_SIZE) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
-  RDMUtil_StringCopy(g_responder.device_label, RDM_DEFAULT_STRING_SIZE,
+  RDMUtil_StringCopy(g_responder->device_label, RDM_DEFAULT_STRING_SIZE,
                      (const char*) param_data, header->param_data_length);
   return RDMResponder_BuildSetAck(header);
 }
@@ -478,8 +483,8 @@ int RDMResponder_SetDeviceLabel(const RDMHeader *header,
 int RDMResponder_GetDMXPersonality(const RDMHeader *header,
                                    UNUSED const uint8_t *param_data) {
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
-  *ptr++ = g_responder.current_personality;
-  *ptr++ = g_responder.def->personality_count;
+  *ptr++ = g_responder->current_personality;
+  *ptr++ = g_responder->def->personality_count;
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
@@ -491,27 +496,27 @@ int RDMResponder_SetDMXPersonality(const RDMHeader *header,
 
   uint8_t new_personality = param_data[0];
   if (new_personality == 0 ||
-      new_personality > g_responder.def->personality_count) {
+      new_personality > g_responder->def->personality_count) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  g_responder.current_personality = new_personality;
+  g_responder->current_personality = new_personality;
   return RDMResponder_BuildSetAck(header);
 }
 
 int RDMResponder_GetDMXPersonalityDescription(const RDMHeader *header,
                                               const uint8_t *param_data) {
   uint8_t index = param_data[0];
-  if (index == 0 || index > g_responder.def->personality_count) {
+  if (index == 0 || index > g_responder->def->personality_count) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  if (!g_responder.def->personalities) {
+  if (!g_responder->def->personalities) {
     return RDMResponder_BuildNack(header, NR_HARDWARE_FAULT);
   }
 
   const PersonalityDefinition *personality =
-      &g_responder.def->personalities[index - 1];
+      &g_responder->def->personalities[index - 1];
 
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   *ptr++ = index;
@@ -524,7 +529,7 @@ int RDMResponder_GetDMXPersonalityDescription(const RDMHeader *header,
 int RDMResponder_GetDMXStartAddress(const RDMHeader *header,
                                     UNUSED const uint8_t *param_data) {
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
-  ptr = PushUInt16(ptr, g_responder.dmx_start_address);
+  ptr = PushUInt16(ptr, g_responder->dmx_start_address);
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
@@ -539,7 +544,7 @@ int RDMResponder_SetDMXStartAddress(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  g_responder.dmx_start_address = address;
+  g_responder->dmx_start_address = address;
   return RDMResponder_BuildSetAck(header);
 }
 
@@ -608,11 +613,11 @@ int RDMResponder_GetSensorDefinition(const RDMHeader *header,
                                      const uint8_t *param_data) {
   uint8_t sensor_index = param_data[0];
 
-  if (sensor_index >= g_responder.def->sensor_count) {
+  if (sensor_index >= g_responder->def->sensor_count) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  const SensorDefinition *sensor_ptr = &g_responder.def->sensors[sensor_index];
+  const SensorDefinition *sensor_ptr = &g_responder->def->sensors[sensor_index];
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   *ptr++ = sensor_index;
   *ptr++ = sensor_ptr->type;
@@ -633,11 +638,11 @@ int RDMResponder_GetSensorValue(const RDMHeader *header,
                                 const uint8_t *param_data) {
   uint8_t sensor_index = param_data[0];
 
-  if (sensor_index >= g_responder.def->sensor_count) {
+  if (sensor_index >= g_responder->def->sensor_count) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  SensorData *sensor_ptr = &g_responder.sensors[sensor_index];
+  SensorData *sensor_ptr = &g_responder->sensors[sensor_index];
 
   if (sensor_ptr->should_nack) {
     return RDMResponder_BuildNack(header, sensor_ptr->nack_reason);
@@ -655,11 +660,11 @@ int RDMResponder_SetSensorValue(const RDMHeader *header,
   }
 
   uint8_t sensor_index = param_data[0];
-  if (sensor_index < g_responder.def->sensor_count) {
+  if (sensor_index < g_responder->def->sensor_count) {
     ResetSensor(sensor_index);
   } else if (sensor_index == ALL_SENSORS) {
     unsigned int i = 0;
-    for (; i < g_responder.def->sensor_count; i++) {
+    for (; i < g_responder->def->sensor_count; i++) {
       ResetSensor(i);
     }
   } else {
@@ -674,7 +679,7 @@ int RDMResponder_SetSensorValue(const RDMHeader *header,
     ptr += SENSOR_VALUE_PARAM_DATA_LENGTH;
   } else {
     ptr = BuildSensorValueResponse(ptr, sensor_index,
-                                   &g_responder.sensors[sensor_index]);
+                                   &g_responder->sensors[sensor_index]);
   }
 
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
@@ -687,8 +692,8 @@ int RDMResponder_SetRecordSensor(const RDMHeader *header,
   }
 
   uint8_t sensor_index = param_data[0];
-  if (sensor_index < g_responder.def->sensor_count) {
-    if (g_responder.def->sensors[sensor_index].recorded_value_support &
+  if (sensor_index < g_responder->def->sensor_count) {
+    if (g_responder->def->sensors[sensor_index].recorded_value_support &
         SENSOR_SUPPORTS_RECORDING_MASK) {
       RecordSensor(sensor_index);
       return RDMResponder_BuildSetAck(header);
@@ -697,7 +702,7 @@ int RDMResponder_SetRecordSensor(const RDMHeader *header,
     }
   } else if (sensor_index == ALL_SENSORS) {
     unsigned int i = 0;
-    for (; i < g_responder.def->sensor_count; i++) {
+    for (; i < g_responder->def->sensor_count; i++) {
       RecordSensor(i);
     }
     return RDMResponder_BuildSetAck(header);
@@ -708,13 +713,13 @@ int RDMResponder_SetRecordSensor(const RDMHeader *header,
 
 int RDMResponder_GetIdentifyDevice(const RDMHeader *header,
                                    UNUSED const uint8_t *param_data) {
-  return RDMResponder_GenericGetBool(header, g_responder.identify_on);
+  return RDMResponder_GenericGetBool(header, g_responder->identify_on);
 }
 
 int RDMResponder_SetIdentifyDevice(const RDMHeader *header,
                                    const uint8_t *param_data) {
   return RDMResponder_GenericSetBool(header, param_data,
-                                     &g_responder.identify_on);
+                                     &g_responder->identify_on);
 }
 
 int RDMResponder_HandleDiscovery(const RDMHeader *header,

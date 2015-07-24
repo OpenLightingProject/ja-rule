@@ -98,6 +98,26 @@ static const uint16_t MAX_DMX_START_ADDRESS = 512;
 static const uint16_t INVALID_DMX_START_ADDRESS = 0xffff;
 
 /**
+ * @brief Indicates the responder is a managed proxy.
+ */
+static const uint16_t MUTE_MANAGED_PROXY_FLAG = 0x01;
+
+/**
+ * @brief Indicates the responder has subdevices.
+ */
+static const uint16_t MUTE_SUBDEVICE_FLAG = 0x02;
+
+/**
+ * @brief Indicates the responder is in bootloader mode.
+ */
+static const uint16_t MUTE_BOOTLOADER_FLAG = 0x02;
+
+/**
+ * @brief Indicates the responder is a proxy.
+ */
+static const uint16_t MUTE_PROXY_FLAG = 0x02;
+
+/**
  * @brief The size of the default strings used in RDM.
  */
 enum { RDM_DEFAULT_STRING_SIZE = 32 };
