@@ -40,7 +40,6 @@ extern const ModelEntry NETWORK_MODEL_ENTRY;
 
 /**
  * @brief Initialize the network model.
- * @param settings The settings for this model.
  */
 void NetworkModel_Initialize();
 
