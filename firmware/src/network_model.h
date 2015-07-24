@@ -39,15 +39,10 @@ extern "C" {
 extern const ModelEntry NETWORK_MODEL_ENTRY;
 
 /**
- * @brief The settings to use for the Network RDM Model.
- */
-typedef struct {} NetworkModelSettings;
-
-/**
  * @brief Initialize the network model.
  * @param settings The settings for this model.
  */
-void NetworkModel_Initialize(const NetworkModelSettings *settings);
+void NetworkModel_Initialize();
 
 #ifdef __cplusplus
 }

@@ -11,6 +11,7 @@ TESTING_LIBS = $(GMOCK_LIBS) $(GTEST_LIBS)
 TESTS += tests/coarse_timer_test \
          tests/flags_test \
          tests/message_handler_test \
+         tests/network_model_test \
          tests/rdm_handler_test \
          tests/rdm_responder_test \
          tests/rdm_util_test \
@@ -46,6 +47,17 @@ tests_message_handler_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
                                    mocks/libtransceivermock.la \
                                    mocks/libtransportmock.la
 
+tests_network_model_test_SOURCES = tests/NetworkModelTest.cpp
+tests_network_model_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
+tests_network_model_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
+                                 src/libnetworkmodel.la \
+                                 src/librdmresponder.la \
+                                 src/librdmbuffer.la \
+                                 src/librandom.la \
+                                 src/librdmutil.la \
+                                 harmony/mocks/libharmonymock.la \
+                                 mocks/libmatchers.la
+
 tests_rdm_handler_test_SOURCES = tests/RDMHandlerTest.cpp
 tests_rdm_handler_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_rdm_handler_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
@@ -62,7 +74,6 @@ tests_rdm_responder_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                   src/librdmbuffer.la \
                                   src/librdmutil.la \
                                   harmony/mocks/libharmonymock.la \
-                                  mocks/libcoarsetimermock.la \
                                   mocks/libmatchers.la \
                                   mocks/libmessagehandlermock.la
 

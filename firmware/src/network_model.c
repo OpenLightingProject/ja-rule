@@ -423,7 +423,7 @@ int NetworkModel_RenewDHCP(const RDMHeader *header,
     }
   } else {
     uint32_t dhcp_address = 0;
-    if (dhcp_address = GetDHCPAddress()) {
+    if ((dhcp_address = GetDHCPAddress())) {
       interface->current_ip = dhcp_address;
       interface->current_netmask = 8;
       interface->config_source = CONFIG_SOURCE_DHCP;
@@ -574,7 +574,7 @@ int NetworkModel_SetDomainName(const RDMHeader *header,
 
 // Public Functions
 // ----------------------------------------------------------------------------
-void NetworkModel_Initialize(const NetworkModelSettings *settings) {
+void NetworkModel_Initialize() {
   // Initialize the InterfaceState array to something interesting.
 
   // eth0 is 192.168.0.1/24

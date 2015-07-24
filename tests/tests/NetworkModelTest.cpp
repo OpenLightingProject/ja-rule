@@ -110,6 +110,7 @@ TEST_F(NetworkModelTest, testLifecycle) {
 }
 
 TEST_F(NetworkModelTest, listInterfaces) {
+  // Get the list of interfaces
   unique_ptr<RDMRequest> request = BuildGetRequest(PID_LIST_INTERFACES);
 
   const uint8_t expected_response[] = {
@@ -126,6 +127,7 @@ TEST_F(NetworkModelTest, listInterfaces) {
 }
 
 TEST_F(NetworkModelTest, getInterfaceLabel) {
+  // Get the label for the first interface.
   uint32_t interface_id = HostToNetwork(1);
   unique_ptr<RDMRequest> request = BuildGetRequest(PID_INTERFACE_LABEL,
       reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
@@ -141,7 +143,7 @@ TEST_F(NetworkModelTest, getInterfaceLabel) {
   int size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
-  // test the NACK
+  // test the NR_DATA_OUT_OF_RANGE
   interface_id = HostToNetwork(2);
   request = BuildGetRequest(PID_INTERFACE_LABEL,
       reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
@@ -152,6 +154,7 @@ TEST_F(NetworkModelTest, getInterfaceLabel) {
 }
 
 TEST_F(NetworkModelTest, getHardwareAddress) {
+  // Get the hardware address for the first interface.
   uint32_t interface_id = HostToNetwork(1);
   unique_ptr<RDMRequest> request = BuildGetRequest(
       PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
@@ -168,7 +171,7 @@ TEST_F(NetworkModelTest, getHardwareAddress) {
   int size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
-  // test the NACK
+  // test the NR_DATA_OUT_OF_RANGE
   interface_id = HostToNetwork(5);
   request = BuildGetRequest(PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
       reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
@@ -178,7 +181,8 @@ TEST_F(NetworkModelTest, getHardwareAddress) {
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
 
-TEST_F(NetworkModelTest, getDHCPMode) {
+TEST_F(NetworkModelTest, dhcpMode) {
+  // Get the DHCP mode for the first interface.
   uint32_t interface_id = HostToNetwork(1);
   unique_ptr<RDMRequest> request = BuildGetRequest(
       PID_IPV4_DHCP_MODE,
@@ -194,7 +198,7 @@ TEST_F(NetworkModelTest, getDHCPMode) {
   int size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
-  // test the NACK
+  // Get the DHCP mode for the second (4th) interface.
   interface_id = HostToNetwork(4);
   request = BuildGetRequest(PID_IPV4_DHCP_MODE,
       reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
@@ -207,9 +211,38 @@ TEST_F(NetworkModelTest, getDHCPMode) {
 
   size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  request = BuildGetRequest(PID_IPV4_DHCP_MODE,
+      reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
+
+  // Toggle DHCP mode on the first interface.
+  const uint8_t set_param_data[] = { 0x00, 0x00, 0x00, 0x01, 0x01 };
+
+  request = BuildSetRequest(PID_IPV4_DHCP_MODE, set_param_data,
+                            arraysize(set_param_data));
+  response.reset(GetResponseFromData(request.get()));
+
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // And read it back to confirm
+  interface_id = HostToNetwork(1);
+  request = BuildGetRequest(
+      PID_IPV4_DHCP_MODE,
+      reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
+
+  const uint8_t expected_response3[] = {
+    0x00, 0x00, 0x00, 0x01, 0x01
+  };
+
+  response.reset(GetResponseFromData(
+        request.get(), expected_response3, arraysize(expected_response3)));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
 
 TEST_F(NetworkModelTest, getZeroconfMode) {
+  // Get the zeroconf mode for the first interface.
   uint32_t interface_id = HostToNetwork(1);
   unique_ptr<RDMRequest> request = BuildGetRequest(
       PID_IPV4_ZEROCONF_MODE,
@@ -225,7 +258,7 @@ TEST_F(NetworkModelTest, getZeroconfMode) {
   int size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
-  // test the NACK
+  // Get the zeroconf mode for the second (4th) interface.
   interface_id = HostToNetwork(4);
   request = BuildGetRequest(PID_IPV4_ZEROCONF_MODE,
       reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
@@ -238,9 +271,64 @@ TEST_F(NetworkModelTest, getZeroconfMode) {
 
   size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Toggle zeroconf mode on the first interface.
+  const uint8_t set_param_data[] = { 0x00, 0x00, 0x00, 0x01, 0x01 };
+
+  request = BuildSetRequest(PID_IPV4_ZEROCONF_MODE, set_param_data,
+                            arraysize(set_param_data));
+  response.reset(GetResponseFromData(request.get()));
+
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // And read it back to confirm
+  interface_id = HostToNetwork(1);
+  request = BuildGetRequest(
+      PID_IPV4_ZEROCONF_MODE,
+      reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
+
+  const uint8_t expected_response3[] = {
+    0x00, 0x00, 0x00, 0x01, 0x01
+  };
+
+  response.reset(GetResponseFromData(
+        request.get(), expected_response3, arraysize(expected_response3)));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(NetworkModelTest, currentAddress) {
+  // Get the current address for the first interface.
+  uint32_t interface_id = HostToNetwork(1);
+  unique_ptr<RDMRequest> request = BuildGetRequest(
+      PID_IPV4_CURRENT_ADDRESS,
+      reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
+
+  const uint8_t expected_response[] = {
+    0x00, 0x00, 0x00, 0x01,
+    0xc0, 0xa8, 0x00, 0x01,
+    0x18, 0x00
+  };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // test the NR_DATA_OUT_OF_RANGE
+  interface_id = HostToNetwork(5);
+  request = BuildGetRequest(PID_IPV4_CURRENT_ADDRESS,
+      reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
+  response.reset(NackWithReason(request.get(), ola::rdm::NR_DATA_OUT_OF_RANGE));
+
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
 
 TEST_F(NetworkModelTest, defaultRoute) {
+  // Set the default route
   const uint8_t param_data[] = {
     0x00, 0x00, 0x00, 0x00,
     0x0a, 0x0a, 0x1, 0x2
@@ -254,6 +342,7 @@ TEST_F(NetworkModelTest, defaultRoute) {
   int size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
+  // Read it back
   request = BuildGetRequest(PID_IPV4_DEFAULT_ROUTE);
   response.reset(GetResponseFromData(
         request.get(), param_data, arraysize(param_data)));
@@ -263,6 +352,7 @@ TEST_F(NetworkModelTest, defaultRoute) {
 }
 
 TEST_F(NetworkModelTest, nameservers) {
+  // Set the 2nd nameserver
   const uint8_t ip[] = {0x1, 0x0a, 0x0a, 0x1, 0x2};
 
   unique_ptr<RDMRequest> request = BuildSetRequest(
@@ -280,7 +370,7 @@ TEST_F(NetworkModelTest, nameservers) {
   size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
-  // Check we get a NACK for an out of range.
+  // Check we get a NR_DATA_OUT_OF_RANGE
   index = 3;
   request = BuildGetRequest(PID_DNS_NAME_SERVER, &index, sizeof(uint8_t));
   response.reset(NackWithReason(request.get(), ola::rdm::NR_DATA_OUT_OF_RANGE));
@@ -290,6 +380,7 @@ TEST_F(NetworkModelTest, nameservers) {
 }
 
 TEST_F(NetworkModelTest, hostname) {
+  // Set the hostname
   const char hostname[] = "foo";
   unique_ptr<RDMRequest> request = BuildSetRequest(
       PID_DNS_HOSTNAME,
@@ -300,6 +391,7 @@ TEST_F(NetworkModelTest, hostname) {
   int size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
+  // Read it back
   request = BuildGetRequest(PID_DNS_HOSTNAME);
   response.reset(GetResponseFromData(
         request.get(), reinterpret_cast<const uint8_t*>(hostname),
@@ -310,6 +402,7 @@ TEST_F(NetworkModelTest, hostname) {
 }
 
 TEST_F(NetworkModelTest, domainName) {
+  // Set the domain name
   const char domain_name[] = "myco.co.nz";
   unique_ptr<RDMRequest> request = BuildSetRequest(
       PID_DNS_DOMAIN_NAME,
@@ -320,8 +413,8 @@ TEST_F(NetworkModelTest, domainName) {
   int size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
+  // Read it back
   request = BuildGetRequest(PID_DNS_DOMAIN_NAME);
-
   response.reset(GetResponseFromData(
         request.get(), reinterpret_cast<const uint8_t*>(domain_name),
         strlen(domain_name)));
