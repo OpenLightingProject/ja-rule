@@ -269,8 +269,8 @@ TEST_F(RDMResponderTest, testBuildNack) {
 
 TEST_F(RDMResponderTest, testDispatch) {
   const PIDDescriptor pid_descriptors[] = {
-    {PID_IDENTIFY_DEVICE, GetIdentifyDevice, (PIDCommandHandler) nullptr},
-    {PID_RECORD_SENSORS, (PIDCommandHandler) nullptr, ClearSensors},
+    {PID_IDENTIFY_DEVICE, GetIdentifyDevice, 0, (PIDCommandHandler) nullptr},
+    {PID_RECORD_SENSORS, (PIDCommandHandler) nullptr, 0, ClearSensors},
   };
   ResponderDefinition responder_def;
   InitDefinition(&responder_def);
@@ -364,16 +364,16 @@ TEST_F(RDMResponderTest, supportedParameters) {
   const uint8_t param_data[] = { 0x02, 0x02 };
 
   const PIDDescriptor pid_descriptors[] = {
-    {PID_DISC_UNIQUE_BRANCH, nullptr, nullptr},
-    {PID_DISC_MUTE, nullptr, nullptr},
-    {PID_DISC_UN_MUTE, nullptr, nullptr},
-    {PID_SUPPORTED_PARAMETERS, nullptr, nullptr},
-    {PID_PARAMETER_DESCRIPTION, nullptr, nullptr},
-    {PID_DEVICE_INFO, nullptr, nullptr},
-    {PID_SOFTWARE_VERSION_LABEL, nullptr, nullptr},
-    {PID_DMX_START_ADDRESS, nullptr, nullptr},
-    {PID_IDENTIFY_DEVICE, nullptr, nullptr},
-    {PID_RECORD_SENSORS, nullptr, nullptr}
+    {PID_DISC_UNIQUE_BRANCH, nullptr, 0, nullptr},
+    {PID_DISC_MUTE, nullptr, 0, nullptr},
+    {PID_DISC_UN_MUTE, nullptr, 0, nullptr},
+    {PID_SUPPORTED_PARAMETERS, nullptr, 0, nullptr},
+    {PID_PARAMETER_DESCRIPTION, nullptr, 0, nullptr},
+    {PID_DEVICE_INFO, nullptr, 0, nullptr},
+    {PID_SOFTWARE_VERSION_LABEL, nullptr, 0, nullptr},
+    {PID_DMX_START_ADDRESS, nullptr, 0, nullptr},
+    {PID_IDENTIFY_DEVICE, nullptr, 0, nullptr},
+    {PID_RECORD_SENSORS, nullptr, 0, nullptr}
   };
 
   ResponderDefinition responder_def;

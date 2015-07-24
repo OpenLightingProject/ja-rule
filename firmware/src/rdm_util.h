@@ -68,15 +68,14 @@ bool RDMUtil_RequiresAction(const uint8_t our_uid[UID_LENGTH],
 /*
  * @brief Check if we should respond to an RDM request.
  * @param responder The responder information
- * @param uid The UID to check.
+ * @param uid The destination UID to check.
  * @returns true if the UIDs match, false otherwise.
+ * @pre RDMUtil_RequiresAction() returned true.
  *
- * A response is only required if the UID exactly matches our UID.
+ * A response is only required if the last four bytes of the UID are not
+ * 0xffffffff.
  */
-static inline bool RDMUtil_RequiresResponse(const RDMResponder *responder,
-                                            const uint8_t uid[UID_LENGTH]) {
-  return RDMUtil_UIDCompare(responder->uid, uid) == 0;
-}
+bool RDMUtil_RequiresResponse(const uint8_t uid[UID_LENGTH]);
 
 /**
  * @brief Verify the checksum of an RDM frame.

@@ -94,8 +94,7 @@ static void SensorModel_Activate() {
   g_responder.sensors = g_sensor_model.sensors;
 }
 
-static void SensorModel_Deactivate() {
-}
+static void SensorModel_Deactivate() {}
 
 static int SensorModel_Ioctl(ModelIoctl command, uint8_t *data,
                              unsigned int length) {
@@ -153,23 +152,26 @@ const ModelEntry SENSOR_MODEL_ENTRY = {
 };
 
 static const PIDDescriptor PID_DESCRIPTORS[] = {
-  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters,
+  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, (PIDCommandHandler) NULL},
-  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds,
+  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0, (PIDCommandHandler) NULL},
+  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription,
+  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0,
     (PIDCommandHandler) NULL},
-  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel,
+  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, RDMResponder_SetDeviceLabel},
-  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel,
+  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0,
+    RDMResponder_SetDeviceLabel},
+  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0,
     (PIDCommandHandler) NULL},
-  {PID_SENSOR_DEFINITION, RDMResponder_GetSensorDefinition,
+  {PID_SENSOR_DEFINITION, RDMResponder_GetSensorDefinition, 1,
     (PIDCommandHandler) NULL},
-  {PID_SENSOR_VALUE, RDMResponder_GetSensorValue, RDMResponder_SetSensorValue},
-  {PID_RECORD_SENSORS, (PIDCommandHandler) NULL, RDMResponder_SetRecordSensor},
-  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice,
+  {PID_SENSOR_VALUE, RDMResponder_GetSensorValue, 1,
+    RDMResponder_SetSensorValue},
+  {PID_RECORD_SENSORS, (PIDCommandHandler) NULL, 0,
+    RDMResponder_SetRecordSensor},
+  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0,
     RDMResponder_SetIdentifyDevice}
 };
 

@@ -107,16 +107,47 @@ static inline uint8_t UInt32Byte3(uint32_t s) {
 }
 
 /**
- * @brief Combine four 8-bit values to a 32-bit value.
- * @param byte0 the MSB
- * @param byte1
- * @param byte2
- * @param byte3 the LSB
+ * @brief Extract a uint16_t in network-byte order from a memory location.
+ * @param ptr A pointer to the memory.
+ * @returns A 16-bit value.
+ */
+static inline uint32_t ExtractUInt16(const uint8_t *ptr) {
+  return (ptr[0] << 8) + ptr[1];
+}
+
+/**
+ * @brief Extract a uint32_t in network-byte order from a memory location.
+ * @param ptr A pointer to the memory.
  * @returns A 32-bit value.
  */
-static inline uint32_t JoinUInt32(uint8_t byte0, uint8_t byte1, uint8_t byte2,
-                                  uint8_t byte3) {
-  return (byte0 << 24) + (byte1 << 16) + (byte2 << 8) + byte3;
+static inline uint32_t ExtractUInt32(const uint8_t *ptr) {
+  return (ptr[0] << 24) + (ptr[1] << 16) + (ptr[2] << 8) + ptr[3];
+}
+
+/**
+ * @brief Copy a 16-bit value to a memory location in network-byte order.
+ * @param ptr A pointer to the memory.
+ * @param value The value to push.
+ * @returns A pointer to the next byte after the last one that was copied.
+ */
+static inline uint8_t* PushUInt16(uint8_t *ptr, uint16_t value) {
+  *ptr++ = (value >> 8);
+  *ptr++ = value & 0xff;
+  return ptr;
+}
+
+/**
+ * @brief Copy a 32-bit value to a memory location in network-byte order.
+ * @param ptr A pointer to the memory.
+ * @param value The value to push.
+ * @returns A pointer to the next byte after the last one that was copied.
+ */
+static inline uint8_t* PushUInt32(uint8_t *ptr, uint32_t value) {
+  *ptr++ = (value >> 24);
+  *ptr++ = (value >> 16);
+  *ptr++ = (value >> 8);
+  *ptr++ = value & 0xff;
+  return ptr;
 }
 
 #ifdef __cplusplus

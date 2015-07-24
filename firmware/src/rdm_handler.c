@@ -75,12 +75,12 @@ static int GetSetModelId(const RDMHeader *header,
       model_id = g_rdm_handler.active_model->model_id;
     }
 
+    uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+    ptr = PushUInt16(ptr, model_id);
     RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                             PID_DEVICE_MODEL, sizeof(model_id));
-    g_rdm_buffer[sizeof(RDMHeader)] = ShortMSB(model_id);
-    g_rdm_buffer[sizeof(RDMHeader) + 1] = ShortLSB(model_id);
+                             PID_DEVICE_MODEL,
+                             (ptr - g_rdm_buffer) - sizeof(RDMHeader));
     return RDMUtil_AppendChecksum(g_rdm_buffer);
-
   } else if (header->command_class == SET_COMMAND) {
     if (header->param_data_length != sizeof(uint16_t)) {
       return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
@@ -95,17 +95,10 @@ static int GetSetModelId(const RDMHeader *header,
     }
 
     if (!ok) {
-      uint16_t nack_reason = htons(NR_DATA_OUT_OF_RANGE);
-      RDMResponder_BuildHeader(header, NACK_REASON, SET_COMMAND_RESPONSE,
-                               ntohs(header->param_id), sizeof(nack_reason));
-      memcpy(g_rdm_buffer + sizeof(RDMHeader), &nack_reason,
-             sizeof(nack_reason));
-      return RDMUtil_AppendChecksum(g_rdm_buffer);
+      return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
     }
 
-    RDMResponder_BuildHeader(header, ACK, SET_COMMAND_RESPONSE,
-                             PID_DEVICE_MODEL, 0);
-    return RDMUtil_AppendChecksum(g_rdm_buffer);
+    return RDMResponder_BuildSetAck(header);
   }
   return RDM_RESPONDER_NO_RESPONSE;
 }
@@ -132,20 +125,17 @@ static int GetModelList(const RDMHeader *header) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
-  unsigned int size = 0;
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   unsigned int i = 0;
-  unsigned int offset = sizeof(RDMHeader);
-  while (i < MAX_RDM_MODELS) {
+  for (; i < MAX_RDM_MODELS; i++) {
     if (g_models[i].model_id != NULL_MODEL_ID) {
-      g_rdm_buffer[offset++] = ShortMSB(g_models[i].model_id);
-      g_rdm_buffer[offset++] = ShortLSB(g_models[i].model_id);
-      size+= 2;
+      ptr = PushUInt16(ptr, g_models[i].model_id);
     }
-    i++;
   }
 
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           PID_DEVICE_MODEL_LIST, size);
+                           PID_DEVICE_MODEL_LIST,
+                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
   return RDMUtil_AppendChecksum(g_rdm_buffer);
 }
 
