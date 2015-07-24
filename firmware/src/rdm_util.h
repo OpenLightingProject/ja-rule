@@ -72,7 +72,7 @@ bool RDMUtil_RequiresAction(const uint8_t our_uid[UID_LENGTH],
  * @returns true if the UIDs match, false otherwise.
  * @pre This assumes that RDMUtil_RequiresAction already returned true.
  *
- * A response is only required if the last for bytes of the UID are not
+ * A response is only required if the last four bytes of the UID are not
  * 0xffffffff.
  */
 bool RDMUtil_RequiresResponse(const uint8_t uid[UID_LENGTH]);
