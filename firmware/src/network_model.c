@@ -342,10 +342,10 @@ int NetworkModel_GetCurrentAddress(const RDMHeader *header,
   ptr = PushUInt32(ptr, interface->current_ip);
   *ptr++ = interface->current_netmask;
   if (index == IPSEC_INTERFACE_ID) {
-    *ptr++ = DHCP_MODE_UNKNOWN;
+    *ptr++ = DHCP_STATUS_INACTIVE;
   } else {
     *ptr++ = (interface->config_source == CONFIG_SOURCE_DHCP ?
-              DHCP_MODE_ACTIVE : DHCP_MODE_INACTIVE);
+              DHCP_STATUS_ACTIVE : DHCP_STATUS_INACTIVE);
   }
 
   RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
@@ -541,7 +541,7 @@ int NetworkModel_GetHostname(const RDMHeader *header,
                                           DNS_HOST_NAME_SIZE);
 }
 
-int NetworkModel_SetHostName(const RDMHeader *header,
+int NetworkModel_SetHostname(const RDMHeader *header,
                              const uint8_t *param_data) {
   if (header->param_data_length == 0 ||
       header->param_data_length > DNS_HOST_NAME_SIZE) {
@@ -710,7 +710,7 @@ static const PIDDescriptor PID_DESCRIPTORS[] = {
     NetworkModel_SetDefaultRoute},
   {PID_DNS_NAME_SERVER, NetworkModel_GetNameServer, 1,
     NetworkModel_SetNameServer},
-  {PID_DNS_HOSTNAME, NetworkModel_GetHostname, 0, NetworkModel_SetHostName},
+  {PID_DNS_HOSTNAME, NetworkModel_GetHostname, 0, NetworkModel_SetHostname},
   {PID_DNS_DOMAIN_NAME, NetworkModel_GetDomainName, 0,
     NetworkModel_SetDomainName},
 };
