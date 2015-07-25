@@ -39,12 +39,14 @@
 using ola::network::HostToNetwork;
 using ola::rdm::UID;
 using ola::rdm::GetResponseFromData;
-using ola::rdm::RDMGetRequest;
 using ola::rdm::NackWithReason;
+using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
+using ola::rdm::RDMStatusCode;
 using std::unique_ptr;
+using ::testing::NotNull;
 
 class ModelTest : public testing::Test {
  public:
@@ -323,6 +325,97 @@ TEST_F(NetworkModelTest, currentAddress) {
       reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
   response.reset(NackWithReason(request.get(), ola::rdm::NR_DATA_OUT_OF_RANGE));
 
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+
+TEST_F(NetworkModelTest, staticAddressWithReconfiguration) {
+  // Set static address
+  const uint8_t param_data[] = {
+    0x00, 0x00, 0x00, 0x01,
+    0xac, 0x10, 0x1, 0x2,
+    0x08
+  };
+
+  unique_ptr<RDMRequest> request = BuildSetRequest(
+      PID_IPV4_STATIC_ADDRESS, param_data, arraysize(param_data));
+  unique_ptr<RDMResponse> response(GetResponseFromData(request.get()));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Read it back
+  uint32_t interface_id = HostToNetwork(1);
+  request = BuildGetRequest(PID_IPV4_STATIC_ADDRESS,
+                            reinterpret_cast<uint8_t*>(&interface_id),
+                            sizeof(interface_id));
+  response.reset(GetResponseFromData(request.get(), param_data,
+                                     arraysize(param_data)));
+
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Now reconfigure the interface
+  request = BuildSetRequest(PID_INTERFACE_APPLY_CONFIGURATION,
+                            reinterpret_cast<uint8_t*>(&interface_id),
+                            sizeof(interface_id));
+  response.reset(GetResponseFromData(request.get()));
+
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Fetch the current config.
+  const uint8_t expected_response[] = {
+    0x00, 0x00, 0x00, 0x01,
+    0xac, 0x10, 0x1, 0x2,
+    0x08, 0x00
+  };
+  request = BuildGetRequest(PID_IPV4_CURRENT_ADDRESS,
+                            reinterpret_cast<uint8_t*>(&interface_id),
+                            sizeof(interface_id));
+  response.reset(GetResponseFromData(request.get(), expected_response,
+                                     arraysize(expected_response)));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(NetworkModelTest, renewDHCP) {
+  uint32_t interface_id = HostToNetwork(4);
+  unique_ptr<RDMRequest> request = BuildSetRequest(
+      PID_INTERFACE_RENEW_DHCP,
+      reinterpret_cast<uint8_t*>(&interface_id),
+      sizeof(interface_id));
+  unique_ptr<RDMResponse> response(GetResponseFromData(request.get()));
+  unsigned int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  interface_id = HostToNetwork(1);
+  request = (BuildSetRequest(PID_INTERFACE_RENEW_DHCP,
+                             reinterpret_cast<uint8_t*>(&interface_id),
+                             sizeof(interface_id)));
+  response.reset(NackWithReason(request.get(),
+                                ola::rdm::NR_ACTION_NOT_SUPPORTED));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(NetworkModelTest, releaseDHCP) {
+  uint32_t interface_id = HostToNetwork(4);
+  unique_ptr<RDMRequest> request = BuildSetRequest(
+      PID_INTERFACE_RELEASE_DHCP,
+      reinterpret_cast<uint8_t*>(&interface_id),
+      sizeof(interface_id));
+  unique_ptr<RDMResponse> response(GetResponseFromData(request.get()));
+  unsigned int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  interface_id = HostToNetwork(1);
+  request = (BuildSetRequest(PID_INTERFACE_RELEASE_DHCP,
+                             reinterpret_cast<uint8_t*>(&interface_id),
+                             sizeof(interface_id)));
+  response.reset(NackWithReason(request.get(),
+                                ola::rdm::NR_ACTION_NOT_SUPPORTED));
   size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
