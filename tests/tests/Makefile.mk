@@ -1,3 +1,13 @@
+# LIBS
+
+noinst_LTLIBRARIES += tests/libmodeltest.la
+
+tests_libmodeltest_la_SOURCES = \
+    tests/ModelTest.h \
+    tests/ModelTest.cpp
+tests_libmodeltest_la_CXXFLAGS= $(TESTING_CFLAGS) $(WARNING_CXXFLAGS) \
+                                $(GMOCK_INCLUDES) $(GTEST_INCLUDES)
+
 # TESTS
 ################################################
 TESTING_CFLAGS = $(BUILD_FLAGS) -I include
@@ -55,6 +65,7 @@ tests_network_model_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                  src/librdmbuffer.la \
                                  src/librandom.la \
                                  src/librdmutil.la \
+                                 tests/libmodeltest.la \
                                  harmony/mocks/libharmonymock.la \
                                  mocks/libmatchers.la
 

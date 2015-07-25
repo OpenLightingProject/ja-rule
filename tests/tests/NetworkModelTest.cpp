@@ -28,12 +28,13 @@
 #include <string.h>
 #include <memory>
 
+#include "network_model.h"
 #include "rdm.h"
 #include "rdm_buffer.h"
-#include "network_model.h"
 #include "rdm_responder.h"
 #include "Array.h"
 #include "Matchers.h"
+#include "ModelTest.h"
 #include "TestHelpers.h"
 
 using ola::network::HostToNetwork;
@@ -48,47 +49,6 @@ using ola::rdm::RDMStatusCode;
 using std::unique_ptr;
 using ::testing::NotNull;
 
-class ModelTest : public testing::Test {
- public:
-  ModelTest()
-      : m_controller_uid(0x7a70, 0x00000000),
-        m_our_uid(TEST_UID) {
-  }
-
- protected:
-  UID m_controller_uid;
-  UID m_our_uid;
-
-  static const uint8_t TEST_UID[UID_LENGTH];
-
-  unique_ptr<RDMRequest> BuildGetRequest(
-      uint16_t pid,
-      const uint8_t *param_data = nullptr,
-      unsigned int param_data_size = 0) {
-    return unique_ptr<RDMGetRequest>(new RDMGetRequest(
-        m_controller_uid, m_our_uid, 0, 0, 0, pid, param_data,
-        param_data_size));
-  }
-
-  unique_ptr<RDMRequest> BuildSetRequest(
-      uint16_t pid,
-      const uint8_t *param_data = nullptr,
-      unsigned int param_data_size = 0) {
-    return unique_ptr<RDMSetRequest>(new RDMSetRequest(
-        m_controller_uid, m_our_uid, 0, 0, 0, pid, param_data,
-        param_data_size));
-  }
-
-  int InvokeRDMHandler(const ola::rdm::RDMRequest *request) {
-    ola::io::ByteString data;
-    data.push_back(RDM_START_CODE);
-    EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
-
-    return NETWORK_MODEL_ENTRY.request_fn(
-        AsHeader(data.data()), request->ParamData());
-  }
-};
-
 const uint8_t ModelTest::TEST_UID[] = {
   0x7a, 0x70, 0x12, 0x34, 0x56, 0x78
 };
@@ -96,7 +56,7 @@ const uint8_t ModelTest::TEST_UID[] = {
 
 class NetworkModelTest : public ModelTest {
  public:
-  NetworkModelTest() : ModelTest() {}
+  NetworkModelTest() : ModelTest(&NETWORK_MODEL_ENTRY) {}
 
   void SetUp() {
     RDMResponder_Initialize(TEST_UID);
