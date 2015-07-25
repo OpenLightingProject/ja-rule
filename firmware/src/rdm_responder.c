@@ -193,11 +193,45 @@ void RDMResponder_BuildHeader(const RDMHeader *incoming_header,
   outgoing_header->param_data_length = param_data_length;
 }
 
+int RDMResponder_AddHeaderAndChecksum(const RDMHeader *header,
+                                      RDMResponseType response_type,
+                                      unsigned int message_length) {
+  uint8_t response_command_class = 0;
+  switch (header->command_class) {
+    case DISCOVERY_COMMAND:
+      response_command_class = DISCOVERY_COMMAND_RESPONSE;
+      break;
+    case GET_COMMAND:
+      response_command_class = GET_COMMAND_RESPONSE;
+      break;
+    case SET_COMMAND:
+      response_command_class = SET_COMMAND_RESPONSE;
+      break;
+    default:
+      return RDM_RESPONDER_NO_RESPONSE;
+  }
+
+  uint8_t *ptr = g_rdm_buffer;
+  *ptr++ = RDM_START_CODE;
+  *ptr++ = SUB_START_CODE;
+  *ptr++ = message_length;
+  memcpy(ptr, header->src_uid, UID_LENGTH);
+  ptr += UID_LENGTH;
+  memcpy(ptr, header->dest_uid, UID_LENGTH);
+  ptr += UID_LENGTH;
+  *ptr++ = header->transaction_number;
+  *ptr++ = response_type;
+  *ptr++ = g_responder.queued_message_count;
+  ptr = PushUInt16(ptr, ntohs(header->sub_device));
+  *ptr++ = response_command_class;
+  ptr = PushUInt16(ptr, ntohs(header->param_id));
+  *ptr++ = message_length - sizeof(RDMHeader);
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
 int RDMResponder_BuildSetAck(const RDMHeader *header) {
   ReturnUnlessUnicast(header);
-  RDMResponder_BuildHeader(header, ACK, SET_COMMAND_RESPONSE,
-                           ntohs(header->param_id), 0);
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, sizeof(RDMHeader));
 }
 
 int RDMResponder_BuildNack(const RDMHeader *header, RDMNackReason reason) {
@@ -205,13 +239,8 @@ int RDMResponder_BuildNack(const RDMHeader *header, RDMNackReason reason) {
 
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt16(ptr, reason);
-  RDMResponder_BuildHeader(
-      header, NACK_REASON,
-      (header->command_class == GET_COMMAND ?
-       GET_COMMAND_RESPONSE : SET_COMMAND_RESPONSE),
-       ntohs(header->param_id),
-       (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, NACK_REASON,
+                                           ptr - g_rdm_buffer);
 }
 
 int RDMResponder_DispatchPID(const RDMHeader *header,
@@ -255,19 +284,16 @@ int RDMResponder_DispatchPID(const RDMHeader *header,
 int RDMResponder_GenericReturnString(const RDMHeader *header,
                                      const char *reply_string,
                                      unsigned int max_size) {
-  unsigned int length = RDMUtil_SafeStringLength(reply_string, max_size);
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id), length);
-  memcpy(g_rdm_buffer + sizeof(RDMHeader), reply_string, length);
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  unsigned int msg_length = sizeof(RDMHeader);
+  msg_length += RDMUtil_StringCopy((char*)(g_rdm_buffer + sizeof(RDMHeader)),
+                                   max_size, reply_string, max_size);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, msg_length);
 }
 
 int RDMResponder_GenericGetBool(const RDMHeader *header, bool value) {
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           sizeof(uint8_t));
   g_rdm_buffer[sizeof(RDMHeader)] = value;
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(
+      header, ACK, sizeof(RDMHeader) + sizeof(uint8_t));
 }
 
 int RDMResponder_GenericSetBool(const RDMHeader *header,
@@ -290,11 +316,9 @@ int RDMResponder_GenericSetBool(const RDMHeader *header,
 }
 
 int RDMResponder_GenericGetUInt8(const RDMHeader *header, uint8_t value) {
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           sizeof(uint8_t));
   g_rdm_buffer[sizeof(RDMHeader)] = value;
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(
+      header, ACK, sizeof(RDMHeader) + sizeof(uint8_t));
 }
 
 int RDMResponder_GenericSetUInt8(const RDMHeader *header,
@@ -310,10 +334,7 @@ int RDMResponder_GenericSetUInt8(const RDMHeader *header,
 int RDMResponder_GenericGetUInt32(const RDMHeader *header, uint32_t value) {
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt32(ptr, value);
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_GenericSetUInt32(const RDMHeader *header,
@@ -336,10 +357,7 @@ int RDMResponder_SetMute(const RDMHeader *header) {
 
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt16(ptr, 0);  // set control fields to 0
-  RDMResponder_BuildHeader(header, ACK, DISCOVERY_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 // TODO(simon): combine with RDMResponder_SetMute above.
@@ -353,10 +371,7 @@ int RDMResponder_SetUnMute(const RDMHeader *header) {
 
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt16(ptr, 0);  // set control fields to 0
-  RDMResponder_BuildHeader(header, ACK, DISCOVERY_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_GetSupportedParameters(const RDMHeader *header,
@@ -383,10 +398,7 @@ int RDMResponder_GetSupportedParameters(const RDMHeader *header,
     }
   }
 
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_GetDeviceInfo(const RDMHeader *header,
@@ -403,12 +415,9 @@ int RDMResponder_GetDeviceInfo(const RDMHeader *header,
   *ptr++ = g_responder.def->personality_count;
   ptr = PushUInt16(ptr, g_responder.dmx_start_address);
   ptr = PushUInt16(ptr, g_responder.sub_device_count);
-  *ptr++ = g_responder.sensor_count;
+  *ptr++ = g_responder.def->sensor_count;
 
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_GetProductDetailIds(const RDMHeader *header,
@@ -424,10 +433,7 @@ int RDMResponder_GetProductDetailIds(const RDMHeader *header,
     }
   }
 
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_GetDeviceModelDescription(const RDMHeader *header,
@@ -474,10 +480,7 @@ int RDMResponder_GetDMXPersonality(const RDMHeader *header,
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   *ptr++ = g_responder.current_personality;
   *ptr++ = g_responder.def->personality_count;
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_SetDMXPersonality(const RDMHeader *header,
@@ -515,20 +518,14 @@ int RDMResponder_GetDMXPersonalityDescription(const RDMHeader *header,
   ptr = PushUInt16(ptr, personality->dmx_footprint);
   ptr += RDMUtil_StringCopy((char*) ptr, RDM_DEFAULT_STRING_SIZE,
                             personality->description, RDM_DEFAULT_STRING_SIZE);
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_GetDMXStartAddress(const RDMHeader *header,
                                     UNUSED const uint8_t *param_data) {
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt16(ptr, g_responder.dmx_start_address);
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_SetDMXStartAddress(const RDMHeader *header,
@@ -564,10 +561,7 @@ int RDMResponder_GetSlotInfo(const RDMHeader *header,
     ptr = PushUInt16(ptr, personality->slots[i].slot_label_id);
   }
 
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_GetSlotDescription(const RDMHeader *header,
@@ -588,10 +582,7 @@ int RDMResponder_GetSlotDescription(const RDMHeader *header,
   ptr += RDMUtil_StringCopy((char*) ptr, RDM_DEFAULT_STRING_SIZE,
                             personality->slots[slot_index].description,
                             RDM_DEFAULT_STRING_SIZE);
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_GetDefaultSlotValue(const RDMHeader *header,
@@ -610,10 +601,7 @@ int RDMResponder_GetDefaultSlotValue(const RDMHeader *header,
     ptr = PushUInt16(ptr, i);
     *ptr++ = personality->slots[i].default_value;
   }
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_GetSensorDefinition(const RDMHeader *header,
@@ -634,13 +622,11 @@ int RDMResponder_GetSensorDefinition(const RDMHeader *header,
   ptr = PushUInt16(ptr, sensor_ptr->range_maximum_value);
   ptr = PushUInt16(ptr, sensor_ptr->normal_minimum_value);
   ptr = PushUInt16(ptr, sensor_ptr->normal_maximum_value);
+  *ptr++ = sensor_ptr->recorded_value_support;
 
   ptr += RDMUtil_StringCopy((char*) ptr, RDM_DEFAULT_STRING_SIZE,
                             sensor_ptr->description, RDM_DEFAULT_STRING_SIZE);
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_GetSensorValue(const RDMHeader *header,
@@ -659,10 +645,7 @@ int RDMResponder_GetSensorValue(const RDMHeader *header,
 
   uint8_t *ptr = BuildSensorValueResponse(g_rdm_buffer + sizeof(RDMHeader),
                                           sensor_index, sensor_ptr);
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_SetSensorValue(const RDMHeader *header,
@@ -694,10 +677,7 @@ int RDMResponder_SetSensorValue(const RDMHeader *header,
                                    &g_responder.sensors[sensor_index]);
   }
 
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           ntohs(header->param_id),
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_SetRecordSensor(const RDMHeader *header,

@@ -77,10 +77,7 @@ static int GetSetModelId(const RDMHeader *header,
 
     uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
     ptr = PushUInt16(ptr, model_id);
-    RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                             PID_DEVICE_MODEL,
-                             (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-    return RDMUtil_AppendChecksum(g_rdm_buffer);
+    return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
   } else if (header->command_class == SET_COMMAND) {
     if (header->param_data_length != sizeof(uint16_t)) {
       return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
@@ -133,10 +130,7 @@ static int GetModelList(const RDMHeader *header) {
     }
   }
 
-  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
-                           PID_DEVICE_MODEL_LIST,
-                           (ptr - g_rdm_buffer) - sizeof(RDMHeader));
-  return RDMUtil_AppendChecksum(g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 // Public Functions
