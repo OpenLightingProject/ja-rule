@@ -136,7 +136,7 @@ static inline uint8_t* PushUInt16(uint8_t *ptr, uint16_t value) {
   return ptr;
 }
 
-/*
+/**
  * @brief Copy a 32-bit value to a memory location in network-byte order.
  * @param ptr A pointer to the memory.
  * @param value The value to push.

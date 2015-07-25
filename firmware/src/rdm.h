@@ -215,12 +215,12 @@ static const uint8_t MAX_NETMASK = 32;
 enum { MAC_ADDRESS_SIZE = 6 };
 
 /**
- * @brief DHCP Modes
+ * @brief DHCP Status
  */
 typedef enum {
-  DHCP_MODE_INACTIVE = 0x00,
-  DHCP_MODE_ACTIVE = 0x01,
-  DHCP_MODE_UNKNOWN = 0x02
+  DHCP_STATUS_INACTIVE = 0x00,
+  DHCP_STATUS_ACTIVE = 0x01,
+  DHCP_STATUS_UNKNOWN = 0x02
 } DHCPMode;
 
 /**
