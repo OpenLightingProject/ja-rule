@@ -282,7 +282,6 @@ typedef struct {
   uint16_t dmx_start_address;  //!< DMX start address
   uint16_t sub_device_count;  //!< The number of sub devices
   uint8_t current_personality;  //!< Current DMX personality, 1-indexed.
-  uint8_t sensor_count;  //!< The number of sensors
   uint8_t queued_message_count;  //!< queued message count.
   bool is_muted;  //!< The mute state for the responder
   bool identify_on;  //!< The identify state for the responder.
@@ -339,6 +338,10 @@ void RDMResponder_BuildHeader(const RDMHeader *incoming_header,
                               RDMCommandClass command_class,
                               uint16_t pid,
                               unsigned int param_data_length);
+
+int RDMResponder_AddHeaderAndChecksum(const RDMHeader *incoming_header,
+                                      RDMResponseType response_type,
+                                      unsigned int message_length);
 
 /**
  * @brief Handle discovery commands.
