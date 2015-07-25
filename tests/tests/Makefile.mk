@@ -2,9 +2,8 @@
 
 noinst_LTLIBRARIES += tests/libmodeltest.la
 
-tests_libmodeltest_la_SOURCES = \
-    tests/ModelTest.h \
-    tests/ModelTest.cpp
+tests_libmodeltest_la_SOURCES = tests/ModelTest.h \
+                                tests/ModelTest.cpp
 tests_libmodeltest_la_CXXFLAGS= $(TESTING_CFLAGS) $(WARNING_CXXFLAGS) \
                                 $(GMOCK_INCLUDES) $(GTEST_INCLUDES)
 

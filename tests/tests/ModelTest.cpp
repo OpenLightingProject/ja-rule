@@ -33,7 +33,6 @@
 #include "TestHelpers.h"
 #include "ModelTest.h"
 
-
 using ola::rdm::UID;
 using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMRequest;
