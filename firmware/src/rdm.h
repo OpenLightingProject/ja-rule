@@ -110,12 +110,12 @@ static const uint16_t MUTE_SUBDEVICE_FLAG = 0x02;
 /**
  * @brief Indicates the responder is in bootloader mode.
  */
-static const uint16_t MUTE_BOOTLOADER_FLAG = 0x02;
+static const uint16_t MUTE_BOOTLOADER_FLAG = 0x04;
 
 /**
  * @brief Indicates the responder is a proxy.
  */
-static const uint16_t MUTE_PROXY_FLAG = 0x02;
+static const uint16_t MUTE_PROXY_FLAG = 0x08;
 
 /**
  * @brief The size of the default strings used in RDM.
