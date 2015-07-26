@@ -65,6 +65,8 @@ typedef struct {
   uint32_t id;
   uint16_t hardware_type;
   uint8_t hardware_address[MAC_ADDRESS_SIZE];
+  bool supports_dhcp;
+  bool dhcp_can_fail;
 } InterfaceDefinition;
 
 /*
@@ -108,6 +110,8 @@ static const InterfaceDefinition INTERFACE_DEFINITIONS[] = {
     .hardware_type = ETHERNET_HARDWARE_TYPE,
     // Locally administered MAC address
     .hardware_address = {0x52, 0x12, 0x34, 0x56, 0x78, 0x9a},
+    .supports_dhcp = true,
+    .dhcp_can_fail = false
   },
   {
     .label = IPSEC_INTERFACE_NAME,
@@ -115,6 +119,8 @@ static const InterfaceDefinition INTERFACE_DEFINITIONS[] = {
     .hardware_type = IPSEC_HARDWARE_TYPE,
     // No h/w address for ptp links
     .hardware_address = {0, 0, 0, 0, 0, 0},
+    .supports_dhcp = false,
+    .dhcp_can_fail = false,
   },
   {
     .label = WIFI_INTERFACE_NAME,
@@ -122,6 +128,8 @@ static const InterfaceDefinition INTERFACE_DEFINITIONS[] = {
     .hardware_type = ETHERNET_HARDWARE_TYPE,
     // Local admin MAC address
     .hardware_address = {0x52, 0xab, 0xcd, 0xef, 0x01, 0x23},
+    .supports_dhcp = true,
+    .dhcp_can_fail = true
   },
 };
 
@@ -147,8 +155,8 @@ static int LookupIndex(unsigned int id) {
  *
  * This randomly fails and returns 0.0.0.0.
  */
-static uint32_t GetDHCPAddress() {
-  if (Random_PseudoGet() % DHCP_FAILURE_RATIO == 0) {
+static uint32_t GetDHCPAddress(bool can_fail) {
+  if (can_fail && Random_PseudoGet() % DHCP_FAILURE_RATIO == 0) {
     // fail 1/3 of the time so we can test zeroconf
     return IPV4_UNCONFIGURED;
   }
@@ -170,7 +178,8 @@ static void UseZeroconfOrUnassign(InterfaceState *interface) {
   }
 }
 
-static void ConfigureInterface(InterfaceState *interface) {
+static void ConfigureInterface(unsigned int index) {
+  InterfaceState *interface = &g_network_model.interfaces[index];
   interface->current_dhcp_mode = interface->configured_dhcp_mode;
   interface->current_zeroconf_mode = interface->configured_zeroconf_mode;
 
@@ -181,7 +190,8 @@ static void ConfigureInterface(InterfaceState *interface) {
     interface->current_netmask = interface->configured_netmask;
     interface->config_source = CONFIG_SOURCE_STATIC;
   } else if (interface->configured_dhcp_mode &&
-             (dhcp_address = GetDHCPAddress())) {
+             (dhcp_address =
+              GetDHCPAddress(INTERFACE_DEFINITIONS[index].dhcp_can_fail))) {
     interface->current_ip = dhcp_address;
     interface->current_netmask = 8;
     interface->config_source = CONFIG_SOURCE_DHCP;
@@ -266,7 +276,7 @@ int NetworkModel_SetDHCPMode(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  if (index == IPSEC_INTERFACE_ID) {
+  if (!INTERFACE_DEFINITIONS[index].supports_dhcp) {
     return RDMResponder_BuildNack(header, NR_ACTION_NOT_SUPPORTED);
   }
 
@@ -302,7 +312,7 @@ int NetworkModel_SetZeroconfMode(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  if (index == IPSEC_INTERFACE_ID) {
+  if (!INTERFACE_DEFINITIONS[index].supports_dhcp) {
     return RDMResponder_BuildNack(header, NR_ACTION_NOT_SUPPORTED);
   }
 
@@ -326,7 +336,7 @@ int NetworkModel_GetCurrentAddress(const RDMHeader *header,
   ptr += INTERFACE_ID_SIZE;
   ptr = PushUInt32(ptr, interface->current_ip);
   *ptr++ = interface->current_netmask;
-  if (index == IPSEC_INTERFACE_ID) {
+  if (!INTERFACE_DEFINITIONS[index].supports_dhcp) {
     *ptr++ = DHCP_STATUS_INACTIVE;
   } else {
     *ptr++ = (interface->config_source == CONFIG_SOURCE_DHCP ?
@@ -401,8 +411,9 @@ int NetworkModel_RenewDHCP(const RDMHeader *header,
       UseZeroconfOrUnassign(interface);
     }
   } else {
-    uint32_t dhcp_address = 0;
-    if (dhcp_address = GetDHCPAddress()) {
+    uint32_t dhcp_address = GetDHCPAddress(
+        INTERFACE_DEFINITIONS[index].dhcp_can_fail);
+    if (dhcp_address) {
       interface->current_ip = dhcp_address;
       interface->current_netmask = 8;
       interface->config_source = CONFIG_SOURCE_DHCP;
@@ -445,7 +456,7 @@ int NetworkModel_ApplyInterfaceConfiguration(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  ConfigureInterface(&g_network_model.interfaces[index]);
+  ConfigureInterface(index);
   return RDMResponder_BuildSetAck(header);
 }
 
@@ -547,7 +558,7 @@ int NetworkModel_SetDomainName(const RDMHeader *header,
 
 // Public Functions
 // ----------------------------------------------------------------------------
-void NetworkModel_Initialize(const NetworkModelSettings *settings) {
+void NetworkModel_Initialize() {
   // Initialize the InterfaceState array to something interesting.
 
   // eth0 is 192.168.0.1/24
@@ -573,7 +584,7 @@ void NetworkModel_Initialize(const NetworkModelSettings *settings) {
 
   unsigned int i = 0;
   for (; i < g_network_model.interface_count; i++) {
-    ConfigureInterface(&g_network_model.interfaces[i]);
+    ConfigureInterface(i);
   }
 
   g_network_model.default_interface_route = NO_DEFAULT_ROUTE;

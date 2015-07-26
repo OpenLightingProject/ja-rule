@@ -19,6 +19,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #ifndef TESTS_TESTS_TESTHELPERS_H_
 #define TESTS_TESTS_TESTHELPERS_H_
@@ -28,6 +29,7 @@
 
 #include "constants.h"
 #include "rdm.h"
+#include "rdm_frame.h"
 
 using ola::rdm::RDMRequest;
 
@@ -47,7 +49,7 @@ MATCHER_P(ResponseIs, expected_response, "") {
 /*
  * @brief Cast a pointer to an RDMHeader.
  */
-const RDMHeader *AsHeader(const uint8_t *data) {
+inline const RDMHeader *AsHeader(const uint8_t *data) {
   return reinterpret_cast<const RDMHeader*>(data);
 }
 
