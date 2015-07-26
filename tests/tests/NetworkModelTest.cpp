@@ -132,7 +132,7 @@ TEST_F(NetworkModelTest, getHardwareAddress) {
   int size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
-  // test the NR_DATA_OUT_OF_RANGE
+  // test the NR_DATA_OUT_OF_RANGE if the interface doesn't have a h/w address
   interface_id = HostToNetwork(3);
   request = BuildGetRequest(PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
       reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
@@ -141,7 +141,7 @@ TEST_F(NetworkModelTest, getHardwareAddress) {
   size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
-  // test the NR_DATA_OUT_OF_RANGE
+  // test the NR_DATA_OUT_OF_RANGE for an interface that doesn't exist.
   interface_id = HostToNetwork(5);
   request = BuildGetRequest(PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
       reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
@@ -168,7 +168,7 @@ TEST_F(NetworkModelTest, dhcpMode) {
   int size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
-  // Get the DHCP mode for the second (4th) interface.
+  // Get the DHCP mode for the second (id 4) interface.
   interface_id = HostToNetwork(4);
   request = BuildGetRequest(PID_IPV4_DHCP_MODE,
       reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
@@ -228,7 +228,7 @@ TEST_F(NetworkModelTest, getZeroconfMode) {
   int size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
-  // Get the zeroconf mode for the second (4th) interface.
+  // Get the zeroconf mode for the second (id 4) interface.
   interface_id = HostToNetwork(4);
   request = BuildGetRequest(PID_IPV4_ZEROCONF_MODE,
       reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
