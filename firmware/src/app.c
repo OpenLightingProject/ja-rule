@@ -95,8 +95,7 @@ void APP_Initialize(void) {
   SensorModel_Initialize(&sensor_model_settings);
   RDMHandler_AddModel(&SENSOR_MODEL_ENTRY);
 
-  NetworkModelSettings network_settings = {};
-  NetworkModel_Initialize(&network_settings);
+  NetworkModel_Initialize();
   RDMHandler_AddModel(&NETWORK_MODEL_ENTRY);
 
   // Initialize the Host message layers.

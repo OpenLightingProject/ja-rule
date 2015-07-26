@@ -18,6 +18,7 @@ noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
                      src/libcoarsetimer.la \
                      src/libflags.la \
                      src/libmessagehandler.la \
+                     src/libnetworkmodel.la \
                      src/librandom.la \
                      src/librdmbuffer.la \
                      src/librdmhandler.la \
@@ -56,6 +57,9 @@ src_libflags_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libmessagehandler_la_SOURCES = src/message_handler.c
 src_libmessagehandler_la_CFLAGS = $(BUILD_FLAGS)
+
+src_libnetworkmodel_la_SOURCES = src/network_model.c
+src_libnetworkmodel_la_CFLAGS = $(BUILD_FLAGS)
 
 src_librandom_la_SOURCES = src/random.c
 src_librandom_la_CFLAGS = $(BUILD_FLAGS)
