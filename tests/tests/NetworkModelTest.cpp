@@ -133,6 +133,15 @@ TEST_F(NetworkModelTest, getHardwareAddress) {
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
   // test the NR_DATA_OUT_OF_RANGE
+  interface_id = HostToNetwork(3);
+  request = BuildGetRequest(PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
+      reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
+
+  response.reset(NackWithReason(request.get(), ola::rdm::NR_DATA_OUT_OF_RANGE));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // test the NR_DATA_OUT_OF_RANGE
   interface_id = HostToNetwork(5);
   request = BuildGetRequest(PID_INTERFACE_HARDWARE_ADDRESS_TYPE1,
       reinterpret_cast<uint8_t*>(&interface_id), sizeof(interface_id));
