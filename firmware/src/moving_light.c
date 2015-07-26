@@ -268,15 +268,15 @@ static int MovingLightModel_HandleRequest(const RDMHeader *header,
     return RDM_RESPONDER_NO_RESPONSE;
   }
 
+  if (header->command_class == DISCOVERY_COMMAND) {
+    return RDMResponder_HandleDiscovery(header, param_data);
+  }
+
   uint16_t sub_device = ntohs(header->sub_device);
 
   // No subdevices.
   if (sub_device != SUBDEVICE_ROOT && sub_device != SUBDEVICE_ALL) {
     return RDMResponder_BuildNack(header, NR_SUB_DEVICE_OUT_OF_RANGE);
-  }
-
-  if (header->command_class == DISCOVERY_COMMAND) {
-    return RDMResponder_HandleDiscovery(header, param_data);
   }
 
   // This model has no sub devices.
@@ -375,13 +375,13 @@ static const SlotDefinition PERSONALITY_SLOTS1[] = {
     .description = SLOT_PAN_DESCRIPTION,
     .slot_label_id = SD_PAN,
     .slot_type = ST_PRIMARY,
-    .default_value = 0,
+    .default_value = 127,
   },
   {
     .description = SLOT_TILT_DESCRIPTION,
     .slot_label_id = SD_TILT,
     .slot_type = ST_PRIMARY,
-    .default_value = 0,
+    .default_value = 127,
   },
   {
     .description = SLOT_COLOR_DESCRIPTION,
@@ -402,7 +402,7 @@ static const SlotDefinition PERSONALITY_SLOTS2[] = {
     .description = SLOT_PAN_DESCRIPTION,
     .slot_label_id = SD_PAN,
     .slot_type = ST_PRIMARY,
-    .default_value = 0,
+    .default_value = 127,
   },
   {
     .description = SLOT_PAN_FINE_DESCRIPTION,
@@ -414,7 +414,7 @@ static const SlotDefinition PERSONALITY_SLOTS2[] = {
     .description = SLOT_TILT_DESCRIPTION,
     .slot_label_id = SD_TILT,
     .slot_type = ST_PRIMARY,
-    .default_value = 0,
+    .default_value = 127,
   },
   {
     .description = SLOT_TILT_FINE_DESCRIPTION,

@@ -116,15 +116,14 @@ static int SensorModel_HandleRequest(const RDMHeader *header,
     return RDM_RESPONDER_NO_RESPONSE;
   }
 
-  uint16_t sub_device = ntohs(header->sub_device);
+  if (header->command_class == DISCOVERY_COMMAND) {
+    return RDMResponder_HandleDiscovery(header, param_data);
+  }
 
+  uint16_t sub_device = ntohs(header->sub_device);
   // No subdevice support for now.
   if (sub_device != SUBDEVICE_ROOT && sub_device != SUBDEVICE_ALL) {
     return RDMResponder_BuildNack(header, NR_SUB_DEVICE_OUT_OF_RANGE);
-  }
-
-  if (header->command_class == DISCOVERY_COMMAND) {
-    return RDMResponder_HandleDiscovery(header, param_data);
   }
 
   // This model has no sub devices.
