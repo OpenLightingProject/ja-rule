@@ -31,7 +31,7 @@
 
 class ModelTest : public testing::Test {
  public:
-  ModelTest(const ModelEntry *model);
+  explicit ModelTest(const ModelEntry *model);
 
  protected:
   ola::rdm::UID m_controller_uid;
