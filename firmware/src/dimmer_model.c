@@ -64,17 +64,17 @@ DimmerSubDevice *g_active_device = NULL;
  * @returns true if the start address of all subdevices changed, false if the
  *   footprint of the sub devices would exceed the last slot (512).
  */
-
 bool ResetToBlockAddress(uint16_t start_address) {
   unsigned int footprint = 0;
   unsigned int i = 0;
   for (; i < NUMBER_OF_SUB_DEVICES; i++) {
     RDMResponder *responder = &g_subdevices[i].responder;
-    footprint += responder->def->personalities[responder->current_personality - 1]
-        .slot_count;
+    footprint +=
+        responder->def->personalities[responder->current_personality - 1]
+            .slot_count;
   }
 
-  if (MAX_DMX_START_ADDRESS - start_address + 1 < footprint) {
+  if ((uint16_t) (MAX_DMX_START_ADDRESS - start_address + 1) < footprint) {
     return false;
   }
 
