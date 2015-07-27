@@ -49,10 +49,6 @@ using ola::rdm::RDMStatusCode;
 using std::unique_ptr;
 using ::testing::NotNull;
 
-const uint8_t ModelTest::TEST_UID[] = {
-  0x7a, 0x70, 0x12, 0x34, 0x56, 0x78
-};
-
 class NetworkModelTest : public ModelTest {
  public:
   NetworkModelTest() : ModelTest(&NETWORK_MODEL_ENTRY) {}

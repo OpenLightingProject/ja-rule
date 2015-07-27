@@ -39,6 +39,10 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RDMSetRequest;
 using std::unique_ptr;
 
+const uint8_t ModelTest::TEST_UID[] = {
+  0x7a, 0x70, 0x12, 0x34, 0x56, 0x78
+};
+
 ModelTest::ModelTest(const ModelEntry *model)
     : m_controller_uid(0x7a70, 0x00000000),
       m_our_uid(TEST_UID),
