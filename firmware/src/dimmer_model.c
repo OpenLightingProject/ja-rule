@@ -123,7 +123,7 @@ int DimmerModel_GetDMXBlockAddress(const RDMHeader *header,
     total_footprint += sub_device_footprint;
     if (expected_start_address &&
         expected_start_address != responder->dmx_start_address) {
-        is_contiguous = false;
+      is_contiguous = false;
     } else if (expected_start_address) {
       expected_start_address += sub_device_footprint;
     } else {
@@ -171,7 +171,7 @@ void DimmerModel_Initialize() {
   uint16_t sub_device_index = 1;
   for (; i < NUMBER_OF_SUB_DEVICES; i++) {
     if (i == 1) {
-      // Leave at gap at sub-device 2, since sub devices aren't required to be
+      // Leave a gap at sub-device 2, since sub devices aren't required to be
       // contiguous.
       sub_device_index++;
     }
