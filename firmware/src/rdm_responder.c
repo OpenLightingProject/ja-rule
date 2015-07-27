@@ -50,7 +50,8 @@ RDMResponder *g_responder = &root_responder;
  */
 static inline const PersonalityDefinition* CurrentPersonality() {
   if (g_responder->def->personalities) {
-    return &g_responder->def->personalities[g_responder->current_personality - 1];
+    return &g_responder->def->personalities[
+      g_responder->current_personality - 1];
   }
   return NULL;
 }
@@ -72,8 +73,10 @@ static inline void RecordSensor(unsigned int i) {
 static void ResetSensor(unsigned int i) {
   if (g_responder->def->sensors[i].recorded_value_support &
       SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK) {
-    g_responder->sensors[i].lowest_value = g_responder->sensors[i].present_value;
-    g_responder->sensors[i].highest_value = g_responder->sensors[i].present_value;
+    g_responder->sensors[i].lowest_value =
+        g_responder->sensors[i].present_value;
+    g_responder->sensors[i].highest_value =
+        g_responder->sensors[i].present_value;
   } else {
     g_responder->sensors[i].lowest_value = SENSOR_VALUE_UNSUPPORTED;
     g_responder->sensors[i].highest_value = SENSOR_VALUE_UNSUPPORTED;
