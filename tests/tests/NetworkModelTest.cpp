@@ -41,11 +41,8 @@ using ola::network::HostToNetwork;
 using ola::rdm::UID;
 using ola::rdm::GetResponseFromData;
 using ola::rdm::NackWithReason;
-using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
-using ola::rdm::RDMSetRequest;
-using ola::rdm::RDMStatusCode;
 using std::unique_ptr;
 using ::testing::NotNull;
 
