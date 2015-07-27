@@ -31,7 +31,7 @@
 #include "utils.h"
 #include "system_pipeline.h"
 
-#define MAX_RDM_MODELS 4
+#define MAX_RDM_MODELS 6
 
 static ModelEntry g_models[MAX_RDM_MODELS];
 

@@ -215,11 +215,6 @@ typedef struct {
   const PIDDescriptor *descriptors;
 
   /**
-   * @brief The number of descriptors in the table.
-   */
-  unsigned int descriptor_count;
-
-  /**
    * @brief The sensor definitions table.
    *
    * This may be NULL if the responder does not have sensors.
@@ -227,21 +222,11 @@ typedef struct {
   const SensorDefinition *sensors;
 
   /**
-   * @brief The number of sensor definitions in the table.
-   */
-  uint8_t sensor_count;  //!< The number of sensors
-
-  /**
    * @brief The personality definition table.
    *
    * This may be NULL if the responder does not have personalities.
    */
   const PersonalityDefinition *personalities;
-
-  /**
-   * @brief The number of personality definitions in the table.
-   */
-  unsigned int personality_count;
 
   const char *software_version_label;  //!< The software version label.
   const char *manufacturer_label;  //!< The manufacturer label.
@@ -253,9 +238,24 @@ typedef struct {
    */
   const ProductDetailIds *product_detail_ids;
 
+  /**
+   * @brief The number of descriptors in the table.
+   */
+  unsigned int descriptor_count;
+
+  /**
+   * @brief The number of personality definitions in the table.
+   */
+  unsigned int personality_count;
+
   uint32_t software_version;  //!< The Software version.
   uint16_t model_id;  //!< The model ID.
   RDMProductCategory product_category;  //!< The product category.
+
+  /**
+   * @brief The number of sensor definitions in the table.
+   */
+  uint8_t sensor_count;  //!< The number of sensors
 } ResponderDefinition;
 
 /**
@@ -264,6 +264,9 @@ typedef struct {
  * This contains the mutable state for a responder.
  */
 typedef struct {
+  char device_label[RDM_DEFAULT_STRING_SIZE];  //!< Device label
+  uint8_t uid[UID_LENGTH];  //!< Responder's UID
+
   /**
    * @brief The ResponderDefinition
    */
@@ -277,8 +280,6 @@ typedef struct {
    */
   SensorData *sensors;
 
-  char device_label[RDM_DEFAULT_STRING_SIZE];  //!< Device label
-  uint8_t uid[UID_LENGTH];  //!< Responder's UID
   uint16_t dmx_start_address;  //!< DMX start address
   uint16_t sub_device_count;  //!< The number of sub devices
   uint8_t current_personality;  //!< Current DMX personality, 1-indexed.
@@ -286,12 +287,13 @@ typedef struct {
   bool is_muted;  //!< The mute state for the responder
   bool identify_on;  //!< The identify state for the responder.
   bool using_factory_defaults;  //!< True if using factory defaults.
+  bool is_subdevice;  // true if this is a subdevice.
 } RDMResponder;
 
 /**
  * @brief The global RDMResponder object.
  */
-extern RDMResponder g_responder;
+extern RDMResponder *g_responder;
 
 /**
  * @brief Indicates there is no response required for the request.

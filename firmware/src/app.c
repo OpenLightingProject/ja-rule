@@ -22,6 +22,7 @@
 #include "sys/attribs.h"
 
 #include "coarse_timer.h"
+#include "dimmer_model.h"
 #include "message_handler.h"
 #include "moving_light.h"
 #include "network_model.h"
@@ -97,6 +98,10 @@ void APP_Initialize(void) {
 
   NetworkModel_Initialize();
   RDMHandler_AddModel(&NETWORK_MODEL_ENTRY);
+
+  DimmerModelSettings dimmer_settings = {};
+  DimmerModel_Initialize(&dimmer_settings);
+  RDMHandler_AddModel(&DIMMER_MODEL_ENTRY);
 
   // Initialize the Host message layers.
   MessageHandler_Initialize(NULL);
