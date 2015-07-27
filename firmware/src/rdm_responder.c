@@ -117,7 +117,7 @@ void RDMResponder_ResetToFactoryDefaults() {
   g_responder->queued_message_count = 0;
   g_responder->dmx_start_address = INVALID_DMX_START_ADDRESS;
   g_responder->sub_device_count = 0;
-  g_responder->current_personality = 0;
+  g_responder->current_personality = 1;
   g_responder->is_muted = false;
   g_responder->identify_on = false;
   g_responder->sensors = NULL;
@@ -424,7 +424,12 @@ int RDMResponder_GetDeviceInfo(const RDMHeader *header,
   ptr = PushUInt32(ptr, g_responder->def->software_version);
   ptr = PushUInt16(ptr, personality ? personality->dmx_footprint : 0);
   *ptr++ = g_responder->current_personality;
-  *ptr++ = g_responder->def->personality_count;
+
+  if (g_responder->def->personalities) {
+    *ptr++ = g_responder->def->personality_count;
+  } else {
+    *ptr++ = 1;
+  }
   ptr = PushUInt16(ptr, g_responder->dmx_start_address);
   ptr = PushUInt16(ptr, g_responder->sub_device_count);
   *ptr++ = g_responder->def->sensor_count;
@@ -731,6 +736,12 @@ int RDMResponder_SetIdentifyDevice(const RDMHeader *header,
 
 int RDMResponder_HandleDiscovery(const RDMHeader *header,
                                  const uint8_t *param_data) {
+  if (ntohs(header->sub_device) != SUBDEVICE_ROOT) {
+    // The standard isn't clear on what should occur here.
+    // We just silently drop the request, since we can't NACK it (6.3 of E1.20)
+    return RDM_RESPONDER_NO_RESPONSE;
+  }
+
   switch (ntohs(header->param_id)) {
     case PID_DISC_UNIQUE_BRANCH:
       return RDMResponder_HandleDUBRequest(param_data,
