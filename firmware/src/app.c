@@ -99,8 +99,7 @@ void APP_Initialize(void) {
   NetworkModel_Initialize();
   RDMHandler_AddModel(&NETWORK_MODEL_ENTRY);
 
-  DimmerModelSettings dimmer_settings = {};
-  DimmerModel_Initialize(&dimmer_settings);
+  DimmerModel_Initialize();
   RDMHandler_AddModel(&DIMMER_MODEL_ENTRY);
 
   // Initialize the Host message layers.

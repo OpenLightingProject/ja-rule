@@ -43,16 +43,9 @@ extern "C" {
 extern const ModelEntry DIMMER_MODEL_ENTRY;
 
 /**
- * @brief The settings to use for the Dimmer RDM Model.
- */
-typedef struct {
-} DimmerModelSettings;
-
-/**
  * @brief Initialize the dimmer model.
- * @param settings The settings for this model.
  */
-void DimmerModel_Initialize(const DimmerModelSettings *settings);
+void DimmerModel_Initialize();
 
 #ifdef __cplusplus
 }

@@ -166,7 +166,7 @@ typedef struct {
   /**
    * @brief The number of slot definitions.
    */
-  unsigned int slot_count;
+  uint16_t slot_count;
 } PersonalityDefinition;
 
 /**

@@ -41,17 +41,10 @@ using ola::network::HostToNetwork;
 using ola::rdm::UID;
 using ola::rdm::GetResponseFromData;
 using ola::rdm::NackWithReason;
-using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
-using ola::rdm::RDMSetRequest;
-using ola::rdm::RDMStatusCode;
 using std::unique_ptr;
 using ::testing::NotNull;
-
-const uint8_t ModelTest::TEST_UID[] = {
-  0x7a, 0x70, 0x12, 0x34, 0x56, 0x78
-};
 
 class NetworkModelTest : public ModelTest {
  public:

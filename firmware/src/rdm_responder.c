@@ -51,7 +51,7 @@ RDMResponder *g_responder = &root_responder;
 static inline const PersonalityDefinition* CurrentPersonality() {
   if (g_responder->def->personalities) {
     return &g_responder->def->personalities[
-      g_responder->current_personality - 1];
+        g_responder->current_personality - 1];
   }
   return NULL;
 }
