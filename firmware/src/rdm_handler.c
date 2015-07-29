@@ -31,7 +31,7 @@
 #include "utils.h"
 #include "system_pipeline.h"
 
-#define MAX_RDM_MODELS 6
+enum { MAX_RDM_MODELS = 4};
 
 static ModelEntry g_models[MAX_RDM_MODELS];
 
@@ -123,7 +123,7 @@ static int GetModelList(const RDMHeader *header) {
   }
 
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
-  unsigned int i = 0;
+  unsigned int i = 0u;
   for (; i < MAX_RDM_MODELS; i++) {
     if (g_models[i].model_id != NULL_MODEL_ID) {
       ptr = PushUInt16(ptr, g_models[i].model_id);
@@ -140,14 +140,14 @@ void RDMHandler_Initialize(const RDMHandlerSettings *settings) {
   g_rdm_handler.active_model = NULL;
   g_rdm_handler.send_callback = settings->send_callback;
 
-  unsigned int i = 0;
+  unsigned int i = 0u;
   for (; i < MAX_RDM_MODELS; i++) {
     g_models[i].model_id = NULL_MODEL_ID;
   }
 }
 
 bool RDMHandler_AddModel(const ModelEntry *entry) {
-  unsigned int i = 0;
+  unsigned int i = 0u;
   for (; i < MAX_RDM_MODELS; i++) {
     if (g_models[i].model_id == entry->model_id) {
       return false;
@@ -184,7 +184,7 @@ bool RDMHandler_SetActiveModel(uint16_t model_id) {
     return true;
   }
 
-  unsigned int i = 0;
+  unsigned int i = 0u;
   for (; i < MAX_RDM_MODELS; i++) {
     if (g_models[i].model_id != NULL_MODEL_ID &&
         g_models[i].model_id == model_id) {
@@ -228,9 +228,9 @@ void RDMHandler_HandleRequest(const RDMHeader *header,
     iov.length = abs(response_size);
 
 #ifdef PIPELINE_RDMRESPONDER_SEND
-    PIPELINE_RDMRESPONDER_SEND(response_size < 0 ? false : true, &iov, 1);
+    PIPELINE_RDMRESPONDER_SEND(response_size < 0 ? false : true, &iov, 1u);
 #else
-    g_rdm_handler.send_callback(response_size < 0 ? false : true, &iov, 1);
+    g_rdm_handler.send_callback(response_size < 0 ? false : true, &iov, 1u);
 #endif
   }
 }

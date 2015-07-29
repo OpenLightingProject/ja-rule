@@ -27,7 +27,6 @@
 #include "syslog.h"
 #include "transceiver.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 /*
@@ -48,7 +47,7 @@ typedef enum {
   STATE_DISCARD  //!< Discarding the remaining data.
 } ResponderState;
 
-static const uint16_t UNINITIALIZED_COUNTER = 0xffff;
+static const uint16_t UNINITIALIZED_COUNTER = 0xffffu;
 
 /*
  * @brief The counters.
@@ -68,15 +67,15 @@ static ResponderState g_state = STATE_START_CODE;
 /*
  * @brief The g_offset of the next byte to process
  */
-static unsigned int g_offset = 0;
+static unsigned int g_offset = 0u;
 
 /*
  * @brief Call the RDM handler when we have a complete and valid frame.
  */
 static inline void DispatchRDMRequest(const uint8_t *frame) {
   SysLog_Print(SYSLOG_INFO, "RDM: break %dus, mark %dus",
-               g_timing.request.break_time / 10,
-               g_timing.request.mark_time / 10);
+               g_timing.request.break_time / 10u,
+               g_timing.request.mark_time / 10u);
   RDMHeader *header = (RDMHeader*) frame;
   RDMHandler_HandleRequest(
       header,
@@ -90,15 +89,15 @@ void Responder_Initialize() {
 }
 
 void Responder_ResetCounters() {
-  g_responder_counters.dmx_frames = 0;
-  g_responder_counters.asc_frames = 0;
-  g_responder_counters.rdm_frames = 0;
-  g_responder_counters.rdm_sub_start_code_invalid = 0;
-  g_responder_counters.rdm_msg_len_invalid = 0;
-  g_responder_counters.rdm_param_data_len_invalid = 0;
-  g_responder_counters.rdm_checksum_invalid = 0;
+  g_responder_counters.dmx_frames = 0u;
+  g_responder_counters.asc_frames = 0u;
+  g_responder_counters.rdm_frames = 0u;
+  g_responder_counters.rdm_sub_start_code_invalid = 0u;
+  g_responder_counters.rdm_msg_len_invalid = 0u;
+  g_responder_counters.rdm_param_data_len_invalid = 0u;
+  g_responder_counters.rdm_checksum_invalid = 0u;
   // The initial values are from E1.37-5 (draft).
-  g_responder_counters.dmx_last_checksum = 0xff;
+  g_responder_counters.dmx_last_checksum = 0xffu;
   g_responder_counters.dmx_last_slot_count = UNINITIALIZED_COUNTER;
   g_responder_counters.dmx_min_slot_count = UNINITIALIZED_COUNTER;
   g_responder_counters.dmx_max_slot_count = UNINITIALIZED_COUNTER;
@@ -122,7 +121,7 @@ void Responder_Receive(const TransceiverEvent *event) {
       g_responder_counters.dmx_min_slot_count =
         g_responder_counters.dmx_last_slot_count;
     }
-    g_offset = 0;
+    g_offset = 0u;
     g_state = STATE_START_CODE;
     if (event->timing) {
       g_timing = *event->timing;
@@ -139,8 +138,8 @@ void Responder_Receive(const TransceiverEvent *event) {
     switch (g_state) {
       case STATE_START_CODE:
         if (b == NULL_START_CODE) {
-          g_responder_counters.dmx_last_checksum = 0;
-          g_responder_counters.dmx_last_slot_count = 0;
+          g_responder_counters.dmx_last_checksum = 0u;
+          g_responder_counters.dmx_last_slot_count = 0u;
           SysLog_Message(SYSLOG_DEBUG, "DMX frame");
           g_responder_counters.dmx_frames++;
           g_state = STATE_DMX_DATA;
@@ -201,9 +200,9 @@ void Responder_Receive(const TransceiverEvent *event) {
         break;
       case STATE_DMX_DATA:
         // TODO(simon): configure this with DMX_START_ADDRESS and footprints.
-        if (g_offset - 1 < 6) {
-          SPIRGB_SetPixel((g_offset - 1) / 3, (g_offset - 1) % 3, b);
-        } else if (g_offset - 1 == 6) {
+        if (g_offset - 1u < 6u) {
+          SPIRGB_SetPixel((g_offset - 1u) / 3u, (g_offset - 1u) % 3u, b);
+        } else if (g_offset - 1u == 6u) {
           SPIRGB_CompleteUpdate();
         }
 

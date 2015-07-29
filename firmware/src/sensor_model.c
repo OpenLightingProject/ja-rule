@@ -28,11 +28,11 @@
 #include "utils.h"
 
 // Various constants
-#define SOFTWARE_VERSION 0x00000000
-#define SENSOR_SAMPLE_RATE 10000
 
 enum { NUMBER_OF_SENSORS = 3 };
+enum { SOFTWARE_VERSION = 0x00000000u };
 
+static const uint32_t SENSOR_SAMPLE_RATE = 10000u;
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Sensor Device";
 static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
@@ -70,16 +70,16 @@ void SampleSensors() {
 
 // Public Functions
 // ----------------------------------------------------------------------------
-void SensorModel_Initialize(const SensorModelSettings *settings) {}
+void SensorModel_Initialize() {}
 
 static void SensorModel_Activate() {
   g_responder->def = &RESPONDER_DEFINITION;
-  unsigned int i = 0;
+  unsigned int i = 0u;
   for (; i < NUMBER_OF_SENSORS; i++) {
-    g_sensor_model.sensors[i].present_value = 0;
-    g_sensor_model.sensors[i].lowest_value = 0;
-    g_sensor_model.sensors[i].highest_value = 0;
-    g_sensor_model.sensors[i].recorded_value = 0;
+    g_sensor_model.sensors[i].present_value = 0u;
+    g_sensor_model.sensors[i].lowest_value = 0u;
+    g_sensor_model.sensors[i].highest_value = 0u;
+    g_sensor_model.sensors[i].recorded_value = 0u;
     if (i == 1) {
       // The 2nd sensor (index 1) always nacks with a HARDWARE_FAULT
       g_sensor_model.sensors[i].should_nack = true;
@@ -151,26 +151,26 @@ const ModelEntry SENSOR_MODEL_ENTRY = {
 };
 
 static const PIDDescriptor PID_DESCRIPTORS[] = {
-  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0,
+  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0, (PIDCommandHandler) NULL},
-  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0,
+  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0u, (PIDCommandHandler) NULL},
+  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0,
+  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0u,
     (PIDCommandHandler) NULL},
-  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0,
+  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0,
+  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0u,
     RDMResponder_SetDeviceLabel},
-  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0,
+  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_SENSOR_DEFINITION, RDMResponder_GetSensorDefinition, 1,
+  {PID_SENSOR_DEFINITION, RDMResponder_GetSensorDefinition, 1u,
     (PIDCommandHandler) NULL},
-  {PID_SENSOR_VALUE, RDMResponder_GetSensorValue, 1,
+  {PID_SENSOR_VALUE, RDMResponder_GetSensorValue, 1u,
     RDMResponder_SetSensorValue},
-  {PID_RECORD_SENSORS, (PIDCommandHandler) NULL, 0,
+  {PID_RECORD_SENSORS, (PIDCommandHandler) NULL, 0u,
     RDMResponder_SetRecordSensor},
-  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0,
+  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0u,
     RDMResponder_SetIdentifyDevice}
 };
 
@@ -198,7 +198,7 @@ static const SensorDefinition SENSOR_DEFINITIONS[] = {
     .normal_minimum_value = 0,  // -1G
     .range_maximum_value = 882,  // +8G
     .range_minimum_value = -686,  // -8G
-    .recorded_value_support = 0,
+    .recorded_value_support = 0u,
     .type = SENSOR_ACCELERATION,
     .unit = UNITS_METERS_PER_SECOND_SQUARED,
     .prefix = PREFIX_DECI
@@ -222,7 +222,7 @@ static const ResponderDefinition RESPONDER_DEFINITION = {
   .sensors = SENSOR_DEFINITIONS,
   .sensor_count = NUMBER_OF_SENSORS,
   .personalities = NULL,
-  .personality_count = 0,
+  .personality_count = 0u,
   .software_version_label = SOFTWARE_LABEL,
   .manufacturer_label = MANUFACTURER_LABEL,
   .model_description = DEVICE_MODEL_DESCRIPTION,

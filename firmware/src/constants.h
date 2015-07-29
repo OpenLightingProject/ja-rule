@@ -50,21 +50,21 @@
  *
  * 64 bytes is the highest value a full speed, bulk endpoint can use.
  */
-#define USB_MAX_PACKET_SIZE 64
+#define USB_MAX_PACKET_SIZE 64u
 
 /**
  * @brief The maximum transfer size of a Ja Rule USB command.
  *
  * This should be a multiple of USB_MAX_PACKET_SIZE.
  */
-#define USB_READ_BUFFER_SIZE 576
+#define USB_READ_BUFFER_SIZE 576u
 
 /**
  * @brief The polling interval for the bulk endpoint in milliseconds.
  *
  * 1ms is the shortest polling interval USB allows.
  */
-#define USB_POLLING_INTERVAL 1
+#define USB_POLLING_INTERVAL 1u
 
 // *****************************************************************************
 // DMX512 specific constants
@@ -73,17 +73,17 @@
 /**
  * @brief The maximum size of a DMX frame, excluding the start code.
  */
-#define DMX_FRAME_SIZE 512
+#define DMX_FRAME_SIZE 512u
 
 /**
  * @brief The Null Start Code (NSC).
  */
-#define NULL_START_CODE 0x00
+#define NULL_START_CODE 0x00u
 
 /**
  * @brief The Baud rate for DMX / RDM.
  */
-#define DMX_BAUD 250000  // 250kHz
+#define DMX_BAUD 250000u  // 250kHz
 
 // *****************************************************************************
 // RDM specific constants
@@ -92,12 +92,12 @@
 /**
  * @brief The RDM Start Code.
  */
-#define RDM_START_CODE 0xcc
+#define RDM_START_CODE 0xccu
 
 /**
  * @brief The RDM Sub-start Code.
  */
-#define RDM_SUB_START_CODE 0x01
+#define RDM_SUB_START_CODE 0x01u
 
 // *****************************************************************************
 // Protocol specific constants
@@ -266,27 +266,27 @@ typedef enum {
 /**
  * @brief The Start of Message identifier.
  */
-#define START_OF_MESSAGE_ID 0x5a
+#define START_OF_MESSAGE_ID 0x5au
 
 /**
  * @brief The End of Message Identifier.
  */
-#define END_OF_MESSAGE_ID 0xa5
+#define END_OF_MESSAGE_ID 0xa5u
 
 /**
  * @brief The maximum payload size in a message.
  */
-#define PAYLOAD_SIZE 513
+#define PAYLOAD_SIZE 513u
 
 /**
  * @brief The break time in microseconds.
  */
-#define DEFAULT_BREAK_TIME 176
+#define DEFAULT_BREAK_TIME 176u
 
 /**
  * @brief The mark time in microseconds.
  */
-#define DEFAULT_MARK_TIME 12
+#define DEFAULT_MARK_TIME 12u
 
 /**
  * @brief The time to listen for a response after sending an RDM broadcast.
@@ -295,7 +295,7 @@ typedef enum {
  * responses from broadcast messages, however by waiting we can detect bad
  * responders, so we set this the same as DEFAULT_RDM_WAIT_TIME.
  */
-#define DEFAULT_RDM_BROADCAST_TIMEOUT 28
+#define DEFAULT_RDM_BROADCAST_TIMEOUT 28u
 
 /**
  * @brief The default RDM response timeout for a controller.
@@ -304,14 +304,14 @@ typedef enum {
  * Responders have 2ms (see Table 3-4), and then in line proxies can introduce
  * up to 704uS of delay. This rounds to 2.8 ms.
  */
-#define DEFAULT_RDM_RESPONSE_TIMEOUT 28
+#define DEFAULT_RDM_RESPONSE_TIMEOUT 28u
 
 /**
  * @brief The default maximum time an RDM DUB response can take.
  *
  * Measured in in 10ths of a microsecond. From Line 3, Table 3-3, E1.20.
  */
-#define DEFAULT_RDM_DUB_RESPONSE_LIMIT 29000
+#define DEFAULT_RDM_DUB_RESPONSE_LIMIT 29000u
 
 /**
  * @brief The default time to wait before sending an RDM response.
@@ -319,7 +319,7 @@ typedef enum {
  *
  * Measured in in 10ths of a microsecond. From Table 3-4, E1.20.
  */
-#define DEFAULT_RDM_RESPONDER_DELAY 1760
+#define DEFAULT_RDM_RESPONDER_DELAY 1760u
 
 #endif  // FIRMWARE_SRC_CONSTANTS_H_
 

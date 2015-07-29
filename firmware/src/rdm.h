@@ -40,17 +40,17 @@ extern "C" {
 /**
  * @brief The root sub device.
  */
-static const uint16_t SUBDEVICE_ROOT = 0;
+static const uint16_t SUBDEVICE_ROOT = 0u;
 
 /**
  * @brief All sub devices.
  */
-static const uint16_t SUBDEVICE_ALL = 0xffff;
+static const uint16_t SUBDEVICE_ALL = 0xffffu;
 
 /**
  * @brief The maximum index for a sub device.
  */
-static const uint16_t SUBDEVICE_MAX = 0x0200;
+static const uint16_t SUBDEVICE_MAX = 0x0200u;
 
 /**
  * @brief The maximum number of product detail ids a responder can have.
@@ -60,42 +60,42 @@ enum { MAX_PRODUCT_DETAILS = 6 };
 /**
  * @brief The RDM Sub Start Code.
  */
-static const uint8_t SUB_START_CODE = 0x01;
+static const uint8_t SUB_START_CODE = 0x01u;
 
 /**
  * @brief The number of bytes in an RDM checksum
  */
-static const uint8_t RDM_CHECKSUM_LENGTH = 2;
+static const uint8_t RDM_CHECKSUM_LENGTH = 2u;
 
 /**
  * @brief The location of the message length field in a frame.
  */
-static const uint8_t MESSAGE_LENGTH_OFFSET = 2;
+static const uint8_t MESSAGE_LENGTH_OFFSET = 2u;
 
 /**
  * @brief The location of the parameter data length in a frame.
  */
-static const uint8_t RDM_PARAM_DATA_LENGTH_OFFSET = 23;
+static const uint8_t RDM_PARAM_DATA_LENGTH_OFFSET = 23u;
 
 /**
  * @brief The location of the parameter data in a frame.
  */
-static const uint8_t RDM_PARAM_DATA_OFFSET = 24;
+static const uint8_t RDM_PARAM_DATA_OFFSET = 24u;
 
 /**
  * @brief The RDM version we support.
  */
-static const uint16_t RDM_VERSION = 0x0100;
+static const uint16_t RDM_VERSION = 0x0100u;
 
 /**
  * @brief The maximum value for a DMX start address.
  */
-static const uint16_t MAX_DMX_START_ADDRESS = 512;
+static const uint16_t MAX_DMX_START_ADDRESS = 512u;
 
 /**
  * @brief The 'unpatched' DMX start address.
  */
-static const uint16_t INVALID_DMX_START_ADDRESS = 0xffff;
+static const uint16_t INVALID_DMX_START_ADDRESS = 0xffffu;
 
 /**
  * @brief Indicates the responder is a managed proxy.
@@ -159,22 +159,22 @@ enum { SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK = 0x02 };
 /**
  * @brief The all-sensors value.
  */
-static const uint8_t ALL_SENSORS = 0xff;
+static const uint8_t ALL_SENSORS = 0xffu;
 
 /**
  * @brief Indicates that recorded / highest / lowest values aren't supported.
  */
-static const uint16_t SENSOR_VALUE_UNSUPPORTED = 0;
+static const uint16_t SENSOR_VALUE_UNSUPPORTED = 0u;
 
 /*
  * @brief The maximum number of slot info entries in a RDM frame.
  */
-static const unsigned int MAX_SLOT_INFO_PER_FRAME = 46;
+static const unsigned int MAX_SLOT_INFO_PER_FRAME = 46u;
 
 /**
  * @brief The maximum number of default slot value entries in a RDM frame.
  */
-static const unsigned int MAX_DEFAULT_SLOT_VALUE_PER_FRAME = 77;
+static const unsigned int MAX_DEFAULT_SLOT_VALUE_PER_FRAME = 77u;
 
 /**
  * @brief The size of the DNS Host Name field from E1.37-2.
@@ -197,17 +197,17 @@ enum {
 /**
  * @brief Indicates no route is assigned.
  */
-static const uint32_t NO_DEFAULT_ROUTE = 0;
+static const uint32_t NO_DEFAULT_ROUTE = 0u;
 
 /**
  * @brief Indicates no IP address is configured.
  */
-static const uint32_t IPV4_UNCONFIGURED = 0;
+static const uint32_t IPV4_UNCONFIGURED = 0u;
 
 /**
  * @brief The maximum netmask value.
  */
-static const uint8_t MAX_NETMASK = 32;
+static const uint8_t MAX_NETMASK = 32u;
 
 /**
  * @brief The size of a MAC address

@@ -21,7 +21,7 @@
  * @defgroup responder Responder
  * @brief The Responder Subsystem.
  *
- * The responder receives data from the transceiver module and de-mulitplexes 
+ * The responder receives data from the transceiver module and de-mulitplexes
  * based on start code.
  *
  * @addtogroup responder

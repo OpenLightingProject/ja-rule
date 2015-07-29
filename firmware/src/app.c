@@ -88,12 +88,10 @@ void APP_Initialize(void) {
   SimpleModel_Initialize(&simple_model_settings);
   RDMHandler_AddModel(&SIMPLE_MODEL_ENTRY);
 
-  MovingLightModelSettings moving_light_settings = {};
-  MovingLightModel_Initialize(&moving_light_settings);
+  MovingLightModel_Initialize();
   RDMHandler_AddModel(&MOVING_LIGHT_MODEL_ENTRY);
 
-  SensorModelSettings sensor_model_settings = {};
-  SensorModel_Initialize(&sensor_model_settings);
+  SensorModel_Initialize();
   RDMHandler_AddModel(&SENSOR_MODEL_ENTRY);
 
   NetworkModel_Initialize();
@@ -111,7 +109,7 @@ void APP_Initialize(void) {
   // SPI DMX Output
   SPIRGBConfiguration spi_config;
   spi_config.module_id = SPI_ID_1;
-  spi_config.baud_rate = 1000000;
+  spi_config.baud_rate = 1000000u;
   spi_config.use_enhanced_buffering = true;
   SPIRGB_Init(&spi_config);
 

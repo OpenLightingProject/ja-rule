@@ -29,11 +29,10 @@
 #include "utils.h"
 
 // Various constants
-#define LAMP_STRIKE_DELAY 50000
-#define SOFTWARE_VERSION 0x00000000
-
+enum { SOFTWARE_VERSION = 0x00000000 };
 enum {PERSONALITY_COUNT = 2};
 
+static const unsigned int LAMP_STRIKE_DELAY = 50000u;
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Moving Light";
 static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Default Label";
@@ -224,15 +223,15 @@ int MovingLightModel_SetPowerState(const RDMHeader *header,
 
 // Public Functions
 // ----------------------------------------------------------------------------
-void MovingLightModel_Initialize(const MovingLightModelSettings *settings) {
-  g_moving_light.device_hours = 0;
-  g_moving_light.lamp_hours = 0;
-  g_moving_light.lamp_strikes = 0;
-  g_moving_light.device_power_cycles = 0;
-  g_moving_light.lamp_strike_time = 0;
+void MovingLightModel_Initialize() {
+  g_moving_light.device_hours = 0u;
+  g_moving_light.lamp_hours = 0u;
+  g_moving_light.lamp_strikes = 0u;
+  g_moving_light.device_power_cycles = 0u;
+  g_moving_light.lamp_strike_time = 0u;
   g_moving_light.lamp_state = LAMP_OFF;
   g_moving_light.lamp_on_mode = LAMP_ON_MODE_ON;
-  g_moving_light.display_level = 255;
+  g_moving_light.display_level = 255u;
   g_moving_light.display_invert = false;
   g_moving_light.power_state = POWER_STATE_NORMAL;
   g_moving_light.pan_invert = false;
@@ -306,55 +305,59 @@ const ModelEntry MOVING_LIGHT_MODEL_ENTRY = {
 };
 
 static const PIDDescriptor PID_DESCRIPTORS[] = {
-  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0,
+  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0, (PIDCommandHandler) NULL},
-  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0,
+  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0u, (PIDCommandHandler) NULL},
+  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0,
+  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0u,
     (PIDCommandHandler) NULL},
-  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0,
+  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0,
+  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0u,
     RDMResponder_SetDeviceLabel},
-  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0,
+  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DMX_PERSONALITY, RDMResponder_GetDMXPersonality, 0,
+  {PID_DMX_PERSONALITY, RDMResponder_GetDMXPersonality, 0u,
     RDMResponder_SetDMXPersonality},
   {PID_DMX_PERSONALITY_DESCRIPTION, RDMResponder_GetDMXPersonalityDescription,
     1, (PIDCommandHandler) NULL},
-  {PID_DMX_START_ADDRESS, RDMResponder_GetDMXStartAddress, 0,
+  {PID_DMX_START_ADDRESS, RDMResponder_GetDMXStartAddress, 0u,
     RDMResponder_SetDMXStartAddress},
-  {PID_SLOT_INFO, RDMResponder_GetSlotInfo, 0,
+  {PID_SLOT_INFO, RDMResponder_GetSlotInfo, 0u,
     (PIDCommandHandler) NULL},
   {PID_SLOT_DESCRIPTION, RDMResponder_GetSlotDescription, 2,
     (PIDCommandHandler) NULL},
-  {PID_DEFAULT_SLOT_VALUE, RDMResponder_GetDefaultSlotValue, 0,
+  {PID_DEFAULT_SLOT_VALUE, RDMResponder_GetDefaultSlotValue, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_HOURS, MovingLightModel_GetUInt32, 0, MovingLightModel_SetUInt32},
-  {PID_LAMP_HOURS, MovingLightModel_GetUInt32, 0, MovingLightModel_SetUInt32},
-  {PID_LAMP_STRIKES, MovingLightModel_GetUInt32, 0, MovingLightModel_SetUInt32},
-  {PID_LAMP_STATE, MovingLightModel_GetUInt8, 0, MovingLightModel_SetLampState},
-  {PID_LAMP_ON_MODE, MovingLightModel_GetUInt8, 0,
-    MovingLightModel_SetLampOnMode},
-  {PID_DEVICE_POWER_CYCLES, MovingLightModel_GetUInt32, 0,
+  {PID_DEVICE_HOURS, MovingLightModel_GetUInt32, 0u,
     MovingLightModel_SetUInt32},
-  {PID_DISPLAY_INVERT, MovingLightModel_GetUInt8, 0,
+  {PID_LAMP_HOURS, MovingLightModel_GetUInt32, 0u,
+    MovingLightModel_SetUInt32},
+  {PID_LAMP_STRIKES, MovingLightModel_GetUInt32, 0u,
+    MovingLightModel_SetUInt32},
+  {PID_LAMP_STATE, MovingLightModel_GetUInt8, 0u,
+    MovingLightModel_SetLampState},
+  {PID_LAMP_ON_MODE, MovingLightModel_GetUInt8, 0u,
+    MovingLightModel_SetLampOnMode},
+  {PID_DEVICE_POWER_CYCLES, MovingLightModel_GetUInt32, 0u,
+    MovingLightModel_SetUInt32},
+  {PID_DISPLAY_INVERT, MovingLightModel_GetUInt8, 0u,
     MovingLightModel_SetDisplayInvert},
-  {PID_DISPLAY_LEVEL, MovingLightModel_GetUInt8, 0, MovingLightModel_SetUInt8},
-  {PID_PAN_INVERT, MovingLightModel_GetBool, 0, MovingLightModel_SetBool},
-  {PID_TILT_INVERT, MovingLightModel_GetBool, 0, MovingLightModel_SetBool},
-  {PID_PAN_TILT_SWAP, MovingLightModel_GetBool, 0, MovingLightModel_SetBool},
-  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0,
+  {PID_DISPLAY_LEVEL, MovingLightModel_GetUInt8, 0u, MovingLightModel_SetUInt8},
+  {PID_PAN_INVERT, MovingLightModel_GetBool, 0u, MovingLightModel_SetBool},
+  {PID_TILT_INVERT, MovingLightModel_GetBool, 0u, MovingLightModel_SetBool},
+  {PID_PAN_TILT_SWAP, MovingLightModel_GetBool, 0u, MovingLightModel_SetBool},
+  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0u,
     RDMResponder_SetIdentifyDevice},
-  {PID_POWER_STATE, MovingLightModel_GetUInt8, 0,
+  {PID_POWER_STATE, MovingLightModel_GetUInt8, 0u,
     MovingLightModel_SetPowerState}
 };
 
 static const ProductDetailIds PRODUCT_DETAIL_ID_LIST = {
   .ids = {PRODUCT_DETAIL_TEST, PRODUCT_DETAIL_CHANGEOVER_MANUAL,
           PRODUCT_DETAIL_LED},
-  .size = 3
+  .size = 3u
 };
 
 static const char SLOT_DIMMER_DESCRIPTION[] = "Dimmer";
@@ -369,19 +372,19 @@ static const SlotDefinition PERSONALITY_SLOTS1[] = {
     .description = SLOT_DIMMER_DESCRIPTION,
     .slot_label_id = SD_INTENSITY,
     .slot_type = ST_PRIMARY,
-    .default_value = 0,
+    .default_value = 0u,
   },
   {
     .description = SLOT_PAN_DESCRIPTION,
     .slot_label_id = SD_PAN,
     .slot_type = ST_PRIMARY,
-    .default_value = 127,
+    .default_value = 127u,
   },
   {
     .description = SLOT_TILT_DESCRIPTION,
     .slot_label_id = SD_TILT,
     .slot_type = ST_PRIMARY,
-    .default_value = 127,
+    .default_value = 127u,
   },
   {
     .description = SLOT_COLOR_DESCRIPTION,
@@ -396,52 +399,52 @@ static const SlotDefinition PERSONALITY_SLOTS2[] = {
     .description = SLOT_DIMMER_DESCRIPTION,
     .slot_label_id = SD_INTENSITY,
     .slot_type = ST_PRIMARY,
-    .default_value = 0,
+    .default_value = 0u,
   },
   {
     .description = SLOT_PAN_DESCRIPTION,
     .slot_label_id = SD_PAN,
     .slot_type = ST_PRIMARY,
-    .default_value = 127,
+    .default_value = 127u,
   },
   {
     .description = SLOT_PAN_FINE_DESCRIPTION,
-    .slot_label_id = 1,
+    .slot_label_id = 1u,
     .slot_type = ST_SEC_FINE,
-    .default_value = 0,
+    .default_value = 0u,
   },
   {
     .description = SLOT_TILT_DESCRIPTION,
     .slot_label_id = SD_TILT,
     .slot_type = ST_PRIMARY,
-    .default_value = 127,
+    .default_value = 127u,
   },
   {
     .description = SLOT_TILT_FINE_DESCRIPTION,
-    .slot_label_id = 3,
+    .slot_label_id = 3u,
     .slot_type = ST_SEC_FINE,
-    .default_value = 0,
+    .default_value = 0u,
   },
   {
     .description = SLOT_COLOR_DESCRIPTION,
     .slot_label_id = SD_COLOR_WHEEL,
     .slot_type = ST_PRIMARY,
-    .default_value = 0,
+    .default_value = 0u,
   }
 };
 
 static const PersonalityDefinition PERSONALITIES[PERSONALITY_COUNT] = {
   {
-    .dmx_footprint = 4,
+    .dmx_footprint = 4u,
     .description = PERSONALITY_DESCRIPTION1,
     .slots = PERSONALITY_SLOTS1,
-    .slot_count = 4
+    .slot_count = 4u
   },
   {
-    .dmx_footprint = 6,
+    .dmx_footprint = 6u,
     .description = PERSONALITY_DESCRIPTION2,
     .slots = PERSONALITY_SLOTS2,
-    .slot_count = 6
+    .slot_count = 6u
   }
 };
 
@@ -449,7 +452,7 @@ static const ResponderDefinition RESPONDER_DEFINITION = {
   .descriptors = PID_DESCRIPTORS,
   .descriptor_count = sizeof(PID_DESCRIPTORS) / sizeof(PIDDescriptor),
   .sensors = NULL,
-  .sensor_count = 0,
+  .sensor_count = 0u,
   .personalities = PERSONALITIES,
   .personality_count = PERSONALITY_COUNT,
   .software_version_label = SOFTWARE_LABEL,
