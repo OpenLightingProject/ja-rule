@@ -313,7 +313,7 @@ bool UART_RXBytes() {
   while (PLIB_USART_ReceiverDataIsAvailable(g_hw_settings.usart) &&
          g_transceiver.data_index != BUFFER_SIZE) {
     g_transceiver.active->data[g_transceiver.data_index] =
-      PLIB_USART_ReceiverByteReceive(g_hw_settings.usart);
+        PLIB_USART_ReceiverByteReceive(g_hw_settings.usart);
     g_transceiver.data_index++;
   }
   if (g_transceiver.active->op == OP_RDM_WITH_RESPONSE ||
@@ -542,7 +542,7 @@ void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
         g_transceiver.state = STATE_C_RX_WAIT_FOR_MARK;
         break;
       case STATE_C_RX_WAIT_FOR_MARK:
-        if (value - g_timing.get_set_response.break_start <
+        if ((uint16_t) (value - g_timing.get_set_response.break_start) <
             CONTROLLER_RX_BREAK_TIME_MIN) {
           // The break was too short, keep looking for a break
           g_timing.get_set_response.break_start = value;
@@ -584,8 +584,10 @@ void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
         }
         break;
       case STATE_R_RX_MARK:
-        if (value - g_timing.request.break_time < RESPONDER_RX_MARK_TIME_MIN ||
-            value - g_timing.request.break_time > RESPONDER_RX_MARK_TIME_MAX) {
+        if ((uint16_t) (value - g_timing.request.break_time) <
+              RESPONDER_RX_MARK_TIME_MIN ||
+            (uint16_t) (value - g_timing.request.break_time) >
+              RESPONDER_RX_MARK_TIME_MAX) {
           // Mark was out of range, rebase timer & switch back to BREAK
           RebaseTimer(value);
 
@@ -1058,8 +1060,8 @@ void Transceiver_Tasks() {
       // Disable interupts so we don't race
       SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
       if (g_transceiver.state == STATE_C_RX_WAIT_FOR_MARK &&
-          (PLIB_TMR_Counter16BitGet(TMR_ID_3) -
-            g_timing.get_set_response.break_start >
+          ((uint16_t) (PLIB_TMR_Counter16BitGet(TMR_ID_3) -
+            g_timing.get_set_response.break_start) >
             CONTROLLER_RX_BREAK_TIME_MAX)) {
         // Break was too long
         g_transceiver.result = T_RESULT_RX_INVALID;

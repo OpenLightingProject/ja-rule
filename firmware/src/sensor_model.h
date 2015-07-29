@@ -45,7 +45,6 @@ extern const ModelEntry SENSOR_MODEL_ENTRY;
 
 /**
  * @brief Initialize the sensor model.
- * @param settings The settings for this model.
  */
 void SensorModel_Initialize();
 
