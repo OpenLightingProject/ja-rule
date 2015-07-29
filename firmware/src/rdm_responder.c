@@ -134,13 +134,13 @@ void RDMResponder_Initialize(const RDMResponderSettings *settings) {
   g_internal_state.identify_bit = settings->identify_bit;
 
   // Initialize hardware
-  PLIB_PORTS_PinDirectionOutputSet(
-    PORTS_ID_0, g_internal_state.identify_port, g_internal_state.identify_bit);
+  PLIB_PORTS_PinDirectionOutputSet(PORTS_ID_0, g_internal_state.identify_port,
+                                   g_internal_state.identify_bit);
   PLIB_PORTS_PinClear(PORTS_ID_0, g_internal_state.identify_port,
                       g_internal_state.identify_bit);
 
-  PLIB_PORTS_PinDirectionOutputSet(
-    PORTS_ID_0, g_internal_state.mute_port, g_internal_state.mute_bit);
+  PLIB_PORTS_PinDirectionOutputSet(PORTS_ID_0, g_internal_state.mute_port,
+                                   g_internal_state.mute_bit);
   PLIB_PORTS_PinSet(PORTS_ID_0, g_internal_state.mute_port,
                     g_internal_state.mute_bit);
 
@@ -805,7 +805,7 @@ int RDMResponder_SetIdentifyDevice(const RDMHeader *header,
                                    const uint8_t *param_data) {
   bool previous_identify = g_responder->identify_on;
   int r = RDMResponder_GenericSetBool(header, param_data,
-                                     &g_responder->identify_on);
+                                      &g_responder->identify_on);
   if (g_responder->identify_on == previous_identify) {
     return r;
   }

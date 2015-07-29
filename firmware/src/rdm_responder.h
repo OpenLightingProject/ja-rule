@@ -317,7 +317,7 @@ typedef struct {
 
 /**
  * @brief Initialize an RDMResponder struct.
- * @param settings, the settings to use for the responder.
+ * @param settings the settings to use for the responder.
  */
 void RDMResponder_Initialize(const RDMResponderSettings *settings);
 
