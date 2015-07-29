@@ -204,20 +204,6 @@ static void DimmerModel_Activate() {
 
 static void DimmerModel_Deactivate() {}
 
-static int DimmerModel_Ioctl(ModelIoctl command, uint8_t *data,
-                             unsigned int length) {
-  switch (command) {
-    case IOCTL_GET_UID:
-      if (length != UID_LENGTH) {
-        return 0;
-      }
-      RDMResponder_GetUID(data);
-      return 1;
-    default:
-      return 0;
-  }
-}
-
 static int DimmerModel_HandleRequest(const RDMHeader *header,
                                      const uint8_t *param_data) {
   if (!RDMUtil_RequiresAction(g_responder->uid, header->dest_uid)) {
@@ -273,7 +259,7 @@ const ModelEntry DIMMER_MODEL_ENTRY = {
   .model_id = DIMMER_MODEL_ID,
   .activate_fn = DimmerModel_Activate,
   .deactivate_fn = DimmerModel_Deactivate,
-  .ioctl_fn = DimmerModel_Ioctl,
+  .ioctl_fn = RDMResponder_Ioctl,
   .request_fn = DimmerModel_HandleRequest,
   .tasks_fn = DimmerModel_Tasks
 };

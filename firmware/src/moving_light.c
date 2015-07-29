@@ -247,20 +247,6 @@ static void MovingLightModel_Activate() {
 static void MovingLightModel_Deactivate() {
 }
 
-static int MovingLightModel_Ioctl(ModelIoctl command, uint8_t *data,
-                                  unsigned int length) {
-  switch (command) {
-    case IOCTL_GET_UID:
-      if (length != UID_LENGTH) {
-        return 0;
-      }
-      RDMResponder_GetUID(data);
-      return 1;
-    default:
-      return 0;
-  }
-}
-
 static int MovingLightModel_HandleRequest(const RDMHeader *header,
                                           const uint8_t *param_data) {
   if (!RDMUtil_RequiresAction(g_responder->uid, header->dest_uid)) {
@@ -299,7 +285,7 @@ const ModelEntry MOVING_LIGHT_MODEL_ENTRY = {
   .model_id = MOVING_LIGHT_MODEL_ID,
   .activate_fn = MovingLightModel_Activate,
   .deactivate_fn = MovingLightModel_Deactivate,
-  .ioctl_fn = MovingLightModel_Ioctl,
+  .ioctl_fn = RDMResponder_Ioctl,
   .request_fn = MovingLightModel_HandleRequest,
   .tasks_fn = MovingLightModel_Tasks
 };

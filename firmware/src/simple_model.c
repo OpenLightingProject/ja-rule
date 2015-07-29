@@ -20,7 +20,6 @@
 
 #include <stdlib.h>
 
-#include "coarse_timer.h"
 #include "constants.h"
 #include "rdm_frame.h"
 #include "rdm_responder.h"
@@ -30,99 +29,22 @@
 // Various constants
 enum {SOFTWARE_VERSION = 0x00000000 };
 
-static const uint16_t FLASH_FAST = 1000u;
-static const uint16_t FLASH_SLOW = 10000u;
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule LED Driver";
 static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
 
 static const ResponderDefinition RESPONDER_DEFINITION;
 
-/*
- * @brief The simple model state.
- */
-typedef struct {
-  // Mute params
-  CoarseTimer_Value mute_timer;
-  PORTS_CHANNEL mute_port;
-  PORTS_BIT_POS mute_bit;
-
-  // Identify params
-  CoarseTimer_Value identify_timer;
-  PORTS_CHANNEL identify_port;
-  PORTS_BIT_POS identify_bit;
-} SimpleModel;
-
-static SimpleModel g_simple_model;
-
-// PID Handlers
-// ----------------------------------------------------------------------------
-static int SetIdentifyDevice(const RDMHeader *header,
-                             const uint8_t *param_data) {
-  bool previous_identify = g_responder->identify_on;
-  int r = RDMResponder_SetIdentifyDevice(header, param_data);
-  if (g_responder->identify_on == previous_identify) {
-    return r;
-  }
-  if (g_responder->identify_on) {
-    g_simple_model.identify_timer = CoarseTimer_GetTime();
-    PLIB_PORTS_PinSet(PORTS_ID_0, g_simple_model.identify_port,
-                      g_simple_model.identify_bit);
-  } else {
-    PLIB_PORTS_PinClear(PORTS_ID_0, g_simple_model.identify_port,
-                        g_simple_model.identify_bit);
-  }
-  return r;
-}
-
 // Public Functions
 // ----------------------------------------------------------------------------
-void SimpleModel_Initialize(const SimpleModelSettings *settings) {
-  g_simple_model.mute_port = settings->mute_port;
-  g_simple_model.mute_bit = settings->mute_bit;
-
-  g_simple_model.identify_timer = 0u;
-  g_simple_model.identify_port = settings->identify_port;
-  g_simple_model.identify_bit = settings->identify_bit;
-}
+void SimpleModel_Initialize() {}
 
 static void SimpleModel_Activate() {
-  g_simple_model.mute_timer = CoarseTimer_GetTime();
-
-  // Initialize hardware
-  PLIB_PORTS_PinDirectionOutputSet(
-    PORTS_ID_0, g_simple_model.identify_port, g_simple_model.identify_bit);
-  PLIB_PORTS_PinClear(PORTS_ID_0, g_simple_model.identify_port,
-                      g_simple_model.identify_bit);
-
-  PLIB_PORTS_PinDirectionOutputSet(
-    PORTS_ID_0, g_simple_model.mute_port, g_simple_model.mute_bit);
-  PLIB_PORTS_PinSet(PORTS_ID_0, g_simple_model.mute_port,
-                    g_simple_model.mute_bit);
   g_responder->def = &RESPONDER_DEFINITION;
   RDMResponder_ResetToFactoryDefaults();
 }
 
-static void SimpleModel_Deactivate() {
-  PLIB_PORTS_PinClear(PORTS_ID_0, g_simple_model.identify_port,
-                      g_simple_model.identify_bit);
-  PLIB_PORTS_PinClear(PORTS_ID_0, g_simple_model.mute_port,
-                      g_simple_model.mute_bit);
-}
-
-static int SimpleModel_Ioctl(ModelIoctl command, uint8_t *data,
-                             unsigned int length) {
-  switch (command) {
-    case IOCTL_GET_UID:
-      if (length != UID_LENGTH) {
-        return 0;
-      }
-      RDMResponder_GetUID(data);
-      return 1;
-    default:
-      return 0;
-  }
-}
+static void SimpleModel_Deactivate() {}
 
 static int SimpleModel_HandleRequest(const RDMHeader *header,
                                      const uint8_t *param_data) {
@@ -131,19 +53,7 @@ static int SimpleModel_HandleRequest(const RDMHeader *header,
   }
 
   if (header->command_class == DISCOVERY_COMMAND) {
-    bool previous_mute = g_responder->is_muted;
-    int r = RDMResponder_HandleDiscovery(header, param_data);
-    if (previous_mute != g_responder->is_muted) {
-      if (g_responder->is_muted) {
-        PLIB_PORTS_PinClear(PORTS_ID_0, g_simple_model.mute_port,
-                            g_simple_model.mute_bit);
-      } else {
-        PLIB_PORTS_PinSet(PORTS_ID_0, g_simple_model.mute_port,
-                          g_simple_model.mute_bit);
-        g_simple_model.mute_timer = CoarseTimer_GetTime();
-      }
-    }
-    return r;
+    return RDMResponder_HandleDiscovery(header, param_data);
   }
 
   uint16_t sub_device = ntohs(header->sub_device);
@@ -161,30 +71,13 @@ static int SimpleModel_HandleRequest(const RDMHeader *header,
   return RDMResponder_DispatchPID(header, param_data);
 }
 
-static void SimpleModel_Tasks() {
-  if (g_responder->identify_on) {
-    if (CoarseTimer_HasElapsed(g_simple_model.identify_timer, FLASH_FAST)) {
-      g_simple_model.identify_timer = CoarseTimer_GetTime();
-      PLIB_PORTS_PinToggle(PORTS_ID_0, g_simple_model.identify_port,
-                           g_simple_model.identify_bit);
-    }
-  }
-
-  if (!g_responder->is_muted) {
-    if (CoarseTimer_HasElapsed(g_simple_model.mute_timer, FLASH_SLOW)) {
-      g_simple_model.mute_timer = CoarseTimer_GetTime();
-      PLIB_PORTS_PinToggle(
-        PORTS_ID_0, g_simple_model.mute_port,
-        g_simple_model.mute_bit);
-    }
-  }
-}
+static void SimpleModel_Tasks() {}
 
 const ModelEntry SIMPLE_MODEL_ENTRY = {
   .model_id = BASIC_RESPONDER_MODEL_ID,
   .activate_fn = SimpleModel_Activate,
   .deactivate_fn = SimpleModel_Deactivate,
-  .ioctl_fn = SimpleModel_Ioctl,
+  .ioctl_fn = RDMResponder_Ioctl,
   .request_fn = SimpleModel_HandleRequest,
   .tasks_fn = SimpleModel_Tasks
 };
@@ -203,7 +96,8 @@ static const PIDDescriptor PID_DESCRIPTORS[] = {
     RDMResponder_SetDeviceLabel},
   {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0u, SetIdentifyDevice}
+  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0u,
+    RDMResponder_SetIdentifyDevice}
 };
 
 static const ProductDetailIds PRODUCT_DETAIL_ID_LIST = {

@@ -43,6 +43,7 @@ tests_dimmer_model_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_dimmer_model_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                  src/libdimmermodel.la \
                                  src/librdmresponder.la \
+                                 src/libcoarsetimer.la \
                                  src/librdmbuffer.la \
                                  src/librdmutil.la \
                                  tests/libmodeltest.la \
@@ -73,6 +74,7 @@ tests_network_model_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_network_model_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                  src/libnetworkmodel.la \
                                  src/librdmresponder.la \
+                                 src/libcoarsetimer.la \
                                  src/librdmbuffer.la \
                                  src/librandom.la \
                                  src/librdmutil.la \
@@ -86,14 +88,17 @@ tests_rdm_handler_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                mocks/libmatchers.la \
                                src/librdmhandler.la \
                                src/librdmresponder.la \
+                               src/libcoarsetimer.la \
                                src/librdmbuffer.la \
-                               src/librdmutil.la
+                               src/librdmutil.la \
+                               harmony/mocks/libharmonymock.la
 
 tests_rdm_responder_test_SOURCES = tests/RDMResponderTest.cpp
 tests_rdm_responder_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_rdm_responder_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                   src/librdmresponder.la \
                                   src/librdmbuffer.la \
+                                  src/libcoarsetimer.la \
                                   src/librdmutil.la \
                                   harmony/mocks/libharmonymock.la \
                                   mocks/libmatchers.la \

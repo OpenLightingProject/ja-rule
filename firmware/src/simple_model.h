@@ -30,9 +30,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "system_config.h"
-
-#include "peripheral/ports/plib_ports.h"
 #include "rdm.h"
 #include "rdm_model.h"
 
@@ -46,21 +43,9 @@ extern "C" {
 extern const ModelEntry SIMPLE_MODEL_ENTRY;
 
 /**
- * @brief The settings to use for the Simple RDM Model.
- */
-typedef struct {
-  PORTS_CHANNEL identify_port;  //!< The port to use for the identify signal.
-  PORTS_BIT_POS identify_bit;  //!< The port bit to use for the identify signal.
-  PORTS_CHANNEL mute_port;  //!< The port to use to indicate mute state.
-  PORTS_BIT_POS mute_bit;  //!< The port bit used to indicate mute state.
-  uint8_t uid[UID_LENGTH];  //!< The responder's UID.
-} SimpleModelSettings;
-
-/**
  * @brief Initialize the simple model.
- * @param settings The settings for this model.
  */
-void SimpleModel_Initialize(const SimpleModelSettings *settings);
+void SimpleModel_Initialize();
 
 #ifdef __cplusplus
 }

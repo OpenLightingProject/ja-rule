@@ -51,8 +51,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "system_config.h"
+
+#include "peripheral/ports/plib_ports.h"
 #include "rdm.h"
 #include "rdm_frame.h"
+#include "rdm_handler.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -301,10 +305,28 @@ extern RDMResponder *g_responder;
 static const int RDM_RESPONDER_NO_RESPONSE = 0;
 
 /**
- * @brief Initialize an RDMResponder struct.
- * @param uid The UID to use for the responder.
+ * @brief The settings to use for the RDM Responder.
  */
-void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]);
+typedef struct {
+  PORTS_CHANNEL identify_port;  //!< The port to use for the identify signal.
+  PORTS_BIT_POS identify_bit;  //!< The port bit to use for the identify signal.
+  PORTS_CHANNEL mute_port;  //!< The port to use to indicate mute state.
+  PORTS_BIT_POS mute_bit;  //!< The port bit used to indicate mute state.
+  uint8_t uid[UID_LENGTH];  //!< The responder's UID.
+} RDMResponderSettings;
+
+/**
+ * @brief Initialize an RDMResponder struct.
+ * @param settings the settings to use for the responder.
+ */
+void RDMResponder_Initialize(const RDMResponderSettings *settings);
+
+/**
+ * @brief Perform the periodic tasks.
+ *
+ * This should be called in the main event loop.
+ */
+void RDMResponder_Tasks();
 
 /**
  * @brief Reset an RDMResponder to the factory defaults.
@@ -383,6 +405,16 @@ int RDMResponder_BuildNack(const RDMHeader *incoming_header,
  */
 int RDMResponder_DispatchPID(const RDMHeader *incoming_header,
                              const uint8_t *param_data);
+
+/**
+ * @brief A base Ioctl handler.
+ * @param command The ioctl command to run.
+ * @param data arbitary data, depends on the ModelIoctl.
+ * @param length the size of the data.
+ * @returns An int, the meaning of which depends on the ModelIoctl.
+ */
+int RDMResponder_Ioctl(ModelIoctl command, uint8_t *data,
+                       unsigned int length);
 
 // PID Handlers
 // ----------------------------------------------------------------------------

@@ -20,6 +20,7 @@
 
 #include <string.h>
 
+#include "coarse_timer.h"
 #include "constants.h"
 #include "macros.h"
 #include "rdm_buffer.h"
@@ -31,6 +32,8 @@ static const uint8_t FIVE5_CONSTANT = 0x55u;
 static const uint8_t AA_CONSTANT = 0xaau;
 static const uint8_t FE_CONSTANT = 0xfeu;
 static const uint8_t SENSOR_VALUE_PARAM_DATA_LENGTH = 9u;
+static const uint16_t FLASH_FAST = 1000u;
+static const uint16_t FLASH_SLOW = 10000u;
 
 // Microchip defines this macro in stdlib.h but it's non standard.
 // We define it here so that the unit tests work.
@@ -41,6 +44,23 @@ static const uint8_t SENSOR_VALUE_PARAM_DATA_LENGTH = 9u;
 static RDMResponder root_responder;
 
 RDMResponder *g_responder = &root_responder;
+
+/*
+ * @brief The responder state.
+ */
+typedef struct {
+  // Mute params
+  CoarseTimer_Value mute_timer;
+  PORTS_CHANNEL mute_port;
+  PORTS_BIT_POS mute_bit;
+
+  // Identify params
+  CoarseTimer_Value identify_timer;
+  PORTS_CHANNEL identify_port;
+  PORTS_BIT_POS identify_bit;
+} InternalResponderState;
+
+static InternalResponderState g_internal_state;
 
 /*
  * @brief Get the current personality.
@@ -104,11 +124,48 @@ static uint8_t *BuildSensorValueResponse(uint8_t *ptr, uint8_t index,
 
 // Public Functions
 // ----------------------------------------------------------------------------
-void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]) {
-  memcpy(g_responder->uid, uid, UID_LENGTH);
+void RDMResponder_Initialize(const RDMResponderSettings *settings) {
+  g_internal_state.mute_timer = CoarseTimer_GetTime();
+  g_internal_state.mute_port = settings->mute_port;
+  g_internal_state.mute_bit = settings->mute_bit;
+
+  g_internal_state.identify_timer = 0u;
+  g_internal_state.identify_port = settings->identify_port;
+  g_internal_state.identify_bit = settings->identify_bit;
+
+  // Initialize hardware
+  PLIB_PORTS_PinDirectionOutputSet(PORTS_ID_0, g_internal_state.identify_port,
+                                   g_internal_state.identify_bit);
+  PLIB_PORTS_PinClear(PORTS_ID_0, g_internal_state.identify_port,
+                      g_internal_state.identify_bit);
+
+  PLIB_PORTS_PinDirectionOutputSet(PORTS_ID_0, g_internal_state.mute_port,
+                                   g_internal_state.mute_bit);
+  PLIB_PORTS_PinSet(PORTS_ID_0, g_internal_state.mute_port,
+                    g_internal_state.mute_bit);
+
+  memcpy(g_responder->uid, settings->uid, UID_LENGTH);
   g_responder->def = NULL;
   g_responder->is_subdevice = false;
   RDMResponder_ResetToFactoryDefaults();
+}
+
+void RDMResponder_Tasks() {
+  if (g_responder->identify_on) {
+    if (CoarseTimer_HasElapsed(g_internal_state.identify_timer, FLASH_FAST)) {
+      g_internal_state.identify_timer = CoarseTimer_GetTime();
+      PLIB_PORTS_PinToggle(PORTS_ID_0, g_internal_state.identify_port,
+                           g_internal_state.identify_bit);
+    }
+  }
+
+  if (!g_responder->is_muted) {
+    if (CoarseTimer_HasElapsed(g_internal_state.mute_timer, FLASH_SLOW)) {
+      g_internal_state.mute_timer = CoarseTimer_GetTime();
+      PLIB_PORTS_PinToggle(PORTS_ID_0, g_internal_state.mute_port,
+                           g_internal_state.mute_bit);
+    }
+  }
 }
 
 void RDMResponder_ResetToFactoryDefaults() {
@@ -284,6 +341,19 @@ int RDMResponder_DispatchPID(const RDMHeader *header,
   return RDMResponder_BuildNack(header, NR_UNKNOWN_PID);
 }
 
+int RDMResponder_Ioctl(ModelIoctl command, uint8_t *data, unsigned int length) {
+  switch (command) {
+    case IOCTL_GET_UID:
+      if (length != UID_LENGTH) {
+        return 0;
+      }
+      RDMResponder_GetUID(data);
+      return 1;
+    default:
+      return 0;
+  }
+}
+
 // PID Handlers
 // ----------------------------------------------------------------------------
 int RDMResponder_GenericReturnString(const RDMHeader *header,
@@ -357,6 +427,8 @@ int RDMResponder_SetMute(const RDMHeader *header) {
     return RDM_RESPONDER_NO_RESPONSE;
   }
   g_responder->is_muted = true;
+  PLIB_PORTS_PinClear(PORTS_ID_0, g_internal_state.mute_port,
+                      g_internal_state.mute_bit);
 
   ReturnUnlessUnicast(header);
 
@@ -372,6 +444,9 @@ int RDMResponder_SetUnMute(const RDMHeader *header) {
     return RDM_RESPONDER_NO_RESPONSE;
   }
   g_responder->is_muted = false;
+  PLIB_PORTS_PinSet(PORTS_ID_0, g_internal_state.mute_port,
+                    g_internal_state.mute_bit);
+  g_internal_state.mute_timer = CoarseTimer_GetTime();
 
   ReturnUnlessUnicast(header);
 
@@ -728,8 +803,21 @@ int RDMResponder_GetIdentifyDevice(const RDMHeader *header,
 
 int RDMResponder_SetIdentifyDevice(const RDMHeader *header,
                                    const uint8_t *param_data) {
-  return RDMResponder_GenericSetBool(header, param_data,
-                                     &g_responder->identify_on);
+  bool previous_identify = g_responder->identify_on;
+  int r = RDMResponder_GenericSetBool(header, param_data,
+                                      &g_responder->identify_on);
+  if (g_responder->identify_on == previous_identify) {
+    return r;
+  }
+  if (g_responder->identify_on) {
+    g_internal_state.identify_timer = CoarseTimer_GetTime();
+    PLIB_PORTS_PinSet(PORTS_ID_0, g_internal_state.identify_port,
+                      g_internal_state.identify_bit);
+  } else {
+    PLIB_PORTS_PinClear(PORTS_ID_0, g_internal_state.identify_port,
+                        g_internal_state.identify_bit);
+  }
+  return r;
 }
 
 int RDMResponder_HandleDiscovery(const RDMHeader *header,

@@ -28,6 +28,7 @@
 #include "network_model.h"
 #include "rdm.h"
 #include "rdm_handler.h"
+#include "rdm_responder.h"
 #include "sensor_model.h"
 #include "simple_model.h"
 #include "spi_rgb.h"
@@ -69,7 +70,14 @@ void APP_Initialize(void) {
   Transceiver_Initialize(&transceiver_settings, NULL, NULL);
 
   // Base RDM Responder
-  RDMResponder_Initialize(OUR_UID);
+  RDMResponderSettings responder_settings = {
+    .identify_port = RDM_RESPONDER_PORT,
+    .identify_bit = RDM_RESPONDER_IDENTIFY_PORT_BIT,
+    .mute_port = RDM_RESPONDER_PORT,
+    .mute_bit = RDM_RESPONDER_MUTE_PORT_BIT,
+  };
+  memcpy(responder_settings.uid, OUR_UID, UID_LENGTH);
+  RDMResponder_Initialize(&responder_settings);
 
   // RDM Handler
   RDMHandlerSettings rdm_handler_settings = {
@@ -79,13 +87,7 @@ void APP_Initialize(void) {
   RDMHandler_Initialize(&rdm_handler_settings);
 
   // Initialize RDM Models, keep these in Model ID order.
-  SimpleModelSettings simple_model_settings = {
-    .identify_port = RDM_RESPONDER_PORT,
-    .identify_bit = RDM_RESPONDER_IDENTIFY_PORT_BIT,
-    .mute_port = RDM_RESPONDER_PORT,
-    .mute_bit = RDM_RESPONDER_MUTE_PORT_BIT,
-  };
-  SimpleModel_Initialize(&simple_model_settings);
+  SimpleModel_Initialize();
   RDMHandler_AddModel(&SIMPLE_MODEL_ENTRY);
 
   MovingLightModel_Initialize();
@@ -122,6 +124,7 @@ void APP_Tasks(void) {
   USBTransport_Tasks();
   Transceiver_Tasks();
   USBConsole_Tasks();
+  RDMResponder_Tasks();
 
   if (Transceiver_GetMode() == T_MODE_RESPONDER) {
     RDMHandler_Tasks();

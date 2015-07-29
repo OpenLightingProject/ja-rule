@@ -31,7 +31,7 @@
 #include "utils.h"
 #include "system_pipeline.h"
 
-enum { MAX_RDM_MODELS = 4};
+enum { MAX_RDM_MODELS = 6};
 
 static ModelEntry g_models[MAX_RDM_MODELS];
 
