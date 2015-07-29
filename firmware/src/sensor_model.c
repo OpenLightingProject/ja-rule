@@ -73,7 +73,7 @@ void SampleSensors() {
 void SensorModel_Initialize() {}
 
 static void SensorModel_Activate() {
-  g_responder.def = &RESPONDER_DEFINITION;
+  g_responder->def = &RESPONDER_DEFINITION;
   unsigned int i = 0u;
   for (; i < NUMBER_OF_SENSORS; i++) {
     g_sensor_model.sensors[i].present_value = 0u;
@@ -91,7 +91,7 @@ static void SensorModel_Activate() {
 
   RDMResponder_ResetToFactoryDefaults();
   SampleSensors();
-  g_responder.sensors = g_sensor_model.sensors;
+  g_responder->sensors = g_sensor_model.sensors;
 }
 
 static void SensorModel_Deactivate() {}
@@ -112,7 +112,7 @@ static int SensorModel_Ioctl(ModelIoctl command, uint8_t *data,
 
 static int SensorModel_HandleRequest(const RDMHeader *header,
                                      const uint8_t *param_data) {
-  if (!RDMUtil_RequiresAction(g_responder.uid, header->dest_uid)) {
+  if (!RDMUtil_RequiresAction(g_responder->uid, header->dest_uid)) {
     return RDM_RESPONDER_NO_RESPONSE;
   }
 

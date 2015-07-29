@@ -74,7 +74,12 @@ typedef enum {
   /**
    * @brief A responder that presents network interfaces.
    */
-  NETWORK_MODEL_ID = 0x0104
+  NETWORK_MODEL_ID = 0x0104,
+
+  /**
+   * @brief A responder that acts as a dimmer with sub-devices.
+   */
+  DIMMER_MODEL_ID = 0x0105
 } ResponderModel;
 
 /**
@@ -130,7 +135,7 @@ typedef struct {
    * @brief The function used to handle an RDM request.
    * @param header The RDM request header.
    * @param param_data The RDM parameter data, or NULL if there wasn't any.
-   * @returns The size of the RDM response, in g_responder.buffer. The sign is
+   * @returns The size of the RDM response, in g_rdm_buffer. The sign is
    * used to indicate if a break should be sent or not. Negative means no break,
    * positive will send a break. 0 means no response will be sent.
    */

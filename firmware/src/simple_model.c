@@ -59,12 +59,12 @@ static SimpleModel g_simple_model;
 // ----------------------------------------------------------------------------
 static int SetIdentifyDevice(const RDMHeader *header,
                              const uint8_t *param_data) {
-  bool previous_identify = g_responder.identify_on;
+  bool previous_identify = g_responder->identify_on;
   int r = RDMResponder_SetIdentifyDevice(header, param_data);
-  if (g_responder.identify_on == previous_identify) {
+  if (g_responder->identify_on == previous_identify) {
     return r;
   }
-  if (g_responder.identify_on) {
+  if (g_responder->identify_on) {
     g_simple_model.identify_timer = CoarseTimer_GetTime();
     PLIB_PORTS_PinSet(PORTS_ID_0, g_simple_model.identify_port,
                       g_simple_model.identify_bit);
@@ -99,7 +99,7 @@ static void SimpleModel_Activate() {
     PORTS_ID_0, g_simple_model.mute_port, g_simple_model.mute_bit);
   PLIB_PORTS_PinSet(PORTS_ID_0, g_simple_model.mute_port,
                     g_simple_model.mute_bit);
-  g_responder.def = &RESPONDER_DEFINITION;
+  g_responder->def = &RESPONDER_DEFINITION;
   RDMResponder_ResetToFactoryDefaults();
 }
 
@@ -126,15 +126,15 @@ static int SimpleModel_Ioctl(ModelIoctl command, uint8_t *data,
 
 static int SimpleModel_HandleRequest(const RDMHeader *header,
                                      const uint8_t *param_data) {
-  if (!RDMUtil_RequiresAction(g_responder.uid, header->dest_uid)) {
+  if (!RDMUtil_RequiresAction(g_responder->uid, header->dest_uid)) {
     return RDM_RESPONDER_NO_RESPONSE;
   }
 
   if (header->command_class == DISCOVERY_COMMAND) {
-    bool previous_mute = g_responder.is_muted;
+    bool previous_mute = g_responder->is_muted;
     int r = RDMResponder_HandleDiscovery(header, param_data);
-    if (previous_mute != g_responder.is_muted) {
-      if (g_responder.is_muted) {
+    if (previous_mute != g_responder->is_muted) {
+      if (g_responder->is_muted) {
         PLIB_PORTS_PinClear(PORTS_ID_0, g_simple_model.mute_port,
                             g_simple_model.mute_bit);
       } else {
@@ -162,7 +162,7 @@ static int SimpleModel_HandleRequest(const RDMHeader *header,
 }
 
 static void SimpleModel_Tasks() {
-  if (g_responder.identify_on) {
+  if (g_responder->identify_on) {
     if (CoarseTimer_HasElapsed(g_simple_model.identify_timer, FLASH_FAST)) {
       g_simple_model.identify_timer = CoarseTimer_GetTime();
       PLIB_PORTS_PinToggle(PORTS_ID_0, g_simple_model.identify_port,
@@ -170,7 +170,7 @@ static void SimpleModel_Tasks() {
     }
   }
 
-  if (!g_responder.is_muted) {
+  if (!g_responder->is_muted) {
     if (CoarseTimer_HasElapsed(g_simple_model.mute_timer, FLASH_SLOW)) {
       g_simple_model.mute_timer = CoarseTimer_GetTime();
       PLIB_PORTS_PinToggle(

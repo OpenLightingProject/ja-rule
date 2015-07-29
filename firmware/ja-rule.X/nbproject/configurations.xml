@@ -48,6 +48,7 @@
         <itemPath>../src/moving_light.h</itemPath>
         <itemPath>../src/sensor_model.h</itemPath>
         <itemPath>../src/network_model.h</itemPath>
+        <itemPath>../src/dimmer_model.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -137,6 +138,7 @@
         <itemPath>../src/moving_light.c</itemPath>
         <itemPath>../src/sensor_model.c</itemPath>
         <itemPath>../src/network_model.c</itemPath>
+        <itemPath>../src/dimmer_model.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
