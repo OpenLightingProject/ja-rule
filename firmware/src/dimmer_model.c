@@ -38,7 +38,7 @@ static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Dimmer Device";
 static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
 static const char PERSONALITY_DESCRIPTION[] = "Dimmer";
-static const uint16_t INITIAL_START_ADDRESSS = 1;
+static const uint16_t INITIAL_START_ADDRESSS = 1u;
 
 
 static const ResponderDefinition ROOT_RESPONDER_DEFINITION;
@@ -65,8 +65,8 @@ DimmerSubDevice *g_active_device = NULL;
  *   footprint of the sub devices would exceed the last slot (512).
  */
 bool ResetToBlockAddress(uint16_t start_address) {
-  unsigned int footprint = 0;
-  unsigned int i = 0;
+  unsigned int footprint = 0u;
+  unsigned int i = 0u;
   for (; i < NUMBER_OF_SUB_DEVICES; i++) {
     RDMResponder *responder = &g_subdevices[i].responder;
     footprint +=
@@ -78,7 +78,7 @@ bool ResetToBlockAddress(uint16_t start_address) {
     return false;
   }
 
-  for (i = 0; i < NUMBER_OF_SUB_DEVICES; i++) {
+  for (i = 0u; i < NUMBER_OF_SUB_DEVICES; i++) {
     RDMResponder *responder = &g_subdevices[i].responder;
     responder->dmx_start_address = start_address;
     const PersonalityDefinition *personality =
@@ -112,10 +112,10 @@ int DimmerModel_SetIdentifyMode(const RDMHeader *header,
 
 int DimmerModel_GetDMXBlockAddress(const RDMHeader *header,
                                    UNUSED const uint8_t *param_data) {
-  uint16_t total_footprint = 0;
-  uint16_t expected_start_address = 0;
+  uint16_t total_footprint = 0u;
+  uint16_t expected_start_address = 0u;
   bool is_contiguous = true;
-  unsigned int i = 0;
+  unsigned int i = 0u;
   for (; i < NUMBER_OF_SUB_DEVICES; i++) {
     RDMResponder *responder = &g_subdevices[i].responder;
     uint16_t sub_device_footprint = responder->def
@@ -149,7 +149,7 @@ int DimmerModel_SetDMXBlockAddress(const RDMHeader *header,
   }
 
   uint16_t start_address = ExtractUInt16(param_data);
-  if (start_address == 0 || start_address > MAX_DMX_START_ADDRESS) {
+  if (start_address == 0u || start_address > MAX_DMX_START_ADDRESS) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -167,8 +167,8 @@ int DimmerModel_SetDMXBlockAddress(const RDMHeader *header,
 void DimmerModel_Initialize() {
   RDMResponder *temp = g_responder;
 
-  unsigned int i = 0;
-  uint16_t sub_device_index = 1;
+  unsigned int i = 0u;
+  uint16_t sub_device_index = 1u;
   for (; i < NUMBER_OF_SUB_DEVICES; i++) {
     if (i == 1) {
       // Leave a gap at sub-device 2, since sub devices aren't required to be
@@ -243,7 +243,7 @@ static int DimmerModel_HandleRequest(const RDMHeader *header,
   }
 
   RDMResponder *temp = g_responder;
-  unsigned int i = 0;
+  unsigned int i = 0u;
   bool handled = false;
   int response_size = RDM_RESPONDER_NO_RESPONSE;
   for (; i < NUMBER_OF_SUB_DEVICES; i++) {
@@ -282,28 +282,28 @@ const ModelEntry DIMMER_MODEL_ENTRY = {
 // ----------------------------------------------------------------------------
 
 static const PIDDescriptor ROOT_PID_DESCRIPTORS[] = {
-  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0,
+  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0, (PIDCommandHandler) NULL},
-  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0,
+  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0u, (PIDCommandHandler) NULL},
+  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0,
+  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0u,
     (PIDCommandHandler) NULL},
-  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0,
+  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0,
+  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0u,
     RDMResponder_SetDeviceLabel},
-  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0,
+  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0,
+  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0u,
     RDMResponder_SetIdentifyDevice},
-  {PID_DMX_BLOCK_ADDRESS, DimmerModel_GetDMXBlockAddress, 0,
+  {PID_DMX_BLOCK_ADDRESS, DimmerModel_GetDMXBlockAddress, 0u,
     DimmerModel_SetDMXBlockAddress}
 };
 
 static const ProductDetailIds ROOT_PRODUCT_DETAIL_ID_LIST = {
   .ids = {PRODUCT_DETAIL_TEST, PRODUCT_DETAIL_CHANGEOVER_MANUAL },
-  .size = 2
+  .size = 2u
 };
 
 static const ResponderDefinition ROOT_RESPONDER_DEFINITION = {
@@ -312,7 +312,7 @@ static const ResponderDefinition ROOT_RESPONDER_DEFINITION = {
   .sensors = NULL,
   .sensor_count = 0,
   .personalities = NULL,
-  .personality_count = 0,
+  .personality_count = 0u,
   .software_version_label = SOFTWARE_LABEL,
   .manufacturer_label = MANUFACTURER_LABEL,
   .model_description = DEVICE_MODEL_DESCRIPTION,
@@ -349,7 +349,7 @@ static const PIDDescriptor SUBDEVICE_PID_DESCRIPTORS[] = {
 
 static const ProductDetailIds SUBDEVICE_PRODUCT_DETAIL_ID_LIST = {
   .ids = {PRODUCT_DETAIL_TEST, PRODUCT_DETAIL_CHANGEOVER_MANUAL},
-  .size = 2
+  .size = 2u
 };
 
 static const char SLOT_DIMMER_DESCRIPTION[] = "Dimmer";
@@ -359,16 +359,16 @@ static const SlotDefinition PERSONALITY_SLOTS[] = {
     .description = SLOT_DIMMER_DESCRIPTION,
     .slot_label_id = SD_INTENSITY,
     .slot_type = ST_PRIMARY,
-    .default_value = 0,
+    .default_value = 0u,
   }
 };
 
 static const PersonalityDefinition PERSONALITIES[PERSONALITY_COUNT] = {
   {
-    .dmx_footprint = 1,
+    .dmx_footprint = 1u,
     .description = PERSONALITY_DESCRIPTION,
     .slots = PERSONALITY_SLOTS,
-    .slot_count = 1
+    .slot_count = 1u
   },
 };
 
@@ -376,9 +376,9 @@ static const ResponderDefinition SUBDEVICE_RESPONDER_DEFINITION = {
   .descriptors = SUBDEVICE_PID_DESCRIPTORS,
   .descriptor_count = sizeof(SUBDEVICE_PID_DESCRIPTORS) / sizeof(PIDDescriptor),
   .sensors = NULL,
-  .sensor_count = 0,
+  .sensor_count = 0u,
   .personalities = PERSONALITIES,
-  .personality_count = 1,
+  .personality_count = 1u,
   .software_version_label = SOFTWARE_LABEL,
   .manufacturer_label = MANUFACTURER_LABEL,
   .model_description = DEVICE_MODEL_DESCRIPTION,
