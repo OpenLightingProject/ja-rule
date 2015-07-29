@@ -110,20 +110,6 @@ static void SimpleModel_Deactivate() {
                       g_simple_model.mute_bit);
 }
 
-static int SimpleModel_Ioctl(ModelIoctl command, uint8_t *data,
-                             unsigned int length) {
-  switch (command) {
-    case IOCTL_GET_UID:
-      if (length != UID_LENGTH) {
-        return 0;
-      }
-      RDMResponder_GetUID(data);
-      return 1;
-    default:
-      return 0;
-  }
-}
-
 static int SimpleModel_HandleRequest(const RDMHeader *header,
                                      const uint8_t *param_data) {
   if (!RDMUtil_RequiresAction(g_responder->uid, header->dest_uid)) {
@@ -184,7 +170,7 @@ const ModelEntry SIMPLE_MODEL_ENTRY = {
   .model_id = BASIC_RESPONDER_MODEL_ID,
   .activate_fn = SimpleModel_Activate,
   .deactivate_fn = SimpleModel_Deactivate,
-  .ioctl_fn = SimpleModel_Ioctl,
+  .ioctl_fn = RDMResponder_Ioctl,
   .request_fn = SimpleModel_HandleRequest,
   .tasks_fn = SimpleModel_Tasks
 };

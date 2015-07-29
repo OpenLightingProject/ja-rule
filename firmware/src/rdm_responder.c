@@ -284,6 +284,19 @@ int RDMResponder_DispatchPID(const RDMHeader *header,
   return RDMResponder_BuildNack(header, NR_UNKNOWN_PID);
 }
 
+int RDMResponder_Ioctl(ModelIoctl command, uint8_t *data, unsigned int length) {
+  switch (command) {
+    case IOCTL_GET_UID:
+      if (length != UID_LENGTH) {
+        return 0;
+      }
+      RDMResponder_GetUID(data);
+      return 1;
+    default:
+      return 0;
+  }
+}
+
 // PID Handlers
 // ----------------------------------------------------------------------------
 int RDMResponder_GenericReturnString(const RDMHeader *header,

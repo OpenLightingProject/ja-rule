@@ -606,20 +606,6 @@ static void NetworkModel_Activate() {
 
 static void NetworkModel_Deactivate() {}
 
-static int NetworkModel_Ioctl(ModelIoctl command, uint8_t *data,
-                             unsigned int length) {
-  switch (command) {
-    case IOCTL_GET_UID:
-      if (length != UID_LENGTH) {
-        return 0;
-      }
-      RDMResponder_GetUID(data);
-      return 1;
-    default:
-      return 0;
-  }
-}
-
 static int NetworkModel_HandleRequest(const RDMHeader *header,
                                      const uint8_t *param_data) {
   if (!RDMUtil_RequiresAction(g_responder->uid, header->dest_uid)) {
@@ -651,7 +637,7 @@ const ModelEntry NETWORK_MODEL_ENTRY = {
   .model_id = NETWORK_MODEL_ID,
   .activate_fn = NetworkModel_Activate,
   .deactivate_fn = NetworkModel_Deactivate,
-  .ioctl_fn = NetworkModel_Ioctl,
+  .ioctl_fn = RDMResponder_Ioctl,
   .request_fn = NetworkModel_HandleRequest,
   .tasks_fn = NetworkModel_Tasks
 };

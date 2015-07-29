@@ -53,6 +53,7 @@
 
 #include "rdm.h"
 #include "rdm_frame.h"
+#include "rdm_handler.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -383,6 +384,16 @@ int RDMResponder_BuildNack(const RDMHeader *incoming_header,
  */
 int RDMResponder_DispatchPID(const RDMHeader *incoming_header,
                              const uint8_t *param_data);
+
+/**
+ * @brief A base Ioctl handler.
+ * @param command The ioctl command to run.
+ * @param data arbitary data, depends on the ModelIoctl.
+ * @param length the size of the data.
+ * @returns An int, the meaning of which depends on the ModelIoctl.
+ */
+int RDMResponder_Ioctl(ModelIoctl command, uint8_t *data,
+                       unsigned int length);
 
 // PID Handlers
 // ----------------------------------------------------------------------------
