@@ -27,17 +27,16 @@
 #include "utils.h"
 
 const char MANUFACTURER_LABEL[] = "Open Lighting Project";
+static const uint8_t FIVE5_CONSTANT = 0x55u;
+static const uint8_t AA_CONSTANT = 0xaau;
+static const uint8_t FE_CONSTANT = 0xfeu;
+static const uint8_t SENSOR_VALUE_PARAM_DATA_LENGTH = 9u;
 
 // Microchip defines this macro in stdlib.h but it's non standard.
 // We define it here so that the unit tests work.
 #ifndef min
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #endif
-
-#define FIVE5_CONSTANT 0x55
-#define AA_CONSTANT 0xaa
-#define FE_CONSTANT 0xfe
-#define SENSOR_VALUE_PARAM_DATA_LENGTH 9
 
 RDMResponder g_responder;
 
@@ -107,10 +106,10 @@ void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]) {
 }
 
 void RDMResponder_ResetToFactoryDefaults() {
-  g_responder.queued_message_count = 0;
+  g_responder.queued_message_count = 0u;
   g_responder.dmx_start_address = INVALID_DMX_START_ADDRESS;
-  g_responder.sub_device_count = 0;
-  g_responder.current_personality = 1;
+  g_responder.sub_device_count = 0u;
+  g_responder.current_personality = 1u;
   g_responder.is_muted = false;
   g_responder.identify_on = false;
   g_responder.sensors = NULL;
@@ -120,8 +119,8 @@ void RDMResponder_ResetToFactoryDefaults() {
                        g_responder.def->default_device_label,
                        RDM_DEFAULT_STRING_SIZE);
     if (g_responder.def->personality_count) {
-      g_responder.current_personality = 1;
-      g_responder.dmx_start_address = 1;
+      g_responder.current_personality = 1u;
+      g_responder.dmx_start_address = 1u;
     }
   }
 
@@ -160,9 +159,9 @@ int RDMResponder_HandleDUBRequest(const uint8_t *param_data,
   response[18] = g_responder.uid[5] | AA_CONSTANT;
   response[19] = g_responder.uid[5] | FIVE5_CONSTANT;
 
-  uint16_t checksum = 0;
+  uint16_t checksum = 0u;
   unsigned int i;
-  for (i = 8; i < 20; i++) {
+  for (i = 8u; i < 20u; i++) {
     checksum += response[i];
   }
 
@@ -196,7 +195,7 @@ void RDMResponder_BuildHeader(const RDMHeader *incoming_header,
 int RDMResponder_AddHeaderAndChecksum(const RDMHeader *header,
                                       RDMResponseType response_type,
                                       unsigned int message_length) {
-  uint8_t response_command_class = 0;
+  uint8_t response_command_class = 0u;
   switch (header->command_class) {
     case DISCOVERY_COMMAND:
       response_command_class = DISCOVERY_COMMAND_RESPONSE;
@@ -247,7 +246,7 @@ int RDMResponder_DispatchPID(const RDMHeader *header,
                              const uint8_t *param_data) {
   const ResponderDefinition *definition = g_responder.def;
   uint16_t pid = ntohs(header->param_id);
-  unsigned int i = 0;
+  unsigned int i = 0u;
   // TODO(simon): convert to binary search if the list gets long.
   // We'll need to add a check to ensure it's sorted though.
   for (; i < definition->descriptor_count; i++) {
@@ -379,7 +378,7 @@ int RDMResponder_GetSupportedParameters(const RDMHeader *header,
   const ResponderDefinition *definition = g_responder.def;
 
   // TODO(simon): handle ack-overflow here
-  unsigned int i = 0;
+  unsigned int i = 0u;
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   for (; i < definition->descriptor_count; i++) {
     switch (definition->descriptors[i].pid) {
@@ -410,13 +409,13 @@ int RDMResponder_GetDeviceInfo(const RDMHeader *header,
   ptr = PushUInt16(ptr, g_responder.def->model_id);
   ptr = PushUInt16(ptr, g_responder.def->product_category);
   ptr = PushUInt32(ptr, g_responder.def->software_version);
-  ptr = PushUInt16(ptr, personality ? personality->dmx_footprint : 0);
+  ptr = PushUInt16(ptr, personality ? personality->dmx_footprint : 0u);
   *ptr++ = g_responder.current_personality;
 
   if (g_responder.def->personalities) {
     *ptr++ = g_responder.def->personality_count;
   } else {
-    *ptr++ = 1;
+    *ptr++ = 1u;
   }
   ptr = PushUInt16(ptr, g_responder.dmx_start_address);
   ptr = PushUInt16(ptr, g_responder.sub_device_count);
@@ -495,7 +494,7 @@ int RDMResponder_SetDMXPersonality(const RDMHeader *header,
   }
 
   uint8_t new_personality = param_data[0];
-  if (new_personality == 0 ||
+  if (new_personality == 0u ||
       new_personality > g_responder.def->personality_count) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
@@ -507,7 +506,7 @@ int RDMResponder_SetDMXPersonality(const RDMHeader *header,
 int RDMResponder_GetDMXPersonalityDescription(const RDMHeader *header,
                                               const uint8_t *param_data) {
   uint8_t index = param_data[0];
-  if (index == 0 || index > g_responder.def->personality_count) {
+  if (index == 0u || index > g_responder.def->personality_count) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -540,7 +539,7 @@ int RDMResponder_SetDMXStartAddress(const RDMHeader *header,
   }
 
   uint16_t address = JoinShort(param_data[0], param_data[1]);
-  if (address == 0 || address > MAX_DMX_START_ADDRESS) {
+  if (address == 0u || address > MAX_DMX_START_ADDRESS) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -559,7 +558,7 @@ int RDMResponder_GetSlotInfo(const RDMHeader *header,
   unsigned int slot_count = min(MAX_SLOT_INFO_PER_FRAME,
                                 personality->slot_count);
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
-  unsigned int i = 0;
+  unsigned int i = 0u;
   for (; i < slot_count; i++) {
     ptr = PushUInt16(ptr, i);
     *ptr++ = personality->slots[i].slot_type;
@@ -601,7 +600,7 @@ int RDMResponder_GetDefaultSlotValue(const RDMHeader *header,
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   unsigned int slot_count = min(MAX_DEFAULT_SLOT_VALUE_PER_FRAME,
                                 personality->slot_count);
-  unsigned int i = 0;
+  unsigned int i = 0u;
   for (; i < slot_count; i++) {
     ptr = PushUInt16(ptr, i);
     *ptr++ = personality->slots[i].default_value;
@@ -663,7 +662,7 @@ int RDMResponder_SetSensorValue(const RDMHeader *header,
   if (sensor_index < g_responder.def->sensor_count) {
     ResetSensor(sensor_index);
   } else if (sensor_index == ALL_SENSORS) {
-    unsigned int i = 0;
+    unsigned int i = 0u;
     for (; i < g_responder.def->sensor_count; i++) {
       ResetSensor(i);
     }
@@ -701,7 +700,7 @@ int RDMResponder_SetRecordSensor(const RDMHeader *header,
       return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
     }
   } else if (sensor_index == ALL_SENSORS) {
-    unsigned int i = 0;
+    unsigned int i = 0u;
     for (; i < g_responder.def->sensor_count; i++) {
       RecordSensor(i);
     }

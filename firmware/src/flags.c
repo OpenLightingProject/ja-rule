@@ -50,9 +50,9 @@ void Flags_SendResponse(uint8_t token) {
   iovec.length = sizeof(g_flags.flags);
 
 #ifdef PIPELINE_TRANSPORT_TX
-  bool ok = PIPELINE_TRANSPORT_TX(token, GET_FLAGS, RC_OK, &iovec, 1);
+  bool ok = PIPELINE_TRANSPORT_TX(token, GET_FLAGS, RC_OK, &iovec, 1u);
 #else
-  bool ok = g_flags_tx_cb(token, GET_FLAGS, RC_OK, &iovec, 1);
+  bool ok = g_flags_tx_cb(token, GET_FLAGS, RC_OK, &iovec, 1u);
 #endif
   if (ok) {
     g_flags.has_changed = false;

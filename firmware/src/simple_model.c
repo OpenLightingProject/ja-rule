@@ -28,10 +28,10 @@
 #include "utils.h"
 
 // Various constants
-#define SOFTWARE_VERSION 0x00000000
-#define FLASH_FAST 1000
-#define FLASH_SLOW 10000
+enum {SOFTWARE_VERSION = 0x00000000 };
 
+static const uint16_t FLASH_FAST = 1000u;
+static const uint16_t FLASH_SLOW = 10000u;
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule LED Driver";
 static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
@@ -81,7 +81,7 @@ void SimpleModel_Initialize(const SimpleModelSettings *settings) {
   g_simple_model.mute_port = settings->mute_port;
   g_simple_model.mute_bit = settings->mute_bit;
 
-  g_simple_model.identify_timer = 0;
+  g_simple_model.identify_timer = 0u;
   g_simple_model.identify_port = settings->identify_port;
   g_simple_model.identify_bit = settings->identify_bit;
 }
@@ -190,25 +190,25 @@ const ModelEntry SIMPLE_MODEL_ENTRY = {
 };
 
 static const PIDDescriptor PID_DESCRIPTORS[] = {
-  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0,
+  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0, (PIDCommandHandler) NULL},
-  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0,
+  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0u, (PIDCommandHandler) NULL},
+  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0,
+  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0u,
     (PIDCommandHandler) NULL},
-  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0,
+  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0,
+  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0u,
     RDMResponder_SetDeviceLabel},
-  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0,
+  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0, SetIdentifyDevice}
+  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0u, SetIdentifyDevice}
 };
 
 static const ProductDetailIds PRODUCT_DETAIL_ID_LIST = {
   .ids = {PRODUCT_DETAIL_TEST, PRODUCT_DETAIL_CHANGEOVER_MANUAL},
-  .size = 2
+  .size = 2u
 };
 
 static const ResponderDefinition RESPONDER_DEFINITION = {
@@ -217,7 +217,7 @@ static const ResponderDefinition RESPONDER_DEFINITION = {
   .sensors = NULL,
   .sensor_count = 0,
   .personalities = NULL,
-  .personality_count = 0,
+  .personality_count = 0u,
   .software_version_label = SOFTWARE_LABEL,
   .manufacturer_label = MANUFACTURER_LABEL,
   .model_description = DEVICE_MODEL_DESCRIPTION,

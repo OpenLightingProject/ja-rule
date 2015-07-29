@@ -64,11 +64,11 @@ void StreamDecoder_Initialize(MessageHandler handler) {
 #ifndef PIPELINE_HANDLE_MESSAGE
   g_stream_data.handler = handler;
 #endif
-  g_stream_data.message.token = 0;
-  g_stream_data.message.length = 0;
-  g_stream_data.message.command = 0;
+  g_stream_data.message.token = 0u;
+  g_stream_data.message.length = 0u;
+  g_stream_data.message.command = 0u;
   g_stream_data.message.payload = NULL;
-  g_stream_data.fragment_offset = 0;
+  g_stream_data.fragment_offset = 0u;
   g_stream_data.fragmented_frame = false;
 }
 
@@ -118,19 +118,19 @@ void StreamDecoder_Process(const uint8_t* data, unsigned int size) {
         break;
       case LENGTH_HIGH:
         g_stream_data.message.length |= (*data << 8);
-        if (g_stream_data.message.length > 0) {
+        if (g_stream_data.message.length > 0u) {
           g_stream_data.state = PAYLOAD;
         } else {
           g_stream_data.state = END_OF_MESSAGE;
         }
-        g_stream_data.fragment_offset = 0;
+        g_stream_data.fragment_offset = 0u;
         break;
       case PAYLOAD:
         // This frame is fragmented, which means we need to reassemble in the
         // fragment buffer. Fragmentation is expensive.
         payload_size = end - data;
         if (payload_size < g_stream_data.message.length + 1u ||
-            g_stream_data.fragment_offset != 0) {
+            g_stream_data.fragment_offset != 0u) {
           g_stream_data.fragmented_frame = true;
           payload_size = min(
               payload_size,
@@ -160,7 +160,7 @@ void StreamDecoder_Process(const uint8_t* data, unsigned int size) {
           g_stream_data.handler(&g_stream_data.message);
 #endif
         }
-        g_stream_data.fragment_offset = 0;
+        g_stream_data.fragment_offset = 0u;
         g_stream_data.state = START_OF_MESSAGE;
     }
     data++;

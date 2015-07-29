@@ -38,18 +38,18 @@
 #include "random.h"
 
 // The number of buffers we maintain for overlapping I/O
-#define NUMBER_OF_BUFFERS 2
+#define NUMBER_OF_BUFFERS 2u
 
-#define BREAK_FUDGE_FACTOR 74
+#define BREAK_FUDGE_FACTOR 74u
 
-#define MARK_FUDGE_FACTOR 217
+#define MARK_FUDGE_FACTOR 217u
 
 // TODO(simon): retime this.
-#define RESPONSE_FUDGE_FACTOR 38
+#define RESPONSE_FUDGE_FACTOR 38u
 
 #define INPUT_CAPTURE_MODULE IC_ID_2
 
-#define BUFFER_SIZE (DMX_FRAME_SIZE + 1)
+#define BUFFER_SIZE (DMX_FRAME_SIZE + 1u)
 
 typedef enum {
   // Controller states
@@ -101,7 +101,7 @@ typedef enum {
 } InternalOperation;
 
 typedef struct {
-  int size;
+  uint16_t size;
   InternalOperation op;
   uint8_t token;
   uint8_t data[BUFFER_SIZE];
@@ -134,12 +134,12 @@ typedef struct {
    * @brief The index into the TransceiverBuffer's data, for transmit or
    * receiving.
    */
-  int data_index;
+  uint16_t data_index;
 
   /**
    * @brief The index of the last byte delivered to the responder callback.
    */
-  int event_index;
+  uint16_t event_index;
 
   /**
    * @brief The time of the last level change.
@@ -216,7 +216,7 @@ static TimingSettings g_timing_settings;
  * @brief Convert microseconds to ticks.
  */
 static inline uint16_t MicroSecondsToTicks(uint16_t micro_seconds) {
-  return micro_seconds * (SYS_CLK_FREQ / 1000000);
+  return micro_seconds * (SYS_CLK_FREQ / 1000000u);
 }
 
 /*
@@ -229,17 +229,6 @@ static inline uint16_t MicroSecondsToTicks(uint16_t micro_seconds) {
 static inline void RebaseTimer(uint16_t last_event) {
   PLIB_TMR_Counter16BitSet(TMR_ID_3,
                            PLIB_TMR_Counter16BitGet(TMR_ID_3) - last_event);
-}
-
-/*
- * @brief Start a period timer.
- * @param ticks The number of ticks.
- */
-static inline void SetTimer(unsigned int ticks) {
-  PLIB_TMR_Counter16BitClear(TMR_ID_3);
-  PLIB_TMR_Period16BitSet(TMR_ID_3, ticks);
-  SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
-  SYS_INT_SourceEnable(INT_SOURCE_TIMER_3);
 }
 
 // I/O Functions
@@ -305,7 +294,8 @@ static void UART_TXBytes() {
          g_transceiver.data_index != g_transceiver.active->size) {
     PLIB_USART_TransmitterByteSend(
         g_hw_settings.usart,
-        g_transceiver.active->data[g_transceiver.data_index++]);
+        g_transceiver.active->data[g_transceiver.data_index]);
+    g_transceiver.data_index++;
   }
 }
 
@@ -322,8 +312,9 @@ void UART_FlushRX() {
 bool UART_RXBytes() {
   while (PLIB_USART_ReceiverDataIsAvailable(g_hw_settings.usart) &&
          g_transceiver.data_index != BUFFER_SIZE) {
-    g_transceiver.active->data[g_transceiver.data_index++] =
+    g_transceiver.active->data[g_transceiver.data_index] =
       PLIB_USART_ReceiverByteReceive(g_hw_settings.usart);
+    g_transceiver.data_index++;
   }
   if (g_transceiver.active->op == OP_RDM_WITH_RESPONSE ||
       g_transceiver.active->op == OP_RDM_BROADCAST) {
@@ -335,7 +326,7 @@ bool UART_RXBytes() {
         g_transceiver.state = STATE_C_COMPLETE;
       }
     } else {
-      if (g_transceiver.data_index >= 3) {
+      if (g_transceiver.data_index >= 3u) {
         if (g_transceiver.active->data[0] == RDM_START_CODE &&
             g_transceiver.active->data[1] == RDM_SUB_START_CODE) {
           g_transceiver.found_expected_length = true;
@@ -360,7 +351,7 @@ static void InitializeBuffers() {
   g_transceiver.active = NULL;
   g_transceiver.next = NULL;
 
-  int i = 0;
+  unsigned int i = 0;
   for (; i < NUMBER_OF_BUFFERS; i++) {
     g_transceiver.free_list[i] = &buffers[i];
   }
@@ -388,7 +379,7 @@ static void TakeNextBuffer() {
   }
   g_transceiver.active = g_transceiver.next;
   g_transceiver.next = NULL;
-  g_transceiver.data_index = 0;
+  g_transceiver.data_index = 0u;
 }
 
 // ----------------------------------------------------------------------------
@@ -422,7 +413,8 @@ static inline void StartSendingRDMResponse() {
        g_transceiver.data_index != g_transceiver.active->size) {
     PLIB_USART_TransmitterByteSend(
         g_hw_settings.usart,
-        g_transceiver.active->data[g_transceiver.data_index++]);
+        g_transceiver.active->data[g_transceiver.data_index]);
+    g_transceiver.data_index++;
   }
   g_transceiver.state = STATE_R_TX_DATA;
 
@@ -444,8 +436,9 @@ static inline void LogStateChange() {
  */
 static inline void FrameComplete() {
   const uint8_t* data = NULL;
-  unsigned int length = 0;
-  if (g_transceiver.active->op != OP_TX_ONLY && g_transceiver.data_index) {
+  unsigned int length = 0u;
+  if (g_transceiver.active->op != OP_TX_ONLY &&
+      g_transceiver.data_index != 0u) {
     // We actually got some data.
     data = g_transceiver.active->data;
     length = g_transceiver.data_index;
@@ -475,9 +468,9 @@ static inline void FrameComplete() {
  */
 static inline void RXFrameEvent() {
   TransceiverEvent event = {
-    0,
+    0u,
     T_OP_RX,
-    g_transceiver.event_index == 0 ? T_RESULT_RX_START_FRAME :
+    g_transceiver.event_index == 0u ? T_RESULT_RX_START_FRAME :
         T_RESULT_RX_CONTINUE_FRAME,
     g_transceiver.active->data,
     g_transceiver.data_index,
@@ -663,7 +656,8 @@ void __ISR(_TIMER_3_VECTOR, ipl6) Transceiver_TimerEvent() {
           g_transceiver.data_index != g_transceiver.active->size) {
         PLIB_USART_TransmitterByteSend(
             g_hw_settings.usart,
-            g_transceiver.active->data[g_transceiver.data_index++]);
+            g_transceiver.active->data[g_transceiver.data_index]);
+        g_transceiver.data_index++;
       }
       PLIB_USART_Enable(g_hw_settings.usart);
       PLIB_USART_TransmitterEnable(g_hw_settings.usart);
@@ -740,7 +734,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
     } else if (g_transceiver.state == STATE_C_TX_DRAIN) {
       // The last byte has been transmitted
       PLIB_TMR_Counter16BitClear(TMR_ID_3);
-      PLIB_TMR_Period16BitSet(TMR_ID_3, 65535);  // 6.5 ms until overflow.
+      PLIB_TMR_Period16BitSet(TMR_ID_3, 65535u);  // 6.5 ms until overflow.
       PLIB_TMR_PrescaleSelect(TMR_ID_3, TMR_PRESCALE_VALUE_8);
       PLIB_TMR_Start(TMR_ID_3);
 
@@ -757,7 +751,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         // Switch to RX Mode.
         if (g_transceiver.active->op == OP_RDM_DUB) {
           g_transceiver.state = STATE_C_RX_WAIT_FOR_DUB;
-          g_transceiver.data_index = 0;
+          g_transceiver.data_index = 0u;
 
           // Turn around the line
           EnableRX();
@@ -788,7 +782,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
               g_timing_settings.rdm_broadcast_timeout :
               g_timing_settings.rdm_response_timeout);
           g_transceiver.state = STATE_C_RX_WAIT_FOR_BREAK;
-          g_transceiver.data_index = 0;
+          g_transceiver.data_index = 0u;
 
           EnableRX();
           UART_FlushRX();
@@ -837,8 +831,8 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         // TODO(simon): how to handle this?
         // We need to make sure the last byte was delivered.
         RebaseTimer(g_transceiver.last_change);
-        g_transceiver.data_index = 0;
-        g_transceiver.event_index = 0;
+        g_transceiver.data_index = 0u;
+        g_transceiver.event_index = 0u;
         g_transceiver.state = STATE_R_RX_BREAK;
       } else if (UART_RXBytes()) {
         // RX buffer is full.
@@ -910,7 +904,7 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
   g_transceiver.state = STATE_R_INITIALIZE;
   g_transceiver.mode = T_MODE_RESPONDER;
   g_transceiver.desired_mode = T_MODE_RESPONDER;
-  g_transceiver.data_index = 0;
+  g_transceiver.data_index = 0u;
 
   InitializeBuffers();
   ResetTimingSettings();
@@ -1028,7 +1022,10 @@ void Transceiver_Tasks() {
       g_transceiver.state = STATE_C_IN_BREAK;
       PLIB_TMR_PrescaleSelect(TMR_ID_3 , TMR_PRESCALE_VALUE_1);
       g_transceiver.tx_frame_start = CoarseTimer_GetTime();
-      SetTimer(g_timing_settings.break_ticks);
+      PLIB_TMR_Counter16BitClear(TMR_ID_3);
+      PLIB_TMR_Period16BitSet(TMR_ID_3, g_timing_settings.break_ticks);
+      SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
+      SYS_INT_SourceEnable(INT_SOURCE_TIMER_3);
       SetBreak();
       PLIB_TMR_Start(TMR_ID_3);
 
@@ -1218,10 +1215,10 @@ void Transceiver_Tasks() {
       }
 
       // Reset state variables.
-      g_timing.request.break_time = 0;
-      g_timing.request.mark_time = 0;
-      g_transceiver.data_index = 0;
-      g_transceiver.event_index = 0;
+      g_timing.request.break_time = 0u;
+      g_timing.request.mark_time = 0u;
+      g_transceiver.data_index = 0u;
+      g_transceiver.event_index = 0u;
       g_transceiver.active->op = OP_RX;
 
       g_transceiver.state = STATE_R_RX_MBB;
@@ -1261,7 +1258,7 @@ void Transceiver_Tasks() {
     case STATE_R_RX_DATA:
       SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
 
-      if (g_transceiver.data_index) {
+      if (g_transceiver.data_index != 0u) {
         // Got at least one byte, so we have the start code.
         // Check the time since the last byte.
         if ((g_transceiver.active->data[0] == RDM_START_CODE &&
@@ -1304,8 +1301,8 @@ void Transceiver_Tasks() {
       FreeActiveBuffer();
       break;
     case STATE_R_TX_COMPLETE:
-      PLIB_TMR_Period16BitSet(TMR_ID_3, 65535);
-      g_transceiver.data_index = 0;
+      PLIB_TMR_Period16BitSet(TMR_ID_3, 65535u);
+      g_transceiver.data_index = 0u;
       g_transceiver.state = STATE_R_RX_PREPARE;
       break;
     case STATE_RESET:
@@ -1330,7 +1327,7 @@ void Transceiver_Tasks() {
 bool Transceiver_QueueFrame(uint8_t token, uint8_t start_code,
                             InternalOperation op, const uint8_t* data,
                             unsigned int size) {
-  if (g_transceiver.mode == T_MODE_RESPONDER || g_transceiver.free_size == 0) {
+  if (g_transceiver.mode == T_MODE_RESPONDER || g_transceiver.free_size == 0u) {
     return false;
   }
 
@@ -1379,15 +1376,15 @@ bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
 bool Transceiver_QueueRDMResponse(bool include_break,
                                   const IOVec* data,
                                   unsigned int iov_count) {
-  if (g_transceiver.free_size == 0) {
+  if (g_transceiver.free_size == 0u) {
     return false;
   }
 
   g_transceiver.next = g_transceiver.free_list[g_transceiver.free_size - 1];
   g_transceiver.free_size--;
 
-  unsigned int i = 0;
-  uint16_t offset = 0;
+  unsigned int i = 0u;
+  uint16_t offset = 0u;
   for (; i != iov_count; i++) {
     if (offset + data[i].length > BUFFER_SIZE) {
       memcpy(g_transceiver.next->data + offset, data[i].base,

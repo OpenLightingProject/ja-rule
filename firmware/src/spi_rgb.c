@@ -25,11 +25,11 @@
 #include "syslog.h"
 
 // TODO(simon): move these into the config (and set with RDM?)
-#define PIXEL_COUNT 2
-#define SLOTS_PER_PIXEL 3
-#define LATCH_BYTES 1
+static const uint8_t LPD8806_PIXEL_BYTE = 0x80u;
 
-#define LPD8806_PIXEL_BYTE 0x80
+enum { LATCH_BYTES = 1u };
+enum { PIXEL_COUNT = 2u };
+enum { SLOTS_PER_PIXEL = 3u };
 
 typedef struct {
   SPI_MODULE_ID module_id;
@@ -45,7 +45,7 @@ void SPIRGB_Init(const SPIRGBConfiguration *config) {
   g_spi.module_id = config->module_id;
   g_spi.use_enhanced_buffering = config->use_enhanced_buffering;
   g_spi.in_update = false;
-  g_spi.tx_index = 0;
+  g_spi.tx_index = 0u;
 
   memset(g_spi.pixels, LPD8806_PIXEL_BYTE, SLOTS_PER_PIXEL * PIXEL_COUNT);
   memset(&g_spi.pixels[SLOTS_PER_PIXEL * PIXEL_COUNT], 0, LATCH_BYTES);
@@ -73,16 +73,16 @@ void SPIRGB_SetPixel(uint16_t index, RGB_Color color, uint8_t value) {
     return;
   }
   // Map RGB to GRB
-  uint8_t color_offset = 0;
+  uint8_t color_offset = 0u;
   switch (color) {
     case RED:
-      color_offset = 1;
+      color_offset = 1u;
       break;
     case GREEN:
-      color_offset = 0;
+      color_offset = 0u;
       break;
     case BLUE:
-      color_offset = 2;
+      color_offset = 2u;
       break;
     }
   g_spi.pixels[index * SLOTS_PER_PIXEL + color_offset] =
@@ -91,7 +91,7 @@ void SPIRGB_SetPixel(uint16_t index, RGB_Color color, uint8_t value) {
 
 void SPIRGB_CompleteUpdate() {
   g_spi.in_update = false;
-  g_spi.tx_index = 0;
+  g_spi.tx_index = 0u;
 }
 
 void SPIRGB_Tasks() {
@@ -107,6 +107,7 @@ void SPIRGB_Tasks() {
     } else if (PLIB_SPI_IsBusy(g_spi.module_id)) {
       return;
     }
-    PLIB_SPI_BufferWrite(g_spi.module_id, g_spi.pixels[g_spi.tx_index++]);
+    PLIB_SPI_BufferWrite(g_spi.module_id, g_spi.pixels[g_spi.tx_index]);
+    g_spi.tx_index++;
   }
 }
