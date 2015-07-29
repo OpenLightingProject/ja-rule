@@ -132,6 +132,12 @@ class RDMResponderTest : public testing::Test {
     g_responder->def = def;
   }
 
+  void InitResponder() {
+    RDMResponderSettings settings;
+    memcpy(settings.uid, TEST_UID, UID_LENGTH);
+    RDMResponder_Initialize(&settings);
+  }
+
  protected:
   UID m_controller_uid;
   UID m_our_uid;
@@ -145,14 +151,14 @@ const uint8_t RDMResponderTest::TEST_UID[] = {
 };
 
 TEST_F(RDMResponderTest, getUID) {
-  RDMResponder_Initialize(TEST_UID);
+  InitResponder();
   uint8_t uid[UID_LENGTH];
   RDMResponder_GetUID(uid);
   EXPECT_THAT(uid, MatchesUID(TEST_UID));
 }
 
 TEST_F(RDMResponderTest, DiscoveryUniqueBranch) {
-  RDMResponder_Initialize(TEST_UID);
+  InitResponder();
 
   const uint8_t expected_data[] = {
     0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xaa,
@@ -206,7 +212,7 @@ TEST_F(RDMResponderTest, discoveryCommands) {
 }
 
 TEST_F(RDMResponderTest, setUnMute) {
-  RDMResponder_Initialize(TEST_UID);
+  InitResponder();
 
   unique_ptr<RDMDiscoveryRequest> unicast_unmute(NewUnMuteRequest(
       m_controller_uid, m_our_uid, 0));
@@ -230,7 +236,7 @@ TEST_F(RDMResponderTest, setUnMute) {
 }
 
 TEST_F(RDMResponderTest, setMute) {
-  RDMResponder_Initialize(TEST_UID);
+  InitResponder();
 
   unique_ptr<RDMDiscoveryRequest> unicast_mute(NewMuteRequest(
       m_controller_uid, m_our_uid, 0));

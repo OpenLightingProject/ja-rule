@@ -51,7 +51,9 @@ class NetworkModelTest : public ModelTest {
   NetworkModelTest() : ModelTest(&NETWORK_MODEL_ENTRY) {}
 
   void SetUp() {
-    RDMResponder_Initialize(TEST_UID);
+    RDMResponderSettings settings;
+    memcpy(settings.uid, TEST_UID, UID_LENGTH);
+    RDMResponder_Initialize(&settings);
     NetworkModel_Initialize();
     NETWORK_MODEL_ENTRY.activate_fn();
   }

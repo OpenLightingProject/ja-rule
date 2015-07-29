@@ -51,7 +51,9 @@ class DimmerModelTest : public ModelTest {
   DimmerModelTest() : ModelTest(&DIMMER_MODEL_ENTRY) {}
 
   void SetUp() {
-    RDMResponder_Initialize(TEST_UID);
+    RDMResponderSettings settings;
+    memcpy(settings.uid, TEST_UID, UID_LENGTH);
+    RDMResponder_Initialize(&settings);
     DimmerModel_Initialize();
     DIMMER_MODEL_ENTRY.activate_fn();
   }
