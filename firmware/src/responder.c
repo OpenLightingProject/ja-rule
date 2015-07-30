@@ -19,6 +19,8 @@
 
 #include "responder.h"
 
+#include <stdlib.h>
+
 #include "constants.h"
 #include "rdm_frame.h"
 #include "rdm_handler.h"
@@ -26,8 +28,7 @@
 #include "spi_rgb.h"
 #include "syslog.h"
 #include "transceiver.h"
-
-#include <stdlib.h>
+#include "utils.h"
 
 /*
  * @brief The g_state machine for decoding RS-485 data.
@@ -77,9 +78,15 @@ static inline void DispatchRDMRequest(const uint8_t *frame) {
   RDMHandler_HandleRequest(
       header,
       header->param_data_length ? frame + RDM_PARAM_DATA_OFFSET : NULL);
-  SysLog_Print(SYSLOG_INFO, "RDM: break %dus, mark %dus",
-               g_timing.request.break_time / 10u,
-               g_timing.request.mark_time / 10u);
+  SysLog_Print(
+      SYSLOG_INFO,
+      "RDM: break %dus, mark %dus, TN %d CC 0x%x, PID 0x%x, PDL %d",
+      g_timing.request.break_time / 10u,
+      g_timing.request.mark_time / 10u,
+      header->transaction_number,
+      header->command_class,
+      ntohs(header->param_id),
+      header->param_data_length);
 }
 
 // Public Functions
