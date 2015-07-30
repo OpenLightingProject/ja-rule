@@ -523,6 +523,7 @@ int DimmerModel_GetBurnIn(const RDMHeader *header,
 
 int DimmerModel_SetBurnIn(const RDMHeader *header,
                           const uint8_t *param_data) {
+  // TODO(simon): it would be nice to decrement this once an hour.
   return RDMResponder_GenericSetUInt8(header, param_data,
                                       &g_active_device->burn_in);
 }
