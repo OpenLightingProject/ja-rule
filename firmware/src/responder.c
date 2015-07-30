@@ -73,13 +73,13 @@ static unsigned int g_offset = 0u;
  * @brief Call the RDM handler when we have a complete and valid frame.
  */
 static inline void DispatchRDMRequest(const uint8_t *frame) {
-  SysLog_Print(SYSLOG_INFO, "RDM: break %dus, mark %dus",
-               g_timing.request.break_time / 10u,
-               g_timing.request.mark_time / 10u);
   RDMHeader *header = (RDMHeader*) frame;
   RDMHandler_HandleRequest(
       header,
       header->param_data_length ? frame + RDM_PARAM_DATA_OFFSET : NULL);
+  SysLog_Print(SYSLOG_INFO, "RDM: break %dus, mark %dus",
+               g_timing.request.break_time / 10u,
+               g_timing.request.mark_time / 10u);
 }
 
 // Public Functions
