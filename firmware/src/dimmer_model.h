@@ -24,7 +24,7 @@
  * @brief An RDM Model for a dimmer with subdevices.
  *
  * This model simulates a dimmer with different subdevices, one per dimmer
- * module. The model implements many of the PIDs from E1.37-1.
+ * module. The model implements all of the PIDs from E1.37-1.
  *
  * ### Sub-devices
  *
