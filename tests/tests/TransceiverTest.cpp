@@ -157,6 +157,9 @@ TEST_F(TransceiverTest, testSetResponderJitter) {
   EXPECT_FALSE(Transceiver_SetRDMResponderJitter(18241));
   EXPECT_EQ(18240, Transceiver_GetRDMResponderJitter());
 
+  // Test we can't wrap to a negative value
+  EXPECT_FALSE(Transceiver_SetRDMResponderJitter(65535));
+
   // Now increase the delay, jitter should adjust
   EXPECT_TRUE(Transceiver_SetRDMResponderDelay(11000));
   EXPECT_EQ(11000, Transceiver_GetRDMResponderDelay());

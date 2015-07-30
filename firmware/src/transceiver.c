@@ -37,19 +37,15 @@
 #include "transceiver_timing.h"
 #include "random.h"
 
-// The number of buffers we maintain for overlapping I/O
-#define NUMBER_OF_BUFFERS 2u
-
-#define BREAK_FUDGE_FACTOR 74u
-
-#define MARK_FUDGE_FACTOR 217u
-
-// TODO(simon): retime this.
-#define RESPONSE_FUDGE_FACTOR 38u
-
 #define INPUT_CAPTURE_MODULE IC_ID_2
-
 #define BUFFER_SIZE (DMX_FRAME_SIZE + 1u)
+
+// The number of buffers we maintain for overlapping I/O
+enum { NUMBER_OF_BUFFERS = 2};
+
+static const uint16_t BREAK_FUDGE_FACTOR = 74u;
+static const uint16_t MARK_FUDGE_FACTOR = 217u;
+static const uint16_t RESPONSE_FUDGE_FACTOR = 24u;
 
 typedef enum {
   // Controller states
@@ -351,7 +347,7 @@ static void InitializeBuffers() {
   g_transceiver.active = NULL;
   g_transceiver.next = NULL;
 
-  unsigned int i = 0;
+  unsigned int i = 0u;
   for (; i < NUMBER_OF_BUFFERS; i++) {
     g_transceiver.free_list[i] = &buffers[i];
   }
@@ -385,8 +381,7 @@ static void TakeNextBuffer() {
 // ----------------------------------------------------------------------------
 static inline void PrepareRDMResponse() {
   // Rebase the timer to when the last byte was received
-  uint16_t now = PLIB_TMR_Counter16BitGet(TMR_ID_3);
-  PLIB_TMR_Counter16BitSet(TMR_ID_3, now - g_transceiver.last_byte);
+  RebaseTimer(g_transceiver.last_byte);
 
   g_transceiver.state = STATE_R_TX_WAITING;
   PLIB_USART_ReceiverDisable(g_hw_settings.usart);
@@ -396,7 +391,7 @@ static inline void PrepareRDMResponse() {
   TakeNextBuffer();
 
   // Enable the timer to trigger when we send the RDM response.
-  unsigned int jitter = 0;
+  unsigned int jitter = 0u;
   if (g_timing_settings.rdm_responder_jitter) {
     jitter = Random_PseudoGet() % g_timing_settings.rdm_responder_jitter;
   }
@@ -491,11 +486,11 @@ static inline void RXFrameEvent() {
  */
 static inline void RXEndFrameEvent() {
   TransceiverEvent event = {
-    0,
+    0u,
     T_OP_RX,
     T_RESULT_RX_FRAME_TIMEOUT,
     NULL,
-    0,
+    0u,
     &g_timing
   };
 
@@ -518,7 +513,7 @@ static void ResetTimingSettings() {
   Transceiver_SetRDMResponseTimeout(DEFAULT_RDM_RESPONSE_TIMEOUT);
   Transceiver_SetRDMDUBResponseLimit(DEFAULT_RDM_DUB_RESPONSE_LIMIT);
   Transceiver_SetRDMResponderDelay(DEFAULT_RDM_RESPONDER_DELAY);
-  Transceiver_SetRDMResponderJitter(0);
+  Transceiver_SetRDMResponderJitter(0u);
 }
 
 // Interrupt Handlers
@@ -773,7 +768,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
           SYS_INT_SourceEnable(INT_SOURCE_USART_1_ERROR);
 
         } else if (g_transceiver.active->op == OP_RDM_BROADCAST &&
-                   g_timing_settings.rdm_broadcast_timeout == 0) {
+                   g_timing_settings.rdm_broadcast_timeout == 0u) {
           // Go directly to the complete state.
           PLIB_TMR_Stop(TMR_ID_3);
           g_transceiver.state = STATE_C_COMPLETE;
@@ -1011,7 +1006,7 @@ void Transceiver_Tasks() {
 
       // Reset state
       g_transceiver.found_expected_length = false;
-      g_transceiver.expected_length = 0;
+      g_transceiver.expected_length = 0u;
       g_transceiver.result = T_RESULT_TX_OK;
       memset(&g_timing, 0, sizeof(g_timing));
 
@@ -1095,8 +1090,9 @@ void Transceiver_Tasks() {
       }
       break;
     case STATE_C_RX_IN_DUB:
-      if ((PLIB_TMR_Counter16BitGet(TMR_ID_3) - g_timing.dub_response.start >
-           g_timing_settings.rdm_dub_response_limit)) {
+      if ((uint16_t) (PLIB_TMR_Counter16BitGet(TMR_ID_3) -
+                      g_timing.dub_response.start) >
+           g_timing_settings.rdm_dub_response_limit) {
         // The UART Error interupt may have fired, putting us into
         // STATE_C_COMPLETE, already.
         SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
@@ -1129,9 +1125,9 @@ void Transceiver_Tasks() {
                      g_timing.get_set_response.mark_start,
                      g_timing.get_set_response.mark_end);
         SysLog_Print(SYSLOG_INFO, "Break: %d, Mark: %d",
-                     (g_timing.get_set_response.mark_start -
+                     (uint16_t) (g_timing.get_set_response.mark_start -
                       g_timing.get_set_response.break_start),
-                     (g_timing.get_set_response.mark_end -
+                     (uint16_t) (g_timing.get_set_response.mark_end -
                       g_timing.get_set_response.mark_start));
       }
       FrameComplete();
@@ -1205,15 +1201,14 @@ void Transceiver_Tasks() {
     case STATE_R_RX_PREPARE:
       // Setup RX buffer
       if (!g_transceiver.active) {
-        if (g_transceiver.free_size == 0) {
+        if (g_transceiver.free_size == 0u) {
           SysLog_Message(SYSLOG_INFO, "Lost buffers!");
           g_transceiver.state = STATE_ERROR;
           return;
         }
 
-        g_transceiver.active =
-          g_transceiver.free_list[g_transceiver.free_size - 1];
         g_transceiver.free_size--;
+        g_transceiver.active = g_transceiver.free_list[g_transceiver.free_size];
       }
 
       // Reset state variables.
@@ -1333,13 +1328,13 @@ bool Transceiver_QueueFrame(uint8_t token, uint8_t start_code,
     return false;
   }
 
-  g_transceiver.next = g_transceiver.free_list[g_transceiver.free_size - 1];
   g_transceiver.free_size--;
+  g_transceiver.next = g_transceiver.free_list[g_transceiver.free_size];
 
   if (size > DMX_FRAME_SIZE) {
     size = DMX_FRAME_SIZE;
   }
-  g_transceiver.next->size = size + 1;  // include start code.
+  g_transceiver.next->size = size + 1u;  // include start code.
   g_transceiver.next->op = op;
   g_transceiver.next->token = token;
   g_transceiver.next->data[0] = start_code;
@@ -1382,8 +1377,8 @@ bool Transceiver_QueueRDMResponse(bool include_break,
     return false;
   }
 
-  g_transceiver.next = g_transceiver.free_list[g_transceiver.free_size - 1];
   g_transceiver.free_size--;
+  g_transceiver.next = g_transceiver.free_list[g_transceiver.free_size];
 
   unsigned int i = 0u;
   uint16_t offset = 0u;
@@ -1480,7 +1475,7 @@ uint16_t Transceiver_GetMarkTime() {
 }
 
 bool Transceiver_SetRDMBroadcastTimeout(uint16_t delay) {
-  if (delay > 50) {
+  if (delay > 50u) {
     return false;
   }
   g_timing_settings.rdm_broadcast_timeout = delay;
@@ -1494,7 +1489,7 @@ uint16_t Transceiver_GetRDMBroadcastTimeout() {
 }
 
 bool Transceiver_SetRDMResponseTimeout(uint16_t delay) {
-  if (delay < 10 || delay > 50) {
+  if (delay < 10u || delay > 50u) {
     return false;
   }
   g_timing_settings.rdm_response_timeout = delay;
@@ -1506,7 +1501,7 @@ uint16_t Transceiver_GetRDMResponseTimeout() {
 }
 
 bool Transceiver_SetRDMDUBResponseLimit(uint16_t limit) {
-  if (limit < 10000 || limit > 35000) {
+  if (limit < 10000u || limit > 35000u) {
     return false;
   }
   g_timing_settings.rdm_dub_response_limit = limit;
@@ -1534,8 +1529,8 @@ uint16_t Transceiver_GetRDMResponderDelay() {
 }
 
 bool Transceiver_SetRDMResponderJitter(uint16_t max_jitter) {
-  if (max_jitter >
-      MAXIMUM_RESPONDER_DELAY - g_timing_settings.rdm_responder_delay) {
+  if ((uint32_t) max_jitter + g_timing_settings.rdm_responder_delay >
+      MAXIMUM_RESPONDER_DELAY) {
     return false;
   }
   g_timing_settings.rdm_responder_jitter = max_jitter;

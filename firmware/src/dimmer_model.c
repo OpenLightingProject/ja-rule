@@ -46,7 +46,7 @@ static const char PERSONALITY_DESCRIPTION[] = "Dimmer";
 static const uint16_t INITIAL_START_ADDRESSS = 1u;
 
 static const char LOCK_STATE_DESCRIPTION_UNLOCKED[] = "Unlocked";
-static const char LOCK_STATE_DESCRIPTION_SUBDEVICE_LOCKED[] =
+static const char LOCK_STATE_DESCRIPTION_SUBDEVICES_LOCKED[] =
     "Subdevices locked";
 static const char LOCK_STATE_DESCRIPTION_ALL_LOCKED[] =
     "Root & subdevices locked";
@@ -127,7 +127,7 @@ static DimmerSubDevice g_subdevices[NUMBER_OF_SUB_DEVICES];
 
 static const char* LOCK_STATES[NUMBER_OF_LOCK_STATES] = {
   LOCK_STATE_DESCRIPTION_UNLOCKED,
-  LOCK_STATE_DESCRIPTION_SUBDEVICE_LOCKED,
+  LOCK_STATE_DESCRIPTION_SUBDEVICES_LOCKED,
   LOCK_STATE_DESCRIPTION_ALL_LOCKED
 };
 
@@ -583,6 +583,7 @@ int DimmerModel_GetBurnIn(const RDMHeader *header,
 
 int DimmerModel_SetBurnIn(const RDMHeader *header,
                           const uint8_t *param_data) {
+  // TODO(simon): it would be nice to decrement this once an hour.
   return RDMResponder_GenericSetUInt8(header, param_data,
                                       &g_active_device->burn_in);
 }
