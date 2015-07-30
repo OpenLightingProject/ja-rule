@@ -32,7 +32,7 @@
 
 // Various constants
 enum { NUMBER_OF_SUB_DEVICES = 4 };
-enum { NUMBER_OF_SCENES = 2 };
+enum { NUMBER_OF_SCENES = 3 };
 enum { NUMBER_OF_LOCK_STATES = 3 };
 enum { PERSONALITY_COUNT = 1 };
 enum { SOFTWARE_VERSION = 0x00000000 };
@@ -58,9 +58,15 @@ typedef struct {
   uint16_t up_fade_time;
   uint16_t down_fade_time;
   uint16_t wait_time;
+  uint8_t programmed_state;
 } Scene;
 
 typedef struct {
+  /*
+   * @brief Since 0 means 'off', scene numbers are indexed from 1.
+   *
+   * Remember this when using the array.
+   */
   Scene scenes[NUMBER_OF_SCENES];
 
   uint16_t playback_mode;
@@ -76,6 +82,7 @@ typedef struct {
   uint8_t startup_level;
   uint8_t playback_level;
   uint8_t lock_state;
+  uint8_t merge_mode;
 
   bool power_on_self_test;
 } RootDevice;
@@ -118,11 +125,11 @@ bool ResetToBlockAddress(uint16_t start_address) {
   for (; i < NUMBER_OF_SUB_DEVICES; i++) {
     RDMResponder *responder = &g_subdevices[i].responder;
     footprint +=
-        responder->def->personalities[responder->current_personality - 1]
+        responder->def->personalities[responder->current_personality - 1u]
             .slot_count;
   }
 
-  if ((uint16_t) (MAX_DMX_START_ADDRESS - start_address + 1) < footprint) {
+  if ((uint16_t) (MAX_DMX_START_ADDRESS - start_address + 1u) < footprint) {
     return false;
   }
 
@@ -130,7 +137,7 @@ bool ResetToBlockAddress(uint16_t start_address) {
     RDMResponder *responder = &g_subdevices[i].responder;
     responder->dmx_start_address = start_address;
     const PersonalityDefinition *personality =
-        &responder->def->personalities[responder->current_personality - 1];
+        &responder->def->personalities[responder->current_personality - 1u];
     start_address += personality->slot_count;
   }
   return true;
@@ -149,15 +156,20 @@ int DimmerModel_CapturePreset(const RDMHeader *header,
   const uint16_t down_fade_time = ExtractUInt16(&param_data[4]);
   const uint16_t wait_time = ExtractUInt16(&param_data[6]);
 
-  if (scene_index == 0 || scene_index > NUMBER_OF_SCENES) {
-    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  if (scene_index == 0u || scene_index > NUMBER_OF_SCENES) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  Scene *scene = &g_root_device.scenes[scene_index];
+  Scene *scene = &g_root_device.scenes[scene_index - 1u];
+
+  if (scene->programmed_state == PRESET_PROGRAMMED_READ_ONLY) {
+    return RDMResponder_BuildNack(header, NR_WRITE_PROTECT);
+  }
+
   scene->up_fade_time = up_fade_time;
   scene->down_fade_time = down_fade_time;
   scene->wait_time = wait_time;
-
+  scene->programmed_state = PRESET_PROGRAMMED;
   return RDMResponder_BuildSetAck(header);
 }
 
@@ -197,7 +209,7 @@ int DimmerModel_GetDMXBlockAddress(const RDMHeader *header,
   for (; i < NUMBER_OF_SUB_DEVICES; i++) {
     RDMResponder *responder = &g_subdevices[i].responder;
     uint16_t sub_device_footprint = responder->def
-        ->personalities[responder->current_personality - 1].slot_count;
+        ->personalities[responder->current_personality - 1u].slot_count;
     total_footprint += sub_device_footprint;
     if (expected_start_address &&
         expected_start_address != responder->dmx_start_address) {
@@ -251,7 +263,7 @@ int DimmerModel_GetDMXFailMode(const RDMHeader *header,
 
 int DimmerModel_SetDMXFailMode(const RDMHeader *header,
                                const uint8_t *param_data) {
-  if (header->param_data_length != 3 * sizeof(uint16_t) + sizeof(uint8_t)) {
+  if (header->param_data_length != 3u * sizeof(uint16_t) + sizeof(uint8_t)) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
@@ -282,7 +294,7 @@ int DimmerModel_GetDMXStartupMode(const RDMHeader *header,
 
 int DimmerModel_SetDMXStartupMode(const RDMHeader *header,
                                   const uint8_t *param_data) {
-  if (header->param_data_length != 3 * sizeof(uint16_t) + sizeof(uint8_t)) {
+  if (header->param_data_length != 3u * sizeof(uint16_t) + sizeof(uint8_t)) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
@@ -320,7 +332,7 @@ int DimmerModel_GetLockPin(const RDMHeader *header,
 
 int DimmerModel_SetLockPin(const RDMHeader *header,
                            const uint8_t *param_data) {
-  if (header->param_data_length != 2 * sizeof(uint16_t)) {
+  if (header->param_data_length != 2u * sizeof(uint16_t)) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
@@ -343,13 +355,13 @@ int DimmerModel_GetLockState(const RDMHeader *header,
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   *ptr++ = g_root_device.lock_state;
   // We don't include the unlocked state.
-  *ptr++ = NUMBER_OF_LOCK_STATES - 1;
+  *ptr++ = NUMBER_OF_LOCK_STATES - 1u;
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int DimmerModel_SetLockState(const RDMHeader *header,
                              const uint8_t *param_data) {
-  if (header->param_data_length != 2 * sizeof(uint16_t)) {
+  if (header->param_data_length != sizeof(uint16_t) + sizeof(uint8_t)) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
@@ -366,7 +378,7 @@ int DimmerModel_SetLockState(const RDMHeader *header,
 int DimmerModel_GetLockStateDescription(const RDMHeader *header,
                                         const uint8_t *param_data) {
   const uint8_t lock_state = param_data[0];
-  if (lock_state == 0 || lock_state >= NUMBER_OF_LOCK_STATES) {
+  if (lock_state == 0u || lock_state >= NUMBER_OF_LOCK_STATES) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -376,6 +388,110 @@ int DimmerModel_GetLockStateDescription(const RDMHeader *header,
                             LOCK_STATES[lock_state],
                             RDM_DEFAULT_STRING_SIZE);
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
+int DimmerModel_GetPresetInfo(const RDMHeader *header,
+                              UNUSED const uint8_t *param_data) {
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  *ptr++ = true;  // level supported
+  *ptr++ = true;  // sequence supported
+  *ptr++ = true;  // split times supported
+  *ptr++ = true;  // fail infinite delay supported
+  *ptr++ = true;  // fail infinite hold supported
+  *ptr++ = true;  // startup infinite hold supported
+  ptr = PushUInt16(ptr, NUMBER_OF_SCENES);
+  ptr = PushUInt16(ptr, 0u);  // min fade time
+  ptr = PushUInt16(ptr, 0xfffe);  // max fade time
+  ptr = PushUInt16(ptr, 0u);  // min wait time
+  ptr = PushUInt16(ptr, 0xfffe);  // max wait time
+  ptr = PushUInt16(ptr, 0u);  // min fail delay time
+  ptr = PushUInt16(ptr, 0xfffe);  // max fail delay time
+  ptr = PushUInt16(ptr, 0u);  // min fail hold time
+  ptr = PushUInt16(ptr, 0xfffe);  // max fail hold time
+  ptr = PushUInt16(ptr, 0u);  // min startup delay time
+  ptr = PushUInt16(ptr, 0xfffe);  // max startup delay time
+  ptr = PushUInt16(ptr, 0u);  // min startup hold time
+  ptr = PushUInt16(ptr, 0xfffe);  // max startup hold time
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
+int DimmerModel_GetPresetStatus(const RDMHeader *header,
+                                UNUSED const uint8_t *param_data) {
+  const uint16_t scene_index = ExtractUInt16(&param_data[0]);
+
+  if (scene_index == 0u || scene_index > NUMBER_OF_SCENES) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  Scene *scene = &g_root_device.scenes[scene_index - 1u];
+
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  ptr = PushUInt16(ptr, scene_index);
+  ptr = PushUInt16(ptr, scene->up_fade_time);
+  ptr = PushUInt16(ptr, scene->down_fade_time);
+  ptr = PushUInt16(ptr, scene->wait_time);
+  *ptr++ = scene->programmed_state;
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
+int DimmerModel_SetPresetStatus(const RDMHeader *header,
+                                const uint8_t *param_data) {
+  if (header->param_data_length != 4u * sizeof(uint16_t) + sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  const uint16_t scene_index = ExtractUInt16(&param_data[0]);
+  const uint16_t up_fade_time = ExtractUInt16(&param_data[2]);
+  const uint16_t down_fade_time = ExtractUInt16(&param_data[4]);
+  const uint16_t wait_time = ExtractUInt16(&param_data[6]);
+  const uint8_t clear_preset = param_data[8];
+
+  if (scene_index == 0u || scene_index > NUMBER_OF_SCENES) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  Scene *scene = &g_root_device.scenes[scene_index - 1u];
+  if (scene->programmed_state == PRESET_PROGRAMMED_READ_ONLY) {
+    return RDMResponder_BuildNack(header, NR_WRITE_PROTECT);
+  }
+
+  if (clear_preset > 1u) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  if (clear_preset == 1u) {
+    scene->up_fade_time = 0u;
+    scene->down_fade_time = 0u;
+    scene->wait_time = 0u;
+    scene->programmed_state = PRESET_NOT_PROGRAMMED;
+  } else {
+    // don't change the state here, if we haven't been programmed, just update
+    // the timing params
+    scene->up_fade_time = up_fade_time;
+    scene->down_fade_time = down_fade_time;
+    scene->wait_time = wait_time;
+  }
+  return RDMResponder_BuildSetAck(header);
+}
+
+int DimmerModel_GetPresetMergeMode(const RDMHeader *header,
+                                   UNUSED const uint8_t *param_data) {
+  return RDMResponder_GenericGetUInt8(header, g_root_device.merge_mode);
+}
+
+int DimmerModel_SetPresetMergeMode(const RDMHeader *header,
+                                   const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  const uint16_t merge_mode = param_data[0];
+  if (merge_mode > MERGE_MODE_DMX_ONLY) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  g_root_device.merge_mode = merge_mode;
+  return RDMResponder_BuildSetAck(header);
 }
 
 // SubDevice PID Handlers
@@ -419,9 +535,11 @@ void DimmerModel_Initialize() {
   // Initialize the root
   unsigned int i = 0u;
   for (; i != NUMBER_OF_SCENES; i++) {
-    g_root_device.scenes[i].up_fade_time = 0;
-    g_root_device.scenes[i].down_fade_time = 0;
-    g_root_device.scenes[i].wait_time = 0;
+    g_root_device.scenes[i].up_fade_time = 0u;
+    g_root_device.scenes[i].down_fade_time = 0u;
+    g_root_device.scenes[i].wait_time = 0u;
+    g_root_device.scenes[i].programmed_state = i == 0u ?
+        PRESET_PROGRAMMED_READ_ONLY : PRESET_NOT_PROGRAMMED;
   }
 
   g_root_device.playback_mode = PRESET_PLAYBACK_OFF;
@@ -435,7 +553,8 @@ void DimmerModel_Initialize() {
   g_root_device.fail_hold_time = 0u;
   g_root_device.fail_level = 0u;
   g_root_device.pin_code = 0u;
-  g_root_device.lock_state = 0;
+  g_root_device.lock_state = 0u;
+  g_root_device.merge_mode = MERGE_MODE_DEFAULT;
 
   uint16_t sub_device_index = 1u;
   for (i = 0u; i < NUMBER_OF_SUB_DEVICES; i++) {
@@ -585,14 +704,19 @@ static const PIDDescriptor ROOT_PID_DESCRIPTORS[] = {
     DimmerModel_SetDMXBlockAddress},
   {PID_DMX_FAIL_MODE, DimmerModel_GetDMXFailMode, 0u,
     DimmerModel_SetDMXFailMode},
-  {PID_DMX_FAIL_MODE, DimmerModel_GetDMXStartupMode, 0u,
+  {PID_DMX_STARTUP_MODE, DimmerModel_GetDMXStartupMode, 0u,
     DimmerModel_SetDMXStartupMode},
 
   {PID_LOCK_PIN, DimmerModel_GetLockPin, 0u, DimmerModel_SetLockPin},
   {PID_LOCK_STATE, DimmerModel_GetLockState, 0u, DimmerModel_SetLockState},
   {PID_LOCK_STATE_DESCRIPTION, DimmerModel_GetLockStateDescription, 1u,
     (PIDCommandHandler) NULL},
-
+  {PID_PRESET_INFO, DimmerModel_GetPresetInfo, 0u,
+    (PIDCommandHandler) NULL},
+  {PID_PRESET_STATUS, DimmerModel_GetPresetStatus, 2u,
+    DimmerModel_SetPresetStatus},
+  {PID_PRESET_MERGEMODE, DimmerModel_GetPresetMergeMode, 0u,
+    DimmerModel_SetPresetMergeMode},
   {PID_POWER_ON_SELF_TEST, DimmerModel_GetPowerOnSelfTest, 0u,
     DimmerModel_SetPowerOnSelfTest}
 };

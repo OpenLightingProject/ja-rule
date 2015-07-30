@@ -746,6 +746,20 @@ typedef enum {
   PRESET_PLAYBACK_ALL = 0xffff,
 } RDMPresetPlayback;
 
+typedef enum {
+  PRESET_NOT_PROGRAMMED = 0x00,
+  PRESET_PROGRAMMED = 0x01,
+  PRESET_PROGRAMMED_READ_ONLY = 0x02
+} RDMPresetProgrammed;
+
+typedef enum {
+  MERGE_MODE_DEFAULT = 0x00,
+  MERGE_MODE_HTP = 0x01,
+  MERGE_MODE_LTP = 0x02,
+  MERGE_MODE_DMX_ONLY = 0x03,
+  MERGE_MODE_OTHER = 0xff,
+} RDMMergeMode;
+
 #ifdef __cplusplus
 }
 #endif

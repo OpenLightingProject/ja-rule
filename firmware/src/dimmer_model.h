@@ -21,11 +21,36 @@
  * @addtogroup rdm_models
  * @{
  * @file dimmer_model.h
- * @brief A dimmer-only RDM Model.
+ * @brief An RDM Model for a dimmer with subdevices.
  *
  * This model simulates a dimmer with different subdevices, one per dimmer
- * module. Each sub-device consumes one slot of DMX data. The model implements
- * many of the PIDs from E1.37-1.
+ * module. The model implements many of the PIDs from E1.37-1.
+ *
+ * ### Sub-devices
+ *
+ * The model has multiple sub-devices, that each take a single slot of DMX
+ * data. The sub-devices are not contiguous.
+ *
+ * DMX_BLOCK_ADDRESS can be used to set the start address of all sub-devices in
+ * a single operation.
+ *
+ * ### Presets & Scenes.
+ *
+ * The root device provides 3 scenes. The first scene (index 1) is a factory
+ * programed scene, which can't be modified. The 2nd and 3rd scenes can be
+ * 'updated' with capture preset.
+ *
+ * DMX_FAIL_MODE and DMX_STARTUP_MODE can be used to change the on-failure and
+ * on-startup scenes.
+ *
+ * ### Lock PIN
+ *
+ * The root device implements the LOCK_PIN, LOCK_STATE & LOCK_STATE_DESCRIPTION
+ * PIDs. Besides the unlock state (default), there are two custom states. The
+ * 1st locks only the sub-devices, the 2nd locks both subdevices and the root
+ * device.
+ *
+ * The default lock pin is 0000.
  */
 
 #ifndef FIRMWARE_SRC_DIMMER_MODEL_H_
