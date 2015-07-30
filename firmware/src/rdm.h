@@ -177,6 +177,11 @@ static const unsigned int MAX_SLOT_INFO_PER_FRAME = 46u;
 static const unsigned int MAX_DEFAULT_SLOT_VALUE_PER_FRAME = 77u;
 
 /**
+ * @brief The maximum pin code from E1.37-1.
+ */
+static const uint16_t MAX_PIN_CODE = 9999u;
+
+/**
  * @brief The size of the DNS Host Name field from E1.37-2.
  */
 enum { DNS_HOST_NAME_SIZE = 63 };
@@ -736,7 +741,10 @@ typedef enum {
   IDENTIFY_MODE_LOUD = 0xff,
 } RDMIdentifyMode;
 
-
+typedef enum {
+  PRESET_PLAYBACK_OFF = 0x0000,
+  PRESET_PLAYBACK_ALL = 0xffff,
+} RDMPresetPlayback;
 
 #ifdef __cplusplus
 }

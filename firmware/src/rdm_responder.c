@@ -406,6 +406,12 @@ int RDMResponder_GenericSetUInt8(const RDMHeader *header,
   return RDMResponder_BuildSetAck(header);
 }
 
+int RDMResponder_GenericGetUInt16(const RDMHeader *header, uint16_t value) {
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  ptr = PushUInt16(ptr, value);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
 int RDMResponder_GenericGetUInt32(const RDMHeader *header, uint32_t value) {
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt32(ptr, value);
