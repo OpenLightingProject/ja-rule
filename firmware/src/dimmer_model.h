@@ -34,6 +34,12 @@
  * DMX_BLOCK_ADDRESS can be used to set the start address of all sub-devices in
  * a single operation.
  *
+ * ### Dimmer Settings
+ *
+ * Each sub-device implements the PIDs from Section 4 of E1.37-1. To make
+ * things interesting, not all sub-devices support all the dimmer curves /
+ * modulation frequencies.
+ *
  * ### Presets & Scenes.
  *
  * The root device provides 3 scenes. The first scene (index 1) is a factory
