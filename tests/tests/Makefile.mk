@@ -26,6 +26,7 @@ TESTS += tests/coarse_timer_test \
          tests/rdm_responder_test \
          tests/rdm_util_test \
          tests/responder_test \
+         tests/simple_model_test \
          tests/spirgb_test \
          tests/stream_decoder_test \
          tests/transceiver_test \
@@ -119,6 +120,19 @@ tests_responder_test_LDADD = $(TESTING_LIBS) \
                              mocks/librdmhandlermock.la \
                              mocks/libspirgbmock.la \
                              mocks/libsyslogmock.la
+
+tests_simple_model_test_SOURCES = tests/SimpleModelTest.cpp
+tests_simple_model_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
+tests_simple_model_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
+                                src/libsimplemodel.la \
+                                src/librdmresponder.la \
+                                src/libcoarsetimer.la \
+                                src/librdmbuffer.la \
+                                src/librandom.la \
+                                src/librdmutil.la \
+                                tests/libmodeltest.la \
+                                harmony/mocks/libharmonymock.la \
+                                mocks/libmatchers.la
 
 tests_spirgb_test_SOURCES = tests/SPIRGBTest.cpp
 tests_spirgb_test_CXXFLAGS = $(TESTING_CXXFLAGS)
