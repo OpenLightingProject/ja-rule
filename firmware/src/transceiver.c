@@ -45,8 +45,7 @@ enum { NUMBER_OF_BUFFERS = 2};
 
 static const uint16_t BREAK_FUDGE_FACTOR = 74u;
 static const uint16_t MARK_FUDGE_FACTOR = 217u;
-// TODO(simon): retime this.
-static const uint16_t RESPONSE_FUDGE_FACTOR = 38u;
+static const uint16_t RESPONSE_FUDGE_FACTOR = 24u;
 
 typedef enum {
   // Controller states
