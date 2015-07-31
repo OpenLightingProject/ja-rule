@@ -48,8 +48,7 @@ static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
 static const char PERSONALITY_DESCRIPTION[] = "Dimmer";
 static const uint16_t INITIAL_START_ADDRESSS = 1u;
-//static const uint32_t STATUS_MESSAGE_TRIGGER_INTERVAL = 600000;
-static const uint32_t STATUS_MESSAGE_TRIGGER_INTERVAL = 30000;
+static const uint32_t STATUS_MESSAGE_TRIGGER_INTERVAL = 300000;  // 30s
 
 static const char LOCK_STATE_DESCRIPTION_UNLOCKED[] = "Unlocked";
 static const char LOCK_STATE_DESCRIPTION_SUBDEVICES_LOCKED[] =
@@ -246,6 +245,11 @@ void QueueStatusMessage(DimmerSubDevice *device,
                         RDMStatusMessageId status_id,
                         uint16_t data_value1,
                         uint16_t data_value2) {
+  if (device->sd_report_threshold == STATUS_NONE &&
+      (status_type & 0xf) < device->sd_report_threshold) {
+    return;
+  }
+
   device->status_message.is_active = true;
   device->status_message.sub_device = device->index;
   device->status_message.status_type = status_type;
