@@ -25,7 +25,7 @@
 #include "macros.h"
 #include "rdm_buffer.h"
 #include "rdm_util.h"
-#include "responder.h"
+#include "receiver_counters.h"
 #include "utils.h"
 
 const char MANUFACTURER_LABEL[] = "Open Lighting Project";
@@ -508,22 +508,22 @@ int RDMResponder_GetSupportedParameters(const RDMHeader *header,
 }
 
 int RDMResponder_GetCommsStatus(const RDMHeader *header,
-                                const uint8_t *param_data) {
+                                UNUSED const uint8_t *param_data) {
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
 
-  ptr = PushUInt16(ptr, Responder_RDMShortFrame());
-  ptr = PushUInt16(ptr, Responder_RDMLengthMismatch());
-  ptr = PushUInt16(ptr, Responder_RDMChecksumInvalidCounter());
+  ptr = PushUInt16(ptr, ReceiverCounters_RDMShortFrame());
+  ptr = PushUInt16(ptr, ReceiverCounters_RDMLengthMismatch());
+  ptr = PushUInt16(ptr, ReceiverCounters_RDMChecksumInvalidCounter());
 
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int RDMResponder_SetCommsStatus(const RDMHeader *header,
-                                const uint8_t *param_data) {
+                                UNUSED const uint8_t *param_data) {
   if (header->param_data_length != 0u) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
-  Responder_ResetCommsStatusCounters();
+  ReceiverCounters_ResetCommsStatusCounters();
   return RDMResponder_BuildSetAck(header);
 }
 
@@ -615,6 +615,7 @@ int RDMResponder_SetDeviceLabel(const RDMHeader *header,
   }
   RDMUtil_StringCopy(g_responder->device_label, RDM_DEFAULT_STRING_SIZE,
                      (const char*) param_data, header->param_data_length);
+  g_responder->using_factory_defaults = false;
   return RDMResponder_BuildSetAck(header);
 }
 
@@ -638,6 +639,9 @@ int RDMResponder_SetDMXPersonality(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
+  if (g_responder->current_personality != new_personality) {
+    g_responder->using_factory_defaults = false;
+  }
   g_responder->current_personality = new_personality;
   return RDMResponder_BuildSetAck(header);
 }
@@ -682,6 +686,9 @@ int RDMResponder_SetDMXStartAddress(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
+  if (g_responder->dmx_start_address != address) {
+    g_responder->using_factory_defaults = false;
+  }
   g_responder->dmx_start_address = address;
   return RDMResponder_BuildSetAck(header);
 }
@@ -862,6 +869,7 @@ int RDMResponder_SetIdentifyDevice(const RDMHeader *header,
   if (g_responder->identify_on == previous_identify) {
     return r;
   }
+  g_responder->using_factory_defaults = false;
   if (g_responder->identify_on) {
     g_internal_state.identify_timer = CoarseTimer_GetTime();
     PLIB_PORTS_PinSet(PORTS_ID_0, g_internal_state.identify_port,

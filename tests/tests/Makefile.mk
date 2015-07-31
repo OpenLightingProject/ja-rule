@@ -44,6 +44,7 @@ tests_dimmer_model_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_dimmer_model_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                  src/libdimmermodel.la \
                                  src/librdmresponder.la \
+                                 src/libreceivercounters.la \
                                  src/libcoarsetimer.la \
                                  src/librdmbuffer.la \
                                  src/librdmutil.la \
@@ -75,6 +76,7 @@ tests_network_model_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_network_model_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                  src/libnetworkmodel.la \
                                  src/librdmresponder.la \
+                                 src/libreceivercounters.la \
                                  src/libcoarsetimer.la \
                                  src/librdmbuffer.la \
                                  src/librandom.la \
@@ -89,6 +91,7 @@ tests_rdm_handler_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                mocks/libmatchers.la \
                                src/librdmhandler.la \
                                src/librdmresponder.la \
+                               src/libreceivercounters.la \
                                src/libcoarsetimer.la \
                                src/librdmbuffer.la \
                                src/librdmutil.la \
@@ -98,6 +101,7 @@ tests_rdm_responder_test_SOURCES = tests/RDMResponderTest.cpp
 tests_rdm_responder_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_rdm_responder_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                   src/librdmresponder.la \
+                                  src/libreceivercounters.la \
                                   src/librdmbuffer.la \
                                   src/libcoarsetimer.la \
                                   src/librdmutil.la \
@@ -114,8 +118,9 @@ tests_rdm_util_test_LDADD = $(TESTING_LIBS) \
 tests_responder_test_SOURCES = tests/ResponderTest.cpp
 tests_responder_test_CXXFLAGS = $(TESTING_CXXFLAGS)
 tests_responder_test_LDADD = $(TESTING_LIBS) \
-                             src/libresponder.la \
                              src/librdmutil.la \
+                             src/libreceivercounters.la \
+                             src/libresponder.la \
                              mocks/libmatchers.la \
                              mocks/librdmhandlermock.la \
                              mocks/libspirgbmock.la \
@@ -126,6 +131,7 @@ tests_simple_model_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_simple_model_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                 src/libsimplemodel.la \
                                 src/librdmresponder.la \
+                                src/libreceivercounters.la \
                                 src/libcoarsetimer.la \
                                 src/librdmbuffer.la \
                                 src/librandom.la \

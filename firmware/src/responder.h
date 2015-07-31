@@ -33,34 +33,11 @@
 #ifndef FIRMWARE_SRC_RESPONDER_H_
 #define FIRMWARE_SRC_RESPONDER_H_
 
-#include <stdbool.h>
-#include <stdint.h>
 #include "transceiver.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-// @cond INTERNAL
-typedef struct {
-  uint32_t dmx_frames;
-  uint32_t asc_frames;
-  uint32_t rdm_frames;
-  uint32_t rdm_short_frame;
-  uint32_t rdm_length_mismatch;
-  uint32_t rdm_sub_start_code_invalid;
-  uint32_t rdm_msg_len_invalid;
-  uint32_t rdm_param_data_len_invalid;
-  uint32_t rdm_checksum_invalid;
-  uint8_t dmx_last_checksum;
-  uint16_t dmx_last_slot_count;
-  uint16_t dmx_min_slot_count;
-  uint16_t dmx_max_slot_count;
-} ResponderCounters;
-
-extern ResponderCounters g_responder_counters;
-// @endcond
-
 
 /**
  * @brief Initialize the Responder sub-system.
@@ -68,127 +45,10 @@ extern ResponderCounters g_responder_counters;
 void Responder_Initialize();
 
 /**
- * @brief Reset the counters.
- */
-void Responder_ResetCounters();
-
-/**
- * @brief Reset the COMMS_STATUS counters.
- */
-void Responder_ResetCommsStatusCounters();
-
-/**
  * @brief Called when data is received.
  * @param event The transceiver event.
  */
 void Responder_Receive(const TransceiverEvent *event);
-
-/**
- * @brief The number of DMX512 frames received.
- */
-static inline uint32_t Responder_DMXFrames() {
-  return g_responder_counters.dmx_frames;
-}
-
-/**
- * @brief The number of ASC frames received.
- */
-static inline uint32_t Responder_ASCFrames() {
-  return g_responder_counters.asc_frames;
-}
-
-/**
- * @brief The number of RDM frames received.
- */
-static inline uint32_t Responder_RDMFrames() {
-  return g_responder_counters.rdm_frames;
-}
-
-/**
- * @brief The number of RDM frames that were too short.
- *
- * See COMMS_STATUS from E1.20 for a description
- */
-static inline uint32_t Responder_RDMShortFrame() {
-  return g_responder_counters.rdm_short_frame;
-}
-
-/**
- * @brief The number of RDM frames that had a length mismatch.
- *
- * See COMMS_STATUS from E1.20 for a description
- */
-static inline uint32_t Responder_RDMLengthMismatch() {
-  return g_responder_counters.rdm_length_mismatch;
-}
-
-/**
- * @brief The number of RDM frames received where the sub-start-code was
- * incorrect.
- */
-static inline uint32_t Responder_RDMSubStartCodeInvalidCounter() {
-  return g_responder_counters.rdm_sub_start_code_invalid;
-}
-
-/**
- * @brief The number of RDM frames received where the message length was
- * incorrect.
- */
-static inline uint32_t Responder_RDMMessageLengthInvalidCounter() {
-  return g_responder_counters.rdm_msg_len_invalid;
-}
-
-/**
- * @brief The number of RDM frames received where the param data length was
- * incorrect.
- */
-static inline uint32_t Responder_RDMParamDataLenInvalidCounter() {
-  return g_responder_counters.rdm_param_data_len_invalid;
-}
-
-/**
- * @brief The number of RDM frames received where the checksum was incorrect.
- */
-static inline uint32_t Responder_RDMChecksumInvalidCounter() {
-  return g_responder_counters.rdm_checksum_invalid;
-}
-
-/**
- * @brief The additive checksum of the last DMX frame.
- *
- * If no DMX frames have been received, 0xff is reported.
- */
-static inline uint32_t Responder_DMXLastChecksum() {
-  return g_responder_counters.dmx_last_checksum;
-}
-
-/**
- * @brief The number of slots in the most recent DMX frame.
- *
- * If no DMX frames have been received, 0xffff is reported.
- */
-static inline uint32_t Responder_DMXLastSlotCount() {
-  return g_responder_counters.dmx_last_slot_count;
-}
-
-/**
- * @brief The smallest DMX frame seen.
- *
- * If no DMX frames have been received, 0xffff is reported. This is only
- * updated when the start of the next frame is received.
- */
-static inline uint32_t Responder_DMXMinimumSlotCount() {
-  return g_responder_counters.dmx_min_slot_count;
-}
-
-/**
- * @brief The largest DMX frame seen.
- *
- * If no DMX frames have been received, 0xffff is reported.
- */
-static inline uint32_t Responder_DMXMaximumSlotCount() {
-  return g_responder_counters.dmx_max_slot_count;
-}
 
 #ifdef __cplusplus
 }

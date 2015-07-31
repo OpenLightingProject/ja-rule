@@ -24,6 +24,7 @@
 #include "constants.h"
 #include "rdm_frame.h"
 #include "rdm_handler.h"
+#include "receiver_counters.h"
 #include "rdm_util.h"
 #include "spi_rgb.h"
 #include "syslog.h"
@@ -50,11 +51,6 @@ typedef enum {
 } ResponderState;
 
 static const uint16_t UNINITIALIZED_COUNTER = 0xffffu;
-
-/*
- * @brief The counters.
- */
-ResponderCounters g_responder_counters;
 
 /*
  * @brief The timing information for the current frame.
@@ -118,32 +114,7 @@ static inline void PossiblyIncrementLengthMismatchCounter(
 
 // Public Functions
 // ----------------------------------------------------------------------------
-void Responder_Initialize() {
-  Responder_ResetCounters();
-}
-
-void Responder_ResetCounters() {
-  g_responder_counters.dmx_frames = 0u;
-  g_responder_counters.asc_frames = 0u;
-  g_responder_counters.rdm_frames = 0u;
-  g_responder_counters.rdm_short_frame = 0u;
-  g_responder_counters.rdm_length_mismatch = 0u;
-  g_responder_counters.rdm_sub_start_code_invalid = 0u;
-  g_responder_counters.rdm_msg_len_invalid = 0u;
-  g_responder_counters.rdm_param_data_len_invalid = 0u;
-  g_responder_counters.rdm_checksum_invalid = 0u;
-  // The initial values are from E1.37-5 (draft).
-  g_responder_counters.dmx_last_checksum = 0xffu;
-  g_responder_counters.dmx_last_slot_count = UNINITIALIZED_COUNTER;
-  g_responder_counters.dmx_min_slot_count = UNINITIALIZED_COUNTER;
-  g_responder_counters.dmx_max_slot_count = UNINITIALIZED_COUNTER;
-}
-
-void Responder_ResetCommsStatusCounters() {
-  g_responder_counters.rdm_short_frame = 0u;
-  g_responder_counters.rdm_length_mismatch = 0u;
-  g_responder_counters.rdm_checksum_invalid = 0u;
-}
+void Responder_Initialize() {}
 
 void Responder_Receive(const TransceiverEvent *event) {
   // While this function is running, UART interrupts are disabled.

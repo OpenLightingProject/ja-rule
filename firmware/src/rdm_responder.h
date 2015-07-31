@@ -540,7 +540,7 @@ int RDMResponder_GetCommsStatus(const RDMHeader *incoming_header,
  * @param param_data The received parameter data.
  * @returns The size of the RDM response frame.
  */
-int RDMResponder_SetCommsStatus(const RDMHeader *header,
+int RDMResponder_SetCommsStatus(const RDMHeader *incoming_header,
                                 const uint8_t *param_data);
 
 /**

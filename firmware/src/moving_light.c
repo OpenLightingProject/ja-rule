@@ -58,9 +58,24 @@ typedef struct {
   bool pan_invert;
   bool tilt_invert;
   bool pan_tilt_swap;
+  bool using_factory_defaults;
 } MovingLightModel;
 
 static MovingLightModel g_moving_light;
+
+// Helper functions
+// ----------------------------------------------------------------------------
+static void MovingLightModel_ResetToFactoryDefaults() {
+  g_moving_light.lamp_state = LAMP_OFF;
+  g_moving_light.lamp_on_mode = LAMP_ON_MODE_ON;
+  g_moving_light.display_level = 255u;
+  g_moving_light.display_invert = false;
+  g_moving_light.power_state = POWER_STATE_NORMAL;
+  g_moving_light.pan_invert = false;
+  g_moving_light.tilt_invert = false;
+  g_moving_light.pan_tilt_swap = false;
+  g_moving_light.using_factory_defaults = true;
+}
 
 // PID Handlers
 // ----------------------------------------------------------------------------
@@ -80,19 +95,27 @@ int MovingLightModel_GetBool(const RDMHeader *header,
 
 int MovingLightModel_SetBool(const RDMHeader *header,
                              const uint8_t *param_data) {
+  bool *value = NULL;
   switch (ntohs(header->param_id)) {
     case PID_PAN_INVERT:
-      return RDMResponder_GenericSetBool(header, param_data,
-                                         &g_moving_light.pan_invert);
+      value = &g_moving_light.pan_invert;
+      break;
     case PID_TILT_INVERT:
-      return RDMResponder_GenericSetBool(header, param_data,
-                                         &g_moving_light.tilt_invert);
+      value = &g_moving_light.tilt_invert;
+      break;
     case PID_PAN_TILT_SWAP:
-      return RDMResponder_GenericSetBool(header, param_data,
-                                         &g_moving_light.pan_tilt_swap);
+      value = &g_moving_light.pan_tilt_swap;
+      break;
     default:
       return RDM_RESPONDER_NO_RESPONSE;
   }
+
+  bool old_value = *value;
+  int response_size = RDMResponder_GenericSetBool(header, param_data, value);
+  if (*value != old_value) {
+    g_moving_light.using_factory_defaults = false;
+  }
+  return response_size;
 }
 
 int MovingLightModel_GetUInt8(const RDMHeader *header,
@@ -116,13 +139,16 @@ int MovingLightModel_GetUInt8(const RDMHeader *header,
 
 int MovingLightModel_SetUInt8(const RDMHeader *header,
                               const uint8_t *param_data) {
-  switch (ntohs(header->param_id)) {
-    case PID_DISPLAY_LEVEL:
-      return RDMResponder_GenericSetUInt8(header, param_data,
-                                          &g_moving_light.display_level);
-    default:
-      return RDM_RESPONDER_NO_RESPONSE;
+  if (ntohs(header->param_id) != PID_DISPLAY_LEVEL) {
+    return RDM_RESPONDER_NO_RESPONSE;
   }
+  uint8_t old_value = g_moving_light.display_level;
+  int response_size = RDMResponder_GenericSetUInt8(
+      header, param_data, &g_moving_light.display_level);
+  if (g_moving_light.display_invert != old_value) {
+    g_moving_light.using_factory_defaults = false;
+  }
+  return response_size;
 }
 
 int MovingLightModel_GetUInt32(const RDMHeader *header,
@@ -162,6 +188,24 @@ int MovingLightModel_SetUInt32(const RDMHeader *header,
   }
 }
 
+int MovingLightModel_GetFactoryDefaults(const RDMHeader *header,
+                                        const uint8_t *param_data) {
+  bool using_defaults = (g_moving_light.using_factory_defaults &&
+                         g_responder->using_factory_defaults);
+  return RDMResponder_GenericGetBool(header, using_defaults);
+}
+
+int MovingLightModel_SetFactoryDefaults(const RDMHeader *header,
+                                        const uint8_t *param_data) {
+  if (header->param_data_length != 0u) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  MovingLightModel_ResetToFactoryDefaults();
+  RDMResponder_ResetToFactoryDefaults();
+  return RDMResponder_BuildSetAck(header);
+}
+
 int MovingLightModel_SetLampState(const RDMHeader *header,
                                   const uint8_t *param_data) {
   if (header->param_data_length != sizeof(uint8_t)) {
@@ -174,7 +218,9 @@ int MovingLightModel_SetLampState(const RDMHeader *header,
   if (g_moving_light.lamp_state == LAMP_OFF && param_data[0] == LAMP_ON) {
     g_moving_light.lamp_strikes++;
   }
-
+  if (g_moving_light.lamp_state != param_data[0]) {
+    g_moving_light.using_factory_defaults = false;
+  }
   g_moving_light.lamp_state = param_data[0];
   if (g_moving_light.lamp_state == LAMP_STRIKE) {
     g_moving_light.lamp_strike_time = CoarseTimer_GetTime();
@@ -191,6 +237,9 @@ int MovingLightModel_SetLampOnMode(const RDMHeader *header,
   if (param_data[0] > LAMP_ON_MODE_ON_AFTER_CAL) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
+  if (g_moving_light.lamp_on_mode != param_data[0]) {
+    g_moving_light.using_factory_defaults = false;
+  }
   g_moving_light.lamp_on_mode = param_data[0];
   return RDMResponder_BuildSetAck(header);
 }
@@ -203,6 +252,9 @@ int MovingLightModel_SetDisplayInvert(const RDMHeader *header,
 
   if (param_data[0] > DISPLAY_INVERT_AUTO) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+  if (g_moving_light.display_invert != param_data[0]) {
+    g_moving_light.using_factory_defaults = false;
   }
   g_moving_light.display_invert = param_data[0];
   return RDMResponder_BuildSetAck(header);
@@ -217,6 +269,9 @@ int MovingLightModel_SetPowerState(const RDMHeader *header,
   if (param_data[0] > POWER_STATE_NORMAL) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
+  if (g_moving_light.power_state != param_data[0]) {
+    g_moving_light.using_factory_defaults = false;
+  }
   g_moving_light.power_state = param_data[0];
   return RDMResponder_BuildSetAck(header);
 }
@@ -224,11 +279,7 @@ int MovingLightModel_SetPowerState(const RDMHeader *header,
 // Public Functions
 // ----------------------------------------------------------------------------
 void MovingLightModel_Initialize() {
-  g_moving_light.device_hours = 0u;
-  g_moving_light.lamp_hours = 0u;
-  g_moving_light.lamp_strikes = 0u;
-  g_moving_light.device_power_cycles = 0u;
-  g_moving_light.lamp_strike_time = 0u;
+  MovingLightModel_ResetToFactoryDefaults();
   g_moving_light.lamp_state = LAMP_OFF;
   g_moving_light.lamp_on_mode = LAMP_ON_MODE_ON;
   g_moving_light.display_level = 255u;
@@ -304,6 +355,8 @@ static const PIDDescriptor PID_DESCRIPTORS[] = {
     (PIDCommandHandler) NULL},
   {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0u,
     RDMResponder_SetDeviceLabel},
+  {PID_FACTORY_DEFAULTS, MovingLightModel_GetFactoryDefaults, 0u,
+    MovingLightModel_SetFactoryDefaults},
   {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0u,
     (PIDCommandHandler) NULL},
   {PID_BOOT_SOFTWARE_VERSION_ID, RDMResponder_GetBootSoftwareVersion, 0u,
