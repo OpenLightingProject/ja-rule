@@ -47,6 +47,7 @@ static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Dimmer Device";
 static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
 static const char PERSONALITY_DESCRIPTION[] = "Dimmer";
+static const uint8_t STATUS_TYPE_MASK = 0xf;
 static const uint16_t INITIAL_START_ADDRESSS = 1u;
 static const uint32_t STATUS_MESSAGE_TRIGGER_INTERVAL = 300000;  // 30s
 
@@ -245,8 +246,8 @@ void QueueStatusMessage(DimmerSubDevice *device,
                         RDMStatusMessageId status_id,
                         uint16_t data_value1,
                         uint16_t data_value2) {
-  if (device->sd_report_threshold == STATUS_NONE &&
-      (status_type & 0xf) < device->sd_report_threshold) {
+  if (device->sd_report_threshold == STATUS_NONE ||
+      (status_type & STATUS_TYPE_MASK) < device->sd_report_threshold) {
     return;
   }
 
@@ -271,7 +272,7 @@ int DimmerModel_GetStatusMessages(const RDMHeader *header,
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
 
   if (threshold == STATUS_GET_LAST_MESSAGE) {
-    // Return the last ones
+    // Return the last set of messages.
     unsigned int i = 0u;
     for (; i < g_status_messages.count; i++) {
       ptr = AddStatusMessageToResponse(ptr, &g_status_messages.last[i]);
@@ -289,7 +290,7 @@ int DimmerModel_GetStatusMessages(const RDMHeader *header,
         continue;
       }
 
-      if (threshold < (msg->status_type & 0x0f)) {
+      if (threshold < (msg->status_type & STATUS_TYPE_MASK)) {
         continue;
       }
       msg->is_active = false;
