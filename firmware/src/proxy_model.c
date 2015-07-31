@@ -98,7 +98,6 @@ void ProxyModel_Initialize() {
 
   unsigned int i = 0u;
   for (; i < NUMBER_OF_CHILDREN; i++) {
-
     ChildDevice *device = &g_children[i];
     g_responder = &device->responder;
     memcpy(g_responder->uid, parent_uid, UID_LENGTH);

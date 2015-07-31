@@ -126,9 +126,9 @@ static uint8_t *BuildSensorValueResponse(uint8_t *ptr, uint8_t index,
 }
 
 static inline uint16_t GetControlField() {
-   return (g_responder->sub_device_count ? MUTE_SUBDEVICE_FLAG : 0) |
-          (g_responder->is_managed_proxy ? MUTE_MANAGED_PROXY_FLAG : 0) |
-          (g_responder->is_proxied_device ? MUTE_PROXY_FLAG : 0);
+  return (g_responder->sub_device_count ? MUTE_SUBDEVICE_FLAG : 0) |
+         (g_responder->is_managed_proxy ? MUTE_MANAGED_PROXY_FLAG : 0) |
+         (g_responder->is_proxied_device ? MUTE_PROXY_FLAG : 0);
 }
 
 // Public Functions
