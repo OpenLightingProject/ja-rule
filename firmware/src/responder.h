@@ -46,6 +46,8 @@ typedef struct {
   uint32_t dmx_frames;
   uint32_t asc_frames;
   uint32_t rdm_frames;
+  uint32_t rdm_short_frame;
+  uint32_t rdm_length_mismatch;
   uint32_t rdm_sub_start_code_invalid;
   uint32_t rdm_msg_len_invalid;
   uint32_t rdm_param_data_len_invalid;
@@ -69,6 +71,11 @@ void Responder_Initialize();
  * @brief Reset the counters.
  */
 void Responder_ResetCounters();
+
+/**
+ * @brief Reset the COMMS_STATUS counters.
+ */
+void Responder_ResetCommsStatusCounters();
 
 /**
  * @brief Called when data is received.
@@ -95,6 +102,24 @@ static inline uint32_t Responder_ASCFrames() {
  */
 static inline uint32_t Responder_RDMFrames() {
   return g_responder_counters.rdm_frames;
+}
+
+/**
+ * @brief The number of RDM frames that were too short.
+ *
+ * See COMMS_STATUS from E1.20 for a description
+ */
+static inline uint32_t Responder_RDMShortFrame() {
+  return g_responder_counters.rdm_short_frame;
+}
+
+/**
+ * @brief The number of RDM frames that had a length mismatch.
+ *
+ * See COMMS_STATUS from E1.20 for a description
+ */
+static inline uint32_t Responder_RDMLengthMismatch() {
+  return g_responder_counters.rdm_length_mismatch;
 }
 
 /**

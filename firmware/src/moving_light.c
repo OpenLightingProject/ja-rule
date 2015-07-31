@@ -291,6 +291,8 @@ const ModelEntry MOVING_LIGHT_MODEL_ENTRY = {
 };
 
 static const PIDDescriptor PID_DESCRIPTORS[] = {
+  {PID_COMMS_STATUS, RDMResponder_GetCommsStatus, 0u,
+    RDMResponder_SetCommsStatus},
   {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0u,
     (PIDCommandHandler) NULL},
   {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0u, (PIDCommandHandler) NULL},
@@ -304,6 +306,10 @@ static const PIDDescriptor PID_DESCRIPTORS[] = {
     RDMResponder_SetDeviceLabel},
   {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0u,
     (PIDCommandHandler) NULL},
+  {PID_BOOT_SOFTWARE_VERSION_ID, RDMResponder_GetBootSoftwareVersion, 0u,
+    (PIDCommandHandler) NULL},
+  {PID_BOOT_SOFTWARE_VERSION_LABEL, RDMResponder_GetBootSoftwareVersionLabel,
+    0u, (PIDCommandHandler) NULL},
   {PID_DMX_PERSONALITY, RDMResponder_GetDMXPersonality, 0u,
     RDMResponder_SetDMXPersonality},
   {PID_DMX_PERSONALITY_DESCRIPTION, RDMResponder_GetDMXPersonalityDescription,
