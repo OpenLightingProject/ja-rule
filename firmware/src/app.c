@@ -26,6 +26,7 @@
 #include "message_handler.h"
 #include "moving_light.h"
 #include "network_model.h"
+#include "proxy_model.h"
 #include "rdm.h"
 #include "rdm_handler.h"
 #include "rdm_responder.h"
@@ -40,6 +41,7 @@
 #include "usb_transport.h"
 
 // TODO(simon): figure out how to allocate UIDs.
+// The last byte must be 0 so that we have room for the child responders.
 const uint8_t OUR_UID[UID_LENGTH] = {0x7a, 0x70, 0xff, 0xff, 0xfe, 0};
 
 void __ISR(_TIMER_2_VECTOR, ipl6) TimerEvent() {
@@ -89,6 +91,9 @@ void APP_Initialize(void) {
   // Initialize RDM Models, keep these in Model ID order.
   SimpleModel_Initialize();
   RDMHandler_AddModel(&SIMPLE_MODEL_ENTRY);
+
+  ProxyModel_Initialize();
+  RDMHandler_AddModel(&PROXY_MODEL_ENTRY);
 
   MovingLightModel_Initialize();
   RDMHandler_AddModel(&MOVING_LIGHT_MODEL_ENTRY);

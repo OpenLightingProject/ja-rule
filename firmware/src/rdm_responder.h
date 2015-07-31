@@ -292,6 +292,8 @@ typedef struct {
   bool identify_on;  //!< The identify state for the responder.
   bool using_factory_defaults;  //!< True if using factory defaults.
   bool is_subdevice;  // true if this is a subdevice.
+  bool is_managed_proxy;  // true if this is a managed proxy.
+  bool is_proxied_device;  // true if this is a proxied device.
 } RDMResponder;
 
 /**
