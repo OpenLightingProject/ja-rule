@@ -121,6 +121,7 @@ tests_responder_test_LDADD = $(TESTING_LIBS) \
                              src/librdmutil.la \
                              src/libreceivercounters.la \
                              src/libresponder.la \
+                             src/librdmutil.la \
                              mocks/libmatchers.la \
                              mocks/librdmhandlermock.la \
                              mocks/libspirgbmock.la \

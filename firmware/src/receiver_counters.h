@@ -24,8 +24,8 @@
  * @brief Counters for the DMX/RDM receiver.
  */
 
-#ifndef FIRMWARE_SRC_RECEIVIER_COUNTERS_H_
-#define FIRMWARE_SRC_RECEIVIER_COUNTERS_H_
+#ifndef FIRMWARE_SRC_RECEIVER_COUNTERS_H_
+#define FIRMWARE_SRC_RECEIVER_COUNTERS_H_
 
 #include <stdint.h>
 
@@ -182,4 +182,4 @@ static inline uint32_t ReceiverCounters_DMXMaximumSlotCount() {
  * @}
  */
 
-#endif  // FIRMWARE_SRC_RECEIVIER_COUNTERS_H_
+#endif  // FIRMWARE_SRC_RECEIVER_COUNTERS_H_
