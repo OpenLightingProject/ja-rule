@@ -34,6 +34,9 @@
 enum { NUMBER_OF_SUB_DEVICES = 4 };
 enum { NUMBER_OF_SCENES = 3 };
 enum { NUMBER_OF_LOCK_STATES = 3 };
+enum { NUMBER_OF_CURVES = 4 };
+enum { NUMBER_OF_OUTPUT_RESPONSE_TIMES = 2 };
+enum { NUMBER_OF_MODULATION_FREQUENCIES = 4 };
 enum { PERSONALITY_COUNT = 1 };
 enum { SOFTWARE_VERSION = 0x00000000 };
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Dimmer Device";
@@ -48,11 +51,29 @@ static const char LOCK_STATE_DESCRIPTION_SUBDEVICES_LOCKED[] =
 static const char LOCK_STATE_DESCRIPTION_ALL_LOCKED[] =
     "Root & subdevices locked";
 
+static const char CURVE_DESCRIPTION1[] = "Linear";
+static const char CURVE_DESCRIPTION2[] = "Modified Linear";
+static const char CURVE_DESCRIPTION3[] = "Square";
+static const char CURVE_DESCRIPTION4[] = "Modified Square";
+
+static const char OUTPUT_RESPONSE_DESCRIPTION1[] = "Fast";
+static const char OUTPUT_RESPONSE_DESCRIPTION2[] = "Slow";
+
+static const char MODULATION_FREQUENCY_DESCRIPTION1[] = "50Hz";
+static const char MODULATION_FREQUENCY_DESCRIPTION2[] = "60Hz";
+static const char MODULATION_FREQUENCY_DESCRIPTION3[] = "1kHz";
+static const char MODULATION_FREQUENCY_DESCRIPTION4[] = "2kHz";
+
 enum {
   LOCK_STATE_UNLOCKED = 0x0000,
   LOCK_STATE_SUBDEVICES_LOCKED = 0x0001,
   LOCK_STATE_ALL_LOCKED = 0x0002,
 };
+
+typedef struct {
+  uint32_t frequency;
+  const char *description;
+} ModulationFrequency;
 
 typedef struct {
   uint16_t up_fade_time;
@@ -91,8 +112,15 @@ typedef struct {
   RDMResponder responder;
 
   uint16_t index;
+  uint16_t min_level_increasing;
+  uint16_t min_level_decreasing;
+  uint16_t max_level;
+  uint8_t on_below_min;
   uint8_t identify_mode;
   uint8_t burn_in;
+  uint8_t curve;
+  uint8_t output_response_time;
+  uint8_t modulation_frequency;
 } DimmerSubDevice;
 
 static DimmerSubDevice g_subdevices[NUMBER_OF_SUB_DEVICES];
@@ -101,6 +129,38 @@ static const char* LOCK_STATES[NUMBER_OF_LOCK_STATES] = {
   LOCK_STATE_DESCRIPTION_UNLOCKED,
   LOCK_STATE_DESCRIPTION_SUBDEVICES_LOCKED,
   LOCK_STATE_DESCRIPTION_ALL_LOCKED
+};
+
+static const char* DIMMER_CURVES[NUMBER_OF_CURVES] = {
+  CURVE_DESCRIPTION1,
+  CURVE_DESCRIPTION2,
+  CURVE_DESCRIPTION3,
+  CURVE_DESCRIPTION4,
+};
+
+static const char* OUTPUT_RESPONSE_TIMES[NUMBER_OF_OUTPUT_RESPONSE_TIMES] = {
+  OUTPUT_RESPONSE_DESCRIPTION1,
+  OUTPUT_RESPONSE_DESCRIPTION2,
+};
+
+static const ModulationFrequency
+MODULATION_FREQUENCY[NUMBER_OF_MODULATION_FREQUENCIES] = {
+  {
+    .frequency = 50u,
+    .description = MODULATION_FREQUENCY_DESCRIPTION1,
+  },
+  {
+    .frequency = 60u,
+    .description = MODULATION_FREQUENCY_DESCRIPTION2,
+  },
+  {
+    .frequency = 1000u,
+    .description = MODULATION_FREQUENCY_DESCRIPTION3,
+  },
+  {
+    .frequency = 2000u,
+    .description = MODULATION_FREQUENCY_DESCRIPTION4,
+  },
 };
 
 static const ResponderDefinition ROOT_RESPONDER_DEFINITION;
@@ -528,6 +588,181 @@ int DimmerModel_SetBurnIn(const RDMHeader *header,
                                       &g_active_device->burn_in);
 }
 
+int DimmerModel_GetDimmerInfo(const RDMHeader *header,
+                              UNUSED const uint8_t *param_data) {
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  ptr = PushUInt16(ptr, 0u);  // min level lower
+  ptr = PushUInt16(ptr, 0xfffe);  // min level upper
+  ptr = PushUInt16(ptr, 0u);  // max level lower
+  ptr = PushUInt16(ptr, 0xfffe);  // max level upper
+  *ptr++ = NUMBER_OF_CURVES;
+  *ptr++ = 8u;  // level resolution
+  *ptr++ = 1u;  // split levels supported
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
+int DimmerModel_GetMinimumLevel(const RDMHeader *header,
+                                UNUSED const uint8_t *param_data) {
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  ptr = PushUInt16(ptr, g_active_device->min_level_increasing);
+  ptr = PushUInt16(ptr, g_active_device->min_level_decreasing);
+  *ptr++ = g_active_device->on_below_min;
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
+int DimmerModel_SetMinimumLevel(const RDMHeader *header,
+                                const uint8_t *param_data) {
+  if (header->param_data_length != 2u * sizeof(uint16_t) + sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  const uint16_t min_level_increasing = ExtractUInt16(&param_data[0]);
+  const uint16_t min_level_decreasing = ExtractUInt16(&param_data[2]);
+  const uint8_t on_below_min = param_data[4];
+
+  if (on_below_min > 1) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  g_active_device->min_level_increasing = min_level_increasing;
+  g_active_device->min_level_decreasing = min_level_decreasing;
+  g_active_device->on_below_min = on_below_min;
+  return RDMResponder_BuildSetAck(header);
+}
+
+int DimmerModel_GetMaximumLevel(const RDMHeader *header,
+                                UNUSED const uint8_t *param_data) {
+  return RDMResponder_GenericGetUInt16(header, g_active_device->max_level);
+}
+
+int DimmerModel_SetMaximumLevel(const RDMHeader *header,
+                                const uint8_t *param_data) {
+  return RDMResponder_GenericSetUInt16(header, param_data,
+                                       &g_active_device->max_level);
+}
+
+int DimmerModel_GetCurve(const RDMHeader *header,
+                         UNUSED const uint8_t *param_data) {
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  *ptr++ = g_active_device->curve;
+  *ptr++ = NUMBER_OF_CURVES;
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
+int DimmerModel_SetCurve(const RDMHeader *header,
+                         const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  const uint8_t curve = param_data[0];
+  if (curve == 0u || curve > NUMBER_OF_CURVES) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  // To make it interesting, not every sub-device supports each curve type.
+  if (curve % 2 && g_active_device->index % 2 == 0) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  g_active_device->curve = curve;
+  return RDMResponder_BuildSetAck(header);
+}
+
+int DimmerModel_GetCurveDescription(const RDMHeader *header,
+                                    UNUSED const uint8_t *param_data) {
+  const uint8_t curve = param_data[0];
+  if (curve == 0u || curve > NUMBER_OF_CURVES) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  *ptr++ = curve;
+  ptr += RDMUtil_StringCopy((char*) ptr, RDM_DEFAULT_STRING_SIZE,
+                            DIMMER_CURVES[curve - 1],
+                            RDM_DEFAULT_STRING_SIZE);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
+int DimmerModel_GetOutputResponseTime(const RDMHeader *header,
+                                      UNUSED const uint8_t *param_data) {
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  *ptr++ = g_active_device->output_response_time;
+  *ptr++ = NUMBER_OF_OUTPUT_RESPONSE_TIMES;
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
+int DimmerModel_SetOutputResponseTime(const RDMHeader *header,
+                                      const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  const uint8_t setting = param_data[0];
+  if (setting == 0u || setting > NUMBER_OF_OUTPUT_RESPONSE_TIMES) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  g_active_device->output_response_time = setting;
+  return RDMResponder_BuildSetAck(header);
+}
+
+int DimmerModel_GetOutputResponseDescription(const RDMHeader *header,
+                                             UNUSED const uint8_t *param_data) {
+  const uint8_t setting = param_data[0];
+  if (setting == 0u || setting > NUMBER_OF_OUTPUT_RESPONSE_TIMES) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  *ptr++ = setting;
+  ptr += RDMUtil_StringCopy((char*) ptr, RDM_DEFAULT_STRING_SIZE,
+                            OUTPUT_RESPONSE_TIMES[setting - 1],
+                            RDM_DEFAULT_STRING_SIZE);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
+int DimmerModel_GetModulationFrequency(const RDMHeader *header,
+                                       UNUSED const uint8_t *param_data) {
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  *ptr++ = g_active_device->modulation_frequency;
+  *ptr++ = NUMBER_OF_MODULATION_FREQUENCIES;
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
+int DimmerModel_SetModulationFrequency(const RDMHeader *header,
+                                       const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  const uint8_t setting = param_data[0];
+  if (setting == 0u || setting > NUMBER_OF_MODULATION_FREQUENCIES) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  g_active_device->modulation_frequency = setting;
+  return RDMResponder_BuildSetAck(header);
+}
+
+int DimmerModel_GetModulationFrequencyDescription(
+    const RDMHeader *header,
+    UNUSED const uint8_t *param_data) {
+  const uint8_t setting = param_data[0];
+  if (setting == 0u || setting > NUMBER_OF_MODULATION_FREQUENCIES) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  const ModulationFrequency *frequency = &MODULATION_FREQUENCY[setting - 1];
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  *ptr++ = setting;
+  ptr = PushUInt32(ptr, frequency->frequency);
+  ptr += RDMUtil_StringCopy((char*) ptr, RDM_DEFAULT_STRING_SIZE,
+                            frequency->description,
+                            RDM_DEFAULT_STRING_SIZE);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
 // Public Functions
 // ----------------------------------------------------------------------------
 void DimmerModel_Initialize() {
@@ -569,8 +804,15 @@ void DimmerModel_Initialize() {
     subdevice->responder.def = &SUBDEVICE_RESPONDER_DEFINITION;
 
     subdevice->index = sub_device_index++;
+    subdevice->min_level_increasing = 0u;
+    subdevice->min_level_decreasing = 0u;
+    subdevice->max_level = 0u;
+    subdevice->on_below_min = 0u;
     subdevice->identify_mode = IDENTIFY_MODE_QUIET;
     subdevice->burn_in = 0u;
+    subdevice->curve = 1u;
+    subdevice->output_response_time = 1u;
+    subdevice->modulation_frequency = 1u;
 
     g_responder = &subdevice->responder;
     memcpy(g_responder->uid, temp->uid, UID_LENGTH);
@@ -766,7 +1008,25 @@ static const PIDDescriptor SUBDEVICE_PID_DESCRIPTORS[] = {
     RDMResponder_SetIdentifyDevice},
   {PID_BURN_IN, DimmerModel_GetBurnIn, 0, DimmerModel_SetBurnIn},
   {PID_IDENTIFY_MODE, DimmerModel_GetIdentifyMode, 0,
-    DimmerModel_SetIdentifyMode}
+    DimmerModel_SetIdentifyMode},
+  {PID_DIMMER_INFO, DimmerModel_GetDimmerInfo, 0,
+    (PIDCommandHandler) NULL},
+  {PID_MINIMUM_LEVEL, DimmerModel_GetMinimumLevel, 0,
+    DimmerModel_SetMinimumLevel},
+  {PID_MAXIMUM_LEVEL, DimmerModel_GetMaximumLevel, 0,
+    DimmerModel_SetMaximumLevel},
+  {PID_CURVE, DimmerModel_GetCurve, 0, DimmerModel_SetCurve},
+  {PID_CURVE_DESCRIPTION, DimmerModel_GetCurveDescription, 1u,
+    (PIDCommandHandler) NULL},
+  {PID_OUTPUT_RESPONSE_TIME, DimmerModel_GetOutputResponseTime, 0,
+    DimmerModel_SetOutputResponseTime},
+  {PID_OUTPUT_RESPONSE_TIME_DESCRIPTION,
+    DimmerModel_GetOutputResponseDescription, 1u, (PIDCommandHandler) NULL},
+  {PID_MODULATION_FREQUENCY, DimmerModel_GetModulationFrequency, 0,
+    DimmerModel_SetModulationFrequency},
+  {PID_MODULATION_FREQUENCY_DESCRIPTION,
+    DimmerModel_GetModulationFrequencyDescription, 1u,
+    (PIDCommandHandler) NULL},
 };
 
 static const ProductDetailIds SUBDEVICE_PRODUCT_DETAIL_ID_LIST = {

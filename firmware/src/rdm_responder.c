@@ -412,6 +412,16 @@ int RDMResponder_GenericGetUInt16(const RDMHeader *header, uint16_t value) {
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
+int RDMResponder_GenericSetUInt16(const RDMHeader *header,
+                                  const uint8_t *param_data,
+                                  uint16_t *value) {
+  if (header->param_data_length != sizeof(uint16_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  *value = ExtractUInt16(param_data);
+  return RDMResponder_BuildSetAck(header);
+}
+
 int RDMResponder_GenericGetUInt32(const RDMHeader *header, uint32_t value) {
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt32(ptr, value);

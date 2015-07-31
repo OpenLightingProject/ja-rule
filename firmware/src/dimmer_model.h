@@ -24,7 +24,7 @@
  * @brief An RDM Model for a dimmer with subdevices.
  *
  * This model simulates a dimmer with different subdevices, one per dimmer
- * module. The model implements many of the PIDs from E1.37-1.
+ * module. The model implements all of the PIDs from E1.37-1.
  *
  * ### Sub-devices
  *
@@ -33,6 +33,12 @@
  *
  * DMX_BLOCK_ADDRESS can be used to set the start address of all sub-devices in
  * a single operation.
+ *
+ * ### Dimmer Settings
+ *
+ * Each sub-device implements the PIDs from Section 4 of E1.37-1. To make
+ * things interesting, not all sub-devices support all the dimmer curves /
+ * modulation frequencies.
  *
  * ### Presets & Scenes.
  *

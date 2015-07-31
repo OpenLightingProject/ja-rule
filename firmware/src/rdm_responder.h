@@ -481,6 +481,17 @@ int RDMResponder_GenericGetUInt16(const RDMHeader *incoming_header,
                                   uint16_t value);
 
 /**
+ * @brief Handle a request to set a uint16_t value.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @param value The uint16_t value to set.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GenericSetUInt16(const RDMHeader *incoming_header,
+                                  const uint8_t *param_data,
+                                  uint16_t *value);
+
+/**
  * @brief Handle a request to get a uint32_t value.
  * @param incoming_header The header of the incoming frame.
  * @param value The unsigned int value
