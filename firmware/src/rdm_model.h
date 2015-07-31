@@ -79,7 +79,12 @@ typedef enum {
   /**
    * @brief A responder that acts as a dimmer with sub-devices.
    */
-  DIMMER_MODEL_ID = 0x0105
+  DIMMER_MODEL_ID = 0x0105,
+
+  /**
+   * @brief A responder that sits behind the PROXY_MODEL_ID device.
+   */
+  PROXY_CHILD_MODEL_ID = 0x0106,
 } ResponderModel;
 
 /**

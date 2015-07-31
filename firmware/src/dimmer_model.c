@@ -167,8 +167,8 @@ static const ResponderDefinition ROOT_RESPONDER_DEFINITION;
 static const ResponderDefinition SUBDEVICE_RESPONDER_DEFINITION;
 
 
-RootDevice g_root_device;
-DimmerSubDevice *g_active_device = NULL;
+static RootDevice g_root_device;
+static DimmerSubDevice *g_active_device = NULL;
 
 // Helper functions
 // ----------------------------------------------------------------------------
