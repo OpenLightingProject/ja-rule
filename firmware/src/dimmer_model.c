@@ -59,10 +59,10 @@ static const char CURVE_DESCRIPTION4[] = "Modified Square";
 static const char OUTPUT_RESPONSE_DESCRIPTION1[] = "Fast";
 static const char OUTPUT_RESPONSE_DESCRIPTION2[] = "Slow";
 
-static const char MODULATION_FREQUENCY_DESCRIPTION1[] = "50 Hz";
-static const char MODULATION_FREQUENCY_DESCRIPTION2[] = "60 Hz";
-static const char MODULATION_FREQUENCY_DESCRIPTION3[] = "1000 Hz";
-static const char MODULATION_FREQUENCY_DESCRIPTION4[] = "2000 Hz";
+static const char MODULATION_FREQUENCY_DESCRIPTION1[] = "50Hz";
+static const char MODULATION_FREQUENCY_DESCRIPTION2[] = "60Hz";
+static const char MODULATION_FREQUENCY_DESCRIPTION3[] = "1kHz";
+static const char MODULATION_FREQUENCY_DESCRIPTION4[] = "2kHz";
 
 enum {
   LOCK_STATE_UNLOCKED = 0x0000,
