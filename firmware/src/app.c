@@ -107,7 +107,7 @@ void APP_Initialize(void) {
   StreamDecoder_Initialize(NULL);
 
   Flags_Initialize();
-
+  
   // SPI DMX Output
   SPIRGBConfiguration spi_config;
   spi_config.module_id = SPI_ID_1;

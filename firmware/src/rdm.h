@@ -123,6 +123,11 @@ static const uint16_t MUTE_PROXY_FLAG = 0x08;
 enum { RDM_DEFAULT_STRING_SIZE = 32 };
 
 /**
+ * @brief The size of the language strings used in RDM.
+ */
+enum { RDM_LANGUAGE_STRING_SIZE = 2 };
+
+/**
  * @brief The size of a DUB response.
  */
 enum { DUB_RESPONSE_LENGTH = 24 };
