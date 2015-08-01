@@ -278,10 +278,10 @@ void QueueStatusMessage(StatusMessage *message,
 }
 
 void QueueSubDeviceStatusMessage(DimmerSubDevice *device,
-                        RDMStatusType status_type,
-                        RDMStatusMessageId status_id,
-                        uint16_t data_value1,
-                        uint16_t data_value2) {
+                                 RDMStatusType status_type,
+                                 RDMStatusMessageId status_id,
+                                 uint16_t data_value1,
+                                 uint16_t data_value2) {
   if (device->sd_report_threshold == STATUS_NONE ||
       (status_type & STATUS_TYPE_MASK) < device->sd_report_threshold) {
     return;
@@ -403,7 +403,7 @@ int DimmerModel_PerformSelfTest(const RDMHeader *header,
 int DimmerModel_GetSelfTestDescription(const RDMHeader *header,
                                        UNUSED const uint8_t *param_data) {
   const uint8_t self_test_id = param_data[0];
-  if (self_test_id == 0 || self_test_id > NUMBER_OF_SELF_TESTS) {
+  if (self_test_id == SELF_TEST_OFF || self_test_id > NUMBER_OF_SELF_TESTS) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -1067,14 +1067,14 @@ void DimmerModel_Initialize() {
   g_responder = temp;
   if (!ResetToBlockAddress(INITIAL_START_ADDRESSS)) {
     // Set them all to 1
-    for (i = 0; i < NUMBER_OF_SUB_DEVICES; i++) {
+    for (i = 0u; i < NUMBER_OF_SUB_DEVICES; i++) {
       RDMResponder *responder = &g_subdevices[i].responder;
       responder->dmx_start_address = INITIAL_START_ADDRESSS;
     }
   }
 
   // init status messages
-  g_status_messages.count = 0;
+  g_status_messages.count = 0u;
 }
 
 static void DimmerModel_Activate() {
@@ -1161,8 +1161,8 @@ static int DimmerModel_HandleRequest(const RDMHeader *header,
  */
 static void DimmerModel_Tasks() {
   // The cycle counter is used to generate status messages for each sub device.
-  static uint8_t cycle = 0;
-  static uint16_t complete_cycles = 0;
+  static uint8_t cycle = 0u;
+  static uint16_t complete_cycles = 0u;
 
   if (g_root_device.running_self_test &&
       CoarseTimer_HasElapsed(
@@ -1175,7 +1175,7 @@ static void DimmerModel_Tasks() {
             STS_OLP_SELFTEST_PASSED : STS_OLP_SELFTEST_FAILED),
         g_root_device.running_self_test, 0u);
 
-    g_root_device.running_self_test = 0;
+    g_root_device.running_self_test = 0u;
   }
 
   if (!CoarseTimer_HasElapsed(g_root_device.status_message_timer,
@@ -1219,7 +1219,7 @@ static void DimmerModel_Tasks() {
     }
   }
   cycle++;
-  cycle %= 5;
+  cycle %= 5u;
   if (cycle == 0u) {
     complete_cycles++;
   }
@@ -1317,38 +1317,38 @@ static const PIDDescriptor SUBDEVICE_PID_DESCRIPTORS[] = {
   {PID_SUB_DEVICE_STATUS_REPORT_THRESHOLD,
     DimmerModel_GetSubDeviceReportingThreshold, 1u,
     DimmerModel_SetSubDeviceReportingThreshold},
-  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0,
+  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0, (PIDCommandHandler) NULL},
-  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0,
+  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0u, (PIDCommandHandler) NULL},
+  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0,
+  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0u,
     (PIDCommandHandler) NULL},
-  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0,
+  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DMX_START_ADDRESS, RDMResponder_GetDMXStartAddress, 0,
+  {PID_DMX_START_ADDRESS, RDMResponder_GetDMXStartAddress, 0u,
     RDMResponder_SetDMXStartAddress},
-  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0,
+  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0,
+  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0u,
     RDMResponder_SetIdentifyDevice},
-  {PID_BURN_IN, DimmerModel_GetBurnIn, 0, DimmerModel_SetBurnIn},
-  {PID_IDENTIFY_MODE, DimmerModel_GetIdentifyMode, 0,
+  {PID_BURN_IN, DimmerModel_GetBurnIn, 0u, DimmerModel_SetBurnIn},
+  {PID_IDENTIFY_MODE, DimmerModel_GetIdentifyMode, 0u,
     DimmerModel_SetIdentifyMode},
-  {PID_DIMMER_INFO, DimmerModel_GetDimmerInfo, 0,
+  {PID_DIMMER_INFO, DimmerModel_GetDimmerInfo, 0u,
     (PIDCommandHandler) NULL},
-  {PID_MINIMUM_LEVEL, DimmerModel_GetMinimumLevel, 0,
+  {PID_MINIMUM_LEVEL, DimmerModel_GetMinimumLevel, 0u,
     DimmerModel_SetMinimumLevel},
-  {PID_MAXIMUM_LEVEL, DimmerModel_GetMaximumLevel, 0,
+  {PID_MAXIMUM_LEVEL, DimmerModel_GetMaximumLevel, 0u,
     DimmerModel_SetMaximumLevel},
-  {PID_CURVE, DimmerModel_GetCurve, 0, DimmerModel_SetCurve},
+  {PID_CURVE, DimmerModel_GetCurve, 0u, DimmerModel_SetCurve},
   {PID_CURVE_DESCRIPTION, DimmerModel_GetCurveDescription, 1u,
     (PIDCommandHandler) NULL},
-  {PID_OUTPUT_RESPONSE_TIME, DimmerModel_GetOutputResponseTime, 0,
+  {PID_OUTPUT_RESPONSE_TIME, DimmerModel_GetOutputResponseTime, 0u,
     DimmerModel_SetOutputResponseTime},
   {PID_OUTPUT_RESPONSE_TIME_DESCRIPTION,
     DimmerModel_GetOutputResponseDescription, 1u, (PIDCommandHandler) NULL},
-  {PID_MODULATION_FREQUENCY, DimmerModel_GetModulationFrequency, 0,
+  {PID_MODULATION_FREQUENCY, DimmerModel_GetModulationFrequency, 0u,
     DimmerModel_SetModulationFrequency},
   {PID_MODULATION_FREQUENCY_DESCRIPTION,
     DimmerModel_GetModulationFrequencyDescription, 1u,
