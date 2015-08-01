@@ -56,6 +56,7 @@ typedef struct {
   uint32_t lamp_strikes;
   uint32_t device_power_cycles;
   CoarseTimer_Value lamp_strike_time;
+  CoarseTimer_Value clock_timer;
   uint8_t lamp_state;
   uint8_t lamp_on_mode;
   uint8_t display_level;
@@ -67,7 +68,6 @@ typedef struct {
   bool pan_tilt_swap;
 
   // The Clock
-  CoarseTimer_Value clock_timer;
   uint16_t year;
   uint8_t month;
   uint8_t day;
@@ -112,7 +112,7 @@ uint8_t DaysInMonth(uint16_t year, uint8_t month) {
     case 6:
     case 9:
     case 11:
-      return 31;
+      return 30;
       break;
     default:
       return 0;
@@ -121,7 +121,7 @@ uint8_t DaysInMonth(uint16_t year, uint8_t month) {
 
 // PID Handlers
 // ----------------------------------------------------------------------------
-int MovingLightModel_GetLanguageCapabilties(const RDMHeader *header,
+int MovingLightModel_GetLanguageCapabilities(const RDMHeader *header,
                                             UNUSED const uint8_t *param_data) {
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   unsigned int i = 0;
@@ -496,7 +496,7 @@ static const PIDDescriptor PID_DESCRIPTORS[] = {
     (PIDCommandHandler) NULL},
   {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0u,
     RDMResponder_SetDeviceLabel},
-  {PID_LANGUAGE_CAPABILITIES, MovingLightModel_GetLanguageCapabilties, 0u,
+  {PID_LANGUAGE_CAPABILITIES, MovingLightModel_GetLanguageCapabilities, 0u,
     (PIDCommandHandler) NULL},
   {PID_LANGUAGE, MovingLightModel_GetLanguage, 0u,
     MovingLightModel_SetLanguage},
