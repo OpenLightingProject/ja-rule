@@ -23,8 +23,19 @@
  * @file proxy_model.h
  * @brief An RDM Model for a proxy.
  *
- * This model simulates a proxy with two responders behind it.
+ * This model simulates a proxy with two responders (children) behind it, this
+ * is a fairly typical setup when wireless DMX equipment is used.
  *
+ * The proxy will ACK_TIMER any requests sent to the child devices. The
+ * responses can then be fetched by sendint a GET QUEUED_MESSAGE to the
+ * appropriate child device.
+ *
+ * Only a single response per-device will the buffered, if other requests are
+ * sent before a GET QUEUED_MESSAGE has been issued, the proxy will respond
+ * with NR_PROXY_BUFFER_FULL.
+ *
+ * The last message can be retrieved with GET QUEUED_MESSAGE
+ * (STATUS_GET_LAST_MESSAGE).
  */
 
 #ifndef FIRMWARE_SRC_PROXY_MODEL_H_
