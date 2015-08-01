@@ -590,6 +590,11 @@ typedef enum {
 } RDMDisplayInvert;
 
 typedef enum {
+  SELF_TEST_OFF = 0x00,
+  SELF_TEST_ALL = 0xff,
+} RDMSelfTest;
+
+typedef enum {
   POWER_STATE_FULL_OFF = 0x00,
   POWER_STATE_SHUTDOWN = 0x01,
   POWER_STATE_STANDBY = 0x02,
@@ -815,6 +820,12 @@ typedef enum {
   STS_DMXNSCERROR = 0x0082,
   STS_DMXNSC_OK = 0x0083,
 } RDMStatusMessageId;
+
+typedef enum {
+  STS_OLP_TESTING = 0x8000,
+  STS_OLP_SELFTEST_PASSED = 0x8001,
+  STS_OLP_SELFTEST_FAILED = 0x8002,
+} OpenLightingStatusIdType;
 
 #ifdef __cplusplus
 }
