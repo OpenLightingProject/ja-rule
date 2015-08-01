@@ -67,6 +67,9 @@ typedef struct {
 
 static InternalResponderState g_internal_state;
 
+// Helper functions
+// ----------------------------------------------------------------------------
+
 /*
  * @brief Get the current personality.
  * @returns The current personality definition, or NULL if there isn't one.
@@ -127,6 +130,12 @@ static uint8_t *BuildSensorValueResponse(uint8_t *ptr, uint8_t index,
   return ptr;
 }
 
+static inline uint16_t GetControlField() {
+  return (g_responder->sub_device_count ? MUTE_SUBDEVICE_FLAG : 0) |
+         (g_responder->is_managed_proxy ? MUTE_MANAGED_PROXY_FLAG : 0) |
+         (g_responder->is_proxied_device ? MUTE_PROXY_FLAG : 0);
+}
+
 // Public Functions
 // ----------------------------------------------------------------------------
 void RDMResponder_Initialize(const RDMResponderSettings *settings) {
@@ -152,6 +161,8 @@ void RDMResponder_Initialize(const RDMResponderSettings *settings) {
   memcpy(g_responder->uid, settings->uid, UID_LENGTH);
   g_responder->def = NULL;
   g_responder->is_subdevice = false;
+  g_responder->is_managed_proxy = false;
+  g_responder->is_proxied_device = false;
   RDMResponder_ResetToFactoryDefaults();
 }
 
@@ -454,8 +465,7 @@ int RDMResponder_SetMute(const RDMHeader *header) {
   ReturnUnlessUnicast(header);
 
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
-  ptr = PushUInt16(ptr,
-                   g_responder->sub_device_count ? MUTE_SUBDEVICE_FLAG : 0);
+  ptr = PushUInt16(ptr, GetControlField());
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
@@ -472,8 +482,7 @@ int RDMResponder_SetUnMute(const RDMHeader *header) {
   ReturnUnlessUnicast(header);
 
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
-  ptr = PushUInt16(ptr,
-                   g_responder->sub_device_count ? MUTE_SUBDEVICE_FLAG : 0);
+  ptr = PushUInt16(ptr, GetControlField());
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 

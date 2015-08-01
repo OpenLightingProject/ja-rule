@@ -167,6 +167,11 @@ static const uint8_t ALL_SENSORS = 0xffu;
 static const uint16_t SENSOR_VALUE_UNSUPPORTED = 0u;
 
 /*
+ * @brief The maximum number of status messages per frame.
+ */
+static const unsigned int MAX_STATUS_MESSAGES_PER_FRAME = 21u;
+
+/*
  * @brief The maximum number of slot info entries in a RDM frame.
  */
 static const unsigned int MAX_SLOT_INFO_PER_FRAME = 46u;
@@ -399,6 +404,16 @@ typedef enum {
   NR_ENDPOINT_NUMBER_INVALID = 0x0011
 } RDMNackReason;
 
+typedef enum {
+  STATUS_NONE = 0x0,
+  STATUS_GET_LAST_MESSAGE = 0x1,
+  STATUS_ADVISORY = 0x2,
+  STATUS_WARNING = 0x3,
+  STATUS_ERROR = 0x4,
+  STATUS_ADVISORY_CLEARED = 0x12,
+  STATUS_WARNING_CLEARED = 0x13,
+  STATUS_ERROR_CLEARED = 0x14,
+} RDMStatusType;
 
 /**
  * @brief RDM Product Category codes from E1.20.
@@ -735,7 +750,6 @@ typedef enum {
   SD_UNDEFINED = 0xffff,
 } RDMSlotCategory;
 
-
 typedef enum {
   IDENTIFY_MODE_QUIET = 0x00,
   IDENTIFY_MODE_LOUD = 0xff,
@@ -759,6 +773,48 @@ typedef enum {
   MERGE_MODE_DMX_ONLY = 0x03,
   MERGE_MODE_OTHER = 0xff,
 } RDMMergeMode;
+
+typedef enum {
+  STS_CAL_FAIL = 0x0001,
+  STS_SENS_NOT_FOUND = 0x0002,
+  STS_SENS_ALWAYS_ON = 0x0003,
+  STS_FEEDBACK_ERROR = 0x0004,
+  STS_INDEX_ERROR = 0x0005,
+  STS_LAMP_DOUSED = 0x0011,
+  STS_LAMP_STRIKE = 0x0012,
+  STS_LAMP_ACCESS_OPEN = 0x0013,
+  STS_LAMP_ALWAYS_ON = 0x0014,
+  STS_OVERTEMP = 0x0021,
+  STS_UNDERTEMP = 0x0022,
+  STS_SENS_OUT_RANGE = 0x0023,
+  STS_OVERVOLTAGE_PHASE = 0x0031,
+  STS_UNDERVOLTAGE_PHASE = 0x0032,
+  STS_OVERCURRENT = 0x0033,
+  STS_UNDERCURRENT = 0x0034,
+  STS_PHASE = 0x0035,
+  STS_PHASE_ERROR = 0x0036,
+  STS_AMPS = 0x0037,
+  STS_VOLTS = 0x0038,
+  STS_DIMSLOT_OCCUPIED = 0x0041,
+  STS_BREAKER_TRIP = 0x0042,
+  STS_WATTS = 0x0043,
+  STS_DIM_FAILURE = 0x0044,
+  STS_DIM_PANIC = 0x0045,
+  STS_LOAD_FAILURE = 0x0046,
+  STS_READY = 0x0050,
+  STS_NOT_READY = 0x0051,
+  STS_LOW_FLUID = 0x0052,
+  STS_EEPROM_ERROR = 0x0060,
+  STS_RAM_ERROR = 0x0061,
+  STS_FPGA_ERROR = 0x0062,
+  STS_PROXY_BROADCAST_DROPPED = 0x0070,
+  STS_ASC_RXOK = 0x0071,
+  STS_ASC_DROPPED = 0x0072,
+  STS_DMXNSCNONE = 0x0080,
+  STS_DMXNSCLOSS = 0x0081,
+  STS_DMXNSCERROR = 0x0082,
+  STS_DMXNSC_OK = 0x0083,
+} RDMStatusMessageId;
 
 #ifdef __cplusplus
 }
