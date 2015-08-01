@@ -49,6 +49,14 @@
  * DMX_FAIL_MODE and DMX_STARTUP_MODE can be used to change the on-failure and
  * on-startup scenes.
  *
+ * ### Status Messages
+ *
+ * Sub devices 1 & 3 will periodically queue status messages, which can be
+ * collected using the STATUS_MESSAGE PID. Subdevice 3 uses a manufacturer
+ * defined status_id, and the string can be retrieved with
+ * STATUS_ID_DESCRIPTION. Status messages from the individual sub devices can
+ * be suppressed with SUB_DEVICE_STATUS_REPORT_THRESHOLD.
+ *
  * ### Lock PIN
  *
  * The root device implements the LOCK_PIN, LOCK_STATE & LOCK_STATE_DESCRIPTION

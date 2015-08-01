@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 
+#include "coarse_timer.h"
 #include "constants.h"
 #include "macros.h"
 #include "rdm_frame.h"
@@ -27,6 +28,8 @@
 #include "rdm_responder.h"
 #include "rdm_util.h"
 #include "utils.h"
+
+#include <syslog.h>
 
 #include <system_config.h>
 
@@ -37,13 +40,16 @@ enum { NUMBER_OF_LOCK_STATES = 3 };
 enum { NUMBER_OF_CURVES = 4 };
 enum { NUMBER_OF_OUTPUT_RESPONSE_TIMES = 2 };
 enum { NUMBER_OF_MODULATION_FREQUENCIES = 4 };
+enum { STATUS_MESSAGE_QUEUE_SIZE = 4 };
 enum { PERSONALITY_COUNT = 1 };
 enum { SOFTWARE_VERSION = 0x00000000 };
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Dimmer Device";
 static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
 static const char PERSONALITY_DESCRIPTION[] = "Dimmer";
+static const uint8_t STATUS_TYPE_MASK = 0xf;
 static const uint16_t INITIAL_START_ADDRESSS = 1u;
+static const uint32_t STATUS_MESSAGE_TRIGGER_INTERVAL = 300000;  // 30s
 
 static const char LOCK_STATE_DESCRIPTION_UNLOCKED[] = "Unlocked";
 static const char LOCK_STATE_DESCRIPTION_SUBDEVICES_LOCKED[] =
@@ -64,6 +70,9 @@ static const char MODULATION_FREQUENCY_DESCRIPTION2[] = "60Hz";
 static const char MODULATION_FREQUENCY_DESCRIPTION3[] = "1kHz";
 static const char MODULATION_FREQUENCY_DESCRIPTION4[] = "2kHz";
 
+static const uint16_t STS_TESTING = 0x8000;
+static const char STS_TESTING_DESCRIPTION[] = "Counter cycle %d.%d";
+
 enum {
   LOCK_STATE_UNLOCKED = 0x0000,
   LOCK_STATE_SUBDEVICES_LOCKED = 0x0001,
@@ -83,12 +92,22 @@ typedef struct {
 } Scene;
 
 typedef struct {
+  uint16_t sub_device;
+  uint16_t message_id;
+  uint16_t data_value1;
+  uint16_t data_value2;
+  RDMStatusType status_type;
+  bool is_active;
+} StatusMessage;
+
+typedef struct {
   /*
    * @brief Since 0 means 'off', scene numbers are indexed from 1.
    *
    * Remember this when using the array.
    */
   Scene scenes[NUMBER_OF_SCENES];
+  CoarseTimer_Value status_message_timer;
 
   uint16_t playback_mode;
   uint16_t startup_scene;
@@ -110,6 +129,7 @@ typedef struct {
 
 typedef struct {
   RDMResponder responder;
+  StatusMessage status_message;
 
   uint16_t index;
   uint16_t min_level_increasing;
@@ -121,7 +141,13 @@ typedef struct {
   uint8_t curve;
   uint8_t output_response_time;
   uint8_t modulation_frequency;
+  RDMStatusType sd_report_threshold;
 } DimmerSubDevice;
+
+typedef struct {
+  StatusMessage last[STATUS_MESSAGE_QUEUE_SIZE];
+  uint8_t count;
+} StatusMessages;
 
 static DimmerSubDevice g_subdevices[NUMBER_OF_SUB_DEVICES];
 
@@ -166,6 +192,8 @@ MODULATION_FREQUENCY[NUMBER_OF_MODULATION_FREQUENCIES] = {
 static const ResponderDefinition ROOT_RESPONDER_DEFINITION;
 static const ResponderDefinition SUBDEVICE_RESPONDER_DEFINITION;
 
+static StatusMessages g_status_messages;
+
 
 static RootDevice g_root_device;
 static DimmerSubDevice *g_active_device = NULL;
@@ -203,8 +231,99 @@ bool ResetToBlockAddress(uint16_t start_address) {
   return true;
 }
 
+uint8_t *AddStatusMessageToResponse(uint8_t *ptr,
+                                    const StatusMessage *message) {
+  ptr = PushUInt16(ptr, message->sub_device);
+  *ptr++ = message->status_type;
+  ptr = PushUInt16(ptr, message->message_id);
+  ptr = PushUInt16(ptr, message->data_value1);
+  ptr = PushUInt16(ptr, message->data_value2);
+  return ptr;
+}
+
+void QueueStatusMessage(DimmerSubDevice *device,
+                        RDMStatusType status_type,
+                        RDMStatusMessageId status_id,
+                        uint16_t data_value1,
+                        uint16_t data_value2) {
+  if (device->sd_report_threshold == STATUS_NONE ||
+      (status_type & STATUS_TYPE_MASK) < device->sd_report_threshold) {
+    return;
+  }
+
+  device->status_message.is_active = true;
+  device->status_message.sub_device = device->index;
+  device->status_message.status_type = status_type;
+  device->status_message.message_id = status_id;
+  device->status_message.data_value1 = data_value1;
+  device->status_message.data_value2 = data_value2;
+}
+
 // Root PID Handlers
 // ----------------------------------------------------------------------------
+int DimmerModel_GetStatusMessages(const RDMHeader *header,
+                                  UNUSED const uint8_t *param_data) {
+  uint8_t threshold = param_data[0];
+
+  if (threshold > STATUS_ERROR) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+
+  if (threshold == STATUS_GET_LAST_MESSAGE) {
+    // Return the last set of messages.
+    unsigned int i = 0u;
+    for (; i < g_status_messages.count; i++) {
+      ptr = AddStatusMessageToResponse(ptr, &g_status_messages.last[i]);
+    }
+  } else {
+    // Build the list of status messages.
+    g_status_messages.count = 0u;
+
+    unsigned int i = 0u;
+    for (; i < NUMBER_OF_SUB_DEVICES; i++) {
+      DimmerSubDevice *subdevice = &g_subdevices[i];
+      StatusMessage *msg = &subdevice->status_message;
+
+      if (!msg->is_active) {
+        continue;
+      }
+
+      if (threshold < (msg->status_type & STATUS_TYPE_MASK)) {
+        continue;
+      }
+      msg->is_active = false;
+
+      StatusMessage *new_msg =
+          &g_status_messages.last[g_status_messages.count];
+
+      *new_msg = *msg;
+      ptr = AddStatusMessageToResponse(ptr, new_msg);
+      g_status_messages.count++;
+      if (g_status_messages.count == STATUS_MESSAGE_QUEUE_SIZE) {
+        break;
+      }
+    }
+  }
+
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
+int DimmerModel_GetStatusIdDescription(const RDMHeader *header,
+                                       UNUSED const uint8_t *param_data) {
+  const uint16_t status_id = ExtractUInt16(param_data);
+  if (status_id != STS_TESTING) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  ptr += RDMUtil_StringCopy((char*) ptr, RDM_DEFAULT_STRING_SIZE,
+                            STS_TESTING_DESCRIPTION,
+                            RDM_DEFAULT_STRING_SIZE);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
 int DimmerModel_CapturePreset(const RDMHeader *header,
                               const uint8_t *param_data) {
   if (header->param_data_length != 4 * sizeof(uint16_t)) {
@@ -238,8 +357,7 @@ int DimmerModel_GetPresetPlayback(const RDMHeader *header,
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt16(ptr, g_root_device.playback_mode);
   *ptr++ = g_root_device.playback_level;
-  return RDMResponder_AddHeaderAndChecksum(header, ACK,
-                                           ptr - g_rdm_buffer);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
 int DimmerModel_SetPresetPlayback(const RDMHeader *header,
@@ -556,6 +674,35 @@ int DimmerModel_SetPresetMergeMode(const RDMHeader *header,
 
 // SubDevice PID Handlers
 // ----------------------------------------------------------------------------
+int DimmerModel_ClearStatusId(const RDMHeader *header,
+                              UNUSED const uint8_t *param_data) {
+  g_active_device->status_message.is_active = false;
+  return RDMResponder_BuildSetAck(header);
+}
+
+int DimmerModel_GetSubDeviceReportingThreshold(
+    const RDMHeader *header,
+    UNUSED const uint8_t *param_data) {
+  return RDMResponder_GenericGetUInt8(
+      header, g_active_device->sd_report_threshold);
+}
+
+int DimmerModel_SetSubDeviceReportingThreshold(const RDMHeader *header,
+                                               const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  uint8_t threshold = param_data[0];
+  if (threshold != STATUS_NONE && threshold != STATUS_ADVISORY &&
+      threshold != STATUS_WARNING && threshold != STATUS_ERROR) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  g_active_device->sd_report_threshold = threshold;
+  return RDMResponder_BuildSetAck(header);
+}
+
 int DimmerModel_GetIdentifyMode(const RDMHeader *header,
                                 UNUSED const uint8_t *param_data) {
   return RDMResponder_GenericGetUInt8(header, g_active_device->identify_mode);
@@ -813,6 +960,8 @@ void DimmerModel_Initialize() {
     subdevice->curve = 1u;
     subdevice->output_response_time = 1u;
     subdevice->modulation_frequency = 1u;
+    subdevice->sd_report_threshold = STATUS_ADVISORY;
+    subdevice->status_message.is_active = false;
 
     g_responder = &subdevice->responder;
     memcpy(g_responder->uid, temp->uid, UID_LENGTH);
@@ -830,12 +979,16 @@ void DimmerModel_Initialize() {
       responder->dmx_start_address = INITIAL_START_ADDRESSS;
     }
   }
+
+  // init status messages
+  g_status_messages.count = 0;
 }
 
 static void DimmerModel_Activate() {
   g_responder->def = &ROOT_RESPONDER_DEFINITION;
   RDMResponder_ResetToFactoryDefaults();
   g_responder->sub_device_count = NUMBER_OF_SUB_DEVICES;
+  g_root_device.status_message_timer = CoarseTimer_GetTime();
 }
 
 static void DimmerModel_Deactivate() {}
@@ -909,7 +1062,60 @@ static int DimmerModel_HandleRequest(const RDMHeader *header,
   return response_size;
 }
 
-static void DimmerModel_Tasks() {}
+/*
+ * @brief We generate status messages for each device, based on a periodic
+ * timer. This makes it easier to reproduce problems (and test!).
+ */
+static void DimmerModel_Tasks() {
+  // The cycle counter is used to generate status messages for each sub device.
+  static uint8_t cycle = 0;
+  static uint16_t complete_cycles = 0;
+
+  if (!CoarseTimer_HasElapsed(g_root_device.status_message_timer,
+                             STATUS_MESSAGE_TRIGGER_INTERVAL)) {
+    return;
+  }
+
+  g_root_device.status_message_timer = CoarseTimer_GetTime();
+
+  unsigned int subdevice_index = 0u;
+  for (; subdevice_index < NUMBER_OF_SUB_DEVICES; subdevice_index++) {
+    DimmerSubDevice *subdevice = &g_subdevices[subdevice_index];
+
+    if (subdevice->index == 1u) {
+      // The cycle for the first device is:
+      //  - 0, NOOP
+      //  - 1, Queue breaker trip warning
+      //  - 2, NOOP
+      //  - 3, Clear breaker trip warning
+      //  - 4, NOOP
+      if (cycle == 1) {
+        // Queue a message
+        QueueStatusMessage(subdevice, STATUS_WARNING, STS_BREAKER_TRIP, 0u,
+                           0u);
+      } else if (cycle == 3u) {
+        if (subdevice->status_message.is_active) {
+          // The previous message is still in the queue, cancel it.
+          subdevice->status_message.is_active = false;
+        } else {
+          // Queue a 'cleared' message
+          QueueStatusMessage(subdevice, STATUS_WARNING_CLEARED,
+                             STS_BREAKER_TRIP, 0u, 0u);
+        }
+      }
+    } else if (subdevice->index == 3u) {
+      // This subdevice just queues a manufacturer-defined advisory message
+      // each cycle.
+      QueueStatusMessage(subdevice, STATUS_ADVISORY, STS_TESTING,
+                         complete_cycles, cycle);
+    }
+  }
+  cycle++;
+  cycle %= 5;
+  if (cycle == 0u) {
+    complete_cycles++;
+  }
+}
 
 const ModelEntry DIMMER_MODEL_ENTRY = {
   .model_id = DIMMER_MODEL_ID,
@@ -924,6 +1130,10 @@ const ModelEntry DIMMER_MODEL_ENTRY = {
 // ----------------------------------------------------------------------------
 
 static const PIDDescriptor ROOT_PID_DESCRIPTORS[] = {
+  {PID_STATUS_MESSAGES, DimmerModel_GetStatusMessages, 1u,
+    (PIDCommandHandler) NULL},
+  {PID_STATUS_ID_DESCRIPTION, DimmerModel_GetStatusIdDescription, 2u,
+    (PIDCommandHandler) NULL},
   {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0u,
     (PIDCommandHandler) NULL},
   {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0u, (PIDCommandHandler) NULL},
@@ -991,6 +1201,11 @@ static const ResponderDefinition ROOT_RESPONDER_DEFINITION = {
 // ----------------------------------------------------------------------------
 
 static const PIDDescriptor SUBDEVICE_PID_DESCRIPTORS[] = {
+  {PID_CLEAR_STATUS_ID, (PIDCommandHandler) NULL, 0u,
+    DimmerModel_ClearStatusId},
+  {PID_SUB_DEVICE_STATUS_REPORT_THRESHOLD,
+    DimmerModel_GetSubDeviceReportingThreshold, 1u,
+    DimmerModel_SetSubDeviceReportingThreshold},
   {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0,
     (PIDCommandHandler) NULL},
   {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0, (PIDCommandHandler) NULL},
