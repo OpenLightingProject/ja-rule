@@ -145,7 +145,7 @@ int MovingLightModel_SetUInt8(const RDMHeader *header,
   uint8_t old_value = g_moving_light.display_level;
   int response_size = RDMResponder_GenericSetUInt8(
       header, param_data, &g_moving_light.display_level);
-  if (g_moving_light.display_invert != old_value) {
+  if (g_moving_light.display_level != old_value) {
     g_moving_light.using_factory_defaults = false;
   }
   return response_size;
