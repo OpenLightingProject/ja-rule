@@ -91,6 +91,7 @@ tests_proxy_model_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_proxy_model_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                 src/libproxymodel.la \
                                 src/librdmresponder.la \
+                                src/libreceivercounters.la \
                                 src/libcoarsetimer.la \
                                 src/librdmbuffer.la \
                                 src/librandom.la \
