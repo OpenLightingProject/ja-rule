@@ -66,16 +66,14 @@ bool RDMUtil_RequiresAction(const uint8_t our_uid[UID_LENGTH],
                             const uint8_t uid[UID_LENGTH]);
 
 /*
- * @brief Check if we should respond to an RDM request.
- * @param responder The responder information
+ * @brief Check if a UID is unicast.
  * @param uid The destination UID to check.
- * @returns true if the UIDs match, false otherwise.
- * @pre RDMUtil_RequiresAction() returned true.
+ * @returns true if the UIDs is unicast, false otherwise.
  *
- * A response is only required if the last four bytes of the UID are not
- * 0xffffffff.
+ * This can be used to determine if we need to respond to a request. Unicast
+ * UIDs are ones that do not end in 0xffffffff.
  */
-bool RDMUtil_RequiresResponse(const uint8_t uid[UID_LENGTH]);
+bool RDMUtil_IsUnicast(const uint8_t uid[UID_LENGTH]);
 
 /**
  * @brief Verify the checksum of an RDM frame.

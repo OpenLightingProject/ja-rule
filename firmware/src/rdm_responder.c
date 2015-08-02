@@ -338,7 +338,7 @@ int RDMResponder_DispatchPID(const RDMHeader *header,
   for (; i < definition->descriptor_count; i++) {
     if (pid == definition->descriptors[i].pid) {
       if (header->command_class == GET_COMMAND) {
-        if (RDMUtil_RequiresResponse(header->dest_uid)) {\
+        if (RDMUtil_IsUnicast(header->dest_uid)) {\
           if (definition->descriptors[i].get_handler) {
             if (header->param_data_length ==
                 definition->descriptors[i].get_param_size) {
