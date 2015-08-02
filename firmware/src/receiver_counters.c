@@ -19,7 +19,8 @@
 
 #include "receiver_counters.h"
 
-static const uint16_t UNINITIALIZED_COUNTER = 0xffffu;
+static const uint16_t UNINITIALIZED_COUNTER = 0xffff;
+static const uint8_t UNINITIALIZED_CHECKSUM = 0xff;
 
 /*
  * @brief The counters.
@@ -38,7 +39,7 @@ void ReceiverCounters_ResetCounters() {
   g_responder_counters.rdm_msg_len_invalid = 0u;
   g_responder_counters.rdm_param_data_len_invalid = 0u;
   // The initial values are from E1.37-5 (draft).
-  g_responder_counters.dmx_last_checksum = 0xffu;
+  g_responder_counters.dmx_last_checksum = UNINITIALIZED_CHECKSUM;
   g_responder_counters.dmx_last_slot_count = UNINITIALIZED_COUNTER;
   g_responder_counters.dmx_min_slot_count = UNINITIALIZED_COUNTER;
   g_responder_counters.dmx_max_slot_count = UNINITIALIZED_COUNTER;
