@@ -65,6 +65,12 @@
  * device.
  *
  * The default lock pin is 0000.
+ *
+ * ### Self Tests
+ *
+ * The root device supports two self tests. The 1st completes in 5s and
+ * always passes. The 2nd takes 20s and always fails. When the test completes a
+ * status message is queued.
  */
 
 #ifndef FIRMWARE_SRC_DIMMER_MODEL_H_
