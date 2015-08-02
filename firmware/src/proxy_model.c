@@ -30,7 +30,10 @@
 
 // Various constants
 enum { NUMBER_OF_CHILDREN = 2 };
+// Must be at least 2.
+enum { PROXY_BUFFERS_PER_CHILD = 2 };
 enum { SOFTWARE_VERSION = 0x00000000 };
+static const uint16_t ACK_TIMER_DELAY = 1u;
 static const char DEFAULT_CHILD_DEVICE_LABEL[] = "Ja Rule Child Device";
 static const char CHILD_DEVICE_MODEL_DESCRIPTION[] =
     "Ja Rule Proxy Child Device";
@@ -38,8 +41,39 @@ static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
 static const char DEVICE_MODEL_DESCRIPTION[] = "Ja Rule Proxy Device";
 static const char SOFTWARE_LABEL[] = "Alpha";
 
+/*
+ * Building a proxy is a bit tricky, because of the following requirement:
+ *
+ *   If the Status Type Requested is STATUS_GET_LAST_MESSAGE, the responder
+ *   shall return the last message (which may be either a Queued Message or a
+ *   Status Message) sent in response to a GET: QUEUED_MESSAGE.
+ *
+ * This means you need to be able to store at least two messages
+ * simultaneously, the last queued message and the next queued message.
+ *
+ * And you need to do this for each device behind the proxy, since asking for
+ * queued message for device A, shouldn't change the last queued message for
+ * device B.
+ *
+ * So as a result we allocate PROXY_BUFFERS_PER_CHILD * NUMBER_OF_CHILDREN
+ * buffers, where PROXY_BUFFERS_PER_CHILD >= 2.
+ */
+
+/*
+ * @brief A proxy buffer
+ */
+typedef struct {
+  uint8_t buffer[RDM_MAX_FRAME_SIZE];  // The data
+} ProxyBuffer;
+
 typedef struct {
   RDMResponder responder;
+
+  ProxyBuffer buffers[PROXY_BUFFERS_PER_CHILD];  // The buffers for this child
+  ProxyBuffer *last;  // Pointer to the last message for the child.
+  ProxyBuffer *next;  // Pointer to the next message for the child.
+  ProxyBuffer *free_list[PROXY_BUFFERS_PER_CHILD];  // Free list
+  unsigned int free_size_count;  // Number of items on the free list.
 } ChildDevice;
 
 static ChildDevice g_children[NUMBER_OF_CHILDREN];
@@ -49,6 +83,20 @@ static const ResponderDefinition CHILD_DEVICE_RESPONDER_DEFINITION;
 
 // Helper functions
 // ----------------------------------------------------------------------------
+void ResetProxyBuffers() {
+  unsigned int i = 0u;
+  for (; i < NUMBER_OF_CHILDREN; i++) {
+    ChildDevice *device = &g_children[i];
+    unsigned int j = 0u;
+    for (; j != PROXY_BUFFERS_PER_CHILD; j++) {
+      device->free_list[j] = &device->buffers[j];
+    }
+    device->next = NULL;
+    device->last = NULL;
+    device->free_size_count = NUMBER_OF_CHILDREN;
+  }
+}
+
 static int HandleRequest(const RDMHeader *header, const uint8_t *param_data) {
   if (header->command_class == DISCOVERY_COMMAND) {
     return RDMResponder_HandleDiscovery(header, param_data);
@@ -59,6 +107,104 @@ static int HandleRequest(const RDMHeader *header, const uint8_t *param_data) {
   }
 
   return RDMResponder_DispatchPID(header, param_data);
+}
+
+/*
+ * @brief Respond with the queued message if appropriate.
+ * @pre The request is unicast.
+ */
+static int MaybeRespondWithQueuedMessage(const RDMHeader *header,
+                                         const uint8_t *param_data,
+                                         unsigned int child_index) {
+  if (header->param_data_length != sizeof(uint8_t) ||
+      param_data[0] == STATUS_NONE ||
+      param_data[0] > STATUS_ERROR) {
+    // Malformed, let the child deal with it.
+    return RDM_RESPONDER_NO_RESPONSE;
+  }
+
+  ChildDevice *device = &g_children[child_index];
+  if (param_data[0] != STATUS_GET_LAST_MESSAGE && device->next) {
+    // move next to last
+    if (device->last) {
+      device->free_list[device->free_size_count] = device->last;
+      device->free_size_count++;
+    }
+    device->last = device->next;
+    device->responder.queued_message_count = 0u;
+    device->next = NULL;
+  } else if (param_data[0] == STATUS_GET_LAST_MESSAGE && device->last) {
+    // no op, going to return last
+  } else {
+    return RDM_RESPONDER_NO_RESPONSE;
+  }
+
+  RDMHeader *queued_header = (RDMHeader*) device->last->buffer;
+  RDMResponder_BuildHeader(header, queued_header->port_id,
+      queued_header->command_class, ntohs(queued_header->param_id),
+      queued_header->message_length);
+  memcpy(g_rdm_buffer + sizeof(RDMHeader),
+         device->last->buffer + sizeof(RDMHeader),
+         queued_header->message_length - sizeof(RDMHeader));
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
+
+/*
+ * @brief Handle a request for a child device.
+ * @param header the incoming_header
+ * @param param_data The param_data
+ * @param child_index The child device index.
+ */
+static int HandleChildRequest(const RDMHeader *header,
+                              const uint8_t *param_data,
+                              unsigned int child_index) {
+  if (header->command_class == DISCOVERY_COMMAND) {
+    // Always pass discovery commands through to the child.
+    return HandleRequest(header, param_data);
+  }
+
+  ChildDevice *device = &g_children[child_index];
+
+  // If GET QUEUED_MESSAGE and there is next or last message, see if we need to
+  // return it.
+  int response_size = RDM_RESPONDER_NO_RESPONSE;
+  if (header->command_class == GET_COMMAND &&
+      ntohs(header->param_id) == PID_QUEUED_MESSAGE &&
+      device->free_size_count != PROXY_BUFFERS_PER_CHILD &&
+      RDMUtil_RequiresResponse(header->dest_uid)) {
+    response_size = MaybeRespondWithQueuedMessage(header, param_data,
+                                                  child_index);
+    if (response_size) {
+      return response_size;
+    }
+  }
+
+  // If the request is unicast, and we're out of buffer space then NACK.
+  if (RDMUtil_RequiresResponse(header->dest_uid) && device->next != NULL) {
+    return RDMResponder_BuildNack(header, NR_PROXY_BUFFER_FULL);
+  }
+
+  // Let the child handle the request.
+  response_size = HandleRequest(header, param_data);
+  if (response_size > 0) {
+    if (device->next == NULL) {
+      // Queue the response
+      // TODO(simon): At least check that the lengths are valid and match the
+      // response_size, otherwise we may overflow the buffer.
+      device->next = device->free_list[device->free_size_count - 1];
+      device->free_size_count--;
+
+      memcpy(device->next->buffer, g_rdm_buffer, response_size);
+
+      response_size = RDMResponder_BuildAckTimer(header, ACK_TIMER_DELAY);
+      g_responder->queued_message_count = 1u;
+    } else {
+      // Something has gone wrong, and we don't have space to queue the
+      // response. Nack with a hardware fault.
+      return RDMResponder_BuildNack(header, NR_HARDWARE_FAULT);
+    }
+  }
+  return response_size;
 }
 
 // Proxy PID Handlers
@@ -84,24 +230,36 @@ int ProxyModel_GetProxiedDevices(const RDMHeader *header,
 
 // Child PID Handlers
 // ----------------------------------------------------------------------------
+int ProxyModelChild_GetQueuedMessage(const RDMHeader *header,
+                                     UNUSED const uint8_t *param_data) {
+  if (header->param_data_length != sizeof(uint8_t)) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+
+  uint8_t status_type = param_data[0];
+  if (status_type == STATUS_NONE || status_type > STATUS_ERROR) {
+    return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
+  }
+
+  RDMResponder_BuildHeader(header, ACK, GET_COMMAND_RESPONSE,
+                           PID_STATUS_MESSAGES, sizeof(RDMHeader));
+  return RDMUtil_AppendChecksum(g_rdm_buffer);
+}
 
 // Public Functions
 // ----------------------------------------------------------------------------
 void ProxyModel_Initialize() {
-  RDMResponder *temp = g_responder;
-
-  // Initialize the proxy
-
-  // Initialize the child devices.
   uint8_t parent_uid[UID_LENGTH];
   RDMResponder_GetUID(parent_uid);
+  RDMResponder *temp = g_responder;
 
+  // Initialize the child devices.
   unsigned int i = 0u;
   for (; i < NUMBER_OF_CHILDREN; i++) {
     ChildDevice *device = &g_children[i];
     g_responder = &device->responder;
     memcpy(g_responder->uid, parent_uid, UID_LENGTH);
-    g_responder->uid[UID_LENGTH - 1] = i + 1u;
+    g_responder->uid[UID_LENGTH - 1] += (i + 1u);
     g_responder->def = &CHILD_DEVICE_RESPONDER_DEFINITION;
     RDMResponder_ResetToFactoryDefaults();
     g_responder->is_proxied_device = true;
@@ -115,6 +273,7 @@ static void ProxyModel_Activate() {
   g_responder->def = &ROOT_RESPONDER_DEFINITION;
   RDMResponder_ResetToFactoryDefaults();
   g_responder->is_managed_proxy = true;
+  ResetProxyBuffers();
 }
 
 static void ProxyModel_Deactivate() {}
@@ -130,16 +289,14 @@ static int ProxyModel_HandleRequest(const RDMHeader *header,
     }
   }
 
+  RDMResponder *temp = g_responder;
   unsigned int i = 0u;
   for (; i < NUMBER_OF_CHILDREN; i++) {
     if (RDMUtil_RequiresAction(g_children[i].responder.uid, header->dest_uid)) {
-      RDMResponder *temp = g_responder;
       g_responder = &g_children[i].responder;
-      response_size = HandleRequest(header, param_data);
+      int response_size = HandleChildRequest(header, param_data, i);
       g_responder = temp;
       if (response_size) {
-        // TODO(simon): make this more interesting by using ACK-TIMER in the
-        // responses.
         return response_size;
       }
     }
@@ -209,18 +366,20 @@ static const ResponderDefinition ROOT_RESPONDER_DEFINITION = {
 // ----------------------------------------------------------------------------
 
 static const PIDDescriptor CHILD_DEVICE_PID_DESCRIPTORS[] = {
-  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0,
+  {PID_QUEUED_MESSAGE, ProxyModelChild_GetQueuedMessage, 1u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0, (PIDCommandHandler) NULL},
-  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0,
+  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0,
+  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0u, (PIDCommandHandler) NULL},
+  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0u,
     (PIDCommandHandler) NULL},
-  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0,
+  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0u,
     (PIDCommandHandler) NULL},
-  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0,
+  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0,
+  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0u,
+    (PIDCommandHandler) NULL},
+  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0u,
     RDMResponder_SetIdentifyDevice},
 };
 

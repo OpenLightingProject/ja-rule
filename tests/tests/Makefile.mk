@@ -22,6 +22,7 @@ TESTS += tests/coarse_timer_test \
          tests/flags_test \
          tests/message_handler_test \
          tests/network_model_test \
+         tests/proxy_model_test \
          tests/rdm_handler_test \
          tests/rdm_responder_test \
          tests/rdm_util_test \
@@ -84,6 +85,20 @@ tests_network_model_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                  tests/libmodeltest.la \
                                  harmony/mocks/libharmonymock.la \
                                  mocks/libmatchers.la
+
+tests_proxy_model_test_SOURCES = tests/ProxyModelTest.cpp
+tests_proxy_model_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
+tests_proxy_model_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
+                                src/libproxymodel.la \
+                                src/librdmresponder.la \
+                                src/libreceivercounters.la \
+                                src/libcoarsetimer.la \
+                                src/librdmbuffer.la \
+                                src/librandom.la \
+                                src/librdmutil.la \
+                                tests/libmodeltest.la \
+                                harmony/mocks/libharmonymock.la \
+                                mocks/libmatchers.la
 
 tests_rdm_handler_test_SOURCES = tests/RDMHandlerTest.cpp
 tests_rdm_handler_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)

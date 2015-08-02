@@ -20,6 +20,7 @@ noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
                      src/libflags.la \
                      src/libmessagehandler.la \
                      src/libnetworkmodel.la \
+                     src/libproxymodel.la \
                      src/librandom.la \
                      src/librdmbuffer.la \
                      src/librdmhandler.la \
@@ -66,6 +67,9 @@ src_libmessagehandler_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libnetworkmodel_la_SOURCES = src/network_model.c
 src_libnetworkmodel_la_CFLAGS = $(BUILD_FLAGS)
+
+src_libproxymodel_la_SOURCES = src/proxy_model.c
+src_libproxymodel_la_CFLAGS = $(BUILD_FLAGS)
 
 src_librandom_la_SOURCES = src/random.c
 src_librandom_la_CFLAGS = $(BUILD_FLAGS)

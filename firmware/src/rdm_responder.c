@@ -255,11 +255,11 @@ void RDMResponder_BuildHeader(const RDMHeader *incoming_header,
                               RDMResponseType response_type,
                               RDMCommandClass command_class,
                               uint16_t pid,
-                              unsigned int param_data_length) {
+                              unsigned int message_length) {
   RDMHeader *outgoing_header = (RDMHeader*) g_rdm_buffer;
   outgoing_header->start_code = RDM_START_CODE;
   outgoing_header->sub_start_code = SUB_START_CODE;
-  outgoing_header->message_length = sizeof(RDMHeader) + param_data_length;
+  outgoing_header->message_length = message_length;
   memcpy(outgoing_header->dest_uid, incoming_header->src_uid, UID_LENGTH);
   memcpy(outgoing_header->src_uid, incoming_header->dest_uid, UID_LENGTH);
   outgoing_header->transaction_number = incoming_header->transaction_number;
@@ -268,7 +268,7 @@ void RDMResponder_BuildHeader(const RDMHeader *incoming_header,
   outgoing_header->sub_device = incoming_header->sub_device;
   outgoing_header->command_class = command_class;
   outgoing_header->param_id = htons(pid);
-  outgoing_header->param_data_length = param_data_length;
+  outgoing_header->param_data_length = message_length - sizeof(RDMHeader);
 }
 
 int RDMResponder_AddHeaderAndChecksum(const RDMHeader *header,
@@ -318,6 +318,13 @@ int RDMResponder_BuildNack(const RDMHeader *header, RDMNackReason reason) {
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
   ptr = PushUInt16(ptr, reason);
   return RDMResponder_AddHeaderAndChecksum(header, NACK_REASON,
+                                           ptr - g_rdm_buffer);
+}
+
+int RDMResponder_BuildAckTimer(const RDMHeader *header, uint16_t delay) {
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  ptr = PushUInt16(ptr, delay);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK_TIMER,
                                            ptr - g_rdm_buffer);
 }
 

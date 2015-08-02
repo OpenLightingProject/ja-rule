@@ -396,6 +396,15 @@ int RDMResponder_BuildNack(const RDMHeader *incoming_header,
                            RDMNackReason reason);
 
 /**
+ * @brief Build an ACK TIMER
+ * @param incoming_header The header of the incoming frame.
+ * @param delay The ack timer delay in 10ths of a second.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_BuildAckTimer(const RDMHeader *incoming_header,
+                               uint16_t delay);
+
+/**
  * @brief Invoke a PID handler from the ResponderDefinition.
  * @param incoming_header The header of the incoming frame.
  * @param param_data The received parameter data.
