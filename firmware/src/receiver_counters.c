@@ -19,8 +19,8 @@
 
 #include "receiver_counters.h"
 
-static const uint16_t UNINITIALIZED_COUNTER = 0xffff;
-static const uint8_t UNINITIALIZED_CHECKSUM = 0xff;
+static const uint16_t UNINITIALIZED_COUNTER = 0xffffu;
+static const uint8_t UNINITIALIZED_CHECKSUM = 0xffu;
 
 /*
  * @brief The counters.
