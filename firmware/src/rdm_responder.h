@@ -528,6 +528,24 @@ int RDMResponder_SetMute(const RDMHeader *incoming_header);
 int RDMResponder_SetUnMute(const RDMHeader *incoming_header);
 
 /**
+ * @brief Handle a GET COMMS_STATUS request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetCommsStatus(const RDMHeader *incoming_header,
+                                const uint8_t *param_data);
+
+/**
+ * @brief Handle a SET COMMS_STATUS request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_SetCommsStatus(const RDMHeader *incoming_header,
+                                const uint8_t *param_data);
+
+/**
  * @brief Handle a GET DEVICE_INFO request.
  * @param incoming_header The header of the incoming frame.
  * @param param_data The received parameter data.
@@ -580,6 +598,24 @@ int RDMResponder_GetManufacturerLabel(const RDMHeader *incoming_header,
  */
 int RDMResponder_GetSoftwareVersionLabel(const RDMHeader *incoming_header,
                                          const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET BOOT_SOFTWARE_VERSION request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetBootSoftwareVersion(const RDMHeader *incoming_header,
+                                        const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET BOOT_SOFTWARE_LABEL request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetBootSoftwareVersionLabel(const RDMHeader *incoming_header,
+                                             const uint8_t *param_data);
 
 /**
  * @brief Handle a GET DEVICE_LABEL request.

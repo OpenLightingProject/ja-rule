@@ -24,6 +24,7 @@
 #include "constants.h"
 #include "rdm_frame.h"
 #include "rdm_handler.h"
+#include "receiver_counters.h"
 #include "rdm_util.h"
 #include "spi_rgb.h"
 #include "syslog.h"
@@ -44,16 +45,12 @@ typedef enum {
   STATE_RDM_BODY,  //!< Receiving the RDM frame data.
   STATE_RDM_CHECKSUM_LO,  //!< Waiting for the low byte of the RDM checksum
   STATE_RDM_CHECKSUM_HI,  //!< Waiting for the high byte of the RDM checksum
+  STATE_RDM_POST_CHECKSUM,  //!< After the last checksum byte.
 
   STATE_DISCARD  //!< Discarding the remaining data.
 } ResponderState;
 
 static const uint16_t UNINITIALIZED_COUNTER = 0xffffu;
-
-/*
- * @brief The counters.
- */
-ResponderCounters g_responder_counters;
 
 /*
  * @brief The timing information for the current frame.
@@ -89,26 +86,35 @@ static inline void DispatchRDMRequest(const uint8_t *frame) {
       header->param_data_length);
 }
 
-// Public Functions
-// ----------------------------------------------------------------------------
-void Responder_Initialize() {
-  Responder_ResetCounters();
+/*
+ * @brief Increment the bad-checksum counter if the frame was for us.
+ */
+static inline void PossiblyIncrementChecksumCounter(const uint8_t *frame) {
+  uint8_t uid[UID_LENGTH];
+  RDMHandler_GetUID(uid);
+  RDMHeader *header = (RDMHeader*) frame;
+  if (RDMUtil_RequiresAction(uid, header->dest_uid)) {
+    SysLog_Message(SYSLOG_ERROR, "Checksum mismatch");
+    g_responder_counters.rdm_checksum_invalid++;
+  }
 }
 
-void Responder_ResetCounters() {
-  g_responder_counters.dmx_frames = 0u;
-  g_responder_counters.asc_frames = 0u;
-  g_responder_counters.rdm_frames = 0u;
-  g_responder_counters.rdm_sub_start_code_invalid = 0u;
-  g_responder_counters.rdm_msg_len_invalid = 0u;
-  g_responder_counters.rdm_param_data_len_invalid = 0u;
-  g_responder_counters.rdm_checksum_invalid = 0u;
-  // The initial values are from E1.37-5 (draft).
-  g_responder_counters.dmx_last_checksum = 0xffu;
-  g_responder_counters.dmx_last_slot_count = UNINITIALIZED_COUNTER;
-  g_responder_counters.dmx_min_slot_count = UNINITIALIZED_COUNTER;
-  g_responder_counters.dmx_max_slot_count = UNINITIALIZED_COUNTER;
+/*
+ * @brief Increment the length-mismatch counter if the frame was for us.
+ */
+static inline void PossiblyIncrementLengthMismatchCounter(
+    const uint8_t *frame) {
+  uint8_t uid[UID_LENGTH];
+  RDMHandler_GetUID(uid);
+  RDMHeader *header = (RDMHeader*) frame;
+  if (RDMUtil_RequiresAction(uid, header->dest_uid)) {
+    g_responder_counters.rdm_length_mismatch++;
+  }
 }
+
+// Public Functions
+// ----------------------------------------------------------------------------
+void Responder_Initialize() {}
 
 void Responder_Receive(const TransceiverEvent *event) {
   // While this function is running, UART interrupts are disabled.
@@ -128,6 +134,13 @@ void Responder_Receive(const TransceiverEvent *event) {
       g_responder_counters.dmx_min_slot_count =
         g_responder_counters.dmx_last_slot_count;
     }
+    if (g_state == STATE_RDM_SUB_START_CODE ||
+        g_state == STATE_RDM_MESSAGE_LENGTH ||
+        (g_state == STATE_RDM_BODY && g_offset < 9)) {
+      // COMMS_STATUS, short frame
+      g_responder_counters.rdm_short_frame++;
+    }
+
     g_offset = 0u;
     g_state = STATE_START_CODE;
     if (event->timing) {
@@ -201,9 +214,13 @@ void Responder_Receive(const TransceiverEvent *event) {
         if (RDMUtil_VerifyChecksum(event->data, event->length)) {
           DispatchRDMRequest(event->data);
         } else {
-          SysLog_Message(SYSLOG_ERROR, "Checksum mismatch");
-          g_responder_counters.rdm_checksum_invalid++;
+          PossiblyIncrementChecksumCounter(event->data);
         }
+        g_state = STATE_RDM_POST_CHECKSUM;
+        break;
+      case STATE_RDM_POST_CHECKSUM:
+        PossiblyIncrementLengthMismatchCounter(event->data);
+        g_state = STATE_DISCARD;
         break;
       case STATE_DMX_DATA:
         // TODO(simon): configure this with DMX_START_ADDRESS and footprints.

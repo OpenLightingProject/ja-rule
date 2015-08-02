@@ -145,6 +145,10 @@ ACTION_P(CopyUID, src_uid) {
   return 0;
 }
 
+ACTION_P(CopyUIDNoReturn, src_uid) {
+  memcpy(arg0, src_uid, UID_LENGTH);
+}
+
 /**
  * @}
  */

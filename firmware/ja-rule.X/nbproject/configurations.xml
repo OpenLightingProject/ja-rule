@@ -49,6 +49,7 @@
         <itemPath>../src/sensor_model.h</itemPath>
         <itemPath>../src/network_model.h</itemPath>
         <itemPath>../src/dimmer_model.h</itemPath>
+        <itemPath>../src/receiver_counters.h</itemPath>
         <itemPath>../src/proxy_model.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
@@ -140,6 +141,7 @@
         <itemPath>../src/sensor_model.c</itemPath>
         <itemPath>../src/network_model.c</itemPath>
         <itemPath>../src/dimmer_model.c</itemPath>
+        <itemPath>../src/receiver_counters.c</itemPath>
         <itemPath>../src/proxy_model.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
