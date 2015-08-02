@@ -26,6 +26,7 @@ noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
                      src/librdmhandler.la \
                      src/librdmresponder.la \
                      src/librdmutil.la \
+                     src/libreceivercounters.la \
                      src/libresponder.la \
                      src/libsimplemodel.la \
                      src/libspirgb.la \
@@ -84,6 +85,9 @@ src_librdmresponder_la_CFLAGS = $(BUILD_FLAGS)
 
 src_librdmutil_la_SOURCES = src/rdm_util.c
 src_librdmutil_la_CFLAGS = $(BUILD_FLAGS)
+
+src_libreceivercounters_la_SOURCES = src/receiver_counters.c
+src_libreceivercounters_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libresponder_la_SOURCES = src/responder.c
 src_libresponder_la_CFLAGS = $(BUILD_FLAGS)

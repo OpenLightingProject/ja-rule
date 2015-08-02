@@ -25,9 +25,14 @@
 #include "macros.h"
 #include "rdm_buffer.h"
 #include "rdm_util.h"
+#include "receiver_counters.h"
 #include "utils.h"
 
 const char MANUFACTURER_LABEL[] = "Open Lighting Project";
+// TODO(simon): pull this from the bootloader at some point
+const char BOOT_SOFTWARE_LABEL[] = "0.0.1";
+static const uint32_t BOOT_SOFTWARE_VERSION = 0x00000001;
+
 static const uint8_t FIVE5_CONSTANT = 0x55u;
 static const uint8_t AA_CONSTANT = 0xaau;
 static const uint8_t FE_CONSTANT = 0xfeu;
@@ -518,6 +523,26 @@ int RDMResponder_GetSupportedParameters(const RDMHeader *header,
   return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
 }
 
+int RDMResponder_GetCommsStatus(const RDMHeader *header,
+                                UNUSED const uint8_t *param_data) {
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+
+  ptr = PushUInt16(ptr, ReceiverCounters_RDMShortFrame());
+  ptr = PushUInt16(ptr, ReceiverCounters_RDMLengthMismatch());
+  ptr = PushUInt16(ptr, ReceiverCounters_RDMChecksumInvalidCounter());
+
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
+int RDMResponder_SetCommsStatus(const RDMHeader *header,
+                                UNUSED const uint8_t *param_data) {
+  if (header->param_data_length != 0u) {
+    return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
+  }
+  ReceiverCounters_ResetCommsStatusCounters();
+  return RDMResponder_BuildSetAck(header);
+}
+
 int RDMResponder_GetDeviceInfo(const RDMHeader *header,
                                UNUSED const uint8_t *param_data) {
   const PersonalityDefinition *personality = CurrentPersonality();
@@ -581,6 +606,18 @@ int RDMResponder_GetSoftwareVersionLabel(const RDMHeader *header,
                                           RDM_DEFAULT_STRING_SIZE);
 }
 
+int RDMResponder_GetBootSoftwareVersion(const RDMHeader *header,
+                                        UNUSED const uint8_t *param_data) {
+  return RDMResponder_GenericGetUInt32(header, BOOT_SOFTWARE_VERSION);
+}
+
+int RDMResponder_GetBootSoftwareVersionLabel(const RDMHeader *header,
+                                             UNUSED const uint8_t *param_data) {
+  return RDMResponder_GenericReturnString(header,
+                                          BOOT_SOFTWARE_LABEL,
+                                          RDM_DEFAULT_STRING_SIZE);
+}
+
 int RDMResponder_GetDeviceLabel(const RDMHeader *header,
                                 UNUSED const uint8_t *param_data) {
   return RDMResponder_GenericReturnString(header, g_responder->device_label,
@@ -594,6 +631,7 @@ int RDMResponder_SetDeviceLabel(const RDMHeader *header,
   }
   RDMUtil_StringCopy(g_responder->device_label, RDM_DEFAULT_STRING_SIZE,
                      (const char*) param_data, header->param_data_length);
+  g_responder->using_factory_defaults = false;
   return RDMResponder_BuildSetAck(header);
 }
 
@@ -617,6 +655,9 @@ int RDMResponder_SetDMXPersonality(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
+  if (g_responder->current_personality != new_personality) {
+    g_responder->using_factory_defaults = false;
+  }
   g_responder->current_personality = new_personality;
   return RDMResponder_BuildSetAck(header);
 }
@@ -661,6 +702,9 @@ int RDMResponder_SetDMXStartAddress(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
+  if (g_responder->dmx_start_address != address) {
+    g_responder->using_factory_defaults = false;
+  }
   g_responder->dmx_start_address = address;
   return RDMResponder_BuildSetAck(header);
 }
@@ -841,6 +885,7 @@ int RDMResponder_SetIdentifyDevice(const RDMHeader *header,
   if (g_responder->identify_on == previous_identify) {
     return r;
   }
+  g_responder->using_factory_defaults = false;
   if (g_responder->identify_on) {
     g_internal_state.identify_timer = CoarseTimer_GetTime();
     PLIB_PORTS_PinSet(PORTS_ID_0, g_internal_state.identify_port,

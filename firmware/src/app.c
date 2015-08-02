@@ -30,6 +30,7 @@
 #include "rdm.h"
 #include "rdm_handler.h"
 #include "rdm_responder.h"
+#include "receiver_counters.h"
 #include "sensor_model.h"
 #include "simple_model.h"
 #include "spi_rgb.h"
@@ -80,6 +81,7 @@ void APP_Initialize(void) {
   };
   memcpy(responder_settings.uid, OUR_UID, UID_LENGTH);
   RDMResponder_Initialize(&responder_settings);
+  ReceiverCounters_ResetCounters();
 
   // RDM Handler
   RDMHandlerSettings rdm_handler_settings = {
