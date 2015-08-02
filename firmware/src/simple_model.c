@@ -103,7 +103,7 @@ int SimpleModel_GetParameterDescription(const RDMHeader *header,
       description = &PIXEL_COUNT_DESCRIPTION;
       break;
     default:
-      ;
+      {}
   }
   if (description) {
     return RDMResponder_BuildParamDescription(header, param_id, description);
