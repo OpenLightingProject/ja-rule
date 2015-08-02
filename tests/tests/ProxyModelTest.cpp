@@ -41,6 +41,7 @@ using ola::network::HostToNetwork;
 using ola::rdm::UID;
 using ola::rdm::GetResponseFromData;
 using ola::rdm::NackWithReason;
+using ola::rdm::RDMDiscoveryRequest;
 using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -121,7 +122,7 @@ TEST_F(ProxyModelTest, basicQueuedMessage) {
       m_child_uid1, PID_DEVICE_INFO);
 
   unique_ptr<RDMResponse> response(BuildAckTimerResponse(
-        device_info_request.get(), ACK_TIMER_TIME));
+      device_info_request.get(), ACK_TIMER_TIME));
 
   int size = InvokeRDMHandler(device_info_request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
@@ -129,14 +130,14 @@ TEST_F(ProxyModelTest, basicQueuedMessage) {
   // Now try the command again, we should get a NR_PROXY_BUFFER_FULL with a
   // queued message count of 1.
   response.reset(NackWithReason(
-        device_info_request.get(), ola::rdm::NR_PROXY_BUFFER_FULL, 1));
+      device_info_request.get(), ola::rdm::NR_PROXY_BUFFER_FULL, 1));
   size = InvokeRDMHandler(device_info_request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
   // Try to fetch the queued message.
   uint8_t status_type = ola::rdm::STATUS_ERROR;
   unique_ptr<RDMRequest> get_queued_error_request = BuildChildGetRequest(
-        m_child_uid1, PID_QUEUED_MESSAGE, &status_type, sizeof(status_type));
+      m_child_uid1, PID_QUEUED_MESSAGE, &status_type, sizeof(status_type));
 
   const uint8_t device_info_response[] = {
     0x01, 0x00, 0x01, 0x06, 0x71, 0x01,
@@ -155,7 +156,7 @@ TEST_F(ProxyModelTest, basicQueuedMessage) {
   // Now try a STATUS_GET_LAST_MESSAGE and make sure we get the same message.
   status_type = ola::rdm::STATUS_GET_LAST_MESSAGE;
   unique_ptr<RDMRequest> get_last_queued_request = BuildChildGetRequest(
-        m_child_uid1, PID_QUEUED_MESSAGE, &status_type, sizeof(status_type));
+      m_child_uid1, PID_QUEUED_MESSAGE, &status_type, sizeof(status_type));
 
   response.reset(GetResponseWithPid(get_last_queued_request.get(),
                                     PID_DEVICE_INFO,
@@ -166,7 +167,7 @@ TEST_F(ProxyModelTest, basicQueuedMessage) {
 
   // Try another GET, this time for PID_IDENTIFY_DEVICE
   unique_ptr<RDMRequest> identify_request = BuildChildGetRequest(
-        m_child_uid1, PID_IDENTIFY_DEVICE);
+      m_child_uid1, PID_IDENTIFY_DEVICE);
   response.reset(BuildAckTimerResponse(identify_request.get(), ACK_TIMER_TIME));
 
   size = InvokeRDMHandler(identify_request.get());
@@ -195,5 +196,74 @@ TEST_F(ProxyModelTest, basicQueuedMessage) {
 
   // Now the last message should be PID_IDENTIFY_DEVICE.
   size = InvokeRDMHandler(get_last_queued_request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(ProxyModelTest, testDiscovery) {
+  const uint8_t parent_response[] = {
+    0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xaa,
+    0xfa, 0x7f, 0xfa, 0x75, 0xba, 0x57, 0xbe, 0x75,
+    0xfe, 0x57, 0xfa, 0x7d, 0xaf, 0x57, 0xfa, 0xfd
+  };
+  ArrayTuple tuple(g_rdm_buffer, DUB_RESPONSE_LENGTH);
+
+  unique_ptr<RDMDiscoveryRequest> request(NewDiscoveryUniqueBranchRequest(
+      m_controller_uid, UID(0, 0), UID::AllDevices(), 0));
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_LT(size, 0);
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, abs(size)),
+              DataIs(parent_response, arraysize(parent_response)));
+
+  // Mute the parent
+  unique_ptr<RDMDiscoveryRequest> parent_mute_request(NewMuteRequest(
+      m_controller_uid, m_our_uid, 0));
+  EXPECT_EQ(28, InvokeRDMHandler(parent_mute_request.get()));
+
+  // Now try discovery again.
+  const uint8_t first_child_response[] ={
+      0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xaa,
+      0xfa, 0x7f, 0xfa, 0x75, 0xba, 0x57, 0xbe, 0x75,
+      0xfe, 0x57, 0xfb, 0x7d, 0xaf, 0x57, 0xfb, 0xfd
+  };
+
+  size = InvokeRDMHandler(request.get());
+  EXPECT_LT(size, 0);
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, abs(size)),
+              DataIs(first_child_response, arraysize(first_child_response)));
+
+  // Mute the first child
+  unique_ptr<RDMDiscoveryRequest> first_child_mute_request(NewMuteRequest(
+      m_controller_uid, m_child_uid1, 0));
+  EXPECT_EQ(28, InvokeRDMHandler(first_child_mute_request.get()));
+
+  // Try discovery of the 2nd child
+  const uint8_t second_child_response[] ={
+      0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xfe, 0xaa,
+      0xfa, 0x7f, 0xfa, 0x75, 0xba, 0x57, 0xbe, 0x75,
+      0xfe, 0x57, 0xfa, 0x7f, 0xaf, 0x57, 0xfa, 0xff
+  };
+
+  size = InvokeRDMHandler(request.get());
+  EXPECT_LT(size, 0);
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, abs(size)),
+              DataIs(second_child_response, arraysize(second_child_response)));
+}
+
+TEST_F(ProxyModelTest, testdoubleQueuedMessage) {
+  // Send a queued message to the child, we should get back an empty status
+  // message after we deal with the ACK_TIMER
+  uint8_t status_type = ola::rdm::STATUS_ERROR;
+  unique_ptr<RDMRequest> request = BuildChildGetRequest(
+      m_child_uid1, PID_QUEUED_MESSAGE, &status_type, sizeof(status_type));
+
+  unique_ptr<RDMResponse> response(BuildAckTimerResponse(
+        request.get(), ACK_TIMER_TIME));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  response.reset(GetResponseWithPid(
+      request.get(), PID_STATUS_MESSAGES, NULL, 0));
+  size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
