@@ -186,16 +186,17 @@ static int HandleChildRequest(const RDMHeader *header,
 
   // Let the child handle the request.
   response_size = HandleRequest(header, param_data);
-  if (response_size > 0) {
+  const RDMHeader *response_header = (RDMHeader*) g_rdm_buffer;
+  // Only queue the frame if the message length is correct
+  if (response_size >= (int) sizeof(RDMHeader) + (int) RDM_CHECKSUM_LENGTH &&
+      ((int) response_header->message_length + (int) RDM_CHECKSUM_LENGTH ==
+       response_size)) {
     if (device->next == NULL) {
       // Queue the response
-      // TODO(simon): At least check that the lengths are valid and match the
-      // response_size, otherwise we may overflow the buffer.
       device->next = device->free_list[device->free_size_count - 1];
       device->free_size_count--;
 
       memcpy(device->next->buffer, g_rdm_buffer, response_size);
-
       response_size = RDMResponder_BuildAckTimer(header, ACK_TIMER_DELAY);
       g_responder->queued_message_count = 1u;
     } else {
