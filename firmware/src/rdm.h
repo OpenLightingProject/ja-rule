@@ -387,8 +387,9 @@ typedef enum {
 typedef enum {
   PID_DEVICE_MODEL = 0x8002,
   PID_DEVICE_MODEL_LIST = 0x8003,
-  PID_PIXEL_TYPE = 0x8004,
-  PID_PIXEL_COUNT = 0x8005
+  // 8004 is reserved for MODEL_ID_DESCRIPTION if we ever implement it
+  PID_PIXEL_TYPE = 0x8005,
+  PID_PIXEL_COUNT = 0x8006
 } OpenLightingManufacturerPID;
 
 /**
