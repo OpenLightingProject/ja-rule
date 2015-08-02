@@ -331,6 +331,17 @@ void RDMResponder_Initialize(const RDMResponderSettings *settings);
 void RDMResponder_Tasks();
 
 /**
+ * @brief Switch the current responder.
+ * @param responder The new responder to use.
+ */
+void RDMResponder_SwitchResponder(RDMResponder *responder);
+
+/**
+ * @brief Restore to the default responder.
+ */
+void RDMResponder_RestoreResponder();
+
+/**
  * @brief Reset an RDMResponder to the factory defaults.
  */
 void RDMResponder_ResetToFactoryDefaults();

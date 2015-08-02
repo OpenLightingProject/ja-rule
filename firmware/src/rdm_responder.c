@@ -184,6 +184,14 @@ void RDMResponder_Tasks() {
   }
 }
 
+void RDMResponder_SwitchResponder(RDMResponder *responder) {
+  g_responder = responder;
+}
+
+void RDMResponder_RestoreResponder() {
+  g_responder = &root_responder;
+}
+
 void RDMResponder_ResetToFactoryDefaults() {
   g_responder->queued_message_count = 0u;
   g_responder->dmx_start_address = INVALID_DMX_START_ADDRESS;

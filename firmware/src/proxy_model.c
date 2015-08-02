@@ -251,13 +251,13 @@ int ProxyModelChild_GetQueuedMessage(const RDMHeader *header,
 void ProxyModel_Initialize() {
   uint8_t parent_uid[UID_LENGTH];
   RDMResponder_GetUID(parent_uid);
-  RDMResponder *temp = g_responder;
 
   // Initialize the child devices.
   unsigned int i = 0u;
   for (; i < NUMBER_OF_CHILDREN; i++) {
     ChildDevice *device = &g_children[i];
-    g_responder = &device->responder;
+
+    RDMResponder_SwitchResponder(&device->responder);
     memcpy(g_responder->uid, parent_uid, UID_LENGTH);
     g_responder->uid[UID_LENGTH - 1] += (i + 1u);
     g_responder->def = &CHILD_DEVICE_RESPONDER_DEFINITION;
@@ -265,8 +265,7 @@ void ProxyModel_Initialize() {
     g_responder->is_proxied_device = true;
   }
 
-  // restore
-  g_responder = temp;
+  RDMResponder_RestoreResponder();
 }
 
 static void ProxyModel_Activate() {
@@ -289,13 +288,12 @@ static int ProxyModel_HandleRequest(const RDMHeader *header,
     }
   }
 
-  RDMResponder *temp = g_responder;
   unsigned int i = 0u;
   for (; i < NUMBER_OF_CHILDREN; i++) {
     if (RDMUtil_RequiresAction(g_children[i].responder.uid, header->dest_uid)) {
-      g_responder = &g_children[i].responder;
+      RDMResponder_SwitchResponder(&g_children[i].responder);
       int response_size = HandleChildRequest(header, param_data, i);
-      g_responder = temp;
+      RDMResponder_RestoreResponder();
       if (response_size) {
         return response_size;
       }

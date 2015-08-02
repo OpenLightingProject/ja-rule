@@ -1004,8 +1004,6 @@ int DimmerModel_GetModulationFrequencyDescription(
 // Public Functions
 // ----------------------------------------------------------------------------
 void DimmerModel_Initialize() {
-  RDMResponder *temp = g_responder;
-
   // Initialize the root
   unsigned int i = 0u;
   for (; i != NUMBER_OF_SCENES; i++) {
@@ -1032,6 +1030,10 @@ void DimmerModel_Initialize() {
   g_root_device.power_on_self_test = false;
   g_root_device.running_self_test = SELF_TEST_OFF;
 
+  // Initialize the subdevices.
+  uint8_t parent_uid[UID_LENGTH];
+  RDMResponder_GetUID(parent_uid);
+
   uint16_t sub_device_index = 1u;
   for (i = 0u; i < NUMBER_OF_SUB_DEVICES; i++) {
     if (i == 1) {
@@ -1056,15 +1058,15 @@ void DimmerModel_Initialize() {
     subdevice->sd_report_threshold = STATUS_ADVISORY;
     subdevice->status_message.is_active = false;
 
-    g_responder = &subdevice->responder;
-    memcpy(g_responder->uid, temp->uid, UID_LENGTH);
+    RDMResponder_SwitchResponder(&subdevice->responder);
+    memcpy(g_responder->uid, parent_uid, UID_LENGTH);
     RDMResponder_ResetToFactoryDefaults();
     g_responder->is_subdevice = true;
     g_responder->sub_device_count = NUMBER_OF_SUB_DEVICES;
   }
 
   // restore
-  g_responder = temp;
+  RDMResponder_RestoreResponder();
   if (!ResetToBlockAddress(INITIAL_START_ADDRESSS)) {
     // Set them all to 1
     for (i = 0u; i < NUMBER_OF_SUB_DEVICES; i++) {
@@ -1124,7 +1126,6 @@ static int DimmerModel_HandleRequest(const RDMHeader *header,
     }
   }
 
-  RDMResponder *temp = g_responder;
   unsigned int i = 0u;
   bool handled = false;
   int response_size = RDM_RESPONDER_NO_RESPONSE;
@@ -1132,15 +1133,14 @@ static int DimmerModel_HandleRequest(const RDMHeader *header,
     if (sub_device == g_subdevices[i].index || sub_device == SUBDEVICE_ALL) {
       if (!locked) {
         g_active_device = &g_subdevices[i];
-        g_responder = &g_subdevices[i].responder;
+        RDMResponder_SwitchResponder(&g_subdevices[i].responder);
         response_size = RDMResponder_DispatchPID(header, param_data);
       }
       handled = true;
     }
   }
 
-  // restore
-  g_responder = temp;
+  RDMResponder_RestoreResponder();
 
   if (!handled) {
     return RDMResponder_BuildNack(header, NR_SUB_DEVICE_OUT_OF_RANGE);
