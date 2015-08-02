@@ -386,7 +386,9 @@ typedef enum {
  */
 typedef enum {
   PID_DEVICE_MODEL = 0x8002,
-  PID_DEVICE_MODEL_LIST = 0x8003
+  PID_DEVICE_MODEL_LIST = 0x8003,
+  PID_PIXEL_TYPE = 0x8004,
+  PID_PIXEL_COUNT = 0x8005
 } OpenLightingManufacturerPID;
 
 /**
@@ -698,6 +700,24 @@ typedef enum {
   PREFIX_ZETTA = 0x19,
   PREFIX_YOTTA = 0x1a,
 } __attribute__((packed)) RDMPrefix;
+
+typedef enum {
+  DS_NOT_DEFINED = 0x0,
+  DS_BIT_FIELD = 0x01,
+  DS_ASCII = 0x02,
+  DS_UNSIGNED_BYTE = 0x03,
+  DS_SIGNED_BYTE = 0x04,
+  DS_UNSIGNED_WORD = 0x05,
+  DS_SIGNED_WORD = 0x06,
+  DS_UNSIGNED_DWORD = 0x07,
+  DS_SIGNED_DWORD = 0x08,
+} RDMDataType;
+
+typedef enum {
+  CC_GET = 0x01,
+  CC_SET = 0x02,
+  CC_GET_SET = 0x03,
+} RDMCommandClassSupported;
 
 /**
  * @brief The RDM slot types, from table C-1 of the standard.

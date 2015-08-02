@@ -78,6 +78,23 @@ typedef int (*PIDCommandHandler)(const RDMHeader *incoming_header,
                                  const uint8_t *param_data);
 
 /**
+ * @brief A parameter description.
+ *
+ * See section 10.4.2 from E1.20
+ */
+typedef struct {
+  uint8_t pdl_size;  //!< Size of the parameter data.
+  uint8_t data_type;  //!< Data type.
+  uint8_t command_class;  //!< Command classes accepted
+  uint8_t unit;  //!< Data units
+  uint8_t prefix;  //!< Data prefix
+  uint32_t min_valid_value;  //!< minimum value of the parameter
+  uint32_t max_valid_value;  //!< maximum value of the parameter
+  uint32_t default_value;  //!< the default value.
+  const char *description;  //!< Parameter description.
+} ParameterDescription;
+
+/**
  * @brief A descriptor for a PID.
  *
  * This contains the value of the parameter, and a GET / SET function pointer.
@@ -403,6 +420,17 @@ int RDMResponder_BuildNack(const RDMHeader *incoming_header,
  */
 int RDMResponder_BuildAckTimer(const RDMHeader *incoming_header,
                                uint16_t delay);
+
+/**
+ * @brief Build an PARAMETER_DESCRIPTION response.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_id The PID this description is for.
+ * @param description the parameter description.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_BuildParamDescription(const RDMHeader *incoming_header,
+                                       uint16_t param_id,
+                                       const ParameterDescription *description);
 
 /**
  * @brief Invoke a PID handler from the ResponderDefinition.

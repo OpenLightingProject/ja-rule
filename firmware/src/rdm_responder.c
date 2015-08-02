@@ -328,6 +328,26 @@ int RDMResponder_BuildAckTimer(const RDMHeader *header, uint16_t delay) {
                                            ptr - g_rdm_buffer);
 }
 
+int RDMResponder_BuildParamDescription(
+    const RDMHeader *header,
+    uint16_t param_id,
+    const ParameterDescription *description) {
+  uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
+  ptr = PushUInt16(ptr, param_id);
+  *ptr++ = description->pdl_size;
+  *ptr++ = description->data_type;
+  *ptr++ = description->command_class;
+  *ptr++ = 0u;  // type is always 0.
+  *ptr++ = description->unit;
+  *ptr++ = description->prefix;
+  ptr = PushUInt32(ptr, description->min_valid_value);
+  ptr = PushUInt32(ptr, description->max_valid_value);
+  ptr = PushUInt32(ptr, description->default_value);
+  ptr += RDMUtil_StringCopy((char*) ptr, RDM_DEFAULT_STRING_SIZE,
+                            description->description, RDM_DEFAULT_STRING_SIZE);
+  return RDMResponder_AddHeaderAndChecksum(header, ACK, ptr - g_rdm_buffer);
+}
+
 int RDMResponder_DispatchPID(const RDMHeader *header,
                              const uint8_t *param_data) {
   const ResponderDefinition *definition = g_responder->def;
