@@ -88,9 +88,9 @@ typedef struct {
   uint8_t command_class;  //!< Command classes accepted
   uint8_t unit;  //!< Data units
   uint8_t prefix;  //!< Data prefix
-  uint32_t min_valid_value;  //!< minimum value of the parameter
-  uint32_t max_valid_value;  //!< maximum value of the parameter
-  uint32_t default_value;  //!< the default value.
+  uint32_t min_valid_value;  //!< Minimum value of the parameter
+  uint32_t max_valid_value;  //!< Maximum value of the parameter
+  uint32_t default_value;  //!< The default value.
   const char *description;  //!< Parameter description.
 } ParameterDescription;
 
@@ -422,7 +422,7 @@ int RDMResponder_BuildAckTimer(const RDMHeader *incoming_header,
                                uint16_t delay);
 
 /**
- * @brief Build an PARAMETER_DESCRIPTION response.
+ * @brief Build a PARAMETER_DESCRIPTION response.
  * @param incoming_header The header of the incoming frame.
  * @param param_id The PID this description is for.
  * @param description the parameter description.
