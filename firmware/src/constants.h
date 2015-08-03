@@ -35,15 +35,17 @@
 
 /**
  * @brief The USB Vendor ID.
+ *
+ * See http://pid.codes/1209/ACED/
  */
-#define USB_DEVICE_VENDOR_ID 0x04D8
+#define USB_DEVICE_VENDOR_ID 0x1209
 
 /**
- * @brief The USB Product ID.
+ * @brief The Ja Rule USB Product ID.
  *
- * @todo Apply for a product ID.
+ * See http://pid.codes/1209/ACED/
  */
-#define USB_DEVICE_PRODUCT_ID 0x0053
+#define USB_DEVICE_PRODUCT_ID 0xaced
 
 /**
  * @brief The maximum size of a USB packet to / from the bulk endpoint.
