@@ -27,10 +27,10 @@
  * is a fairly typical setup when wireless DMX equipment is used.
  *
  * The proxy will ACK_TIMER any requests sent to the child devices. The
- * responses can then be fetched by sendind a GET QUEUED_MESSAGE to the
+ * responses can then be fetched by sending a GET QUEUED_MESSAGE to the
  * appropriate child device.
  *
- * Only a single response per-device will by buffered, if other requests are
+ * Only a single response per-device will be buffered, if other requests are
  * sent before a GET QUEUED_MESSAGE has been issued, the proxy will respond
  * with NR_PROXY_BUFFER_FULL.
  *
