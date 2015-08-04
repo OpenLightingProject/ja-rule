@@ -85,7 +85,7 @@ void APP_Initialize(void) {
 
   // RDM Handler
   RDMHandlerSettings rdm_handler_settings = {
-    .default_model = BASIC_RESPONDER_MODEL_ID,
+    .default_model = LED_MODEL_ID,
     .send_callback = NULL
   };
   RDMHandler_Initialize(&rdm_handler_settings);

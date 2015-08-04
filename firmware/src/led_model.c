@@ -190,7 +190,7 @@ static int LEDModel_HandleRequest(const RDMHeader *header,
 
 static void LEDModel_Tasks() {}
 
-const ModelEntry SIMPLE_MODEL_ENTRY = {
+const ModelEntry LED_MODEL_ENTRY = {
   .model_id = LED_MODEL_ID,
   .activate_fn = LEDModel_Activate,
   .deactivate_fn = LEDModel_Deactivate,

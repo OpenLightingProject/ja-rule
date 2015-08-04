@@ -41,7 +41,6 @@
         <itemPath>../src/spi_rgb.h</itemPath>
         <itemPath>../src/rdm_util.h</itemPath>
         <itemPath>../src/rdm_handler.h</itemPath>
-        <itemPath>../src/simple_model.h</itemPath>
         <itemPath>../src/rdm_model.h</itemPath>
         <itemPath>../src/macros.h</itemPath>
         <itemPath>../src/rdm_buffer.h</itemPath>
@@ -51,6 +50,7 @@
         <itemPath>../src/dimmer_model.h</itemPath>
         <itemPath>../src/receiver_counters.h</itemPath>
         <itemPath>../src/proxy_model.h</itemPath>
+        <itemPath>../src/led_model.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -135,7 +135,6 @@
         <itemPath>../src/spi_rgb.c</itemPath>
         <itemPath>../src/rdm_util.c</itemPath>
         <itemPath>../src/rdm_handler.c</itemPath>
-        <itemPath>../src/simple_model.c</itemPath>
         <itemPath>../src/rdm_buffer.c</itemPath>
         <itemPath>../src/moving_light.c</itemPath>
         <itemPath>../src/sensor_model.c</itemPath>
@@ -143,6 +142,7 @@
         <itemPath>../src/dimmer_model.c</itemPath>
         <itemPath>../src/receiver_counters.c</itemPath>
         <itemPath>../src/proxy_model.c</itemPath>
+        <itemPath>../src/led_model.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
