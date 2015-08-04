@@ -52,9 +52,9 @@ typedef enum {
   NULL_MODEL_ID = 0x0000,  //!< No model set
 
   /**
-   * @brief A simple RDM responder.
+   * @brief A LED driver model
    */
-  BASIC_RESPONDER_MODEL_ID = 0x0100,
+  LED_MODEL_ID = 0x0100,
 
   /**
    * @brief A responder that acts as a proxy.

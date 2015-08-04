@@ -13,10 +13,10 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * simple_model.c
+ * led_model.c
  * Copyright (C) 2015 Simon Newton
  */
-#include "simple_model.h"
+#include "led_model.h"
 
 #include <stdlib.h>
 
@@ -57,7 +57,7 @@ typedef struct {
    * case we could have up to 512 of them.
    */
   uint16_t pixel_count;
-} SimpleModel;
+} LEDModel;
 
 
 static const char PIXEL_TYPE_STRING[] = "Pixel Type";
@@ -87,12 +87,12 @@ static const ParameterDescription PIXEL_COUNT_DESCRIPTION = {
   .description = PIXEL_COUNT_STRING,
 };
 
-static SimpleModel g_model;
+static LEDModel g_model;
 
 // PID Handlers
 // ----------------------------------------------------------------------------
-int SimpleModel_GetParameterDescription(const RDMHeader *header,
-                                        UNUSED const uint8_t *param_data) {
+int LEDModel_GetParameterDescription(const RDMHeader *header,
+                                     UNUSED const uint8_t *param_data) {
   const uint16_t param_id = ExtractUInt16(param_data);
   const ParameterDescription *description = NULL;
   switch (param_id) {
@@ -112,13 +112,13 @@ int SimpleModel_GetParameterDescription(const RDMHeader *header,
   }
 }
 
-int SimpleModel_GetPixelType(const RDMHeader *header,
-                             UNUSED const uint8_t *param_data) {
+int LEDModel_GetPixelType(const RDMHeader *header,
+                          UNUSED const uint8_t *param_data) {
   return RDMResponder_GenericGetUInt16(header, g_model.pixel_type);
 }
 
-int SimpleModel_SetPixelType(const RDMHeader *header,
-                             const uint8_t *param_data) {
+int LEDModel_SetPixelType(const RDMHeader *header,
+                          const uint8_t *param_data) {
   if (header->param_data_length != sizeof(uint16_t)) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
@@ -130,12 +130,12 @@ int SimpleModel_SetPixelType(const RDMHeader *header,
   return RDMResponder_BuildSetAck(header);
 }
 
-int SimpleModel_GetPixelCount(const RDMHeader *header,
-                              UNUSED const uint8_t *param_data) {
+int LEDModel_GetPixelCount(const RDMHeader *header,
+                           UNUSED const uint8_t *param_data) {
   return RDMResponder_GenericGetUInt16(header, g_model.pixel_count);
 }
 
-int SimpleModel_SetPixelCount(const RDMHeader *header,
+int LEDModel_SetPixelCount(const RDMHeader *header,
                               const uint8_t *param_data) {
   if (header->param_data_length != sizeof(uint16_t)) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
@@ -151,9 +151,9 @@ int SimpleModel_SetPixelCount(const RDMHeader *header,
 
 // Public Functions
 // ----------------------------------------------------------------------------
-void SimpleModel_Initialize() {}
+void LEDModel_Initialize() {}
 
-static void SimpleModel_Activate() {
+static void LEDModel_Activate() {
   g_responder->def = &RESPONDER_DEFINITION;
   RDMResponder_ResetToFactoryDefaults();
 
@@ -161,10 +161,10 @@ static void SimpleModel_Activate() {
   g_model.pixel_count = DEFAULT_PIXEL_COUNT;
 }
 
-static void SimpleModel_Deactivate() {}
+static void LEDModel_Deactivate() {}
 
-static int SimpleModel_HandleRequest(const RDMHeader *header,
-                                     const uint8_t *param_data) {
+static int LEDModel_HandleRequest(const RDMHeader *header,
+                                  const uint8_t *param_data) {
   if (!RDMUtil_RequiresAction(g_responder->uid, header->dest_uid)) {
     return RDM_RESPONDER_NO_RESPONSE;
   }
@@ -188,21 +188,21 @@ static int SimpleModel_HandleRequest(const RDMHeader *header,
   return RDMResponder_DispatchPID(header, param_data);
 }
 
-static void SimpleModel_Tasks() {}
+static void LEDModel_Tasks() {}
 
 const ModelEntry SIMPLE_MODEL_ENTRY = {
-  .model_id = BASIC_RESPONDER_MODEL_ID,
-  .activate_fn = SimpleModel_Activate,
-  .deactivate_fn = SimpleModel_Deactivate,
+  .model_id = LED_MODEL_ID,
+  .activate_fn = LEDModel_Activate,
+  .deactivate_fn = LEDModel_Deactivate,
   .ioctl_fn = RDMResponder_Ioctl,
-  .request_fn = SimpleModel_HandleRequest,
-  .tasks_fn = SimpleModel_Tasks
+  .request_fn = LEDModel_HandleRequest,
+  .tasks_fn = LEDModel_Tasks
 };
 
 static const PIDDescriptor PID_DESCRIPTORS[] = {
   {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0u,
     (PIDCommandHandler) NULL},
-  {PID_PARAMETER_DESCRIPTION, SimpleModel_GetParameterDescription, 2u,
+  {PID_PARAMETER_DESCRIPTION, LEDModel_GetParameterDescription, 2u,
     (PIDCommandHandler) NULL},
   {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0u, (PIDCommandHandler) NULL},
   {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0u,
@@ -217,8 +217,8 @@ static const PIDDescriptor PID_DESCRIPTORS[] = {
     (PIDCommandHandler) NULL},
   {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0u,
     RDMResponder_SetIdentifyDevice},
-  {PID_PIXEL_TYPE, SimpleModel_GetPixelType, 0u, SimpleModel_SetPixelType},
-  {PID_PIXEL_COUNT, SimpleModel_GetPixelCount, 0u, SimpleModel_SetPixelCount}
+  {PID_PIXEL_TYPE, LEDModel_GetPixelType, 0u, LEDModel_SetPixelType},
+  {PID_PIXEL_COUNT, LEDModel_GetPixelCount, 0u, LEDModel_SetPixelCount}
 };
 
 static const ProductDetailIds PRODUCT_DETAIL_ID_LIST = {
@@ -239,6 +239,6 @@ static const ResponderDefinition RESPONDER_DEFINITION = {
   .product_detail_ids = &PRODUCT_DETAIL_ID_LIST,
   .default_device_label = DEFAULT_DEVICE_LABEL,
   .software_version = SOFTWARE_VERSION,
-  .model_id = BASIC_RESPONDER_MODEL_ID,
+  .model_id = LED_MODEL_ID,
   .product_category = PRODUCT_CATEGORY_TEST_EQUIPMENT,
 };

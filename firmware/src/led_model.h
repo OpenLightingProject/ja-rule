@@ -13,19 +13,19 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * simple_model.h
+ * led_model.h
  * Copyright (C) 2015 Simon Newton
  */
 
 /**
  * @addtogroup rdm_models
  * @{
- * @file simple_model.h
- * @brief A simple RDM Model for controlling RGB pixels.
+ * @file led_model.h
+ * @brief A led RDM Model for controlling RGB pixels.
  */
 
-#ifndef FIRMWARE_SRC_SIMPLE_MODEL_H_
-#define FIRMWARE_SRC_SIMPLE_MODEL_H_
+#ifndef FIRMWARE_SRC_LED_MODEL_H_
+#define FIRMWARE_SRC_LED_MODEL_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -38,14 +38,14 @@ extern "C" {
 #endif
 
 /**
- * @brief The ModelEntry for the Simple Model
+ * @brief The ModelEntry for the LED Model
  */
-extern const ModelEntry SIMPLE_MODEL_ENTRY;
+extern const ModelEntry LED_MODEL_ENTRY;
 
 /**
- * @brief Initialize the simple model.
+ * @brief Initialize the led model.
  */
-void SimpleModel_Initialize();
+void LEDModel_Initialize();
 
 #ifdef __cplusplus
 }
@@ -55,4 +55,4 @@ void SimpleModel_Initialize();
  * @}
  */
 
-#endif  // FIRMWARE_SRC_SIMPLE_MODEL_H_
+#endif  // FIRMWARE_SRC_LED_MODEL_H_

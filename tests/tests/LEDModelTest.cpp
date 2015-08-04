@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SimpleModelTest.cpp
- * Tests for the Simple Model RDM responder.
+ * LEDModelTest.cpp
+ * Tests for the LED Model RDM responder.
  * Copyright (C) 2015 Simon Newton
  */
 
@@ -28,7 +28,7 @@
 #include <string.h>
 #include <memory>
 
-#include "simple_model.h"
+#include "led_model.h"
 #include "rdm.h"
 #include "rdm_buffer.h"
 #include "rdm_responder.h"
@@ -46,15 +46,15 @@ using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
 using std::unique_ptr;
 
-class SimpleModelTest : public ModelTest {
+class LEDModelTest : public ModelTest {
  public:
-  SimpleModelTest() : ModelTest(&SIMPLE_MODEL_ENTRY) {}
+  LEDModelTest() : ModelTest(&LED_MODEL_ENTRY) {}
 
   void SetUp() {
     RDMResponderSettings settings;
     memcpy(settings.uid, TEST_UID, UID_LENGTH);
     RDMResponder_Initialize(&settings);
-    SimpleModel_Initialize();
-    SIMPLE_MODEL_ENTRY.activate_fn();
+    LEDModel_Initialize();
+    LED_MODEL_ENTRY.activate_fn();
   }
 };

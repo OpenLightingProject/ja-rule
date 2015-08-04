@@ -23,6 +23,7 @@
 
 #include "coarse_timer.h"
 #include "dimmer_model.h"
+#include "led_model.h"
 #include "message_handler.h"
 #include "moving_light.h"
 #include "network_model.h"
@@ -32,7 +33,6 @@
 #include "rdm_responder.h"
 #include "receiver_counters.h"
 #include "sensor_model.h"
-#include "simple_model.h"
 #include "spi_rgb.h"
 #include "stream_decoder.h"
 #include "syslog.h"
@@ -91,8 +91,8 @@ void APP_Initialize(void) {
   RDMHandler_Initialize(&rdm_handler_settings);
 
   // Initialize RDM Models, keep these in Model ID order.
-  SimpleModel_Initialize();
-  RDMHandler_AddModel(&SIMPLE_MODEL_ENTRY);
+  LEDModel_Initialize();
+  RDMHandler_AddModel(&LED_MODEL_ENTRY);
 
   ProxyModel_Initialize();
   RDMHandler_AddModel(&PROXY_MODEL_ENTRY);
