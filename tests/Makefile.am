@@ -18,6 +18,7 @@ noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
                      src/libcoarsetimer.la \
                      src/libdimmermodel.la \
                      src/libflags.la \
+                     src/libledmodel.la \
                      src/libmessagehandler.la \
                      src/libnetworkmodel.la \
                      src/libproxymodel.la \
@@ -28,7 +29,6 @@ noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
                      src/librdmutil.la \
                      src/libreceivercounters.la \
                      src/libresponder.la \
-                     src/libsimplemodel.la \
                      src/libspirgb.la \
                      src/libstreamdecoder.la \
                      src/libtransceiver.la \
@@ -62,6 +62,9 @@ src_libdimmermodel_la_CFLAGS = $(BUILD_FLAGS)
 src_libflags_la_SOURCES = src/flags.c
 src_libflags_la_CFLAGS = $(BUILD_FLAGS)
 
+src_libledmodel_la_SOURCES = src/led_model.c
+src_libledmodel_la_CFLAGS = $(BUILD_FLAGS)
+
 src_libmessagehandler_la_SOURCES = src/message_handler.c
 src_libmessagehandler_la_CFLAGS = $(BUILD_FLAGS)
 
@@ -91,9 +94,6 @@ src_libreceivercounters_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libresponder_la_SOURCES = src/responder.c
 src_libresponder_la_CFLAGS = $(BUILD_FLAGS)
-
-src_libsimplemodel_la_SOURCES = src/simple_model.c
-src_libsimplemodel_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libspirgb_la_SOURCES = src/spi_rgb.c
 src_libspirgb_la_CFLAGS = $(BUILD_FLAGS)
