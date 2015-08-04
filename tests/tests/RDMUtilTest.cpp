@@ -66,11 +66,11 @@ TEST_F(RDMUtilTest, testRequiresAction) {
   EXPECT_FALSE(RDMUtil_RequiresAction(OUR_UID, OTHER_UID));
 }
 
-TEST_F(RDMUtilTest, testRequiresResponse) {
-  EXPECT_TRUE(RDMUtil_RequiresResponse(OUR_UID));
-  EXPECT_FALSE(RDMUtil_RequiresResponse(VENDORCAST_UID));
-  EXPECT_FALSE(RDMUtil_RequiresResponse(BROADCAST_UID));
-  EXPECT_FALSE(RDMUtil_RequiresResponse(OTHER_VENDORCAST_UID));
+TEST_F(RDMUtilTest, testIsUnicast) {
+  EXPECT_TRUE(RDMUtil_IsUnicast(OUR_UID));
+  EXPECT_FALSE(RDMUtil_IsUnicast(VENDORCAST_UID));
+  EXPECT_FALSE(RDMUtil_IsUnicast(BROADCAST_UID));
+  EXPECT_FALSE(RDMUtil_IsUnicast(OTHER_VENDORCAST_UID));
 }
 
 TEST_F(RDMUtilTest, testAppendChecksum) {

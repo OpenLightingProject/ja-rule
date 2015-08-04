@@ -171,7 +171,7 @@ static int HandleChildRequest(const RDMHeader *header,
   if (header->command_class == GET_COMMAND &&
       ntohs(header->param_id) == PID_QUEUED_MESSAGE &&
       device->free_size_count != PROXY_BUFFERS_PER_CHILD &&
-      RDMUtil_RequiresResponse(header->dest_uid)) {
+      RDMUtil_IsUnicast(header->dest_uid)) {
     response_size = MaybeRespondWithQueuedMessage(header, param_data,
                                                   child_index);
     if (response_size) {
@@ -180,7 +180,7 @@ static int HandleChildRequest(const RDMHeader *header,
   }
 
   // If the request is unicast, and we're out of buffer space then NACK.
-  if (RDMUtil_RequiresResponse(header->dest_uid) && device->next != NULL) {
+  if (RDMUtil_IsUnicast(header->dest_uid) && device->next != NULL) {
     return RDMResponder_BuildNack(header, NR_PROXY_BUFFER_FULL);
   }
 

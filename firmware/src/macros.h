@@ -46,7 +46,7 @@
  * @param header The RDMHeader of the request.
  */
 #define ReturnUnlessUnicast(header) \
-if (!RDMUtil_RequiresResponse(header->dest_uid)) {\
+if (!RDMUtil_IsUnicast(header->dest_uid)) {\
   return RDM_RESPONDER_NO_RESPONSE; \
 }
 
