@@ -18,7 +18,7 @@
  */
 
 #include "app.h"
-#include "dfu.h"
+#include "dfu_constants.h"
 #include "constants.h"
 
 #include "system_config.h"
