@@ -147,7 +147,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #define DRV_USB_INSTANCES_NUMBER    1
 
 /* Interrupt mode enabled */
-#define DRV_USB_INTERRUPT_MODE      true
+#define DRV_USB_INTERRUPT_MODE      false
 
 /* Number of Endpoints used */
 #define DRV_USB_ENDPOINTS_NUMBER    1

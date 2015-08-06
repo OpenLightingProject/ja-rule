@@ -116,17 +116,17 @@
       <Template>
         <Name>system_config.h</Name>
         <Path>Header Files/app/system_config/default</Path>
-        <Checksum>FA9E2AD2E92DDE5B9FFD108CD3B6EB5B</Checksum>
+        <Checksum>7B4EB25A0D646773E78D2C94C25FBAC4</Checksum>
       </Template>
       <Template>
         <Name>system_init.c</Name>
         <Path>Source Files/app/system_config/default</Path>
-        <Checksum>81ECEB97A2E89CED1CDE2DC0B043A253</Checksum>
+        <Checksum>925B50B66A4CA7352E051E63A8625310</Checksum>
       </Template>
       <Template>
         <Name>system_interrupt.c</Name>
         <Path>Source Files/app/system_config/default</Path>
-        <Checksum>75EB12F8F93B3CD8CC5C8735D7E48E31</Checksum>
+        <Checksum>9AC33B2960C8DF72C5EB0E3662303FF4</Checksum>
       </Template>
       <Template>
         <Name>sys_ports_static.c</Name>

@@ -277,16 +277,12 @@ const USB_DEVICE_INIT usbDevInitData =
     .moduleInit = {SYS_MODULE_POWER_RUN_FULL},
 
     /* Identifies peripheral (PLIB-level) ID */
-    .usbID = USB_ID_1,
 
     /* Stop in idle */
     .stopInIdle = false,
 
     /* Suspend in sleep */
     .suspendInSleep = false,
-    /* Interrupt Source for USB module */
-    .interruptSource = INT_SOURCE_USB_1,
-
     /* Endpoint table */
     .endpointTable= endPointTable,
 
@@ -389,11 +385,6 @@ void SYS_Initialize ( void* data )
     SYS_INT_Initialize();
 
     /* Initialize Middleware */
-    /* Set priority of USB interrupt source */
-    SYS_INT_VectorPrioritySet(INT_VECTOR_USB1, INT_PRIORITY_LEVEL4);
-
-    /* Set Sub-priority of USB interrupt source */
-    SYS_INT_VectorSubprioritySet(INT_VECTOR_USB1, INT_SUBPRIORITY_LEVEL0);
 
     /* Initialize the USB device layer */
     sysObj.usbDevObject0 = USB_DEVICE_Initialize (USB_DEVICE_INDEX_0 , ( SYS_MODULE_INIT* ) & usbDevInitData);

@@ -62,6 +62,8 @@ static void HandleDFUEvent(USB_SETUP_PACKET *setupPacket) {
  * @param event The type of event
  * @param event_data Data associated with the event
  * @param context The context (unused).
+ *
+ * This is called from the main event loop, since we're using polled mode USB.
  */
 static void USBEventHandler(USB_DEVICE_EVENT event,
                             void* event_data,
