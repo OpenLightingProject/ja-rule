@@ -22,18 +22,13 @@
 #include <string.h>
 
 #include "constants.h"
-#include "dfu.h"
 #include "flags.h"
 #include "stream_decoder.h"
 #include "system_config.h"
 #include "system_definitions.h"
 #include "system_pipeline.h"
-#include "syslog.h"
 #include "transport.h"
 #include "utils.h"
-
-
-static const uint16_t DFU_INTERFACE_INDEX = 3;
 
 typedef enum {
   USB_STATE_INIT = 0,
@@ -73,28 +68,6 @@ uint8_t receivedDataBuffer[USB_READ_BUFFER_SIZE];
 
 // Transmit data buffer
 uint8_t transmitDataBuffer[USB_READ_BUFFER_SIZE];
-
-static uint8_t STATUS_RESPONSE[6];
-
-static void HandleDFUEvent(USB_SETUP_PACKET *setupPacket) {
-  if (setupPacket->Recipient == USB_SETUP_REQUEST_DIRECTION_DEVICE_TO_HOST &&
-      setupPacket->bRequest == DFU_GETSTATUS) {
-    // DFU_GETSTATUS request
-    SysLog_Print(SYSLOG_INFO, "DFU_GETSTATUS");
-
-    STATUS_RESPONSE[0] = 0;
-    STATUS_RESPONSE[1] = 0;
-    STATUS_RESPONSE[2] = 0;
-    STATUS_RESPONSE[3] = 0;
-    STATUS_RESPONSE[4] = 0;
-    STATUS_RESPONSE[5] = 0;
-    USB_DEVICE_ControlSend(g_usb_transport_data.usb_device,
-                           STATUS_RESPONSE, 6);
-  } else {
-    USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device,
-                             USB_DEVICE_CONTROL_STATUS_ERROR);
-  }
-}
 
 /**
  * @brief Called when device events occur.
@@ -139,11 +112,7 @@ void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
     case USB_DEVICE_EVENT_CONTROL_TRANSFER_SETUP_REQUEST:
       // This means we have received a setup packet
       setupPacket = (USB_SETUP_PACKET*) event_data;
-      if (setupPacket->RequestType == USB_SETUP_REQUEST_TYPE_CLASS &&
-          setupPacket->DataDir == USB_SETUP_REQUEST_RECIPIENT_INTERFACE &&
-          setupPacket->wIndex == DFU_INTERFACE_INDEX) {
-        HandleDFUEvent(setupPacket);
-      } else if (setupPacket->bRequest == USB_REQUEST_SET_INTERFACE) {
+      if (setupPacket->bRequest == USB_REQUEST_SET_INTERFACE) {
         /* If we have got the SET_INTERFACE request, we just acknowledge
          for now. This demo has only one alternate setting which is already
          active. */
@@ -155,12 +124,6 @@ void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
         USB_DEVICE_ControlSend(g_usb_transport_data.usb_device,
                                &g_usb_transport_data.altSetting, 1);
       } else {
-        SysLog_Print(SYSLOG_INFO, "control %d %d %d %d %d\n",
-                     setupPacket->bmRequestType,
-                     setupPacket->bRequest,
-                     setupPacket->wValue,
-                     setupPacket->wIndex,
-                     setupPacket->wLength);
         // We have received a request that we cannot handle. Stall it
         USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device,
                                  USB_DEVICE_CONTROL_STATUS_ERROR);
