@@ -63,3 +63,10 @@ ja-rule.X/nbproject/private/*
 /firmware/ja-rule.X/disassembly/
 /firmware/ja-rule.X/dist/mx_795_512l/
 /firmware/ja-rule.X/nbproject/private/
+/Bootloader/firmware/Bootloader.X/nbproject/private/
+/Bootloader/firmware/Bootloader.X/build/default/
+/Bootloader/firmware/Bootloader.X/dist/default/
+/Bootloader/firmware/Bootloader.X/nbproject/Makefile*
+/Bootloader/firmware/Bootloader.X/Makefile
+/Bootloader/firmware/Bootloader.X/nbproject/Package-default.bash
+/Bootloader/firmware/src/system_config/default/asset.cache

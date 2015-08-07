@@ -1,0 +1,72 @@
+mainmenu "MPLAB Harmony & Application Configuration"
+
+menu "Application Configuration"
+
+config APP_IDX_0
+    bool
+    default y
+config APP_IDX_1
+    bool
+config APP_IDX_2
+    bool
+config APP_IDX_3
+    bool
+config APP_IDX_4
+    bool
+config APP_IDX_5
+    bool
+config APP_IDX_6
+    bool
+config APP_IDX_7
+    bool
+config APP_IDX_8
+    bool
+config APP_IDX_9
+    bool
+config APP_IDX_10
+    bool
+
+config APP_NAME_0
+    string
+    default "app"
+config APP_NAME_1
+    string
+    default "app1"
+config APP_NAME_2
+    string
+    default "app2"
+config APP_NAME_3
+    string
+    default "app3"
+config APP_NAME_4
+    string
+    default "app4"
+config APP_NAME_5
+    string
+    default "app5"
+config APP_NAME_6
+    string
+    default "app6"
+config APP_NAME_7
+    string
+    default "app7"
+config APP_NAME_8
+    string
+    default "app8"
+config APP_NAME_9
+    string
+    default "app9"
+
+config APP_INSTANCES
+    int "Number of Applications (states)"
+    default 1
+    range 1 10
+
+source "$HARMONY_VERSION_PATH/utilities/mhc/config/app_name_idx.ftl" 10 instances
+
+#insert application specific configuration here
+
+endmenu
+
+source "$HARMONY_VERSION_PATH/config/harmony.hconfig"
+
