@@ -317,6 +317,8 @@ void APP_Initialize(void) {
 }
 
 void APP_Tasks(void) {
+  static int count = 0;
+
   switch (g_app.state) {
     case APP_STATE_INIT:
       g_app.usb_device = USB_DEVICE_Open(USB_DEVICE_INDEX_0,
@@ -347,6 +349,11 @@ void APP_Tasks(void) {
         g_app.has_new_firmware = false;
         // pretend we're done and switch back to DFU_STATE_MANIFEST_SYNC;
         g_app.dfu_state = DFU_STATE_MANIFEST_SYNC;
+      }
+
+      if (++count > 50000) {
+        BSP_LEDToggle(BSP_LED_1);
+        count = 0;
       }
       break;
     case APP_STATE_BOOT:
