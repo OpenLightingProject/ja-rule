@@ -78,7 +78,7 @@ static inline void DFUDownload(USB_SETUP_PACKET *packet) {
   if (packet->wLength) {
     USB_DEVICE_ControlReceive(g_app.usb_device, DATA_BUFFER, packet->wLength);
   } else {
-    // Verify image here
+    // TODO(simon): Verify image here
     g_app.dfu_state = DFU_STATE_MANIFEST_SYNC;
     g_app.has_new_firmware = true;
     USB_DEVICE_ControlStatus(g_app.usb_device, USB_DEVICE_CONTROL_STATUS_OK);
@@ -87,7 +87,7 @@ static inline void DFUDownload(USB_SETUP_PACKET *packet) {
 
 static inline void DFUGetStatus() {
   // Some Get Status messages trigger a state change.
-  // The status resposne always contains the *next* state, so figure that out
+  // The status response always contains the *next* state, so figure that out
   // first.
   if (g_app.dfu_state == DFU_STATE_DNLOAD_SYNC) {
     g_app.dfu_state = DFU_STATE_DNLOAD_IDLE;
@@ -285,7 +285,7 @@ static void USBEventHandler(USB_DEVICE_EVENT event,
       DFUTransferComplete();
       break;
     case USB_DEVICE_EVENT_CONTROL_TRANSFER_DATA_SENT:
-      // The harmony examples show a call to USB_DEVICE_ControlStatus() here,
+      // The Harmony examples show a call to USB_DEVICE_ControlStatus() here,
       // but that doesn't make sense, since for an IN transfer the host side
       // ACKs. Adding the call causes everything to break, so I think the
       // example is wrong.
@@ -350,7 +350,7 @@ void APP_Tasks(void) {
       }
       break;
     case APP_STATE_BOOT:
-      // Do boot
+      // TODO(simon): Do boot
     default:
       break;
   }
