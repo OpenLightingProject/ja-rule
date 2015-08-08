@@ -49,8 +49,9 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 #include "system_config.h"
 #include "system_definitions.h"
-#include "constants.h"
 #include "app.h"
+#include "constants.h"
+#include "dfu_constants.h"
 
 
 // ****************************************************************************
@@ -137,7 +138,7 @@ const USB_DEVICE_DESCRIPTOR fullSpeedDeviceDescriptor = {
   0x00, // Class Code
   0x00, // Subclass code
   0x00, // Protocol code
-  USB_MAX_PACKET_SIZE, // Max packet size for EP0
+  DFU_BLOCK_SIZE, // Max packet size for EP0
   USB_DEVICE_VENDOR_ID, // Vendor ID: 0x04D8 is Microchip's Vendor ID
   USB_DEVICE_PRODUCT_ID, // Product ID: 0x0053
   0x0000, // Device release number in BCD format
@@ -174,9 +175,9 @@ const uint8_t fullSpeedConfigurationDescriptor1[] = {
   // DFU functional descriptor
   0x09,  // size
   0x21,  // DFU functional descriptor
-  0x01,  // download capable
+  DFU_MANIFESTATION_TOLERANT | DFU_CAN_DOWNLOAD,  // download capable
   0x00, 0x00,  // detatch timeout
-  0x10, 0x00,  // transfer size, 16 bytes?
+  DFU_BLOCK_SIZE, 0x00,  // transfer size
   0x01, 0x10   // Rev 1.1
 };
 

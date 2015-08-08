@@ -17,8 +17,8 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef _APP_H
-#define _APP_H
+#ifndef BOOTLOADER_FIRMWARE_SRC_APP_H_
+#define BOOTLOADER_FIRMWARE_SRC_APP_H_
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -39,4 +39,4 @@ void APP_Initialize(void);
 void APP_Tasks(void);
 
 
-#endif /* _APP_H */
+#endif  // BOOTLOADER_FIRMWARE_SRC_APP_H_
