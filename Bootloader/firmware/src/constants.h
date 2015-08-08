@@ -37,28 +37,28 @@
  *
  * See http://pid.codes/1209/ACEE/
  */
-#define USB_DEVICE_VENDOR_ID 0x1209
+enum { USB_DEVICE_VENDOR_ID = 0x1209 };
 
 /**
  * @brief The Ja Rule Bootloaded USB Product ID.
  *
  * See http://pid.codes/1209/ACEE/
  */
-#define USB_DEVICE_PRODUCT_ID 0xacee
+enum { USB_DEVICE_PRODUCT_ID = 0xacee };
 
 /**
- * @brief The maximum size of a USB packet to / from the control endpoint.
+ * @brief The maximum size of the firmware blocks.
  *
- * 64 bytes is the highest value a full speed, bulk endpoint can use.
+ * Per the USB spec, this should be 8, 16, 32 or 64 bytes.
  */
-#define USB_MAX_PACKET_SIZE 64u
+enum { DFU_BLOCK_SIZE = 64 };
 
 /**
  * @brief The DFU interface index.
  *
  * 64 bytes is the highest value a full speed, bulk endpoint can use.
  */
-#define USB_DFU_INTERFACE_INDEX 0u
+enum { USB_DFU_INTERFACE_INDEX = 0 };
 
 
 #endif  // BOOTLOADER_FIRMWARE_SRC_CONSTANTS_H_
