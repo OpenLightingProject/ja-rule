@@ -64,7 +64,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 #pragma config DEBUG =      OFF
 #pragma config ICESEL =     ICS_PGx2
-#pragma config PWP =        0xff
+#pragma config PWP =        0xf9
 #pragma config BWP =        OFF
 #pragma config CP =         OFF
 
@@ -394,6 +394,7 @@ void SYS_Initialize ( void* data )
 
     /* Initialize the Application */
     APP_Initialize();
+
 }
 
 /*******************************************************************************

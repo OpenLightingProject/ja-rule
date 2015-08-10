@@ -96,12 +96,12 @@
         <Path>Header Files/framework/system/devcon</Path>
       </File>
       <File>
-        <Name>bsp_config.h</Name>
-        <Path>Header Files/bsp/pic32mx_eth_sk2</Path>
-      </File>
-      <File>
         <Name>sys_devcon_pic32mx.c</Name>
         <Path>Source Files/framework/system/devcon/src</Path>
+      </File>
+      <File>
+        <Name>bsp_config.h</Name>
+        <Path>Header Files/bsp/pic32mx_eth_sk2</Path>
       </File>
     </Files>
     <Templates>
@@ -121,17 +121,11 @@
       <Template>
         <Name>system_init.c</Name>
         <Path>Source Files/app/system_config/default</Path>
-        <Checksum>925B50B66A4CA7352E051E63A8625310</Checksum>
+        <Checksum>384FC7C8D51A10F30BA4E09309CE53B1</Checksum>
       </Template>
       <Template>
-        <Name>system_interrupt.c</Name>
-        <Path>Source Files/app/system_config/default</Path>
-        <Checksum>9AC33B2960C8DF72C5EB0E3662303FF4</Checksum>
-      </Template>
-      <Template>
-        <Name>sys_ports_static.c</Name>
-        <Path>Source Files/app/system_config/default/framework/system/ports/src</Path>
-        <Checksum>91CF9ED936A4097E90E3F606508FFFF7</Checksum>
+        <Name>app.h</Name>
+        <Path>Header Files/app</Path>
       </Template>
       <Template>
         <Name>sys_clk_static.h</Name>
@@ -139,8 +133,14 @@
         <Checksum>999179DADE9ECD59953526F5E9F83ACC</Checksum>
       </Template>
       <Template>
-        <Name>app.h</Name>
-        <Path>Header Files/app</Path>
+        <Name>sys_ports_static.c</Name>
+        <Path>Source Files/app/system_config/default/framework/system/ports/src</Path>
+        <Checksum>91CF9ED936A4097E90E3F606508FFFF7</Checksum>
+      </Template>
+      <Template>
+        <Name>system_interrupt.c</Name>
+        <Path>Source Files/app/system_config/default</Path>
+        <Checksum>9AC33B2960C8DF72C5EB0E3662303FF4</Checksum>
       </Template>
       <Template>
         <Name>sys_clk_static.c</Name>

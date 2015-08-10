@@ -21,6 +21,7 @@
         <itemPath>../src/app.h</itemPath>
         <itemPath>../src/dfu_constants.h</itemPath>
         <itemPath>../src/constants.h</itemPath>
+        <itemPath>../src/flash.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">
@@ -81,6 +82,7 @@
         </logicalFolder>
         <itemPath>../src/app.c</itemPath>
         <itemPath>../src/main.c</itemPath>
+        <itemPath>../src/flash.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">
@@ -355,6 +357,7 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
+        <property key="firmware.download.all" value="false"/>
         <property key="memories.configurationmemory" value="true"/>
         <property key="memories.dataflash" value="true"/>
         <property key="memories.eeprom" value="true"/>
