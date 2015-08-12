@@ -505,7 +505,7 @@ int main(int argc, char *argv[]) {
   // Setup the output file path, and make sure the input file ends in
   // HEX_SUFFIX.
   char output_file[strlen(options.input_file) + 1];
-  strncpy(output_file, options.input_file, strlen(options.input_file));
+  strncpy(output_file, options.input_file, strlen(options.input_file) + 1);
 
   char *ext = strrchr(output_file, '.');
   if (ext == NULL || strlen(ext) != strlen(HEX_SUFFIX) ||

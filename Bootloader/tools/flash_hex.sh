@@ -23,6 +23,8 @@ if [ ! -x $hex2dfu ]; then
   exit;
 fi
 
+$hex2dfu $hex_file;
+
 temp=$($DFU_UTIL --help > /dev/null 2>&1)
 
 if [ $? -ne 0 ]; then
@@ -37,4 +39,10 @@ if [ $? -ne 0 ]; then
 fi
 
 dfu_file=${hex_file%.hex}.dfu
+
+if [ ! -r $dfu_file ]; then
+  echo 'Missing .dfu file';
+  exit;
+fi
+
 $DFU_UTIL -D $dfu_file
