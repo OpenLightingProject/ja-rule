@@ -49,10 +49,7 @@ bool Flash_ErasePage(void *address) {
     ;
   }
 
-  if (PLIB_NVM_WriteOperationHasTerminated(NVM_ID_0)) {
-    return false;
-  }
-  return true;
+  return !PLIB_NVM_WriteOperationHasTerminated(NVM_ID_0);
 }
 
 bool Flash_WriteWord(void *address, uint32_t data) {

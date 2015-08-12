@@ -27,8 +27,6 @@
  * @{
  * @file flash.h
  * @brief Flash memory operations.
- *
- * This file defines constants that are not expected to change.
  */
 
 /**
