@@ -42,6 +42,7 @@ typedef struct {
   uint16_t vendor_id;
   uint16_t product_id;
   bool help;
+  bool force;
 } Options;
 
 typedef enum {
@@ -416,10 +417,13 @@ bool InitOptions(Options *options, int argc, char *argv[]) {
   options->vendor_id = DEFAULT_VENDOR_ID;
   options->product_id = DEFAULT_PRODUCT_ID;
   options->help = false;
+  options->force = false;
 
   static struct option long_options[] = {
-      {"pid", required_argument, 0, 'p'},
       {"help", no_argument, 0, 'h'},
+      {"lower", required_argument, 0, 'l'},
+      {"pid", required_argument, 0, 'p'},
+      {"upper", required_argument, 0, 'u'},
       {"vid", required_argument, 0, 'v'},
       {0, 0, 0, 0}
     };
@@ -428,7 +432,7 @@ bool InitOptions(Options *options, int argc, char *argv[]) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "p:hv:", long_options, &option_index);
+    c = getopt_long(argc, argv, "hl:p:u:v:", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -479,6 +483,12 @@ bool InitOptions(Options *options, int argc, char *argv[]) {
 
   if (options->upper_address <= options->lower_address) {
     printf("Upper address must be greater than lower address\n");
+    exit(EX_USAGE);
+  }
+
+  unsigned int data_size = options->upper_address - options->lower_address;
+  if (data_size > (1 << 19) && options->force == false) {
+    printf("Memory size is large: %d, pass --force to override\n", data_size);
     exit(EX_USAGE);
   }
 
