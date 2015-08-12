@@ -21,6 +21,7 @@
         <itemPath>../src/app.h</itemPath>
         <itemPath>../src/dfu_constants.h</itemPath>
         <itemPath>../src/constants.h</itemPath>
+        <itemPath>../src/flash.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">
@@ -52,6 +53,7 @@
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
                    projectFiles="true">
+      <itemPath>../linker/mx795F512L.ld</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -80,6 +82,7 @@
         </logicalFolder>
         <itemPath>../src/app.c</itemPath>
         <itemPath>../src/main.c</itemPath>
+        <itemPath>../src/flash.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">
@@ -137,6 +140,7 @@
   <sourceRootList>
     <Elem>../src</Elem>
     <Elem>../src/system_config/default</Elem>
+    <Elem>../linker</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -161,7 +165,7 @@
         </archiverTool>
         <loading>
           <useAlternateLoadableFile>false</useAlternateLoadableFile>
-          <parseOnProdLoad>false</parseOnProdLoad>
+          <parseOnProdLoad>true</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
       </compileType>
@@ -348,7 +352,31 @@
         <property key="voltagevalue" value="3.25"/>
       </PICkit3PlatformTool>
       <PKOBSKDEPlatformTool>
+        <property key="AutoSelectMemRanges" value="auto"/>
+        <property key="SecureSegment.SegmentProgramming" value="FullChipProgramming"/>
+        <property key="ToolFirmwareFilePath"
+                  value="Press to browse for a specific firmware version"/>
+        <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
         <property key="firmware.download.all" value="false"/>
+        <property key="memories.configurationmemory" value="true"/>
+        <property key="memories.dataflash" value="true"/>
+        <property key="memories.eeprom" value="true"/>
+        <property key="memories.id" value="true"/>
+        <property key="memories.programmemory" value="true"/>
+        <property key="memories.programmemory.end" value="0x1d07ffff"/>
+        <property key="memories.programmemory.start" value="0x1d000000"/>
+        <property key="memories.userotp" value="true"/>
+        <property key="poweroptions.powerenable" value="false"/>
+        <property key="programoptions.donoteraseauxmem" value="false"/>
+        <property key="programoptions.eraseb4program" value="true"/>
+        <property key="programoptions.preservedataflash" value="false"/>
+        <property key="programoptions.preserveeeprom" value="false"/>
+        <property key="programoptions.preserveprogramrange" value="false"/>
+        <property key="programoptions.preserveprogramrange.end" value="0x1d0001ff"/>
+        <property key="programoptions.preserveprogramrange.start" value="0x1d000000"/>
+        <property key="programoptions.usehighvoltageonmclr" value="false"/>
+        <property key="programoptions.uselvpprogramming" value="false"/>
+        <property key="voltagevalue" value="3.25"/>
       </PKOBSKDEPlatformTool>
     </conf>
   </confs>
