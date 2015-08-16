@@ -16,17 +16,12 @@
  * Copyright (C) 2015 Simon Newton.
  */
 
-#include <ctype.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <getopt.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sysexits.h>
-#include <unistd.h>
 
 #include "constants.h"
 #include "dfu.h"

@@ -26,7 +26,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
-#include <unistd.h>
 
 #include "constants.h"
 #include "dfu.h"

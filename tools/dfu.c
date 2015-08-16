@@ -186,7 +186,6 @@ bool WriteDFUFile(const FirmwareOptions *options,
 
   // Write the CRC
   if (!Write(fd, (uint8_t*) &crc, sizeof(crc))) {
-    printf("Failed to write DFU CRC\n");
     return false;
   }
   close(fd);

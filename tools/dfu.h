@@ -28,7 +28,6 @@
 typedef struct {
   uint16_t vendor_id;  //!< The vendor ID to use in the DFU suffix
   uint16_t product_id;  //!< The product ID to use in the DFU suffix.
-  bool invert_bytes;  //!< True to invert the  TODO(simon):....
 } FirmwareOptions;
 
 /**
@@ -39,8 +38,7 @@ typedef struct {
  * @param file The file to write to.
  *
  * This prepends a custom header (not part of the DFU spec) containing the
- * length of the DFU data and a CRC and appends the DFU
- * suffix.
+ * length of the DFU data & a CRC and also appends the DFU suffix.
  *
  * The reason for the prefix & suffix is that the DFU suffix is used by the
  * host side tool and not sent to the device. The prefix is a manufacturer
