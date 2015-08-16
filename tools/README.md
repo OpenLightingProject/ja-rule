@@ -14,7 +14,7 @@ bootloader expects each DFU transfer to contain a 16-byte header. The programs
 in this directory create .dfu files that satisfy these requirements.
 
 With the exception of flash_hex.sh, usage information for each program can be
-obtained by passing --help.
+obtained by running with --help.
 
 # Building the tools
 
@@ -64,11 +64,11 @@ $ dfu-util -D firmware.hex
 
 ## flash_hex.sh
 
-This automates the running hex2dfu and dfu-util -D above.
+This provides a single-tool to run hex2dfu and dfu-util -D above.
 
 ## uid2dfu
 
-The Ja Rule bootloader provides a DFU interface to writing the device's RDM
+The Ja Rule bootloader provides a DFU interface for writing the device's RDM
 UID. The uid2dfu tool will create a .dfu image containing a UID:
 
 ````
