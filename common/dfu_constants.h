@@ -17,8 +17,8 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef FIRMWARE_SRC_DFU_CONSTANTS_H_
-#define FIRMWARE_SRC_DFU_CONSTANTS_H_
+#ifndef COMMON_DFU_CONSTANTS_H_
+#define COMMON_DFU_CONSTANTS_H_
 
 /**
  * @file dfu_constants.h
@@ -109,4 +109,4 @@ enum { DFU_BLOCK_SIZE = 64 };
 }
 #endif
 
-#endif  // FIRMWARE_SRC_DFU_CONSTANTS_H_
+#endif  // COMMON_DFU_CONSTANTS_H_
