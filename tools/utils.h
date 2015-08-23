@@ -13,14 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * CRC polynomial 0xedb88320 – Contributed unknowingly by Gary S. Brown.
- * "Copyright (C) 1986 Gary S. Brown. You may use this program, or code or
- * tables extracted from it, as desired without restriction."
- *
- * The updcrc macro (referred to here as CalculateCRC) is derived from an
- * article Copyright 1986 by Stephen Satchell.
- *
- * Remainder portions of the code are Copyright (C) 2015 Simon Newton.
+ * Copyright (C) 2015 Simon Newton.
  */
 
 #ifndef TOOLS_UTILS_H_
