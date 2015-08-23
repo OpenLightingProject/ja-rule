@@ -1,4 +1,4 @@
-/* Default linker script, for normal executables */
+/* Linker script for the bootloader */
 _ebase_address = 0x9FC01000;
 
 /*************************************************************************
@@ -13,15 +13,6 @@ _DBG_EXCPT_ADDR                = 0xBFC00480;
 
 /*************************************************************************
  * Memory Regions
- *
- * Memory regions without attributes cannot be used for orphaned sections.
- * Only sections specifically assigned to these regions can be allocated
- * into these regions.
- *
- * The Debug exception vector is located at 0x9FC00480.
- *
- * The config_<address> sections are used to locate the config words at
- * their absolute addresses.
  *************************************************************************/
 MEMORY
 {

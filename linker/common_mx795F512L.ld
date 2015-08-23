@@ -1,4 +1,9 @@
-/* Default linker script, for normal executables */
+/*
+ * The parts of the linker script common to both the bootload and application.
+ *
+ * This is almost an exact copy of the default linker script, with the
+ * additions of the _boot_option and _uid locations.
+ */
 OUTPUT_FORMAT("elf32-tradlittlemips")
 OUTPUT_ARCH(pic32mx)
 ENTRY(_reset)
@@ -33,9 +38,6 @@ PROVIDE(_vector_spacing = 0x00000001);
 
 /*************************************************************************
  * Memory Address Equates
- * _RESET_ADDR                    -- Reset Vector
- * _BEV_EXCPT_ADDR                -- Boot exception Vector
- * _DBG_EXCPT_ADDR                -- In-circuit Debugging Exception Vector
  * _DBG_CODE_ADDR                 -- In-circuit Debug Executive address
  * _DBG_CODE_SIZE                 -- In-circuit Debug Executive size
  * _GEN_EXCPT_ADDR                -- General Exception Vector
@@ -50,8 +52,6 @@ _GEN_EXCPT_ADDR                = _ebase_address + 0x180;
  * Memory regions without attributes cannot be used for orphaned sections.
  * Only sections specifically assigned to these regions can be allocated
  * into these regions.
- *
- * The Debug exception vector is located at 0x9FC00480.
  *
  * The config_<address> sections are used to locate the config words at
  * their absolute addresses.
