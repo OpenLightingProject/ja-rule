@@ -40,7 +40,7 @@ BootOption BootloaderOptions_GetBootOption() {
         option = BOOT_BOOTLOADER;
         break;
       default:
-        ;
+        {}
     }
   }
   return option;
