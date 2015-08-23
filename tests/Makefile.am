@@ -12,7 +12,8 @@ WARNING_CXXFLAGS = -fvisibility-inlines-hidden
 # Code Under Test
 ##################################################
 
-BUILD_FLAGS = -I system_config -I harmony/include -I ../firmware/src $(WARNING_CFLAGS)
+BUILD_FLAGS = -I system_config -I harmony/include -I ../firmware/src \
+              $(WARNING_CFLAGS)
 
 noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
                      src/libcoarsetimer.la \
@@ -37,10 +38,12 @@ noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
 harmony_mocks_libharmonymock_la_SOURCES = \
     harmony/mocks/plib_ic_mock.cpp \
     harmony/mocks/plib_ic_mock.h \
+    harmony/mocks/plib_nvm_mock.cpp \
+    harmony/mocks/plib_nvm_mock.h \
     harmony/mocks/plib_ports_mock.cpp \
     harmony/mocks/plib_ports_mock.h \
-    harmony/mocks/plib_spi_mock.h \
     harmony/mocks/plib_spi_mock.cpp \
+    harmony/mocks/plib_spi_mock.h \
     harmony/mocks/plib_tmr_mock.cpp \
     harmony/mocks/plib_tmr_mock.h \
     harmony/mocks/plib_usart_mock.cpp \
@@ -48,7 +51,9 @@ harmony_mocks_libharmonymock_la_SOURCES = \
     harmony/mocks/sys_clk_mock.cpp \
     harmony/mocks/sys_clk_mock.h \
     harmony/mocks/sys_int_mock.cpp \
-    harmony/mocks/sys_int_mock.h
+    harmony/mocks/sys_int_mock.h \
+    harmony/mocks/usb_device_mock.cpp \
+    harmony/mocks/usb_device_mock.h
 harmony_mocks_libharmonymock_la_CXXFLAGS = \
    -I harmony/include $(GMOCK_INCLUDES) $(GTEST_INCLUDES) $(WARNING_CFLAGS)
 harmony_mocks_libharmonymock_la_LIBADD = $(GMOCK_LIBS) $(GTEST_LIBS)
