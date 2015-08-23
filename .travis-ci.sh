@@ -15,6 +15,7 @@ if [[ $TASK = 'lint' ]]; then
   ./cpplint.py \
     --filter=-legal/copyright,-build/include,-readability/casting \
     --extensions=c \
+    common/*.c \
     firmware/src/*.c
   if [[ $? -ne 0 ]]; then
     exit 1;
@@ -22,7 +23,9 @@ if [[ $TASK = 'lint' ]]; then
   # Check everything else, including the firmware headers, more thoroughly
   ./cpplint.py \
     --filter=-legal/copyright,-build/include \
-    firmware/src/*.h tests/{include,lib,tests}/*.{h,cpp}
+    common/*.h \
+    firmware/src/*.h \
+    tests/{include,lib,tests}/*.{h,cpp}
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
