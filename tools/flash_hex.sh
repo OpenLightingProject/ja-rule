@@ -24,7 +24,6 @@ if [ ! -x $hex2dfu ]; then
 fi
 
 $DFU_UTIL --help > /dev/null 2>&1
-
 if [ $? -ne 0 ]; then
   echo "Can't execute $DFU_UTIL";
   exit;
