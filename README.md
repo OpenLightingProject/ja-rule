@@ -1,13 +1,26 @@
 # Ja Rule
 [![Build Status](https://travis-ci.org/OpenLightingProject/ja-rule.svg?branch=master)](https://travis-ci.org/OpenLightingProject/ja-rule) [![Coverity Scan Status](https://scan.coverity.com/projects/3938/badge.svg)](https://scan.coverity.com/projects/3938) [![Coverage Status](https://coveralls.io/repos/OpenLightingProject/ja-rule/badge.png?branch=master)](https://coveralls.io/r/OpenLightingProject/ja-rule?branch=master)
 
-Ja Rule is an open source DMX512 / RDM stack for the PIC32 MCUs.
+Ja Rule is an open source DMX512 / RDM stack for PIC32 microcontrollers. For
+more information see the [Ja Rule
+Documentation](https://docs.openlighting.org/ja-rule/doc/latest/).
 
 ## Directory Layout
 
+*Bootloader* The bootloader code.
+
+*common* Common code shared between the bootloader and the main application.
+
 *firmware/src* the source code .h and .c files.
+
 *firmware/ja-rule.X* is the MPLABX project.
+
+*linker* Contains the linker scripts used to build the bootloader and
+the main application.
+
 *tests* contains the unit tests.
+
+*tools* Tools used to upgrade firmware on the device.
 
 ## Licensing
 
