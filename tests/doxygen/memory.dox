@@ -42,7 +42,7 @@
  *
  * The MX795F512L has the following (physical) memory regions:
  *   - 128kB of RAM [0x00000000 - 0x0001ffff]
- *   - 12kB of Boot flash 0x1fc00000 - 0x1fc02fef]. The upper 4k of the boot 
+ *   - 12kB of Boot flash 0x1fc00000 - 0x1fc02fef]. The upper 4k of the boot
  *     flash is used for the debug executive (in circuit debugging and the
  *     Device Configuration Registers.
  *   - 512kB of Program Flash [0x1d000000 - 0x1d07ffff]
@@ -81,7 +81,7 @@
  *
  * During the firmware update procedure, the application needs a way to signal
  * to the initial code that it should enter the bootloader rather than boot the
- * main application. We call this the <em> boot_option</em>.
+ * main application. We call this the <em>boot_option</em>.
  *
  * We could use flash for this, but we'd have to dedicate another
  * entire page of flash (4kB) since that's the smallest granularity of a
