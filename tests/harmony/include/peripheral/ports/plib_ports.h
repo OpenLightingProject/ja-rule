@@ -49,6 +49,10 @@ void PLIB_PORTS_PinDirectionOutputSet(PORTS_MODULE_ID index,
                                       PORTS_CHANNEL channel,
                                       PORTS_BIT_POS bitPos);
 
+bool PLIB_PORTS_PinGet(PORTS_MODULE_ID index,
+                       PORTS_CHANNEL channel,
+                       PORTS_BIT_POS bitPos);
+
 void PLIB_PORTS_PinSet(PORTS_MODULE_ID index,
                        PORTS_CHANNEL channel,
                        PORTS_BIT_POS bitPos);

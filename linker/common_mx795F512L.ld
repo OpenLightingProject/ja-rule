@@ -1,4 +1,9 @@
-/* Default linker script, for normal executables */
+/*
+ * The parts of the linker script common to both the bootload and application.
+ *
+ * This is almost an exact copy of the default linker script, with the
+ * additions of the _boot_option and _uid locations.
+ */
 OUTPUT_FORMAT("elf32-tradlittlemips")
 OUTPUT_ARCH(pic32mx)
 ENTRY(_reset)
@@ -30,20 +35,13 @@ OPTIONAL("libmchp_peripheral_32MX795F512L.a")
  * For interrupt vector handling
  *************************************************************************/
 PROVIDE(_vector_spacing = 0x00000001);
-_ebase_address = 0x9FC01000;
 
 /*************************************************************************
  * Memory Address Equates
- * _RESET_ADDR                    -- Reset Vector
- * _BEV_EXCPT_ADDR                -- Boot exception Vector
- * _DBG_EXCPT_ADDR                -- In-circuit Debugging Exception Vector
  * _DBG_CODE_ADDR                 -- In-circuit Debug Executive address
  * _DBG_CODE_SIZE                 -- In-circuit Debug Executive size
  * _GEN_EXCPT_ADDR                -- General Exception Vector
  *************************************************************************/
-_RESET_ADDR                    = 0xBFC00000;
-_BEV_EXCPT_ADDR                = 0xBFC00380;
-_DBG_EXCPT_ADDR                = 0xBFC00480;
 _DBG_CODE_ADDR                 = 0xBFC02000;
 _DBG_CODE_SIZE                 = 0xFF0;
 _GEN_EXCPT_ADDR                = _ebase_address + 0x180;
@@ -55,23 +53,19 @@ _GEN_EXCPT_ADDR                = _ebase_address + 0x180;
  * Only sections specifically assigned to these regions can be allocated
  * into these regions.
  *
- * The Debug exception vector is located at 0x9FC00480.
- *
  * The config_<address> sections are used to locate the config words at
  * their absolute addresses.
  *************************************************************************/
 MEMORY
 {
-  kseg0_program_mem     (rx)  : ORIGIN = 0x9D000000, LENGTH = 0x6000
-  kseg0_boot_mem              : ORIGIN = 0x9FC00490, LENGTH = 0x970
-  exception_mem               : ORIGIN = 0x9FC01000, LENGTH = 0x1000
-  kseg1_boot_mem              : ORIGIN = 0xBFC00000, LENGTH = 0x490
+  kseg0_uid                   : ORIGIN = 0x9D006000, LENGTH = 0x1000
   debug_exec_mem              : ORIGIN = 0xBFC02000, LENGTH = 0xFF0
   config3                     : ORIGIN = 0xBFC02FF0, LENGTH = 0x4
   config2                     : ORIGIN = 0xBFC02FF4, LENGTH = 0x4
   config1                     : ORIGIN = 0xBFC02FF8, LENGTH = 0x4
   config0                     : ORIGIN = 0xBFC02FFC, LENGTH = 0x4
-  kseg1_data_mem       (w!x)  : ORIGIN = 0xA0000000, LENGTH = 0x20000
+  kseg1_data_mem       (w!x)  : ORIGIN = 0xA0000000, LENGTH = 0x1FFF0
+  kseg1_boot_options   (w!x)  : ORIGIN = 0xA001FFF0, LENGTH = 0x10
   sfrs                        : ORIGIN = 0xBF800000, LENGTH = 0x100000
   configsfrs                  : ORIGIN = 0xBFC02FF0, LENGTH = 0x10
 }
@@ -694,6 +688,10 @@ SECTIONS
    */
   _bmxdudba_address = LENGTH(kseg1_data_mem) ;
   _bmxdupba_address = LENGTH(kseg1_data_mem) ;
+
+  _boot_option = ORIGIN(kseg1_boot_options);
+  _uid = ORIGIN(kseg0_uid);
+
     /* The .pdr section belongs in the absolute section */
     /DISCARD/ : { *(.pdr) }
   .gptab.sdata : { *(.gptab.data) *(.gptab.sdata) }
