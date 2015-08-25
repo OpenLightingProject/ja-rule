@@ -18,9 +18,9 @@
  * tables extracted from it, as desired without restriction."
  *
  * The updcrc macro (referred to here as CalculateCRC) is derived from an
- * article Copyright 1986 by Stephen Satchell.
+ * article copyright 1986 by Stephen Satchell.
  *
- * Remainder portions of the code are Copyright (C) 2015 Simon Newton.
+ * Remainder portions of the code are copyright (C) 2015 Simon Newton.
  */
 
 #include "dfu.h"
@@ -142,10 +142,12 @@ bool WriteDFUFile(const FirmwareOptions *options,
   };
 
   if (!Write(fd, (uint8_t*) &firmware_header, sizeof(firmware_header))) {
+    close(fd);
     return false;
   }
 
   if (!Write(fd, data, size)) {
+    close(fd);
     return false;
   }
   printf("Wrote %d bytes of data to %s\n", size, file);
@@ -176,9 +178,7 @@ bool WriteDFUFile(const FirmwareOptions *options,
   const uint8_t *suffix_ptr = (const uint8_t*) &suffix;
   for (int i = sizeof(suffix) - 1; i >= 0; i--) {
     crc = CalculateCRC(crc, suffix_ptr + i, 1);
-    ssize_t r = write(fd, suffix_ptr + i, 1);
-    if (r != 1) {
-      printf("Failed to write DFU suffix\n");
+    if (!Write(fd, suffix_ptr + i, 1)) {
       close(fd);
       return false;
     }
@@ -186,6 +186,7 @@ bool WriteDFUFile(const FirmwareOptions *options,
 
   // Write the CRC
   if (!Write(fd, (uint8_t*) &crc, sizeof(crc))) {
+    close(fd);
     return false;
   }
   close(fd);

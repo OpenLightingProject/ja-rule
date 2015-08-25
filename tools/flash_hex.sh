@@ -23,9 +23,7 @@ if [ ! -x $hex2dfu ]; then
   exit;
 fi
 
-$hex2dfu $hex_file;
-
-temp=$($DFU_UTIL --help > /dev/null 2>&1)
+$DFU_UTIL --help > /dev/null 2>&1
 
 if [ $? -ne 0 ]; then
   echo "Can't execute $DFU_UTIL";

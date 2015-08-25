@@ -62,7 +62,7 @@ bool InitOptions(Options *options, int argc, char *argv[]) {
   static struct option long_options[] = {
       {"device", required_argument, 0, 'd'},
       {"help", no_argument, 0, 'h'},
-      {"manufacturer", required_argument, 0, ','},
+      {"manufacturer", required_argument, 0, 'm'},
       {"output", required_argument, 0, 'o'},
       {"pid", required_argument, 0, 'p'},
       {"vid", required_argument, 0, 'v'},
