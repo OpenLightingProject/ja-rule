@@ -32,9 +32,11 @@ IGNORED_FILES = [
 ]
 
 IGNORED_DIRECTORIES = [
+    'Bootloader/firmware/src/system_config',
     'firmware/src/system_config',
     'src/system_config',
     'tests/src/system_config',
+    'tests/boot_src/system_config',
 ]
 
 def Usage(arg0):
