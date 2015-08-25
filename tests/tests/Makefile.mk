@@ -176,7 +176,6 @@ tests_usb_transport_test_LDADD = $(TESTING_LIBS) \
                                  harmony/mocks/libharmonymock.la \
                                  mocks/libmatchers.la \
                                  mocks/libstreamdecodermock.la \
-                                 mocks/libusbmock.la \
                                  src/libflags.la
 
 tests_transceiver_test_SOURCES = tests/TransceiverTest.cpp
