@@ -41,7 +41,6 @@ bool MemoryCompare(
     return false;
   }
 
-  bool matched = true;
   if (listener->IsInterested()) {
     std::ios::fmtflags ostream_flags(listener->stream()->flags());
     for (unsigned int i = 0; i < expected_size; i++) {
@@ -59,11 +58,10 @@ bool MemoryCompare(
          << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
          << ")";
 
-      matched &= (expected == actual);
     }
     listener->stream()->flags(ostream_flags);
   }
-  return matched;
+  return memcmp(data, expected_data, expected_size) == 0;
 }
 
 // DataMatcher

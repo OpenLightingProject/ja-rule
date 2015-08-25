@@ -149,6 +149,18 @@ ACTION_P(CopyUIDNoReturn, src_uid) {
   memcpy(arg0, src_uid, UID_LENGTH);
 }
 
+ACTION_P2(CopyDataTo, destination, size) {
+  memcpy(destination, arg0,
+         std::min(static_cast<unsigned int>(arg1),
+                  static_cast<unsigned int>(size)));
+}
+
+ACTION_P2(CopyDataFrom, source, size) {
+  memcpy(arg0, source,
+         std::min(static_cast<unsigned int>(arg1),
+                  static_cast<unsigned int>(size)));
+}
+
 /**
  * @}
  */

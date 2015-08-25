@@ -19,6 +19,8 @@
 
 #include "message_handler.h"
 
+#include <stdlib.h>
+
 #include "app.h"
 #include "constants.h"
 #include "flags.h"

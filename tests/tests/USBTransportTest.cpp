@@ -27,8 +27,8 @@
 #include "Array.h"
 #include "Matchers.h"
 #include "StreamDecoderMock.h"
-#include "USBMock.h"
 #include "flags.h"
+#include "usb_device_mock.h"
 #include "usb_transport.h"
 
 using ::testing::Args;
@@ -43,12 +43,12 @@ typedef void (*USBEventHandler)(USB_DEVICE_EVENT, void*, uintptr_t);
 class USBTransportTest : public testing::Test {
  public:
   void SetUp() {
-    USB_SetMock(&usb_mock);
+    USBDevice_SetMock(&usb_mock);
     StreamDecoder_SetMock(&stream_decoder_mock);
   }
 
   void TearDown() {
-    USB_SetMock(nullptr);
+    USBDevice_SetMock(nullptr);
     StreamDecoder_SetMock(nullptr);
   }
 
@@ -56,7 +56,7 @@ class USBTransportTest : public testing::Test {
   void CompleteWrite();
 
  protected:
-  StrictMock<MockUSB> usb_mock;
+  StrictMock<MockUSBDevice> usb_mock;
   StrictMock<MockStreamDecoder> stream_decoder_mock;
 
   // The value here doesn't matter, we just need a pointer to represent the
@@ -127,7 +127,7 @@ TEST_F(USBTransportTest, sendResponse) {
 
   // Test a message with no data.
   const uint8_t expected_message[] = {
-    0x5a, kToken, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa5
+    0x5a, kToken, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa5
   };
 
   EXPECT_CALL(
@@ -149,7 +149,7 @@ TEST_F(USBTransportTest, doubleSendResponse) {
   ConfigureDevice();
 
   const uint8_t expected_message[] = {
-    0x5a, kToken, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa5
+    0x5a, kToken, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0xa5
   };
 
   EXPECT_CALL(
@@ -182,7 +182,7 @@ TEST_F(USBTransportTest, sendResponseWithData) {
   };
 
   const uint8_t expected_message[] = {
-    0x5a, kToken, 0x80, 0x00, 0x12, 0x00, 0x00, 0x01,
+    0x5a, kToken, 0xf0, 0x00, 0x12, 0x00, 0x00, 0x00,
     1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8,
     0xa5
   };
@@ -231,7 +231,7 @@ TEST_F(USBTransportTest, truncateResponse) {
   memset(expected_message, 0, arraysize(expected_message));
   expected_message[0] = 0x5a;
   expected_message[1] = kToken;
-  expected_message[2] = 0x80;
+  expected_message[2] = 0xf0;
   expected_message[3] = 0x0;
   expected_message[4] = 0x01;
   expected_message[5] = 0x02;
@@ -262,7 +262,7 @@ TEST_F(USBTransportTest, pendingFlags) {
   EXPECT_TRUE(Flags_HasChanged());
 
   const uint8_t expected_message[] = {
-    0x5a, kToken, 0x80, 0x00, 0x00, 0x00, 0x00, 0x02, 0xa5
+    0x5a, kToken, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x02, 0xa5
   };
 
   EXPECT_CALL(

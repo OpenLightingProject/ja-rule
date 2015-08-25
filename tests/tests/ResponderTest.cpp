@@ -30,6 +30,7 @@
 #include "RDMHandlerMock.h"
 #include "SPIRGBMock.h"
 
+using ::testing::IgnoreResult;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
@@ -176,7 +177,7 @@ TEST_F(ResponderTest, rxSequence) {
 
 TEST_F(ResponderTest, rdmChecksumMismatch) {
   EXPECT_CALL(handler_mock, GetUID(_))
-    .WillOnce(WithArgs<0>(CopyUIDNoReturn(TEST_UID)));
+    .WillOnce(WithArgs<0>(IgnoreResult(CopyUID(TEST_UID))));
 
   const uint8_t bad_frame[] = {
     0xcc, 0x01, 0x18, 0x7a, 0x70, 0xff, 0xff, 0xff, 0xff, 0x7a, 0x70, 0x12,
