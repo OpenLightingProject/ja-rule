@@ -51,6 +51,10 @@
         <itemPath>../src/receiver_counters.h</itemPath>
         <itemPath>../src/proxy_model.h</itemPath>
         <itemPath>../src/led_model.h</itemPath>
+        <itemPath>../../common/uid_store.h</itemPath>
+        <itemPath>../../common/bootloader_options.h</itemPath>
+        <itemPath>../../common/dfu_constants.h</itemPath>
+        <itemPath>../../common/reset.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -91,6 +95,7 @@
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
                    projectFiles="true">
+      <itemPath>../../linker/app_mx795F512L.ld</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -143,6 +148,9 @@
         <itemPath>../src/receiver_counters.c</itemPath>
         <itemPath>../src/proxy_model.c</itemPath>
         <itemPath>../src/led_model.c</itemPath>
+        <itemPath>../../common/bootloader_options.c</itemPath>
+        <itemPath>../../common/uid_store.c</itemPath>
+        <itemPath>../../common/reset.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -203,6 +211,8 @@
   <sourceRootList>
     <Elem>../src</Elem>
     <Elem>../src/system_config/mx_795_512l</Elem>
+    <Elem>../../linker</Elem>
+    <Elem>../../common</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -250,7 +260,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../src/system_config/mx_795_512l;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/framework;../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
+                  value="../src;../src/system_config/mx_795_512l;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/framework;../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;../../common"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -333,6 +343,7 @@
         <property key="relaxed-math" value="false"/>
         <property key="save-temps" value="false"/>
         <property key="wpo-lto" value="false"/>
+        <appendMe value="-L&quot;../../linker&quot;"/>
       </C32Global>
       <PKOBSKDEPlatformTool>
         <property key="AutoSelectMemRanges" value="auto"/>
