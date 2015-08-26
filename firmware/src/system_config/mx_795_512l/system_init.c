@@ -119,7 +119,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
   .queueSizeSerialStateNotification = 1
 };
 /**************************************************
- * USB Device Layer Function Driver Registration 
+ * USB Device Layer Function Driver Registration
  * Table
  **************************************************/
 const USB_DEVICE_FUNCTION_REGISTRATION_TABLE funcRegistrationTable[3] =
@@ -134,7 +134,7 @@ const USB_DEVICE_FUNCTION_REGISTRATION_TABLE funcRegistrationTable[3] =
         .driver = (void*)USB_DEVICE_CDC_FUNCTION_DRIVER,    /* USB CDC function data exposed to device layer */
         .funcDriverInit = (void*)&cdcInit0    /* Function driver init data */
   },
-  /* Function 2 - The Ja Rule Interface*/
+  /* Function 2 - The Ja Rule Interface */
   {
         .configurationValue = 1,    /* Configuration value */
         .interfaceNumber = 2,       /* First interfaceNumber of this function */

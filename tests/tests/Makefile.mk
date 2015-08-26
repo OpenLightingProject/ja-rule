@@ -174,7 +174,9 @@ tests_usb_transport_test_CXXFLAGS = $(TESTING_CXXFLAGS)
 tests_usb_transport_test_LDADD = $(TESTING_LIBS) \
                                  src/libusbtransport.la \
                                  harmony/mocks/libharmonymock.la \
+                                 mocks/libbootloaderoptionsmock.la \
                                  mocks/libmatchers.la \
+                                 mocks/libresetmock.la \
                                  mocks/libstreamdecodermock.la \
                                  src/libflags.la
 

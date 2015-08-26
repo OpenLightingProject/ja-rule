@@ -211,7 +211,6 @@
   <sourceRootList>
     <Elem>../src</Elem>
     <Elem>../src/system_config/mx_795_512l</Elem>
-    <Elem>../../../blink/linker</Elem>
     <Elem>../../linker</Elem>
     <Elem>../../common</Elem>
   </sourceRootList>
