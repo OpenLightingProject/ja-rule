@@ -2,11 +2,15 @@
 ##################################################
 
 noinst_LTLIBRARIES += mocks/libappmock.la \
+                      mocks/libbootloaderoptionsmock.la \
                       mocks/libcoarsetimermock.la \
                       mocks/libflagsmock.la \
+                      mocks/libflashmock.la \
+                      mocks/liblaunchermock.la \
                       mocks/libmatchers.la \
                       mocks/libmessagehandlermock.la \
                       mocks/librdmhandlermock.la \
+                      mocks/libresetmock.la \
                       mocks/libspirgbmock.la \
                       mocks/libstreamdecodermock.la \
                       mocks/libsyslogmock.la \
@@ -20,6 +24,11 @@ mocks_libappmock_la_SOURCES = mocks/AppMock.h mocks/AppMock.cpp
 mocks_libappmock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
 mocks_libappmock_la_LIBADD = $(MOCK_LIBS)
 
+mocks_libbootloaderoptionsmock_la_SOURCES = mocks/BootloaderOptionsMock.h \
+                                            mocks/BootloaderOptionsMock.cpp
+mocks_libbootloaderoptionsmock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
+mocks_libbootloaderoptionsmock_la_LIBADD = $(MOCK_LIBS)
+
 mocks_libcoarsetimermock_la_SOURCES = mocks/CoarseTimerMock,h \
                                       mocks/CoarseTimerMock.cpp
 mocks_libcoarsetimermock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
@@ -28,6 +37,14 @@ mocks_libcoarsetimermock_la_LIBADD = $(MOCK_LIBS)
 mocks_libflagsmock_la_SOURCES = mocks/FlagsMock.h mocks/FlagsMock.cpp
 mocks_libflagsmock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
 mocks_libflagsmock_la_LIBADD = $(MOCK_LIBS)
+
+mocks_libflashmock_la_SOURCES = mocks/FlashMock.h mocks/FlashMock.cpp
+mocks_libflashmock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
+mocks_libflashmock_la_LIBADD = $(MOCK_LIBS)
+
+mocks_liblaunchermock_la_SOURCES = mocks/LauncherMock.h mocks/LauncherMock.cpp
+mocks_liblaunchermock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
+mocks_liblaunchermock_la_LIBADD = $(MOCK_LIBS)
 
 mocks_libmatchers_la_SOURCES = mocks/Matchers.h mocks/Matchers.cpp
 mocks_libmatchers_la_CXXFLAGS = $(MOCK_CXXFLAGS)
@@ -42,6 +59,11 @@ mocks_librdmhandlermock_la_SOURCES = mocks/RDMHandlerMock.h \
                                      mocks/RDMHandlerMock.cpp
 mocks_librdmhandlermock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
 mocks_librdmhandlermock_la_LIBADD = $(MOCK_LIBS)
+
+mocks_libresetmock_la_SOURCES = mocks/ResetMock.h \
+                                mocks/ResetMock.cpp
+mocks_libresetmock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
+mocks_libresetmock_la_LIBADD = $(MOCK_LIBS)
 
 mocks_libspirgbmock_la_SOURCES = mocks/SPIRGBMock.h mocks/SPIRGBMock.cpp
 mocks_libspirgbmock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
