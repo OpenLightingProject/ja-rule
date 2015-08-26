@@ -28,6 +28,7 @@
 #include "system_definitions.h"
 #include "system_pipeline.h"
 #include "transport.h"
+#include "usb/usb_device.h"
 #include "utils.h"
 
 typedef enum {
@@ -298,7 +299,7 @@ bool USBTransport_SendResponse(uint8_t token, Command command, uint8_t rc,
       memcpy(transmitDataBuffer + offset + 8, data[i].base,
              PAYLOAD_SIZE - offset);
       offset = PAYLOAD_SIZE;
-      transmitDataBuffer[6] |= TRANSPORT_MSG_TRUNCATED;
+      transmitDataBuffer[7] |= TRANSPORT_MSG_TRUNCATED;
       break;
     } else {
       memcpy(transmitDataBuffer + offset + 8, data[i].base, data[i].length);

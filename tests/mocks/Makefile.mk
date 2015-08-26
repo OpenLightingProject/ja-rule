@@ -11,8 +11,7 @@ noinst_LTLIBRARIES += mocks/libappmock.la \
                       mocks/libstreamdecodermock.la \
                       mocks/libsyslogmock.la \
                       mocks/libtransceivermock.la \
-                      mocks/libtransportmock.la \
-                      mocks/libusbmock.la
+                      mocks/libtransportmock.la
 
 MOCK_CXXFLAGS = $(BUILD_FLAGS) $(GMOCK_INCLUDES) $(GTEST_INCLUDES)
 MOCK_LIBS = $(GMOCK_LIBS) $(GTEST_LIBS)
@@ -66,8 +65,3 @@ mocks_libtransportmock_la_SOURCES = mocks/TransportMock.h \
                                     mocks/TransportMock.cpp
 mocks_libtransportmock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
 mocks_libtransportmock_la_LIBADD = $(MOCK_LIBS)
-
-mocks_libusbmock_la_SOURCES = mocks/USBMock.h \
-                              mocks/USBMock.cpp
-mocks_libusbmock_la_CXXFLAGS = $(MOCK_CXXFLAGS)
-mocks_libusbmock_la_LIBADD = $(MOCK_LIBS)

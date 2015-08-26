@@ -173,9 +173,9 @@ tests_usb_transport_test_SOURCES = tests/USBTransportTest.cpp
 tests_usb_transport_test_CXXFLAGS = $(TESTING_CXXFLAGS)
 tests_usb_transport_test_LDADD = $(TESTING_LIBS) \
                                  src/libusbtransport.la \
+                                 harmony/mocks/libharmonymock.la \
                                  mocks/libmatchers.la \
                                  mocks/libstreamdecodermock.la \
-                                 mocks/libusbmock.la \
                                  src/libflags.la
 
 tests_transceiver_test_SOURCES = tests/TransceiverTest.cpp

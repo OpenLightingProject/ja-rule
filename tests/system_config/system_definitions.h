@@ -5,8 +5,6 @@
 #ifndef TESTS_SYSTEM_CONFIG_SYSTEM_DEFINITIONS_H_
 #define TESTS_SYSTEM_CONFIG_SYSTEM_DEFINITIONS_H_
 
-#include "usb_stub.h"
-
 #ifdef  __cplusplus
 extern "C" {
 #endif
