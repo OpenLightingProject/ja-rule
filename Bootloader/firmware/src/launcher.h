@@ -33,7 +33,7 @@ extern "C" {
  */
 
 /**
- * @brief Jump to the main application at the specificed address.
+ * @brief Jump to the main application at the specified address.
  * @param address The address of the first instruction to execute.
  *
  * This function will never return.
