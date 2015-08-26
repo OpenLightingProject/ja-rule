@@ -13,6 +13,7 @@ WARNING_CXXFLAGS = -fvisibility-inlines-hidden
 ##################################################
 
 BUILD_FLAGS = -I system_config -I harmony/include -I ../firmware/src \
+              -I ../common -I ../Bootloader/firmware/src \
               $(WARNING_CFLAGS)
 
 noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
