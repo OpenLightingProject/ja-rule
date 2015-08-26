@@ -41,7 +41,7 @@ static void PerformOperation(uint32_t nvmop) {
   PLIB_NVM_FlashWriteStart(NVM_ID_0);
 }
 
-bool Flash_ErasePage(void *address) {
+bool Flash_ErasePage(uint32_t address) {
   PLIB_NVM_FlashAddressToModify(NVM_ID_0, KVA_TO_PA(address));
   PerformOperation(PAGE_ERASE_OPERATION);
 
@@ -52,7 +52,7 @@ bool Flash_ErasePage(void *address) {
   return !PLIB_NVM_WriteOperationHasTerminated(NVM_ID_0);
 }
 
-bool Flash_WriteWord(void *address, uint32_t data) {
+bool Flash_WriteWord(uint32_t address, uint32_t data) {
   PLIB_NVM_FlashAddressToModify(NVM_ID_0, KVA_TO_PA(address));
   PLIB_NVM_FlashProvideData(NVM_ID_0, data);
   PerformOperation(WORD_PROGRAM_OPERATION);
@@ -62,4 +62,8 @@ bool Flash_WriteWord(void *address, uint32_t data) {
   }
 
   return !PLIB_NVM_WriteOperationHasTerminated(NVM_ID_0);
+}
+
+uint32_t Flash_ReadWord(uint32_t address) {
+  return PLIB_NVM_FlashRead(NVM_ID_0, address);
 }

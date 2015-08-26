@@ -13,30 +13,51 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * app.h
+ * bootloader.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef BOOTLOADER_FIRMWARE_SRC_APP_H_
-#define BOOTLOADER_FIRMWARE_SRC_APP_H_
+#ifndef BOOTLOADER_FIRMWARE_SRC_BOOTLOADER_H_
+#define BOOTLOADER_FIRMWARE_SRC_BOOTLOADER_H_
 
-#include <stdint.h>
-#include <stdbool.h>
 #include <stddef.h>
-#include <stdlib.h>
-#include "system_config.h"
-#include "system_definitions.h"
+#include <stdbool.h>
+#include "dfu_constants.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * @brief Initialize the boot loader
  */
-void APP_Initialize(void);
-
+void Bootloader_Initialize(void);
 
 /**
  * @brief The bootloader event loop.
  */
-void APP_Tasks(void);
+void Bootloader_Tasks(void);
 
+/**
+ * @brief Return true if USB is active & configured.
+ * @returns true if USB is active & configured.
+ */
+bool Bootloader_USBActive();
 
-#endif  // BOOTLOADER_FIRMWARE_SRC_APP_H_
+/**
+ * @brief Return true if USB is active & configured.
+ * @returns true if USB is active & configured.
+ */
+DFUState Bootloader_GetState();
+
+/**
+ * @brief Return true if USB is active & configured.
+ * @returns true if USB is active & configured.
+ */
+DFUStatus Bootloader_GetStatus();
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif  // BOOTLOADER_FIRMWARE_SRC_BOOTLOADER_H_
