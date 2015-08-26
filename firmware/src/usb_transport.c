@@ -21,8 +21,11 @@
 
 #include <string.h>
 
+#include "bootloader_options.h"
 #include "constants.h"
+#include "dfu_constants.h"
 #include "flags.h"
+#include "reset.h"
 #include "stream_decoder.h"
 #include "system_config.h"
 #include "system_definitions.h"
@@ -46,6 +49,7 @@ typedef struct {
 
   bool tx_in_progress;  //!< True if there is a TX in progress
   bool rx_in_progress;  //!< True if there is a RX in progress.
+  bool dfu_detach;  //!< True if we've received a DFU detach.
 
   USB_DEVICE_TRANSFER_HANDLE write_transfer;
   USB_DEVICE_TRANSFER_HANDLE read_transfer;
@@ -70,6 +74,22 @@ uint8_t receivedDataBuffer[USB_READ_BUFFER_SIZE];
 // Transmit data buffer
 uint8_t transmitDataBuffer[USB_READ_BUFFER_SIZE];
 
+// The buffer that holds the DFU Status response.
+static uint8_t g_status_response[GET_STATUS_RESPONSE_SIZE];
+
+static inline void DFUGetStatus() {
+  g_status_response[0] = DFU_STATUS_OK;
+  g_status_response[1] = 0u;
+  g_status_response[2] = 0u;
+  g_status_response[3] = 0u;
+  g_status_response[4] = APP_STATE_IDLE;
+  g_status_response[5] = 0u;
+
+  USB_DEVICE_ControlSend(g_usb_transport_data.usb_device,
+                         g_status_response,
+                         GET_STATUS_RESPONSE_SIZE);
+}
+
 /**
  * @brief Called when device events occur.
  * @param event The type of event
@@ -79,7 +99,7 @@ uint8_t transmitDataBuffer[USB_READ_BUFFER_SIZE];
 void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
                                uintptr_t context) {
   uint8_t* configurationValue;
-  USB_SETUP_PACKET* setupPacket;
+  USB_SETUP_PACKET* setup_packet;
 
   switch (event) {
     case USB_DEVICE_EVENT_RESET:
@@ -97,7 +117,6 @@ void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
       break;
 
     case USB_DEVICE_EVENT_SUSPENDED:
-      /* Device is suspended. Update LED indication */
       break;
 
     case USB_DEVICE_EVENT_POWER_DETECTED:
@@ -112,20 +131,37 @@ void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
 
     case USB_DEVICE_EVENT_CONTROL_TRANSFER_SETUP_REQUEST:
       // This means we have received a setup packet
-      setupPacket = (USB_SETUP_PACKET*) event_data;
-      if (setupPacket->bRequest == USB_REQUEST_SET_INTERFACE) {
+      setup_packet = (USB_SETUP_PACKET*) event_data;
+      if (setup_packet->RequestType == USB_SETUP_REQUEST_TYPE_CLASS &&
+          setup_packet->Recipient == USB_SETUP_REQUEST_RECIPIENT_INTERFACE &&
+          setup_packet->DataDir == USB_SETUP_REQUEST_DIRECTION_HOST_TO_DEVICE &&
+          setup_packet->bRequest == DFU_DETATCH &&
+          setup_packet->wIndex == 3u) {
+        g_usb_transport_data.dfu_detach = true;
+        USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device,
+                                 USB_DEVICE_CONTROL_STATUS_OK);
+      } else if (setup_packet->RequestType == USB_SETUP_REQUEST_TYPE_CLASS &&
+          setup_packet->Recipient == USB_SETUP_REQUEST_RECIPIENT_INTERFACE &&
+          setup_packet->DataDir == USB_SETUP_REQUEST_DIRECTION_DEVICE_TO_HOST &&
+          setup_packet->bRequest == DFU_GETSTATUS &&
+          setup_packet->wIndex == 3u &&
+          setup_packet->wLength == GET_STATUS_RESPONSE_SIZE) {
+        // We don't have to support GET_STATUS here but 0.7 of dfu-util won't
+        // work without it.
+        DFUGetStatus();
+      } else if (setup_packet->bRequest == USB_REQUEST_SET_INTERFACE) {
         /* If we have got the SET_INTERFACE request, we just acknowledge
          for now. This demo has only one alternate setting which is already
          active. */
         USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device,
                                  USB_DEVICE_CONTROL_STATUS_OK);
-      } else if (setupPacket->bRequest == USB_REQUEST_GET_INTERFACE) {
+      } else if (setup_packet->bRequest == USB_REQUEST_GET_INTERFACE) {
         /* We have only one alternate setting and this setting 0. So
          * we send this information to the host. */
         USB_DEVICE_ControlSend(g_usb_transport_data.usb_device,
                                &g_usb_transport_data.altSetting, 1);
       } else {
-        // We have received a request that we cannot handle. Stall it
+        // Unknown request.
         USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device,
                                  USB_DEVICE_CONTROL_STATUS_ERROR);
       }
@@ -143,7 +179,6 @@ void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
       g_usb_transport_data.tx_in_progress = false;
       break;
 
-    // These events are not used in this demo.
     case USB_DEVICE_EVENT_RESUMED:
     case USB_DEVICE_EVENT_ERROR:
     default:
@@ -161,6 +196,7 @@ void USBTransport_Initialize(TransportRxFunction rx_cb) {
   g_usb_transport_data.tx_endpoint = 0x81;
   g_usb_transport_data.rx_in_progress = false;
   g_usb_transport_data.tx_in_progress = false;
+  g_usb_transport_data.dfu_detach = false;
   g_usb_transport_data.altSetting = 0;
   g_usb_transport_data.rx_data_size = 0;
 }
@@ -229,6 +265,11 @@ void USBTransport_Tasks() {
       break;
 
     case USB_STATE_MAIN_TASK:
+      if (g_usb_transport_data.dfu_detach) {
+        BootloaderOptions_SetBootOption(BOOT_BOOTLOADER);
+        Reset_SoftReset();
+      }
+
       if (!g_usb_transport_data.is_configured) {
         /* This means the device got deconfigured. Change the
          * application state back to waiting for configuration. */

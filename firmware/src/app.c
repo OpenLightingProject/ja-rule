@@ -41,10 +41,6 @@
 #include "transceiver.h"
 #include "usb_transport.h"
 
-// TODO(simon): figure out how to allocate UIDs.
-// The last byte must be 0 so that we have room for the child responders.
-const uint8_t OUR_UID[UID_LENGTH] = {0x7a, 0x70, 0xff, 0xff, 0xfe, 0};
-
 void __ISR(_TIMER_2_VECTOR, ipl6) TimerEvent() {
   CoarseTimer_TimerEvent();
 }
@@ -79,7 +75,7 @@ void APP_Initialize(void) {
     .mute_port = RDM_RESPONDER_PORT,
     .mute_bit = RDM_RESPONDER_MUTE_PORT_BIT,
   };
-  memcpy(responder_settings.uid, OUR_UID, UID_LENGTH);
+  memcpy(responder_settings.uid, UIDStore_GetUID(), UID_LENGTH);
   RDMResponder_Initialize(&responder_settings);
   ReceiverCounters_ResetCounters();
 
