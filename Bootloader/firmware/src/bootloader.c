@@ -179,7 +179,7 @@ static TransferData g_transfer;
  */
 static uint8_t g_status_response[GET_STATUS_RESPONSE_SIZE];
 
-/*
+/**
  * @brief The buffer into which we receive DFU data.
  *
  * The minimum flash program size is a word (32-bits). I can't see anything in
@@ -663,7 +663,7 @@ void Bootloader_Initialize(void) {
 }
 
 void Bootloader_Tasks(void) {
-  // Flash the led to indicate we're in bootloader mode.
+  // Flash the LED to indicate we're in bootloader mode.
   static unsigned int count = 0u;
   if (++count > 50000u) {
     PLIB_PORTS_PinToggle(PORTS_ID_0, LED_PORT_CHANNEL, LED_PORT_BIT);
@@ -675,7 +675,7 @@ void Bootloader_Tasks(void) {
       g_bootloader.usb_device = USB_DEVICE_Open(USB_DEVICE_INDEX_0,
                                                 DRV_IO_INTENT_READWRITE);
       if (g_bootloader.usb_device != USB_DEVICE_HANDLE_INVALID) {
-        // Register a callback with device layer to receive USB events.
+        // Register a callback with the device layer to receive USB events.
         g_bootloader.state = BOOTLOADER_STATE_WAIT_FOR_POWER;
         USB_DEVICE_EventHandlerSet(g_bootloader.usb_device, USBEventHandler,
                                    0u);
@@ -691,7 +691,7 @@ void Bootloader_Tasks(void) {
         ProcessDownload();
       } else if (g_bootloader.dfu_state == DFU_STATE_MANIFEST_SYNC &&
                  g_transfer.transfer_state == TRANSFER_LAST_BLOCK_RECEIVED) {
-        // The firmware may not be a multiple of 4, so write any remaining
+        // The firmware size may not be a multiple of 4, so write any remaining
         // bytes now.
         if (ProgramFlash(true, 0u)) {
           g_transfer.transfer_state = TRANSFER_WRITE_COMPLETE;

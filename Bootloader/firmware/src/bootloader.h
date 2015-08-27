@@ -39,20 +39,20 @@ void Bootloader_Initialize(void);
 void Bootloader_Tasks(void);
 
 /**
- * @brief Return true if USB is active & configured.
+ * @brief Check if USB is active & configured.
  * @returns true if USB is active & configured.
  */
 bool Bootloader_USBActive();
 
 /**
- * @brief Return true if USB is active & configured.
- * @returns true if USB is active & configured.
+ * @brief Fetch the DFU state of the bootloader.
+ * @returns The DFU state.
  */
 DFUState Bootloader_GetState();
 
 /**
- * @brief Return true if USB is active & configured.
- * @returns true if USB is active & configured.
+ * @brief Fetch the DFU status of the bootloader.
+ * @returns The DFU Status.
  */
 DFUStatus Bootloader_GetStatus();
 
