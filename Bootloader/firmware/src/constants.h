@@ -47,19 +47,20 @@ enum { USB_DEVICE_VENDOR_ID = 0x1209 };
 enum { USB_DEVICE_PRODUCT_ID = 0xacee };
 
 /**
- * @brief The maximum size of the firmware blocks.
- *
- * Per the USB spec, this should be 8, 16, 32 or 64 bytes.
- */
-enum { DFU_BLOCK_SIZE = 64 };
-
-/**
  * @brief The DFU interface index.
  *
  * 64 bytes is the highest value a full speed, bulk endpoint can use.
  */
 enum { USB_DFU_INTERFACE_INDEX = 0 };
 
+/**
+ * @brief By using alternate interfaces we can control which memory region we
+ * write to.
+ */
+typedef enum {
+  DFU_ALT_INTERFACE_FIRMWARE = 0,  //!< The main firmware
+  DFU_ALT_INTERFACE_UID = 1,  //!< The UID region
+} AlternateInterfaces;
 
 #endif  // BOOTLOADER_FIRMWARE_SRC_CONSTANTS_H_
 

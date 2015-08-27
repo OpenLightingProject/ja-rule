@@ -23,6 +23,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @{
  * @file flash.h
@@ -38,7 +42,7 @@
  * The address must be aligned correctly. On the pic32 5xx/6xx/7xx platform,
  * the address must be aligned to a 4k address.
  */
-bool Flash_ErasePage(void *address);
+bool Flash_ErasePage(uint32_t address);
 
 /**
  * @brief Write a word (32-bits) to flash memory and block until the operation
@@ -50,6 +54,21 @@ bool Flash_ErasePage(void *address);
  * This page that this word belongs to must have been erased before this
  * function is called.
  */
-bool Flash_WriteWord(void *address, uint32_t data);
+bool Flash_WriteWord(uint32_t address, uint32_t data);
+
+/**
+ * @brief Read a word (32-bits) from flash memory.
+ * @param address The virtual address to read from, must be 4-byte aligned.
+ * @returns The value at this location.
+ */
+uint32_t Flash_ReadWord(uint32_t address);
+
+/**
+ * @}
+ */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // BOOTLOADER_FIRMWARE_SRC_FLASH_H_

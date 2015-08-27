@@ -49,9 +49,11 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 #include "system_config.h"
 #include "system_definitions.h"
-#include "app.h"
+#include "bootloader.h"
 #include "constants.h"
 #include "dfu_constants.h"
+#include "uid.h"
+#include "uid_store.h"
 
 
 // ****************************************************************************
@@ -144,7 +146,7 @@ const USB_DEVICE_DESCRIPTOR fullSpeedDeviceDescriptor = {
   0x0000, // Device release number in BCD format
   0x01, // Manufacturer string index
   0x02, // Product string index
-  0x00, // Device serial number string index
+  0x03, // Device serial number string index
   0x01 // Number of possible configurations
 };
 
@@ -155,7 +157,7 @@ const uint8_t fullSpeedConfigurationDescriptor1[] = {
   /* Configuration Descriptor Header */
   0x09, // Size of this descriptor in bytes
   USB_DESCRIPTOR_CONFIGURATION, // CONFIGURATION descriptor type
-  0x1b, 0x00, // Total length of data for this cfg
+  0x24, 0x00, // Total length of data for this cfg
   1, // Number of interfaces in this cfg
   1, // Index value of this configuration
   0, // Configuration string index
@@ -165,12 +167,22 @@ const uint8_t fullSpeedConfigurationDescriptor1[] = {
   0x09, // Size of this descriptor in bytes
   USB_DESCRIPTOR_INTERFACE, // Descriptor Type
   USB_DFU_INTERFACE_INDEX, // Interface Number
-  0x00, // Alternate Setting Number
+  DFU_ALT_INTERFACE_FIRMWARE, // Alternate Setting Number
   0x00, // Number of endpoints in this intf
   0xfe, // Class code
   0x01, // Subclass code
   0x02, // Protocol code
-  0x00, // Interface string index
+  0x04, // Interface string index
+
+  0x09, // Size of this descriptor in bytes
+  USB_DESCRIPTOR_INTERFACE, // Descriptor Type
+  USB_DFU_INTERFACE_INDEX, // Interface Number
+  DFU_ALT_INTERFACE_UID, // Alternate Setting Number
+  0x00, // Number of endpoints in this intf
+  0xfe, // Class code
+  0x01, // Subclass code
+  0x02, // Protocol code
+  0x05, // Interface string index
 
   // DFU functional descriptor
   0x09,  // size
@@ -192,8 +204,8 @@ const struct {
   uint16_t string[1];
 }
 
-sd000 = {
-  sizeof(sd000),
+LANGUAGE_STRING_DESCRIPTOR = {
+  sizeof(LANGUAGE_STRING_DESCRIPTOR),
   USB_DESCRIPTOR_STRING, {
     0x0409
   }
@@ -206,8 +218,8 @@ const struct {
   uint16_t string[21];
 }
 
-sd001 = {
-  sizeof(sd001),
+MANUFACTURER_STRING_DESCRIPTOR = {
+  sizeof(MANUFACTURER_STRING_DESCRIPTOR),
   USB_DESCRIPTOR_STRING, {
     'O', 'p', 'e', 'n', ' ', 'L', 'i', 'g', 'h', 't', 'i', 'n', 'g', ' ',
     'P', 'r', 'o', 'j', 'e', 'c', 't'
@@ -221,20 +233,68 @@ const struct {
   uint16_t string[7];
 }
 
-sd002 = {
-  sizeof(sd002),
+PRODUCT_STRING_DESCRIPTOR = {
+  sizeof(PRODUCT_STRING_DESCRIPTOR),
   USB_DESCRIPTOR_STRING, {
     'J', 'a', ' ', 'R', 'u', 'l', 'e'
+  }
+};
+
+/*
+ * Serial number string descriptor
+ * This is populated from the UID in flash memory
+ */
+struct {
+  uint8_t bLength;
+  uint8_t bDscType;
+  uint16_t string[UID_LENGTH * 2 + 1];
+}
+
+serial_number_string_descriptor = {
+  sizeof(serial_number_string_descriptor),
+  USB_DESCRIPTOR_STRING, {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  }
+};
+
+/* Firmware interface string descriptor */
+const struct {
+  uint8_t bLength;
+  uint8_t bDscType;
+  uint16_t string[8];
+}
+
+FIRMWARE_INTERFACE_STRING_DESCRIPTOR = {
+  sizeof(FIRMWARE_INTERFACE_STRING_DESCRIPTOR),
+  USB_DESCRIPTOR_STRING, {
+    'F','i', 'r', 'm', 'w', 'a', 'r', 'e'
+  }
+};
+
+/* UID interface string descriptor */
+const struct {
+  uint8_t bLength;
+  uint8_t bDscType;
+  uint16_t string[3];
+}
+
+UID_INTERFACE_STRING_DESCRIPTOR = {
+  sizeof(UID_INTERFACE_STRING_DESCRIPTOR),
+  USB_DESCRIPTOR_STRING, {
+    'U', 'I', 'D'
   }
 };
 
 /***************************************
  * Array of string descriptors
  ***************************************/
-USB_DEVICE_STRING_DESCRIPTORS_TABLE stringDescriptors[3] = {
-  (const uint8_t * const) &sd000,
-  (const uint8_t * const) &sd001,
-  (const uint8_t * const) &sd002
+USB_DEVICE_STRING_DESCRIPTORS_TABLE stringDescriptors[6] = {
+  (const uint8_t * const) &LANGUAGE_STRING_DESCRIPTOR,
+  (const uint8_t * const) &MANUFACTURER_STRING_DESCRIPTOR,
+  (const uint8_t * const) &PRODUCT_STRING_DESCRIPTOR,
+  (const uint8_t * const) &serial_number_string_descriptor,
+  (const uint8_t * const) &FIRMWARE_INTERFACE_STRING_DESCRIPTOR,
+  (const uint8_t * const) &UID_INTERFACE_STRING_DESCRIPTOR
 };
 
 /*******************************************
@@ -256,7 +316,7 @@ const USB_DEVICE_MASTER_DESCRIPTOR usbMasterDescriptor = {
   0, // Total number of high speed configurations available.
   NULL, // Pointer to array of high speed configurations descriptors.
 
-  4, // Total number of string descriptors available.
+  6, // Total number of string descriptors available.
   stringDescriptors, // Pointer to array of string descriptors
 
   NULL, // Pointer to full speed dev qualifier.
@@ -349,8 +409,6 @@ const SYS_DEVCON_INIT sysDevconInit =
 // *****************************************************************************
 // *****************************************************************************
 
-
-
 // *****************************************************************************
 // *****************************************************************************
 // Section: System Initialization
@@ -367,9 +425,7 @@ const SYS_DEVCON_INIT sysDevconInit =
   Remarks:
     See prototype in system/common/sys_module.h.
  */
-
-void SYS_Initialize ( void* data )
-{
+void SYS_Initialize(void* data) {
     /* Core Processor Initialization */
     SYS_CLK_Initialize( NULL );
     sysObj.sysDevcon = SYS_DEVCON_Initialize(SYS_DEVCON_INDEX_0, (SYS_MODULE_INIT*)&sysDevconInit);
@@ -387,14 +443,16 @@ void SYS_Initialize ( void* data )
 
     /* Initialize Middleware */
 
+    /* Copy the UID from flash to the USB descriptor. */
+    UIDStore_AsUnicodeString(serial_number_string_descriptor.string);
+
     /* Initialize the USB device layer */
     sysObj.usbDevObject0 = USB_DEVICE_Initialize (USB_DEVICE_INDEX_0 , ( SYS_MODULE_INIT* ) & usbDevInitData);
     /* Enable Global Interrupts */
     SYS_INT_Enable();
 
     /* Initialize the Application */
-    APP_Initialize();
-
+    Bootloader_Initialize();
 }
 
 /*******************************************************************************

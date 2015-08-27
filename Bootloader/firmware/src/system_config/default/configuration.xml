@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<configuration version="1.0.4.22">
+<configuration version="1.0.6.12">
   <Designer>
     <Screens height="200" width="320">
       <Screen active="true" background="000000" export="true" name="Untitled" primary="true">
