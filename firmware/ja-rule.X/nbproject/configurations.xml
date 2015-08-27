@@ -55,6 +55,7 @@
         <itemPath>../../common/bootloader_options.h</itemPath>
         <itemPath>../../common/dfu_constants.h</itemPath>
         <itemPath>../../common/reset.h</itemPath>
+        <itemPath>../src/usb_descriptors.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
@@ -151,6 +152,7 @@
         <itemPath>../../common/bootloader_options.c</itemPath>
         <itemPath>../../common/uid_store.c</itemPath>
         <itemPath>../../common/reset.c</itemPath>
+        <itemPath>../src/usb_descriptors.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"
