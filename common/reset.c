@@ -18,6 +18,11 @@
  */
 
 #include "reset.h"
+
+
+// TODO(simon): Remove this and switch to the harmony function
+#define _SUPPRESS_PLIB_WARNING
+
 #include <peripheral/reset.h>
 
 void Reset_SoftReset() {

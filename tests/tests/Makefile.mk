@@ -1,11 +1,18 @@
 # LIBS
 
-noinst_LTLIBRARIES += tests/libmodeltest.la
+noinst_LTLIBRARIES += tests/libmodeltest.la \
+                      tests/libbootloaderhelper.la
 
 tests_libmodeltest_la_SOURCES = tests/ModelTest.h \
                                 tests/ModelTest.cpp
 tests_libmodeltest_la_CXXFLAGS= $(TESTING_CFLAGS) $(WARNING_CXXFLAGS) \
                                 $(GMOCK_INCLUDES) $(GTEST_INCLUDES)
+
+tests_libbootloaderhelper_la_SOURCES = tests/BootloaderTestHelper.h \
+                                       tests/BootloaderTestHelper.cpp
+tests_libbootloaderhelper_la_CXXFLAGS= $(TESTING_CFLAGS) $(WARNING_CXXFLAGS) \
+                                       $(GMOCK_INCLUDES) $(GTEST_INCLUDES) \
+                                       -I ./mocks -I ./harmony/mocks
 
 # TESTS
 ################################################
@@ -17,7 +24,9 @@ TESTING_CXXFLAGS = $(TESTING_CFLAGS) $(WARNING_CXXFLAGS) \
 
 TESTING_LIBS = $(GMOCK_LIBS) $(GTEST_LIBS)
 
-TESTS += tests/coarse_timer_test \
+TESTS += tests/bootloader_test \
+         tests/bootloader_transfer_test \
+         tests/coarse_timer_test \
          tests/dimmer_model_test \
          tests/flags_test \
          tests/led_model_test \
@@ -33,6 +42,31 @@ TESTS += tests/coarse_timer_test \
          tests/transceiver_test \
          tests/usb_transport_test \
          tests/utils_test
+
+tests_bootloader_test_SOURCES = tests/BootloaderTest.cpp
+tests_bootloader_test_CXXFLAGS = $(TESTING_CXXFLAGS)
+tests_bootloader_test_LDADD = $(TESTING_LIBS) \
+                              boot_src/libbootloader.la \
+                              harmony/mocks/libharmonymock.la \
+                              mocks/libmatchers.la \
+                              mocks/libbootloaderoptionsmock.la \
+                              mocks/libflashmock.la \
+                              mocks/liblaunchermock.la \
+                              mocks/libresetmock.la \
+                              tests/libbootloaderhelper.la
+
+
+tests_bootloader_transfer_test_SOURCES = tests/BootloaderTransferTest.cpp
+tests_bootloader_transfer_test_CXXFLAGS = $(TESTING_CXXFLAGS)
+tests_bootloader_transfer_test_LDADD = $(TESTING_LIBS) \
+                                       boot_src/libbootloader.la \
+                                       harmony/mocks/libharmonymock.la \
+                                       mocks/libmatchers.la \
+                                       mocks/libbootloaderoptionsmock.la \
+                                       mocks/libflashmock.la \
+                                       mocks/liblaunchermock.la \
+                                       mocks/libresetmock.la \
+                                       tests/libbootloaderhelper.la
 
 tests_coarse_timer_test_SOURCES = tests/CoarseTimerTest.cpp
 tests_coarse_timer_test_CXXFLAGS = $(TESTING_CXXFLAGS)
