@@ -49,10 +49,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 #include "system_config.h"
 #include "system_definitions.h"
-#include "app.h"
-#include "constants.h"
-#include "dfu_constants.h"
-#include "uid.h"
+#include "usb_descriptors.h"
 #include "uid_store.h"
 
 
@@ -107,374 +104,11 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // *****************************************************************************
 // *****************************************************************************/
 
-//<editor-fold defaultstate="collapsed" desc="USB Stack Configuration">
-
-/**************************************************
- * USB Device Function Driver Init Data
- **************************************************/
-    const USB_DEVICE_CDC_INIT cdcInit0 =
-    {
-  .queueSizeRead = 1,
-  .queueSizeWrite = 1,
-  .queueSizeSerialStateNotification = 1
-};
-/**************************************************
- * USB Device Layer Function Driver Registration
- * Table
- **************************************************/
-const USB_DEVICE_FUNCTION_REGISTRATION_TABLE funcRegistrationTable[3] =
-{
-  /* Function 1 */
-  {
-        .configurationValue = 1,    /* Configuration value */
-        .interfaceNumber = 0,       /* First interfaceNumber of this function */
-        .numberOfInterfaces = 2,    /* Number of interfaces */
-        .speed = USB_SPEED_FULL,    /* Function Speed */
-        .funcDriverIndex = 0,  /* Index of CDC Function Driver */
-        .driver = (void*)USB_DEVICE_CDC_FUNCTION_DRIVER,    /* USB CDC function data exposed to device layer */
-        .funcDriverInit = (void*)&cdcInit0    /* Function driver init data */
-  },
-  /* Function 2 - The Ja Rule Interface */
-  {
-        .configurationValue = 1,    /* Configuration value */
-        .interfaceNumber = 2,       /* First interfaceNumber of this function */
-        .numberOfInterfaces = 1,    /* Number of interfaces */
-        .speed = USB_SPEED_FULL,    /* Function Speed */
-        .funcDriverIndex = 0,  /* Index of Vendor Driver */
-        .driver = NULL,            /* No Function Driver data */
-        .funcDriverInit = NULL     /* No Function Driver Init data */
-  },
-  /* Function 3 - The DFU Interface */
-  {
-        .configurationValue = 1,    /* Configuration value */
-        .interfaceNumber = 3,       /* First interfaceNumber of this function */
-        .numberOfInterfaces = 1,    /* Number of interfaces */
-        .speed = USB_SPEED_FULL,    /* Function Speed */
-        .funcDriverIndex = 0,  /* Index of Vendor Driver */
-        .driver = NULL,            /* No Function Driver data */
-        .funcDriverInit = NULL     /* No Function Driver Init data */
-  },
-};
-
-/*******************************************
- * USB Device Layer Descriptors
- *******************************************/
-const USB_DEVICE_DESCRIPTOR fullSpeedDeviceDescriptor = {
-  0x12, // Size of this descriptor in bytes
-  USB_DESCRIPTOR_DEVICE, // DEVICE descriptor type
-  0x0200, // USB Spec Release Number in BCD format
-  0x00, // Class Code
-  0x00, // Subclass code
-  0x00, // Protocol code
-  USB_DEVICE_EP0_BUFFER_SIZE, // Max packet size for EP0, see usb_config.h
-  USB_DEVICE_VENDOR_ID, // Vendor ID: 0x04D8 is Microchip's Vendor ID
-  USB_DEVICE_PRODUCT_ID, // Product ID: 0x0053
-  0x0000, // Device release number in BCD format
-  0x01, // Manufacturer string index
-  0x02, // Product string index
-  0x03, // Device serial number string index
-  0x01 // Number of possible configurations
-};
-
-/*******************************************
- *  Device Configuration Decriptor
- *******************************************/
-const uint8_t fullSpeedConfigurationDescriptor1[] = {
-  /* Configuration Descriptor Header */
-
-  0x09, // Size of this descriptor in bytes
-  USB_DESCRIPTOR_CONFIGURATION, // CONFIGURATION descriptor type
-  0x6c, 0x00, // Total length of data for this cfg
-  4, // Number of interfaces in this cfg
-  1, // Index value of this configuration
-  0, // Configuration string index
-  USB_ATTRIBUTE_DEFAULT | USB_ATTRIBUTE_SELF_POWERED, // Attributes, see usb_device.h
-  50, // Max power consumption (2X mA)
-
-  /* Interface Descriptor */
-
-  0x09, // Size of this descriptor in bytes
-  USB_DESCRIPTOR_INTERFACE, // Descriptor Type
-  0x00, // Interface Number
-  0x00, // Alternate Setting Number
-  0x01, // Number of endpoints in this intf
-  USB_CDC_COMMUNICATIONS_INTERFACE_CLASS_CODE, // Class code
-  USB_CDC_SUBCLASS_ABSTRACT_CONTROL_MODEL, // Subclass code
-  USB_CDC_PROTOCOL_AT_V250, // Protocol code
-  0x00, // Interface string index
-
-  /* CDC Class-Specific Descriptors */
-
-  sizeof(USB_CDC_HEADER_FUNCTIONAL_DESCRIPTOR), // Size of the descriptor
-  USB_CDC_DESC_CS_INTERFACE, // CS_INTERFACE
-  USB_CDC_FUNCTIONAL_HEADER, // Type of functional descriptor
-  0x20, 0x01, // CDC spec version
-
-  sizeof(USB_CDC_ACM_FUNCTIONAL_DESCRIPTOR), // Size of the descriptor
-  USB_CDC_DESC_CS_INTERFACE, // CS_INTERFACE
-  USB_CDC_FUNCTIONAL_ABSTRACT_CONTROL_MANAGEMENT, // Type of functional descriptor
-  USB_CDC_ACM_SUPPORT_LINE_CODING_LINE_STATE_AND_NOTIFICATION, // bmCapabilities of ACM
-
-  sizeof(USB_CDC_UNION_FUNCTIONAL_DESCRIPTOR_HEADER) + 1, // Size of the descriptor
-  USB_CDC_DESC_CS_INTERFACE, // CS_INTERFACE
-  USB_CDC_FUNCTIONAL_UNION, // Type of functional descriptor
-  0x00, // Communication interface number
-  0x01, // Data Interface Number
-
-  sizeof(USB_CDC_CALL_MANAGEMENT_DESCRIPTOR), // Size of the descriptor
-  USB_CDC_DESC_CS_INTERFACE, // CS_INTERFACE
-  USB_CDC_FUNCTIONAL_CALL_MANAGEMENT, // Type of functional descriptor
-  0x00, // bmCapabilities of CallManagement
-  0x01, // Data interface number
-
-  /* Interrupt Endpoint (IN)Descriptor */
-
-  0x07, // Size of this descriptor
-  USB_DESCRIPTOR_ENDPOINT, // Endpoint Descriptor
-  0x82, // EndpointAddress ( EP2 IN INTERRUPT)
-  0x03, // Attributes type of EP (INTERRUPT)
-  0x0A, 0x00, // Max packet size of this EP
-  0x02, // Interval (in ms)
-
-  /* Interface Descriptor */
-
-  0x09, // Size of this descriptor in bytes
-  USB_DESCRIPTOR_INTERFACE, // INTERFACE descriptor type
-  0x01, // Interface Number
-  0x00, // Alternate Setting Number
-  0x02,
-  USB_CDC_DATA_INTERFACE_CLASS_CODE, // Class code
-  0x00, // Subclass code
-  USB_CDC_PROTOCOL_NO_CLASS_SPECIFIC, // Protocol code
-  0x00, // Interface string index
-
-  /* Interrupt Endpoint (IN)Descriptor */
-
-  0x07, // Size of this descriptor
-  USB_DESCRIPTOR_ENDPOINT, // Endpoint Descriptor
-  0x03, // EndpointAddress ( EP3 OUT BULK)
-  0x02, // Attributes type of EP (BULK)
-  0x40, 0x00, // Max packet size of this EP
-  0x00, // Interval (in ms)
-
-  /* Interrupt Endpoint (OUT)Descriptor */
-
-  0x07, // Size of this descriptor
-  USB_DESCRIPTOR_ENDPOINT, // Endpoint Descriptor
-  0x83, // EndpointAddress ( EP3 IN )
-  0x02, // Attributes type of EP (BULK)
-  0x40, 0x00, // Max packet size of this EP
-  0x00, // Interval (in ms)
-
-  // Vendor Interface Descriptor
-
-  0x09, // Size of this descriptor in bytes
-  USB_DESCRIPTOR_INTERFACE, // INTERFACE descriptor type
-  2, // Interface Number
-  0, // Alternate Setting Number
-  2, // Number of endpoints in this intf
-  0xFF, // Class code
-  0xFF, // Subclass code
-  0xFF, // Protocol code
-  0, // Interface string index
-
-  // Endpoint Descriptor 1
-
-  0x07, // Size of this descriptor in bytes
-  USB_DESCRIPTOR_ENDPOINT, // Endpoint Descriptor
-  0x1 | USB_EP_DIRECTION_OUT, // EndpointAddress
-  USB_TRANSFER_TYPE_BULK, // Attributes
-  USB_MAX_PACKET_SIZE, 0x00, // Size
-  USB_POLLING_INTERVAL, // Interval
-
-  // Endpoint Descriptor 2
-
-  0x07, // Size of this descriptor in bytes
-  USB_DESCRIPTOR_ENDPOINT, // Endpoint Descriptor
-  0x1 | USB_EP_DIRECTION_IN, // EndpointAddress
-  USB_TRANSFER_TYPE_BULK, // Attributes
-  USB_MAX_PACKET_SIZE, 0x00, // Size
-  USB_POLLING_INTERVAL, // Interval
-
-  /* DFU interface descriptor */
-  0x09, // Size of this descriptor in bytes
-  USB_DESCRIPTOR_INTERFACE, // Descriptor Type
-  3, // Interface Number
-  0x00, // Alternate Setting Number
-  0x00, // Number of endpoints in this intf
-  0xfe, // Class code
-  0x01, // Subclass code
-  0x01, // Protocol code
-  0x00, // Interface string index
-
-  // DFU functional descriptor
-  0x09,  // size
-  0x21,  // DFU functional descriptor
-  DFU_WILL_DETACH | DFU_MANIFESTATION_TOLERANT | DFU_CAN_DOWNLOAD,
-  0x00, 0x00,  // detatch timeout
-  DFU_BLOCK_SIZE, 0x00,  // transfer size
-  0x01, 0x10   // Rev 1.1
-};
-
-/**************************************
- *  String descriptors.
- *************************************/
-
-/* Language code string descriptor 0 */
-const struct {
-  uint8_t bLength;
-  uint8_t bDscType;
-  uint16_t string[1];
-}
-
-LANGUAGE_STRING_DESCRIPTOR = {
-  sizeof(LANGUAGE_STRING_DESCRIPTOR),
-  USB_DESCRIPTOR_STRING, {
-    0x0409
-  }
-};
-
-/* Manufacturer string descriptor 1*/
-const struct {
-  uint8_t bLength;
-  uint8_t bDscType;
-  uint16_t string[21];
-}
-
-MANUFACTURER_STRING_DESCRIPTOR = {
-  sizeof(MANUFACTURER_STRING_DESCRIPTOR),
-  USB_DESCRIPTOR_STRING, {
-    'O', 'p', 'e', 'n', ' ', 'L', 'i', 'g', 'h', 't', 'i', 'n', 'g', ' ',
-    'P', 'r', 'o', 'j', 'e', 'c', 't'
-  }
-};
-
-/* Product string descriptor */
-const struct {
-  uint8_t bLength;
-  uint8_t bDscType;
-  uint16_t string[7];
-}
-
-PRODUCT_STRING_DESCRIPTOR = {
-  sizeof(PRODUCT_STRING_DESCRIPTOR),
-  USB_DESCRIPTOR_STRING, {
-    'J', 'a', ' ', 'R', 'u', 'l', 'e'
-  }
-};
-
-/*
- * Serial number string descriptor
- * This is populated from the UID in flash memory
- */
-struct {
-  uint8_t bLength;
-  uint8_t bDscType;
-  uint16_t string[UID_LENGTH * 2 + 1];
-}
-
-serial_number_string_descriptor = {
-  sizeof(serial_number_string_descriptor),
-  USB_DESCRIPTOR_STRING, {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-  }
-};
-
-
-/***************************************
- * Array of string descriptors
- ***************************************/
-USB_DEVICE_STRING_DESCRIPTORS_TABLE stringDescriptors[4] = {
-  (const uint8_t * const) &LANGUAGE_STRING_DESCRIPTOR,
-  (const uint8_t * const) &MANUFACTURER_STRING_DESCRIPTOR,
-  (const uint8_t * const) &PRODUCT_STRING_DESCRIPTOR,
-  (const uint8_t * const) &serial_number_string_descriptor,
-};
-
-/*******************************************
- * Array of full speed config descriptors
- *******************************************/
-USB_DEVICE_CONFIGURATION_DESCRIPTORS_TABLE fullSpeedConfigDescSet[1] = {
-  fullSpeedConfigurationDescriptor1
-};
-
-
-/*******************************************
- * USB Device Layer Master Descriptor Table 
- *******************************************/
-const USB_DEVICE_MASTER_DESCRIPTOR usbMasterDescriptor = {
-  &fullSpeedDeviceDescriptor, // Full Speed Device Descriptor.
-  1, // Total number of full speed configurations available.
-  &fullSpeedConfigDescSet[0], // Pointer to array of full speed configurations descriptors.
-
-  NULL, // High speed device desc is not supported.
-  0, // Total number of high speed configurations available.
-  NULL, // Pointer to array of high speed configurations descriptors.
-
-  4, // Total number of string descriptors available.
-  stringDescriptors, // Pointer to array of string descriptors
-
-  NULL, // Pointer to full speed dev qualifier.
-  NULL, // Pointer to high speed dev qualifier.
-};
-
-/****************************************************
- * Endpoint Table needed by the Device Layer.
- ****************************************************/
-uint8_t __attribute__((aligned(512))) endPointTable[USB_DEVICE_ENDPOINT_TABLE_SIZE];
-
-/****************************************************
- * USB Device Layer Initialization Data
- ****************************************************/
-
-const USB_DEVICE_INIT usbDevInitData =
-{
-  /* System module initialization */
-    .moduleInit = {SYS_MODULE_POWER_RUN_FULL},
-
-  /* Identifies peripheral (PLIB-level) ID */
-  .usbID = USB_ID_1,
-
-  /* Stop in idle */
-  .stopInIdle = false,
-
-  /* Suspend in sleep */
-  .suspendInSleep = false,
-  /* Interrupt Source for USB module */
-  .interruptSource = INT_SOURCE_USB_1,
-
-  /* Endpoint table */
-    .endpointTable= endPointTable,
-
-  /* Number of function drivers registered to this instance of the
-     USB device layer */
-  .registeredFuncCount = 3,
-
-  /* Function driver table registered to this instance of the USB device layer*/
-    .registeredFunctions = (USB_DEVICE_FUNCTION_REGISTRATION_TABLE*)funcRegistrationTable,
-
-  /* Pointer to USB Descriptor structure */
-    .usbMasterDescriptor = (USB_DEVICE_MASTER_DESCRIPTOR*)&usbMasterDescriptor,
-
-  /* USB Device Speed */
-  .deviceSpeed = USB_SPEED_FULL,
-
-  /* Specify queue size for vendor endpoint read */
-  .queueSizeEndpointRead = 1,
-
-  /* Specify queue size for vendor endpoint write */
-    .queueSizeEndpointWrite= 1,
-};
-
-// </editor-fold>
-
-
 // *****************************************************************************
 // *****************************************************************************
 // Section: Driver Initialization Data
 // *****************************************************************************
 // *****************************************************************************
-
 
 // *****************************************************************************
 // *****************************************************************************
@@ -530,8 +164,8 @@ const SYS_DEVCON_INIT sysDevconInit =
 void SYS_Initialize ( void* data )
 {
   /* Core Processor Initialization */
-    SYS_CLK_Initialize( NULL );
-    sysObj.sysDevcon = SYS_DEVCON_Initialize(SYS_DEVCON_INDEX_0, (SYS_MODULE_INIT*)&sysDevconInit);
+  SYS_CLK_Initialize( NULL );
+  sysObj.sysDevcon = SYS_DEVCON_Initialize(SYS_DEVCON_INDEX_0, (SYS_MODULE_INIT*)&sysDevconInit);
   SYS_DEVCON_PerformanceConfig(SYS_CLK_SystemFrequencyGet());
   SYS_DEVCON_JTAGDisable();
   SYS_PORTS_Initialize();
@@ -552,10 +186,12 @@ void SYS_Initialize ( void* data )
   SYS_INT_VectorSubprioritySet(INT_VECTOR_USB1, INT_SUBPRIORITY_LEVEL0);
 
   /* Copy the UID from flash to the USB descriptor. */
-  UIDStore_AsUnicodeString(serial_number_string_descriptor.string);
+  UIDStore_AsUnicodeString(USBDescriptor_UnicodeUID());
 
   /* Initialize the USB device layer */
-    sysObj.usbDevObject0 = USB_DEVICE_Initialize (USB_DEVICE_INDEX_0 , ( SYS_MODULE_INIT* ) & usbDevInitData);
+  sysObj.usbDevObject0 = USB_DEVICE_Initialize(
+      USB_DEVICE_INDEX_0, (SYS_MODULE_INIT*) USBDescriptor_GetDeviceConfig());
+
   /* Enable Global Interrupts */
   SYS_INT_Enable();
 

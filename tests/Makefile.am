@@ -17,6 +17,7 @@ BUILD_FLAGS = -I system_config -I harmony/include -I ../firmware/src \
               $(WARNING_CFLAGS)
 
 noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
+                     boot_src/libbootloader.la \
                      src/libcoarsetimer.la \
                      src/libdimmermodel.la \
                      src/libflags.la \
@@ -58,6 +59,9 @@ harmony_mocks_libharmonymock_la_SOURCES = \
 harmony_mocks_libharmonymock_la_CXXFLAGS = \
    -I harmony/include $(GMOCK_INCLUDES) $(GTEST_INCLUDES) $(WARNING_CFLAGS)
 harmony_mocks_libharmonymock_la_LIBADD = $(GMOCK_LIBS) $(GTEST_LIBS)
+
+boot_src_libbootloader_la_SOURCES = boot_src/bootloader.c
+boot_src_libbootloader_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libcoarsetimer_la_SOURCES = src/coarse_timer.c
 src_libcoarsetimer_la_CFLAGS = $(BUILD_FLAGS)

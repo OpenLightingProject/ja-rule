@@ -53,6 +53,7 @@
         <itemPath>../src/transceiver.h</itemPath>
         <itemPath>../src/transport.h</itemPath>
         <itemPath>../src/usb_console.h</itemPath>
+        <itemPath>../src/usb_descriptors.h</itemPath>
         <itemPath>../src/usb_transport.h</itemPath>
         <itemPath>../src/utils.h</itemPath>
       </logicalFolder>
@@ -150,6 +151,7 @@
         <itemPath>../src/syslog.c</itemPath>
         <itemPath>../src/transceiver.c</itemPath>
         <itemPath>../src/usb_console.c</itemPath>
+        <itemPath>../src/usb_descriptors.c</itemPath>
         <itemPath>../src/usb_transport.c</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">

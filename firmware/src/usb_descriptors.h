@@ -13,18 +13,37 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * reset.c
+ * usb_descriptors.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "reset.h"
+#ifndef FIRMWARE_SRC_USB_DESCRIPTORS_H_
+#define FIRMWARE_SRC_USB_DESCRIPTORS_H_
 
+#include "usb/usb_device.h"
 
-// TODO(simon): Remove this and switch to the harmony function
-#define _SUPPRESS_PLIB_WARNING
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <peripheral/reset.h>
+/**
+ * @brief Fetch a pointer to the USB serial number.
+ * @returns a pointer to the unicode string serial number.
+ *
+ * The length of the buffer will be at least UID_LENGTH * 2 + 1, enough to hold
+ * a string representation of a UID.
+ */
+uint16_t* USBDescriptor_UnicodeUID();
 
-void Reset_SoftReset() {
-  SoftReset();
+/**
+ * @brief Fetch a pointer to the USB device initialization structure.
+ * @returns a Pointer to a USB_DEVICE_INIT which contains all the USB
+ * descriptors.
+ */
+const USB_DEVICE_INIT* USBDescriptor_GetDeviceConfig();
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif  // FIRMWARE_SRC_USB_DESCRIPTORS_H_
