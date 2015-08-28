@@ -39,6 +39,7 @@
 #include "system_definitions.h"
 #include "system_settings.h"
 #include "transceiver.h"
+#include "uid_store.h"
 #include "usb_transport.h"
 
 void __ISR(_TIMER_2_VECTOR, ipl6) TimerEvent() {
