@@ -33,6 +33,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "uid.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -136,13 +138,6 @@ enum { DUB_RESPONSE_LENGTH = 24 };
  * @brief The size of an RDM frame.
  */
 enum { RDM_MAX_FRAME_SIZE = 257 };
-
-/**
- * @brief The length of a UID.
- */
-enum {
-  UID_LENGTH = 6  //!< The size of a UID.
-};
 
 /**
  * @brief Maximum size of RDM Parameter Data.
