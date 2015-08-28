@@ -39,7 +39,7 @@ using testing::_;
 ::std::ostream& operator<<(::std::ostream& os, const DFUState& state) {
   switch (state) {
     case APP_STATE_IDLE:
-      return os << "APP_STATE_DETACH(0)";
+      return os << "APP_STATE_IDLE(0)";
     case APP_STATE_DETACH:
       return os << "APP_STATE_DETACH(1)";
     case DFU_STATE_IDLE:
