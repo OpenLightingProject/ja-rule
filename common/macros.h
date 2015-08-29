@@ -21,6 +21,7 @@
 #define COMMON_MACROS_H_
 
 /**
+ * @{
  * @file macros.h
  * @brief Macros used throughout the code.
  */
