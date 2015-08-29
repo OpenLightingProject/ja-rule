@@ -40,4 +40,8 @@
 #define UNUSED
 #endif
 
+/**
+ * @}
+ */
+
 #endif  // BOOTLOADER_FIRMWARE_SRC_MACROS_H_

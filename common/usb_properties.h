@@ -13,41 +13,47 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * macros.h
+ * usb_properties.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef FIRMWARE_SRC_MACROS_H_
-#define FIRMWARE_SRC_MACROS_H_
+#ifndef COMMON_USB_PROPERTIES_H_
+#define COMMON_USB_PROPERTIES_H_
 
 /**
- * @file macros.h
- * @brief Macros used throughout the code.
+ * @file usb_properties.h
+ * @brief USB Device specific constants.
  */
 
-/**
- * @def UNUSED
- * @brief Mark unused arguments & types to suppress compiler warnings.
- *
- * @examplepara
- *   @code
- *   void Foo(UNUSED int bar) {}
- *   @endcode
- */
-#ifdef __GNUC__
-#define UNUSED __attribute__ ((unused))
-#else
-#define UNUSED
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /**
- * @brief A helper to return if the RDM Request does not require an RDM
- *   response.
- * @param header The RDMHeader of the request.
+ * @brief The USB Vendor ID.
+ *
+ * See http://pid.codes/1209/ACEE/
  */
-#define ReturnUnlessUnicast(header) \
-if (!RDMUtil_IsUnicast(header->dest_uid)) {\
-  return RDM_RESPONDER_NO_RESPONSE; \
-}
+enum { USB_DEVICE_VENDOR_ID = 0x1209 };
 
-#endif  // FIRMWARE_SRC_MACROS_H_
+/**
+ * @brief The Ja Rule USB Product ID.
+ *
+ * See http://pid.codes/1209/ACED/
+ */
+enum { USB_DEVICE_MAIN_PRODUCT_ID = 0xaced };
+
+/**
+ * @brief The Ja Rule Bootloader USB Product ID.
+ *
+ * See http://pid.codes/1209/ACEE/
+ */
+enum { USB_DEVICE_BOOTLOADER_PRODUCT_ID = 0xacee };
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif  // COMMON_USB_PROPERTIES_H_

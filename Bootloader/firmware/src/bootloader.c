@@ -33,8 +33,8 @@
 #include "system_config.h"
 
 #include "bootloader_options.h"
-#include "constants.h"
-#include "dfu_constants.h"
+#include "dfu_properties.h"
+#include "dfu_spec.h"
 #include "flash.h"
 #include "launcher.h"
 #include "macros.h"
@@ -561,7 +561,7 @@ static void USBEventHandler(USB_DEVICE_EVENT event,
       setup_packet = (USB_SETUP_PACKET*) event_data;
       if (setup_packet->RequestType == USB_SETUP_REQUEST_TYPE_CLASS &&
           setup_packet->Recipient == USB_SETUP_REQUEST_RECIPIENT_INTERFACE &&
-          setup_packet->wIndex == USB_DFU_INTERFACE_INDEX) {
+          setup_packet->wIndex == DFU_MODE_DFU_INTERFACE_INDEX) {
         HandleDFUEvent(setup_packet);
       } else if (setup_packet->bRequest == USB_REQUEST_SET_INTERFACE) {
         if (setup_packet->wValue > DFU_ALT_INTERFACE_UID) {

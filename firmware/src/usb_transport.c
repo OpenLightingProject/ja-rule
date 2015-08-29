@@ -23,7 +23,8 @@
 
 #include "bootloader_options.h"
 #include "constants.h"
-#include "dfu_constants.h"
+#include "dfu_properties.h"
+#include "dfu_spec.h"
 #include "flags.h"
 #include "reset.h"
 #include "stream_decoder.h"
@@ -33,8 +34,6 @@
 #include "transport.h"
 #include "usb/usb_device.h"
 #include "utils.h"
-
-static const uint8_t DFU_INTERFACE_INDEX = 3u;
 
 typedef enum {
   USB_STATE_INIT = 0,
@@ -138,7 +137,7 @@ void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
           setup_packet->Recipient == USB_SETUP_REQUEST_RECIPIENT_INTERFACE &&
           setup_packet->DataDir == USB_SETUP_REQUEST_DIRECTION_HOST_TO_DEVICE &&
           setup_packet->bRequest == DFU_DETATCH &&
-          setup_packet->wIndex == DFU_INTERFACE_INDEX) {
+          setup_packet->wIndex == RUNTIME_MODE_DFU_INTERFACE_INDEX) {
         g_usb_transport_data.dfu_detach = true;
         USB_DEVICE_ControlStatus(g_usb_transport_data.usb_device,
                                  USB_DEVICE_CONTROL_STATUS_OK);
@@ -146,7 +145,7 @@ void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
           setup_packet->Recipient == USB_SETUP_REQUEST_RECIPIENT_INTERFACE &&
           setup_packet->DataDir == USB_SETUP_REQUEST_DIRECTION_DEVICE_TO_HOST &&
           setup_packet->bRequest == DFU_GETSTATUS &&
-          setup_packet->wIndex == DFU_INTERFACE_INDEX &&
+          setup_packet->wIndex == RUNTIME_MODE_DFU_INTERFACE_INDEX &&
           setup_packet->wLength == GET_STATUS_RESPONSE_SIZE) {
         // We don't have to support GET_STATUS here but 0.7 of dfu-util won't
         // work without it.

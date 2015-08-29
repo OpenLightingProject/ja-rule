@@ -23,7 +23,6 @@
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../common/bootloader_options.h</itemPath>
-        <itemPath>../../common/dfu_constants.h</itemPath>
         <itemPath>../../common/reset.h</itemPath>
         <itemPath>../../common/uid_store.h</itemPath>
         <itemPath>../src/app.h</itemPath>
@@ -33,7 +32,6 @@
         <itemPath>../src/flags.h</itemPath>
         <itemPath>../src/iovec.h</itemPath>
         <itemPath>../src/led_model.h</itemPath>
-        <itemPath>../src/macros.h</itemPath>
         <itemPath>../src/message_handler.h</itemPath>
         <itemPath>../src/moving_light.h</itemPath>
         <itemPath>../src/network_model.h</itemPath>
@@ -56,6 +54,8 @@
         <itemPath>../src/usb_descriptors.h</itemPath>
         <itemPath>../src/usb_transport.h</itemPath>
         <itemPath>../src/utils.h</itemPath>
+        <itemPath>../../common/macros.h</itemPath>
+        <itemPath>../../common/dfu_spec.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"

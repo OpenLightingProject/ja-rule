@@ -28,7 +28,7 @@
 #include "Matchers.h"
 #include "ResetMock.h"
 #include "bootloader.h"
-#include "dfu_constants.h"
+#include "dfu_spec.h"
 #include "macros.h"
 #include "plib_ports_mock.h"
 #include "usb/usb_device.h"

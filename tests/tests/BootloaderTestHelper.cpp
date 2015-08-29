@@ -24,7 +24,7 @@
 
 #include "Matchers.h"
 #include "bootloader.h"
-#include "dfu_constants.h"
+#include "dfu_spec.h"
 #include "usb/usb_device.h"
 #include "usb_device_mock.h"
 

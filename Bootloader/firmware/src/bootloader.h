@@ -22,7 +22,13 @@
 
 #include <stddef.h>
 #include <stdbool.h>
-#include "dfu_constants.h"
+#include "dfu_spec.h"
+
+/**
+ * @{
+ * @file bootloader.h
+ * @brief The DFU bootloader.
+ */
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,5 +65,9 @@ DFUStatus Bootloader_GetStatus();
 #ifdef __cplusplus
 }
 #endif
+
+/**
+ * @}
+ */
 
 #endif  // BOOTLOADER_FIRMWARE_SRC_BOOTLOADER_H_

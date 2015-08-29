@@ -22,6 +22,11 @@
 
 #include "usb/usb_device.h"
 
+/**
+ * @file usb_descriptors.h
+ * @brief USB Descriptors
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -41,6 +46,10 @@ uint16_t* USBDescriptor_UnicodeUID();
  * descriptors.
  */
 const USB_DEVICE_INIT* USBDescriptor_GetDeviceConfig();
+
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef __cplusplus
 }
