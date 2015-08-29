@@ -115,8 +115,8 @@ void APP_Initialize(void) {
 
   // SPI DMX Output
   SPIRGBConfiguration spi_config;
-  spi_config.module_id = SPI_ID_1;
-  spi_config.baud_rate = 1000000u;
+  spi_config.module_id = SPI_MODULE_ID;
+  spi_config.baud_rate = SPI_BAUD_RATE;
   spi_config.use_enhanced_buffering = true;
   SPIRGB_Init(&spi_config);
 
