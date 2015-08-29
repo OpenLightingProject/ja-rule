@@ -8,18 +8,20 @@
         <logicalFolder name="system_config"
                        displayName="system_config"
                        projectFiles="true">
-          <logicalFolder name="mx_795_512l" displayName="mx_795_512l" projectFiles="true">
+          <logicalFolder name="ethernet_sk2"
+                         displayName="ethernet_sk2"
+                         projectFiles="true">
             <logicalFolder name="framework" displayName="framework" projectFiles="true">
               <logicalFolder name="system" displayName="system" projectFiles="true">
                 <logicalFolder name="clk" displayName="clk" projectFiles="true">
-                  <itemPath>../src/system_config/mx_795_512l/framework/system/clk/sys_clk_static.h</itemPath>
+                  <itemPath>../src/system_config/ethernet_sk2/framework/system/clk/sys_clk_static.h</itemPath>
                 </logicalFolder>
               </logicalFolder>
             </logicalFolder>
-            <itemPath>../src/system_config/mx_795_512l/system_pipeline.h</itemPath>
-            <itemPath>../src/system_config/mx_795_512l/system_config.h</itemPath>
-            <itemPath>../src/system_config/mx_795_512l/system_definitions.h</itemPath>
-            <itemPath>../src/system_config/mx_795_512l/system_settings.h</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/system_pipeline.h</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/system_config.h</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/system_definitions.h</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/system_settings.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../common/bootloader_options.h</itemPath>
@@ -106,24 +108,26 @@
         <logicalFolder name="system_config"
                        displayName="system_config"
                        projectFiles="true">
-          <logicalFolder name="mx_795_512l" displayName="mx_795_512l" projectFiles="true">
+          <logicalFolder name="ethernet_sk2"
+                         displayName="ethernet_sk2"
+                         projectFiles="true">
             <logicalFolder name="framework" displayName="framework" projectFiles="true">
               <logicalFolder name="system" displayName="system" projectFiles="true">
                 <logicalFolder name="clk" displayName="clk" projectFiles="true">
                   <logicalFolder name="src" displayName="src" projectFiles="true">
-                    <itemPath>../src/system_config/mx_795_512l/framework/system/clk/src/sys_clk_static.c</itemPath>
+                    <itemPath>../src/system_config/ethernet_sk2/framework/system/clk/src/sys_clk_static.c</itemPath>
                   </logicalFolder>
                 </logicalFolder>
                 <logicalFolder name="ports" displayName="ports" projectFiles="true">
                   <logicalFolder name="src" displayName="src" projectFiles="true">
-                    <itemPath>../src/system_config/mx_795_512l/framework/system/ports/src/sys_ports_static.c</itemPath>
+                    <itemPath>../src/system_config/ethernet_sk2/framework/system/ports/src/sys_ports_static.c</itemPath>
                   </logicalFolder>
                 </logicalFolder>
               </logicalFolder>
             </logicalFolder>
-            <itemPath>../src/system_config/mx_795_512l/system_init.c</itemPath>
-            <itemPath>../src/system_config/mx_795_512l/system_interrupt.c</itemPath>
-            <itemPath>../src/system_config/mx_795_512l/system_tasks.c</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/system_init.c</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/system_interrupt.c</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/system_tasks.c</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../common/bootloader_options.c</itemPath>
@@ -213,13 +217,12 @@
   </logicalFolder>
   <sourceRootList>
     <Elem>../src</Elem>
-    <Elem>../src/system_config/mx_795_512l</Elem>
     <Elem>../../linker</Elem>
     <Elem>../../common</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
-    <conf name="mx_795_512l" type="2">
+    <conf name="ethernet_sk2" type="2">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
         <targetDevice>PIC32MX795F512L</targetDevice>
@@ -233,8 +236,6 @@
       <compileType>
         <linkerTool>
           <linkerLibItems>
-            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
-            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
             <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
@@ -263,7 +264,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../src/system_config/mx_795_512l;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/framework;../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;../../common"/>
+                  value="../src;../src/system_config/ethernet_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/framework;../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;../../common"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -282,6 +283,24 @@
       <C32-AR>
         <property key="additional-options-chop-files" value="false"/>
       </C32-AR>
+      <C32-AS>
+        <property key="assembler-symbols" value=""/>
+        <property key="enable-symbols" value="true"/>
+        <property key="exclude-floating-point-library" value="false"/>
+        <property key="expand-macros" value="false"/>
+        <property key="extra-include-directories-for-assembler" value=""/>
+        <property key="extra-include-directories-for-preprocessor" value=""/>
+        <property key="false-conditionals" value="false"/>
+        <property key="keep-locals" value="false"/>
+        <property key="list-assembly" value="false"/>
+        <property key="list-source" value="false"/>
+        <property key="list-symbols" value="false"/>
+        <property key="oXC32asm-list-to-file" value="false"/>
+        <property key="omit-debug-dirs" value="false"/>
+        <property key="omit-forms" value="false"/>
+        <property key="preprocessor-macros" value=""/>
+        <property key="warning-level" value=""/>
+      </C32-AS>
       <C32-LD>
         <property key="additional-options-use-response-files" value="false"/>
         <property key="enable-check-sections" value="false"/>
@@ -354,7 +373,6 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="memories.configurationmemory" value="true"/>
         <property key="memories.dataflash" value="true"/>
         <property key="memories.eeprom" value="true"/>
@@ -363,7 +381,6 @@
         <property key="memories.programmemory.end" value="0x1d07ffff"/>
         <property key="memories.programmemory.start" value="0x1d000000"/>
         <property key="memories.userotp" value="true"/>
-        <property key="poweroptions.powerenable" value="false"/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.preservedataflash" value="false"/>
@@ -373,7 +390,6 @@
         <property key="programoptions.preserveprogramrange.start" value="0x1d000000"/>
         <property key="programoptions.usehighvoltageonmclr" value="false"/>
         <property key="programoptions.uselvpprogramming" value="false"/>
-        <property key="voltagevalue" value="3.25"/>
       </PKOBSKDEPlatformTool>
     </conf>
   </confs>
