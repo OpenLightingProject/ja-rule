@@ -55,25 +55,6 @@
 #define USB_POLLING_INTERVAL 1u
 
 // *****************************************************************************
-// DMX512 specific constants
-// *****************************************************************************
-
-/**
- * @brief The maximum size of a DMX frame, excluding the start code.
- */
-#define DMX_FRAME_SIZE 512u
-
-/**
- * @brief The Null Start Code (NSC).
- */
-#define NULL_START_CODE 0x00u
-
-/**
- * @brief The Baud rate for DMX / RDM.
- */
-#define DMX_BAUD 250000u  // 250kHz
-
-// *****************************************************************************
 // RDM specific constants
 // *****************************************************************************
 

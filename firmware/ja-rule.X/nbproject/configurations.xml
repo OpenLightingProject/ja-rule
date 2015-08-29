@@ -56,6 +56,7 @@
         <itemPath>../src/utils.h</itemPath>
         <itemPath>../../common/macros.h</itemPath>
         <itemPath>../../common/dfu_spec.h</itemPath>
+        <itemPath>../src/dmx_spec.h</itemPath>
       </logicalFolder>
       <logicalFolder name="bsp" displayName="bsp" projectFiles="true">
         <logicalFolder name="pic32mx_eth_sk2"

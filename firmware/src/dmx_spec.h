@@ -13,35 +13,36 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * macros.h
+ * dmx_spec.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef COMMON_MACROS_H_
-#define COMMON_MACROS_H_
-
 /**
- * @file macros.h
- * @brief Macros used throughout the code.
+ * @{
+ * @file dmx_spec.h
+ * @brief Constants from the DMX (E1.11) specification.
  */
 
+#ifndef FIRMWARE_SRC_DMX_SPEC_H_
+#define FIRMWARE_SRC_DMX_SPEC_H_
+
 /**
- * @def UNUSED
- * @brief Mark unused arguments & types to suppress compiler warnings.
- *
- * @examplepara
- *   @code
- *   void Foo(UNUSED int bar) {}
- *   @endcode
+ * @brief The maximum size of a DMX frame, excluding the start code.
  */
-#ifdef __GNUC__
-#define UNUSED __attribute__ ((unused))
-#else
-#define UNUSED
-#endif
+#define DMX_FRAME_SIZE 512u
+
+/**
+ * @brief The Null Start Code (NSC).
+ */
+#define NULL_START_CODE 0x00u
+
+/**
+ * @brief The Baud rate for DMX / RDM.
+ */
+#define DMX_BAUD 250000u  // 250kHz
+
+#endif  // FIRMWARE_SRC_DMX_SPEC_H_
 
 /**
  * @}
  */
-
-#endif  // COMMON_MACROS_H_

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 
 #include "constants.h"
+#include "dmx_spec.h"
 #include "rdm_frame.h"
 #include "rdm_handler.h"
 #include "receiver_counters.h"
