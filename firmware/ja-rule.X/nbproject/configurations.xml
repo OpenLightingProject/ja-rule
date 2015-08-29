@@ -106,6 +106,7 @@
                    displayName="Linker Files"
                    projectFiles="true">
       <itemPath>../../linker/app_mx795F512L.ld</itemPath>
+      <itemPath>../../linker/app_mx675F512H.ld</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -285,6 +286,8 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
+      <item path="../../linker/app_mx795F512L.ld" ex="true" overriding="false">
+      </item>
       <item path="../src/system_config/number8/framework/system/clk/src/sys_clk_static.c"
             ex="true"
             overriding="false">
@@ -504,7 +507,7 @@
             ex="true"
             overriding="false">
       </item>
-      <item path="../../linker/app_mx795F512L.ld" ex="true" overriding="false">
+      <item path="../../linker/app_mx675F512H.ld" ex="true" overriding="false">
       </item>
       <item path="../src/system_config/ethernet_sk2/framework/system/clk/src/sys_clk_static.c"
             ex="true"
@@ -652,7 +655,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../../common;../src/system_config/number8;../../../../../../opt/microchip/harmony/v1_02/framework;../src/system_config/number8/framework;"/>
+                  value="../src;../../common;../src/system_config/number8;../../../../../../opt/microchip/harmony/v1_02/framework;../src/system_config/number8/framework"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -735,6 +738,7 @@
         <property key="relaxed-math" value="false"/>
         <property key="save-temps" value="false"/>
         <property key="wpo-lto" value="false"/>
+        <appendMe value="-L&quot;../../linker&quot;"/>
       </C32Global>
       <PICkit3PlatformTool>
         <property key="ADC 1" value="true"/>
