@@ -336,7 +336,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../../common;../src/system_config/ethernet_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/framework;../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;../../../../../../opt/microchip/harmony/v1_02/framework;../src/system_config/ethernet_sk2/framework"/>
+                  value="../../common;../src;../src/system_config/ethernet_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
