@@ -6,16 +6,16 @@
                    projectFiles="true">
       <logicalFolder name="f2" displayName="app" projectFiles="true">
         <logicalFolder name="f1" displayName="system_config" projectFiles="true">
-          <logicalFolder name="f1" displayName="default" projectFiles="true">
+          <logicalFolder name="f1" displayName="ethernet_sk2" projectFiles="true">
             <logicalFolder name="f1" displayName="framework" projectFiles="true">
               <logicalFolder name="f1" displayName="system" projectFiles="true">
                 <logicalFolder name="f1" displayName="clk" projectFiles="true">
-                  <itemPath>../src/system_config/default/framework/system/clk/sys_clk_static.h</itemPath>
+                  <itemPath>../src/system_config/ethernet_sk2/framework/system/clk/sys_clk_static.h</itemPath>
                 </logicalFolder>
               </logicalFolder>
             </logicalFolder>
-            <itemPath>../src/system_config/default/system_config.h</itemPath>
-            <itemPath>../src/system_config/default/system_definitions.h</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/system_config.h</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/system_definitions.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../../common/bootloader_options.h</itemPath>
@@ -67,23 +67,23 @@
                    projectFiles="true">
       <logicalFolder name="f2" displayName="app" projectFiles="true">
         <logicalFolder name="f1" displayName="system_config" projectFiles="true">
-          <logicalFolder name="f1" displayName="default" projectFiles="true">
+          <logicalFolder name="f1" displayName="ethernet_sk2" projectFiles="true">
             <logicalFolder name="f1" displayName="framework" projectFiles="true">
               <logicalFolder name="f1" displayName="system" projectFiles="true">
                 <logicalFolder name="f1" displayName="clk" projectFiles="true">
                   <logicalFolder name="f1" displayName="src" projectFiles="true">
-                    <itemPath>../src/system_config/default/framework/system/clk/src/sys_clk_static.c</itemPath>
+                    <itemPath>../src/system_config/ethernet_sk2/framework/system/clk/src/sys_clk_static.c</itemPath>
                   </logicalFolder>
                 </logicalFolder>
                 <logicalFolder name="f2" displayName="ports" projectFiles="true">
                   <logicalFolder name="f1" displayName="src" projectFiles="true">
-                    <itemPath>../src/system_config/default/framework/system/ports/src/sys_ports_static.c</itemPath>
+                    <itemPath>../src/system_config/ethernet_sk2/framework/system/ports/src/sys_ports_static.c</itemPath>
                   </logicalFolder>
                 </logicalFolder>
               </logicalFolder>
             </logicalFolder>
-            <itemPath>../src/system_config/default/system_init.c</itemPath>
-            <itemPath>../src/system_config/default/system_tasks.c</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/system_init.c</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/system_tasks.c</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../src/main.c</itemPath>
@@ -149,7 +149,7 @@
   </logicalFolder>
   <sourceRootList>
     <Elem>../src</Elem>
-    <Elem>../src/system_config/default</Elem>
+    <Elem>../src/system_config/ethernet_sk2</Elem>
     <Elem>../linker</Elem>
     <Elem>../../../common</Elem>
     <Elem>../../../../../opt/microchip/harmony/v1_02</Elem>
@@ -157,7 +157,7 @@
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
-    <conf name="default" type="2">
+    <conf name="ethernet_sk2" type="2">
       <toolsSet>
         <developmentServer>localhost</developmentServer>
         <targetDevice>PIC32MX795F512L</targetDevice>
@@ -199,7 +199,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../src/system_config/default;../../../../../../../opt/microchip/harmony/v1_02/framework;../src/system_config/default/framework;../../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;../../../common"/>
+                  value="../src;../src/system_config/ethernet_sk2;../../../../../../../opt/microchip/harmony/v1_02/framework;../src/system_config/ethernet_sk2/framework;../../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;../../../common"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -389,7 +389,6 @@
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
         <property key="ToolFirmwareOption.UseLatestFirmware" value="true"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="memories.configurationmemory" value="true"/>
         <property key="memories.dataflash" value="true"/>
         <property key="memories.eeprom" value="true"/>
@@ -398,7 +397,6 @@
         <property key="memories.programmemory.end" value="0x1d005fff"/>
         <property key="memories.programmemory.start" value="0x1d000000"/>
         <property key="memories.userotp" value="true"/>
-        <property key="poweroptions.powerenable" value="false"/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.preservedataflash" value="false"/>
@@ -408,7 +406,6 @@
         <property key="programoptions.preserveprogramrange.start" value="0x1d006000"/>
         <property key="programoptions.usehighvoltageonmclr" value="false"/>
         <property key="programoptions.uselvpprogramming" value="false"/>
-        <property key="voltagevalue" value="3.25"/>
       </PKOBSKDEPlatformTool>
     </conf>
   </confs>
