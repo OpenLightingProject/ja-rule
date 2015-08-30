@@ -62,7 +62,7 @@ static const USB_DEVICE_FUNCTION_REGISTRATION_TABLE g_func_table[3] = {
   /* Function 3 - The DFU Interface */
   {
     .configurationValue = 1,
-    .interfaceNumber = 3,
+    .interfaceNumber = RUNTIME_MODE_DFU_INTERFACE_INDEX,
     .numberOfInterfaces = 1,
     .speed = USB_SPEED_FULL,
     .funcDriverIndex = 0,
@@ -140,8 +140,8 @@ static const uint8_t g_config_descriptor[] = {
   // CDC Interrupt Endpoint (IN) Descriptor
   0x07,  // Size of this descriptor
   USB_DESCRIPTOR_ENDPOINT,  // Endpoint Descriptor
-  0x82,  // EndpointAddress ( EP2 IN INTERRUPT)
-  0x03,  // Attributes type of EP (INTERRUPT)
+  0x2 | USB_EP_DIRECTION_IN,  // EndpointAddress ( EP2 IN INTERRUPT)
+  USB_TRANSFER_TYPE_INTERRUPT,  // Attributes type of EP (INTERRUPT)
   0x0A, 0x00,  // Max packet size of this EP
   0x02,  // Poll interval (in ms)
 
@@ -159,16 +159,16 @@ static const uint8_t g_config_descriptor[] = {
   // CDC Interrupt Endpoint (IN) Descriptor
   0x07,  // Size of this descriptor
   USB_DESCRIPTOR_ENDPOINT,  // Descriptor type
-  0x03,  // EndpointAddress ( EP3 OUT BULK)
-  0x02,  // Attributes type of EP (BULK)
+  0x3 | USB_EP_DIRECTION_OUT,  // EndpointAddress ( EP3 OUT BULK)
+  USB_TRANSFER_TYPE_BULK,  // Attributes type of EP (BULK)
   0x40, 0x00,  // Max packet size of this EP
   0x00,  // Interval (in ms)
 
   // CDC Interrupt Endpoint (OUT) Descriptor
   0x07,  // Size of this descriptor
   USB_DESCRIPTOR_ENDPOINT,  // Descriptor type
-  0x83,  // EndpointAddress ( EP3 IN )
-  0x02,  // Attributes type of EP (BULK)
+  0x3 | USB_EP_DIRECTION_IN,  // EndpointAddress ( EP3 IN )
+  USB_TRANSFER_TYPE_BULK,  // Attributes type of EP (BULK)
   0x40, 0x00,  // Max packet size of this EP
   0x00,  // Interval (in ms)
 
