@@ -22,7 +22,7 @@
 
 /**
  * @file dfu_spec.h
- * @brief Constants from the  Device Firmware Uploads (DFU) 1.1 specification.
+ * @brief Constants from the Device Firmware Uploads (DFU) 1.1 specification.
  */
 
 #include <stdint.h>
