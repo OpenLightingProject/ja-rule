@@ -72,3 +72,5 @@ ja-rule.X/nbproject/private/*
 /Bootloader/firmware/src/system_config/default/asset.cache
 /firmware/ja-rule.X/build/ethernet_sk2/
 /firmware/ja-rule.X/dist/ethernet_sk2/
+/firmware/ja-rule.X/build/number8/
+/firmware/ja-rule.X/dist/number8/
