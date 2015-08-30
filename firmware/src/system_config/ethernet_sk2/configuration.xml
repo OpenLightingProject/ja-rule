@@ -95,7 +95,7 @@
   <Templates>
     <Template>
       <Name>system_config.h</Name>
-      <Path>/app/system_config/mx_795_512l</Path>
+      <Path>/app/system_config/ethernet_sk2</Path>
       <Checksum>DB19ED7C0CE933274AD1C73BBF39861D</Checksum>
     </Template>
     <Template>
@@ -104,7 +104,7 @@
     </Template>
     <Template>
       <Name>system_init.c</Name>
-      <Path>/app/system_config/mx_795_512l</Path>
+      <Path>/app/system_config/ethernet_sk2</Path>
       <Checksum>3F0B7B204E35131326DA29C3BD33B02F</Checksum>
     </Template>
     <Template>
@@ -113,12 +113,12 @@
     </Template>
     <Template>
       <Name>sys_ports_static.c</Name>
-      <Path>/app/system_config/mx_795_512l/framework/system/ports/src</Path>
+      <Path>/app/system_config/ethernet_sk2/framework/system/ports/src</Path>
       <Checksum>15FB7D0F9C1065B8E9E777C3D025F2A0</Checksum>
     </Template>
     <Template>
       <Name>system_tasks.c</Name>
-      <Path>/app/system_config/mx_795_512l</Path>
+      <Path>/app/system_config/ethernet_sk2</Path>
       <Checksum>0BEE6C40D29196D89B516A74D8798052</Checksum>
     </Template>
     <Template>
@@ -127,22 +127,22 @@
     </Template>
     <Template>
       <Name>sys_clk_static.c</Name>
-      <Path>/app/system_config/mx_795_512l/framework/system/clk/src</Path>
+      <Path>/app/system_config/ethernet_sk2/framework/system/clk/src</Path>
       <Checksum>B87F76F33F9F052BC1D3CF01398E6247</Checksum>
     </Template>
     <Template>
       <Name>system_interrupt.c</Name>
-      <Path>/app/system_config/mx_795_512l</Path>
+      <Path>/app/system_config/ethernet_sk2</Path>
       <Checksum>904BC56B47D5CCC0DCED63BE72010D32</Checksum>
     </Template>
     <Template>
       <Name>system_definitions.h</Name>
-      <Path>/app/system_config/mx_795_512l</Path>
+      <Path>/app/system_config/ethernet_sk2</Path>
       <Checksum>63BCE17795F732A4187E5ECCEC780D17</Checksum>
     </Template>
     <Template>
       <Name>sys_clk_static.h</Name>
-      <Path>/app/system_config/mx_795_512l/framework/system/clk</Path>
+      <Path>/app/system_config/ethernet_sk2/framework/system/clk</Path>
       <Checksum>5136E2C3EE2A15E666B1927251CBCEAA</Checksum>
     </Template>
   </Templates>
