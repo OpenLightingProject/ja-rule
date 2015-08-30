@@ -42,4 +42,4 @@ if [ ! -r $dfu_file ]; then
   exit;
 fi
 
-$DFU_UTIL -D $dfu_file
+$DFU_UTIL -a 0 -R -D $dfu_file
