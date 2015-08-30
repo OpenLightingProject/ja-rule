@@ -13,46 +13,36 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * usb_descriptors.h
+ * macros.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef FIRMWARE_SRC_USB_DESCRIPTORS_H_
-#define FIRMWARE_SRC_USB_DESCRIPTORS_H_
-
-#include "usb/usb_device.h"
+#ifndef COMMON_MACROS_H_
+#define COMMON_MACROS_H_
 
 /**
- * @file usb_descriptors.h
- * @brief USB Descriptors
+ * @{
+ * @file macros.h
+ * @brief Macros used throughout the code.
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
- * @brief Fetch a pointer to the USB serial number.
- * @returns a pointer to the unicode string serial number.
+ * @def UNUSED
+ * @brief Mark unused arguments & types to suppress compiler warnings.
  *
- * The length of the buffer will be at least UID_LENGTH * 2 + 1, enough to hold
- * a string representation of a UID.
+ * @examplepara
+ *   @code
+ *   void Foo(UNUSED int bar) {}
+ *   @endcode
  */
-uint16_t* USBDescriptor_UnicodeUID();
+#ifdef __GNUC__
+#define UNUSED __attribute__ ((unused))
+#else
+#define UNUSED
+#endif
 
 /**
- * @brief Fetch a pointer to the USB device initialization structure.
- * @returns a Pointer to a USB_DEVICE_INIT which contains all the USB
- * descriptors.
+ * @}
  */
-const USB_DEVICE_INIT* USBDescriptor_GetDeviceConfig();
 
-#ifdef __cplusplus
-}
-#endif
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif  // FIRMWARE_SRC_USB_DESCRIPTORS_H_
+#endif  // COMMON_MACROS_H_

@@ -46,6 +46,16 @@ static const uint16_t FLASH_SLOW = 10000u;
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
+/*
+ * @brief A helper to return if the RDM Request does not require an RDM
+ *   response.
+ * @param header The RDMHeader of the request.
+ */
+#define ReturnUnlessUnicast(header) \
+if (!RDMUtil_IsUnicast(header->dest_uid)) {\
+  return RDM_RESPONDER_NO_RESPONSE; \
+}
+
 static RDMResponder root_responder;
 
 RDMResponder *g_responder = &root_responder;

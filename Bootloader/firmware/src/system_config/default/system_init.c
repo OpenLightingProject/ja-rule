@@ -50,11 +50,11 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #include "system_config.h"
 #include "system_definitions.h"
 #include "bootloader.h"
-#include "constants.h"
-#include "dfu_constants.h"
+#include "dfu_properties.h"
+#include "dfu_spec.h"
 #include "uid.h"
 #include "uid_store.h"
-
+#include "usb_properties.h"
 
 // ****************************************************************************
 // ****************************************************************************
@@ -141,8 +141,8 @@ const USB_DEVICE_DESCRIPTOR fullSpeedDeviceDescriptor = {
   0x00, // Subclass code
   0x00, // Protocol code
   DFU_BLOCK_SIZE, // Max packet size for EP0
-  USB_DEVICE_VENDOR_ID, // Vendor ID: 0x04D8 is Microchip's Vendor ID
-  USB_DEVICE_PRODUCT_ID, // Product ID: 0x0053
+  USB_DEVICE_VENDOR_ID, // Vendor ID.
+  USB_DEVICE_BOOTLOADER_PRODUCT_ID, // Product ID.
   0x0000, // Device release number in BCD format
   0x01, // Manufacturer string index
   0x02, // Product string index
@@ -166,7 +166,7 @@ const uint8_t fullSpeedConfigurationDescriptor1[] = {
 
   0x09, // Size of this descriptor in bytes
   USB_DESCRIPTOR_INTERFACE, // Descriptor Type
-  USB_DFU_INTERFACE_INDEX, // Interface Number
+  DFU_MODE_DFU_INTERFACE_INDEX, // Interface Number
   DFU_ALT_INTERFACE_FIRMWARE, // Alternate Setting Number
   0x00, // Number of endpoints in this intf
   0xfe, // Class code
@@ -176,7 +176,7 @@ const uint8_t fullSpeedConfigurationDescriptor1[] = {
 
   0x09, // Size of this descriptor in bytes
   USB_DESCRIPTOR_INTERFACE, // Descriptor Type
-  USB_DFU_INTERFACE_INDEX, // Interface Number
+  DFU_MODE_DFU_INTERFACE_INDEX, // Interface Number
   DFU_ALT_INTERFACE_UID, // Alternate Setting Number
   0x00, // Number of endpoints in this intf
   0xfe, // Class code

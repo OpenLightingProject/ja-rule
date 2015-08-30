@@ -22,9 +22,11 @@
 #include <stdint.h>
 
 #include "constants.h"
-#include "dfu_constants.h"
+#include "dfu_spec.h"
+#include "dfu_properties.h"
 #include "uid.h"
 #include "usb/usb_device_cdc.h"
+#include "usb_properties.h"
 
 // CDC Function Driver Init Data
 // ----------------------------------------------------------------------------
@@ -80,7 +82,7 @@ static const USB_DEVICE_DESCRIPTOR g_device_descriptor = {
   0x00,  // Protocol code
   USB_DEVICE_EP0_BUFFER_SIZE,  // Max packet size for EP0, see usb_config.h
   USB_DEVICE_VENDOR_ID,
-  USB_DEVICE_PRODUCT_ID,
+  USB_DEVICE_MAIN_PRODUCT_ID,
   0x0000,  // Device release number in BCD format
   0x01,  // Manufacturer string index
   0x02,  // Product string index
@@ -200,7 +202,7 @@ static const uint8_t g_config_descriptor[] = {
   // DFU Interface Descriptor
   0x09,  // Size of this descriptor in bytes
   USB_DESCRIPTOR_INTERFACE,  // Descriptor Type
-  3,  // Interface Number
+  RUNTIME_MODE_DFU_INTERFACE_INDEX,  // Interface Number
   0x00,  // Alternate Setting Number
   0x00,  // Number of endpoints in this intf
   0xfe,  // Class code

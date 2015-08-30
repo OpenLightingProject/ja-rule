@@ -28,6 +28,7 @@
 
 #include "constants.h"
 #include "coarse_timer.h"
+#include "dmx_spec.h"
 #include "syslog.h"
 #include "system_definitions.h"
 #include "system_pipeline.h"

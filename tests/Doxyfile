@@ -653,7 +653,9 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = ../firmware/src \
+INPUT                  = ../Bootloader/firmware/src \
+                         ../common \
+                         ../firmware/src \
                          ../firmware/src/system_config/default \
                          doxygen
 

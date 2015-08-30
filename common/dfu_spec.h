@@ -13,16 +13,16 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * dfu_constants.h
+ * dfu_spec.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef COMMON_DFU_CONSTANTS_H_
-#define COMMON_DFU_CONSTANTS_H_
+#ifndef COMMON_DFU_SPEC_H_
+#define COMMON_DFU_SPEC_H_
 
 /**
- * @file dfu_constants.h
- * @brief Constants for Device Firmware Uploads
+ * @file dfu_spec.h
+ * @brief Constants from the Device Firmware Uploads (DFU) 1.1 specification.
  */
 
 #include <stdint.h>
@@ -98,15 +98,8 @@ enum {
  */
 enum { GET_STATUS_RESPONSE_SIZE = 6 };
 
-/**
- * @brief The maximum size of the firmware blocks.
- *
- * Per the USB spec, this should be 8, 16, 32 or 64 bytes.
- */
-enum { DFU_BLOCK_SIZE = 64 };
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // COMMON_DFU_CONSTANTS_H_
+#endif  // COMMON_DFU_SPEC_H_

@@ -18,8 +18,6 @@
             <itemPath>../src/system_config/default/system_definitions.h</itemPath>
           </logicalFolder>
         </logicalFolder>
-        <itemPath>../src/constants.h</itemPath>
-        <itemPath>../../../common/dfu_constants.h</itemPath>
         <itemPath>../../../common/bootloader_options.h</itemPath>
         <itemPath>../src/flash.h</itemPath>
         <itemPath>../../../common/uid_store.h</itemPath>
@@ -27,6 +25,10 @@
         <itemPath>../src/bootloader.h</itemPath>
         <itemPath>../src/launcher.h</itemPath>
         <itemPath>../../../common/reset.h</itemPath>
+        <itemPath>../../../common/macros.h</itemPath>
+        <itemPath>../../../common/usb_properties.h</itemPath>
+        <itemPath>../../../common/dfu_properties.h</itemPath>
+        <itemPath>../../../common/dfu_spec.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">

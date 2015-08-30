@@ -34,20 +34,6 @@
 // *****************************************************************************
 
 /**
- * @brief The USB Vendor ID.
- *
- * See http://pid.codes/1209/ACED/
- */
-#define USB_DEVICE_VENDOR_ID 0x1209
-
-/**
- * @brief The Ja Rule USB Product ID.
- *
- * See http://pid.codes/1209/ACED/
- */
-#define USB_DEVICE_PRODUCT_ID 0xaced
-
-/**
  * @brief The maximum size of a USB packet to / from the bulk endpoint.
  *
  * 64 bytes is the highest value a full speed, bulk endpoint can use.
@@ -67,25 +53,6 @@
  * 1ms is the shortest polling interval USB allows.
  */
 #define USB_POLLING_INTERVAL 1u
-
-// *****************************************************************************
-// DMX512 specific constants
-// *****************************************************************************
-
-/**
- * @brief The maximum size of a DMX frame, excluding the start code.
- */
-#define DMX_FRAME_SIZE 512u
-
-/**
- * @brief The Null Start Code (NSC).
- */
-#define NULL_START_CODE 0x00u
-
-/**
- * @brief The Baud rate for DMX / RDM.
- */
-#define DMX_BAUD 250000u  // 250kHz
 
 // *****************************************************************************
 // RDM specific constants

@@ -21,7 +21,7 @@
 #ifndef TESTS_TESTS_BOOTLOADERTESTHELPER_H_
 #define TESTS_TESTS_BOOTLOADERTESTHELPER_H_
 
-#include "dfu_constants.h"
+#include "dfu_spec.h"
 #include "usb/usb_device.h"
 #include "usb_device_mock.h"
 

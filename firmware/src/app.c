@@ -41,6 +41,7 @@
 #include "transceiver.h"
 #include "uid_store.h"
 #include "usb_transport.h"
+#include "uid_store.h"
 
 void __ISR(_TIMER_2_VECTOR, ipl6) TimerEvent() {
   CoarseTimer_TimerEvent();
