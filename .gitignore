@@ -76,3 +76,5 @@ ja-rule.X/nbproject/private/*
 /firmware/ja-rule.X/dist/number8/
 /Bootloader/firmware/Bootloader.X/build/ethernet_sk2/
 /Bootloader/firmware/Bootloader.X/dist/ethernet_sk2/
+/Bootloader/firmware/Bootloader.X/build/number8/
+/Bootloader/firmware/Bootloader.X/dist/number8/
