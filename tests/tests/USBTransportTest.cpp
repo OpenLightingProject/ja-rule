@@ -78,6 +78,9 @@ class USBTransportTest : public testing::Test {
   // ConfigureDevice() has run
   USBEventHandler m_event_handler = nullptr;
 
+  // Pointer to the read buffer
+  void *m_read_buffer = nullptr;
+
   static const uint8_t kToken = 99;
 };
 
@@ -106,7 +109,8 @@ void USBTransportTest::ConfigureDevice() {
               EndpointEnable(m_usb_handle, 0, 0x81, USB_TRANSFER_TYPE_BULK, 64))
     .WillOnce(Return(USB_DEVICE_RESULT_OK));
   EXPECT_CALL(m_usb_mock, EndpointRead(m_usb_handle, _, 1, _, _))
-    .WillOnce(Return(USB_DEVICE_RESULT_OK));
+    .WillOnce(DoAll(SaveArg<3>(&m_read_buffer),
+                    Return(USB_DEVICE_RESULT_OK)));
 
   USBTransport_Tasks();
   ASSERT_THAT(m_event_handler, NotNull());
@@ -299,6 +303,33 @@ TEST_F(USBTransportTest, dfuDetach) {
   m_event_handler(USB_DEVICE_EVENT_CONTROL_TRANSFER_SETUP_REQUEST,
                   reinterpret_cast<void*>(&get_status_req),
                   sizeof(get_status_req));
+
+  USBTransport_Tasks();
+}
+
+TEST_F(USBTransportTest, read) {
+  const uint8_t packet[] = {
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 0
+  };
+
+  USBTransport_Initialize(StreamDecoder_Process);
+  ConfigureDevice();
+
+  EXPECT_CALL(m_stream_decoder_mock, Process(_, _))
+      .With(Args<0, 1>(DataIs(packet, arraysize(packet))));
+  EXPECT_CALL(m_usb_mock, EndpointRead(m_usb_handle, _, 1, _, _))
+    .WillOnce(DoAll(SaveArg<3>(&m_read_buffer),
+                    Return(USB_DEVICE_RESULT_OK)));
+
+  memcpy(reinterpret_cast<uint8_t*>(m_read_buffer), packet, arraysize(packet));
+  USB_DEVICE_EVENT_DATA_ENDPOINT_READ_COMPLETE read_complete = {
+    .transferHandle = 0,
+    .length = arraysize(packet)
+  };
+
+  m_event_handler(USB_DEVICE_EVENT_ENDPOINT_READ_COMPLETE,
+                  reinterpret_cast<void*>(&read_complete),
+                  sizeof(read_complete));
 
   USBTransport_Tasks();
 }

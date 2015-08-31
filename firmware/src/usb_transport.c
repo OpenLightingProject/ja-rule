@@ -187,7 +187,7 @@ void USBTransport_EventHandler(USB_DEVICE_EVENT event, void* event_data,
       // Endpoint read is complete
       g_usb_transport_data.rx_in_progress = false;
       g_usb_transport_data.rx_data_size =
-          ((USB_DEVICE_EVENT_DATA_ENDPOINT_WRITE_COMPLETE*) event_data)->length;
+          ((USB_DEVICE_EVENT_DATA_ENDPOINT_READ_COMPLETE*) event_data)->length;
       break;
 
     case USB_DEVICE_EVENT_ENDPOINT_WRITE_COMPLETE:

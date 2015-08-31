@@ -32,6 +32,6 @@ void StreamDecoder_SetMock(MockStreamDecoder* mock) {
 
 void StreamDecoder_Process(const uint8_t* data, unsigned int size) {
   if (g_stream_decoder_mock) {
-    g_stream_decoder_mock->Send(data, size);
+    g_stream_decoder_mock->Process(data, size);
   }
 }
