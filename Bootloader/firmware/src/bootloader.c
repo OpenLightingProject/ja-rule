@@ -131,7 +131,7 @@ DFUConfiguration DFU_CONFIGURATION[2] = {
  */
 typedef enum {
   BOOTLOADER_STATE_INIT,  //!< Waiting to initialize USB
-  BOOTLOADER_STATE_WAIT_FOR_POWER,
+  BOOTLOADER_STATE_WAIT_FOR_POWER,  //!< Waiting for power on the USB bus
   BOOTLOADER_STATE_WAIT_FOR_USB_CONFIGURATION,  //!< Waiting to config callback.
   BOOTLOADER_STATE_DFU,  //!< Running the DFU state machine.
 } AppState;
