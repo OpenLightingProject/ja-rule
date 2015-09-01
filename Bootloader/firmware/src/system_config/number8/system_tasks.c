@@ -54,7 +54,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 #include "system_config.h"
 #include "system_definitions.h"
-#include "app.h"
+#include "bootloader.h"
 
 
 // *****************************************************************************
@@ -80,11 +80,11 @@ void SYS_Tasks ( void )
     SYS_DEVCON_Tasks(sysObj.sysDevcon);
 
     /* Maintain Device Drivers */
-    /* USB Device layer tasks routine */ 
+    /* USB Device layer tasks routine */
     USB_DEVICE_Tasks(sysObj.usbDevObject0);
 
     /* Maintain the application's state machine. */
-    APP_Tasks();
+    Bootloader_Tasks();
 }
 
 

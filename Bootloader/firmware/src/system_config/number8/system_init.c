@@ -49,7 +49,9 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 #include "system_config.h"
 #include "system_definitions.h"
-#include "app.h"
+#include "bootloader.h"
+#include "uid_store.h"
+#include "bootloader_usb_descriptors.h"
 
 
 // ****************************************************************************
@@ -101,91 +103,6 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // Section: Library/Stack Initialization Data
 // *****************************************************************************
 // *****************************************************************************/
-
-//<editor-fold defaultstate="collapsed" desc="USB Stack Configuration">
-
-/**************************************************
- * USB Device Function Driver Init Data
- **************************************************/
-/**************************************************
- * USB Device Layer Function Driver Registration 
- * Table
- **************************************************/
-const USB_DEVICE_FUNCTION_REGISTRATION_TABLE funcRegistrationTable[1] =
-{
-    /* Function 1 */
-    { 
-        .configurationValue = 1,    /* Configuration value */ 
-        .interfaceNumber = 0,       /* First interfaceNumber of this function */ 
-        .numberOfInterfaces = 1,    /* Number of interfaces */
-        .speed = USB_SPEED_FULL,    /* Function Speed */ 
-        .funcDriverIndex = 0,  /* Index of Vendor Driver */
-        .driver = NULL,            /* No Function Driver data */ 
-        .funcDriverInit = NULL     /* No Function Driver Init data */
-    },
-};
-
-/*******************************************
- * USB Device Layer Descriptors
- *******************************************/
-//TODO - Copy USB Descriptors - Device descriptor,
-//Configuration Descriptors and String Descriptors. 
-
-
-/*******************************************
- * USB Device Layer Master Descriptor Table 
- *******************************************/
-const USB_DEVICE_MASTER_DESCRIPTOR usbMasterDescriptor =
-{
-    //TODO: Add Master Descriptor here. 
-};
-
-/****************************************************
- * Endpoint Table needed by the Device Layer.
- ****************************************************/
-uint8_t __attribute__((aligned(512))) endPointTable[USB_DEVICE_ENDPOINT_TABLE_SIZE];
-
-/****************************************************
- * USB Device Layer Initialization Data
- ****************************************************/
-
-const USB_DEVICE_INIT usbDevInitData =
-{
-    /* System module initialization */
-    .moduleInit = {SYS_MODULE_POWER_RUN_FULL},
-
-	/* Identifies peripheral (PLIB-level) ID */
-
-    /* Stop in idle */
-    .stopInIdle = false,
-
-    /* Suspend in sleep */
-    .suspendInSleep = false,
-    /* Endpoint table */
-    .endpointTable= endPointTable,
-
-    /* Number of function drivers registered to this instance of the
-       USB device layer */
-    .registeredFuncCount = 1,
-
-    /* Function driver table registered to this instance of the USB device layer*/
-    .registeredFunctions = (USB_DEVICE_FUNCTION_REGISTRATION_TABLE*)funcRegistrationTable,
-
-    /* Pointer to USB Descriptor structure */
-    .usbMasterDescriptor = (USB_DEVICE_MASTER_DESCRIPTOR*)&usbMasterDescriptor,
-
-    /* USB Device Speed */
-    .deviceSpeed = USB_SPEED_FULL,
-
-    /* Specify queue size for vendor endpoint read */
-    .queueSizeEndpointRead = 1,
-
-    /* Specify queue size for vendor endpoint write */
-    .queueSizeEndpointWrite= 1,
-};
-
-// </editor-fold>
-
 
 // *****************************************************************************
 // *****************************************************************************
@@ -245,8 +162,7 @@ const SYS_DEVCON_INIT sysDevconInit =
     See prototype in system/common/sys_module.h.
  */
 
-void SYS_Initialize ( void* data )
-{
+void SYS_Initialize(void* data) {
     /* Core Processor Initialization */
     SYS_CLK_Initialize( NULL );
     sysObj.sysDevcon = SYS_DEVCON_Initialize(SYS_DEVCON_INDEX_0, (SYS_MODULE_INIT*)&sysDevconInit);
@@ -257,18 +173,23 @@ void SYS_Initialize ( void* data )
     /* Initialize Drivers */
 
     /* Initialize System Services */
-    SYS_INT_Initialize();  
+    SYS_INT_Initialize();
 
     /* Initialize Middleware */
 
+    /* Copy the UID from flash to the USB descriptor. */
+    UIDStore_AsUnicodeString(BootloaderUSBDescriptor_UnicodeUID());
+
     /* Initialize the USB device layer */
-    sysObj.usbDevObject0 = USB_DEVICE_Initialize (USB_DEVICE_INDEX_0 , ( SYS_MODULE_INIT* ) & usbDevInitData);
+    sysObj.usbDevObject0 = USB_DEVICE_Initialize(
+        USB_DEVICE_INDEX_0,
+        (SYS_MODULE_INIT*) BootloaderUSBDescriptor_GetDeviceConfig());
+
     /* Enable Global Interrupts */
     SYS_INT_Enable();
 
     /* Initialize the Application */
-    APP_Initialize();
-
+    Bootloader_Initialize();
 }
 
 /*******************************************************************************

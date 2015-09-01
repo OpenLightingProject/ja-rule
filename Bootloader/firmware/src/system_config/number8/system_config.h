@@ -96,7 +96,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 
 
-#define SYS_PORT_D_TRIS         0xff8
+#define SYS_PORT_D_TRIS         0xfff8
 #define SYS_PORT_D_ODC          0x0
 
 
