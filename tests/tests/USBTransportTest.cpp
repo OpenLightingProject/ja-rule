@@ -25,17 +25,22 @@
 #include "system_definitions.h"
 
 #include "Array.h"
+#include "BootloaderOptionsMock.h"
 #include "Matchers.h"
+#include "ResetMock.h"
 #include "StreamDecoderMock.h"
 #include "flags.h"
 #include "usb_device_mock.h"
 #include "usb_transport.h"
 
 using ::testing::Args;
+using ::testing::InSequence;
+using ::testing::Mock;
+using ::testing::NotNull;
+using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
-using ::testing::NotNull;
 using ::testing::_;
 
 typedef void (*USBEventHandler)(USB_DEVICE_EVENT, void*, uintptr_t);
@@ -43,29 +48,38 @@ typedef void (*USBEventHandler)(USB_DEVICE_EVENT, void*, uintptr_t);
 class USBTransportTest : public testing::Test {
  public:
   void SetUp() {
-    USBDevice_SetMock(&usb_mock);
-    StreamDecoder_SetMock(&stream_decoder_mock);
+    USBDevice_SetMock(&m_usb_mock);
+    StreamDecoder_SetMock(&m_stream_decoder_mock);
+    BootloaderOptions_SetMock(&m_bootloader_options_mock);
+    Reset_SetMock(&m_reset_mock);
   }
 
   void TearDown() {
     USBDevice_SetMock(nullptr);
     StreamDecoder_SetMock(nullptr);
+    BootloaderOptions_SetMock(nullptr);
+    Reset_SetMock(nullptr);
   }
 
   void ConfigureDevice();
   void CompleteWrite();
 
  protected:
-  StrictMock<MockUSBDevice> usb_mock;
-  StrictMock<MockStreamDecoder> stream_decoder_mock;
+  StrictMock<MockUSBDevice> m_usb_mock;
+  StrictMock<MockStreamDecoder> m_stream_decoder_mock;
+  StrictMock<MockBootloaderOptions> m_bootloader_options_mock;
+  StrictMock<MockReset> m_reset_mock;
 
   // The value here doesn't matter, we just need a pointer to represent the
   // device.
-  USB_DEVICE_HANDLE dummy_device = 0;
+  USB_DEVICE_HANDLE m_usb_handle = 0;
 
   // Holds a pointer to the USBTransport_EventHandler function once
   // ConfigureDevice() has run
-  USBEventHandler m_event_handler_fn = nullptr;
+  USBEventHandler m_event_handler = nullptr;
+
+  // Pointer to the read buffer
+  void *m_read_buffer = nullptr;
 
   static const uint8_t kToken = 99;
 };
@@ -76,19 +90,41 @@ class USBTransportTest : public testing::Test {
  *   trigger events.
  */
 void USBTransportTest::ConfigureDevice() {
-  EXPECT_CALL(usb_mock, Open(_, DRV_IO_INTENT_READWRITE))
-      .WillOnce(Return(dummy_device));
-  EXPECT_CALL(usb_mock,
-      EventHandlerSet(dummy_device, _, 0))
-      .WillOnce(SaveArg<1>(&m_event_handler_fn));
+  EXPECT_CALL(m_usb_mock, Open(_, DRV_IO_INTENT_READWRITE))
+      .WillOnce(Return(m_usb_handle));
+  EXPECT_CALL(m_usb_mock,
+      EventHandlerSet(m_usb_handle, _, 0))
+      .WillOnce(SaveArg<1>(&m_event_handler));
+  EXPECT_CALL(m_usb_mock, Attach(m_usb_handle)).Times(1);
+  EXPECT_CALL(m_usb_mock, ActiveSpeedGet(m_usb_handle))
+    .WillOnce(Return(USB_SPEED_FULL));
+  EXPECT_CALL(m_usb_mock, EndpointIsEnabled(m_usb_handle, 1))
+    .WillOnce(Return(false));
+  EXPECT_CALL(m_usb_mock,
+              EndpointEnable(m_usb_handle, 0, 1, USB_TRANSFER_TYPE_BULK, 64))
+    .WillOnce(Return(USB_DEVICE_RESULT_OK));
+  EXPECT_CALL(m_usb_mock, EndpointIsEnabled(m_usb_handle, 0x81))
+    .WillOnce(Return(false));
+  EXPECT_CALL(m_usb_mock,
+              EndpointEnable(m_usb_handle, 0, 0x81, USB_TRANSFER_TYPE_BULK, 64))
+    .WillOnce(Return(USB_DEVICE_RESULT_OK));
+  EXPECT_CALL(m_usb_mock, EndpointRead(m_usb_handle, _, 1, _, _))
+    .WillOnce(DoAll(SaveArg<3>(&m_read_buffer),
+                    Return(USB_DEVICE_RESULT_OK)));
 
   USBTransport_Tasks();
-  ASSERT_THAT(m_event_handler_fn, NotNull());
+  ASSERT_THAT(m_event_handler, NotNull());
+
+  m_event_handler(USB_DEVICE_EVENT_POWER_DETECTED, nullptr, 0u);
 
   // Send a USB_DEVICE_EVENT_CONFIGURED event.
   uint8_t configurationValue = 1;
-  m_event_handler_fn(USB_DEVICE_EVENT_CONFIGURED,
-                     reinterpret_cast<void*>(&configurationValue), 0);
+  m_event_handler(USB_DEVICE_EVENT_CONFIGURED,
+                  reinterpret_cast<void*>(&configurationValue), 0);
+
+  USBTransport_Tasks();
+
+  Mock::VerifyAndClearExpectations(&m_usb_mock);
 }
 
 /*
@@ -96,10 +132,10 @@ void USBTransportTest::ConfigureDevice() {
  * @param event_handler The USBEventHandler to use to trigger the event.
  */
 void USBTransportTest::CompleteWrite() {
-  ASSERT_THAT(m_event_handler_fn, NotNull());
+  ASSERT_THAT(m_event_handler, NotNull());
   uint8_t configurationValue = 0;
-  m_event_handler_fn(USB_DEVICE_EVENT_ENDPOINT_WRITE_COMPLETE,
-                     reinterpret_cast<void*>(&configurationValue), 0);
+  m_event_handler(USB_DEVICE_EVENT_ENDPOINT_WRITE_COMPLETE,
+                  reinterpret_cast<void*>(&configurationValue), 0);
 }
 
 /*
@@ -111,6 +147,191 @@ TEST_F(USBTransportTest, uninitialized) {
   // state.
   USBTransport_Initialize(nullptr);
   EXPECT_FALSE(USBTransport_SendResponse(kToken, COMMAND_ECHO, RC_OK, NULL, 0));
+}
+
+
+TEST_F(USBTransportTest, usbLifecycle) {
+  USB_DEVICE_EVENT_HANDLER event_handler;
+
+  InSequence seq;
+  EXPECT_CALL(m_usb_mock, Open(USB_DEVICE_INDEX_0, DRV_IO_INTENT_READWRITE))
+    .WillOnce(Return(USB_DEVICE_HANDLE_INVALID));
+  EXPECT_CALL(m_usb_mock, Open(USB_DEVICE_INDEX_0, DRV_IO_INTENT_READWRITE))
+    .WillOnce(Return(m_usb_handle));
+  EXPECT_CALL(m_usb_mock, EventHandlerSet(m_usb_handle, _, 0u))
+    .WillOnce(SaveArg<1>(&event_handler));
+  EXPECT_CALL(m_usb_mock, Attach(m_usb_handle)).Times(1);
+  EXPECT_CALL(m_usb_mock, ActiveSpeedGet(m_usb_handle))
+    .WillOnce(Return(USB_SPEED_FULL));
+  EXPECT_CALL(m_usb_mock, EndpointIsEnabled(m_usb_handle, 1))
+    .WillOnce(Return(false));
+  EXPECT_CALL(m_usb_mock,
+              EndpointEnable(m_usb_handle, 0, 1, USB_TRANSFER_TYPE_BULK, 64))
+    .WillOnce(Return(USB_DEVICE_RESULT_OK));
+  EXPECT_CALL(m_usb_mock, EndpointIsEnabled(m_usb_handle, 0x81))
+    .WillOnce(Return(false));
+  EXPECT_CALL(m_usb_mock,
+              EndpointEnable(m_usb_handle, 0, 0x81, USB_TRANSFER_TYPE_BULK, 64))
+    .WillOnce(Return(USB_DEVICE_RESULT_OK));
+  EXPECT_CALL(m_usb_mock, EndpointRead(m_usb_handle, _, 1, _, _))
+    .WillOnce(Return(USB_DEVICE_RESULT_OK));
+
+  USBTransport_Initialize(nullptr);
+  EXPECT_FALSE(USBTransport_IsConfigured());
+
+  // First call the USB stack isn't ready yet
+  USBTransport_Tasks();
+  EXPECT_FALSE(USBTransport_IsConfigured());
+
+  // Now it's ready
+  USBTransport_Tasks();
+  EXPECT_FALSE(USBTransport_IsConfigured());
+
+  // Power event, this causes the attach
+  event_handler(USB_DEVICE_EVENT_POWER_DETECTED, nullptr, 0u);
+  EXPECT_FALSE(USBTransport_IsConfigured());
+  USBTransport_Tasks();
+  EXPECT_FALSE(USBTransport_IsConfigured());
+
+  // Device configured
+  uint8_t configuration = 1u;
+  event_handler(USB_DEVICE_EVENT_CONFIGURED, &configuration, 0u);
+
+  USBTransport_Tasks();
+  EXPECT_TRUE(USBTransport_IsConfigured());
+
+  // Check the handler matches
+  EXPECT_EQ(m_usb_handle, USBTransport_GetHandle());
+
+  // Loss of power event
+  EXPECT_CALL(m_usb_mock, Detach(m_usb_handle))
+    .Times(1);
+  EXPECT_CALL(m_usb_mock, EndpointIsEnabled(m_usb_handle, 0x81))
+    .WillOnce(Return(true));
+  EXPECT_CALL(m_usb_mock, EndpointDisable(m_usb_handle,  0x81))
+    .WillOnce(Return(USB_DEVICE_RESULT_OK));
+  EXPECT_CALL(m_usb_mock, EndpointIsEnabled(m_usb_handle, 1))
+    .WillOnce(Return(true));
+  EXPECT_CALL(m_usb_mock, EndpointDisable(m_usb_handle, 1))
+    .WillOnce(Return(USB_DEVICE_RESULT_OK));
+
+  event_handler(USB_DEVICE_EVENT_POWER_REMOVED, nullptr, 0u);
+  USBTransport_Tasks();
+  EXPECT_FALSE(USBTransport_IsConfigured());
+}
+
+TEST_F(USBTransportTest, alternateSettings) {
+  USBTransport_Initialize(nullptr);
+  ConfigureDevice();
+
+  // Get alt settings
+  const uint8_t alt_interface[] = { 0 };
+  EXPECT_CALL(m_usb_mock, ControlSend(m_usb_handle, _, _))
+    .With(Args<1, 2>(DataIs(alt_interface, arraysize(alt_interface))))
+    .WillOnce(Return(USB_DEVICE_CONTROL_TRANSFER_RESULT_SUCCESS));
+
+  USB_SETUP_PACKET get_interface_request;
+  get_interface_request.bRequest = USB_REQUEST_GET_INTERFACE;
+  m_event_handler(USB_DEVICE_EVENT_CONTROL_TRANSFER_SETUP_REQUEST,
+                  reinterpret_cast<void*>(&get_interface_request),
+                  sizeof(get_interface_request));
+
+  // Try to set an invalid settings
+  EXPECT_CALL(m_usb_mock,
+              ControlStatus(m_usb_handle, USB_DEVICE_CONTROL_STATUS_ERROR))
+    .WillOnce(Return(USB_DEVICE_CONTROL_TRANSFER_RESULT_SUCCESS));
+
+  USB_SETUP_PACKET set_interface_request;
+  set_interface_request.bRequest = USB_REQUEST_SET_INTERFACE;
+  set_interface_request.wValue = 1u;
+  m_event_handler(USB_DEVICE_EVENT_CONTROL_TRANSFER_SETUP_REQUEST,
+                  reinterpret_cast<void*>(&set_interface_request),
+                  sizeof(set_interface_request));
+
+  // Try to set the correct setting
+  EXPECT_CALL(m_usb_mock,
+              ControlStatus(m_usb_handle, USB_DEVICE_CONTROL_STATUS_OK))
+    .WillOnce(Return(USB_DEVICE_CONTROL_TRANSFER_RESULT_SUCCESS));
+
+  set_interface_request.wValue = 0u;
+  m_event_handler(USB_DEVICE_EVENT_CONTROL_TRANSFER_SETUP_REQUEST,
+                  reinterpret_cast<void*>(&set_interface_request),
+                  sizeof(set_interface_request));
+}
+
+TEST_F(USBTransportTest, dfuGetStatus) {
+  USBTransport_Initialize(nullptr);
+  ConfigureDevice();
+
+  // Response is all 0s.
+  const uint8_t get_status_res[6] = {};
+
+  EXPECT_CALL(m_usb_mock, ControlSend(m_usb_handle, _, _))
+    .With(Args<1, 2>(DataIs(get_status_res, arraysize(get_status_res))))
+    .WillOnce(Return(USB_DEVICE_CONTROL_TRANSFER_RESULT_SUCCESS));
+
+  USB_SETUP_PACKET get_status_req;
+  get_status_req.bmRequestType = 0xa1;
+  get_status_req.bRequest = 3u;  // DFU_GET_STATUS
+  get_status_req.wValue = 0;
+  get_status_req.wIndex = 3u;  // dfu interface
+  get_status_req.wLength = 6u;  // expected length
+
+  m_event_handler(USB_DEVICE_EVENT_CONTROL_TRANSFER_SETUP_REQUEST,
+                  reinterpret_cast<void*>(&get_status_req),
+                  sizeof(get_status_req));
+}
+
+TEST_F(USBTransportTest, dfuDetach) {
+  USBTransport_Initialize(nullptr);
+  ConfigureDevice();
+
+  EXPECT_CALL(m_usb_mock,
+              ControlStatus(m_usb_handle, USB_DEVICE_CONTROL_STATUS_OK))
+    .WillOnce(Return(USB_DEVICE_CONTROL_TRANSFER_RESULT_SUCCESS));
+  EXPECT_CALL(m_bootloader_options_mock, SetBootOption(BOOT_BOOTLOADER))
+    .Times(1);
+  EXPECT_CALL(m_reset_mock, SoftReset()).Times(1);
+
+  USB_SETUP_PACKET get_status_req;
+  get_status_req.bmRequestType = 0x21;
+  get_status_req.bRequest = 0u;  // DFU_DETACH
+  get_status_req.wValue = 0;
+  get_status_req.wIndex = 3u;  // dfu interface
+  get_status_req.wLength = 0u;  // expected length
+
+  m_event_handler(USB_DEVICE_EVENT_CONTROL_TRANSFER_SETUP_REQUEST,
+                  reinterpret_cast<void*>(&get_status_req),
+                  sizeof(get_status_req));
+
+  USBTransport_Tasks();
+}
+
+TEST_F(USBTransportTest, read) {
+  const uint8_t packet[] = {
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 0
+  };
+
+  USBTransport_Initialize(StreamDecoder_Process);
+  ConfigureDevice();
+
+  EXPECT_CALL(m_stream_decoder_mock, Process(_, _))
+      .With(Args<0, 1>(DataIs(packet, arraysize(packet))));
+  EXPECT_CALL(m_usb_mock, EndpointRead(m_usb_handle, _, 1, _, _))
+    .WillOnce(DoAll(SaveArg<3>(&m_read_buffer),
+                    Return(USB_DEVICE_RESULT_OK)));
+
+  memcpy(reinterpret_cast<uint8_t*>(m_read_buffer), packet, arraysize(packet));
+  USB_DEVICE_EVENT_DATA_ENDPOINT_READ_COMPLETE read_complete = {
+    .transferHandle = 0,
+    .length = arraysize(packet)
+  };
+
+  m_event_handler(USB_DEVICE_EVENT_ENDPOINT_READ_COMPLETE,
+                  reinterpret_cast<void*>(&read_complete),
+                  sizeof(read_complete));
+
+  USBTransport_Tasks();
 }
 
 /*
@@ -131,8 +352,8 @@ TEST_F(USBTransportTest, sendResponse) {
   };
 
   EXPECT_CALL(
-      usb_mock,
-      EndpointWrite(dummy_device, _, 0x81, _, _,
+      m_usb_mock,
+      EndpointWrite(m_usb_handle, _, 0x81, _, _,
                     USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
       .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
       .WillOnce(Return(USB_DEVICE_RESULT_OK));
@@ -153,8 +374,8 @@ TEST_F(USBTransportTest, doubleSendResponse) {
   };
 
   EXPECT_CALL(
-      usb_mock,
-      EndpointWrite(dummy_device, _, 0x81, _, _,
+      m_usb_mock,
+      EndpointWrite(m_usb_handle, _, 0x81, _, _,
                     USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
       .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
       .WillOnce(Return(USB_DEVICE_RESULT_OK));
@@ -188,8 +409,8 @@ TEST_F(USBTransportTest, sendResponseWithData) {
   };
 
   EXPECT_CALL(
-      usb_mock,
-      EndpointWrite(dummy_device, _, 0x81, _, _,
+      m_usb_mock,
+      EndpointWrite(m_usb_handle, _, 0x81, _, _,
                     USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
       .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
       .WillOnce(Return(USB_DEVICE_RESULT_OK));
@@ -207,8 +428,8 @@ TEST_F(USBTransportTest, sendError) {
   ConfigureDevice();
 
   EXPECT_CALL(
-      usb_mock,
-      EndpointWrite(dummy_device, _, 0x81, _, _,
+      m_usb_mock,
+      EndpointWrite(m_usb_handle, _, 0x81, _, _,
                     USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
       .WillOnce(Return(USB_DEVICE_RESULT_ERROR));
 
@@ -240,8 +461,8 @@ TEST_F(USBTransportTest, truncateResponse) {
   expected_message[8 + PAYLOAD_SIZE] = 0xa5;
 
   EXPECT_CALL(
-      usb_mock,
-      EndpointWrite(dummy_device, _, 0x81, _, _,
+      m_usb_mock,
+      EndpointWrite(m_usb_handle, _, 0x81, _, _,
                     USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
       .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
       .WillOnce(Return(USB_DEVICE_RESULT_OK));
@@ -266,8 +487,8 @@ TEST_F(USBTransportTest, pendingFlags) {
   };
 
   EXPECT_CALL(
-      usb_mock,
-      EndpointWrite(dummy_device, _, 0x81, _, _,
+      m_usb_mock,
+      EndpointWrite(m_usb_handle, _, 0x81, _, _,
                     USB_DEVICE_TRANSFER_FLAGS_DATA_COMPLETE))
       .With(Args<3, 4>(DataIs(expected_message, arraysize(expected_message))))
       .WillOnce(Return(USB_DEVICE_RESULT_OK));
