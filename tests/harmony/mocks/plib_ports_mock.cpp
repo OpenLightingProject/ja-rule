@@ -9,6 +9,14 @@ void PLIB_PORTS_SetMock(MockPeripheralPorts* mock) {
   g_plib_ports_mock = mock;
 }
 
+void PLIB_PORTS_PinDirectionInputSet(PORTS_MODULE_ID index,
+                                      PORTS_CHANNEL channel,
+                                      PORTS_BIT_POS bitPos) {
+  if (g_plib_ports_mock) {
+    g_plib_ports_mock->PinDirectionInputSet(index, channel, bitPos);
+  }
+}
+
 void PLIB_PORTS_PinDirectionOutputSet(PORTS_MODULE_ID index,
                                       PORTS_CHANNEL channel,
                                       PORTS_BIT_POS bitPos) {

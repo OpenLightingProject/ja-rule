@@ -59,12 +59,12 @@
         <Path>Source Files/framework/usb/src/dynamic</Path>
       </File>
       <File>
-        <Name>sys_devcon.c</Name>
-        <Path>Source Files/framework/system/devcon/src</Path>
-      </File>
-      <File>
         <Name>bsp_sys_init.c</Name>
         <Path>Source Files/bsp/pic32mx_eth_sk2</Path>
+      </File>
+      <File>
+        <Name>sys_devcon.c</Name>
+        <Path>Source Files/framework/system/devcon/src</Path>
       </File>
       <File>
         <Name>usb_device.h</Name>
@@ -83,12 +83,12 @@
         <Path>Header Files/framework/system/devcon</Path>
       </File>
       <File>
-        <Name>sys_devcon_pic32mx.c</Name>
-        <Path>Source Files/framework/system/devcon/src</Path>
-      </File>
-      <File>
         <Name>bsp_config.h</Name>
         <Path>Header Files/bsp/pic32mx_eth_sk2</Path>
+      </File>
+      <File>
+        <Name>sys_devcon_pic32mx.c</Name>
+        <Path>Source Files/framework/system/devcon/src</Path>
       </File>
       <File>
         <Name>usb_device_cdc.h</Name>
@@ -129,9 +129,9 @@
         <Checksum>999179DADE9ECD59953526F5E9F83ACC</Checksum>
       </Template>
       <Template>
-        <Name>sys_clk_static.c</Name>
-        <Path>Source Files/app/system_config/ethernet_sk2/framework/system/clk/src</Path>
-        <Checksum>1B968DA82B5DD869A6119C3B7628D753</Checksum>
+        <Name>system_init.c</Name>
+        <Path>Source Files/app/system_config/ethernet_sk2</Path>
+        <Checksum>BFA14AD7005156DE78D525F82C214FFB</Checksum>
       </Template>
       <Template>
         <Name>sys_ports_static.c</Name>
@@ -139,9 +139,9 @@
         <Checksum>91CF9ED936A4097E90E3F606508FFFF7</Checksum>
       </Template>
       <Template>
-        <Name>system_init.c</Name>
-        <Path>Source Files/app/system_config/ethernet_sk2</Path>
-        <Checksum>BFA14AD7005156DE78D525F82C214FFB</Checksum>
+        <Name>sys_clk_static.c</Name>
+        <Path>Source Files/app/system_config/ethernet_sk2/framework/system/clk/src</Path>
+        <Checksum>1B968DA82B5DD869A6119C3B7628D753</Checksum>
       </Template>
       <Template>
         <Name>system_config.h</Name>

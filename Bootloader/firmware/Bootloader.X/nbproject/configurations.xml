@@ -16,6 +16,7 @@
             </logicalFolder>
             <itemPath>../src/system_config/ethernet_sk2/system_config.h</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_definitions.h</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/bootloader_settings.h</itemPath>
           </logicalFolder>
           <logicalFolder name="f2" displayName="number8" projectFiles="true">
             <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -27,6 +28,7 @@
             </logicalFolder>
             <itemPath>../src/system_config/number8/system_config.h</itemPath>
             <itemPath>../src/system_config/number8/system_definitions.h</itemPath>
+            <itemPath>../src/system_config/number8/bootloader_settings.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../../common/bootloader_options.h</itemPath>
@@ -73,6 +75,7 @@
                    displayName="Linker Files"
                    projectFiles="true">
       <itemPath>../../../linker/bootloader_mx795F512L.ld</itemPath>
+      <itemPath>../../../linker/bootloader_mx675F512H.ld</itemPath>
     </logicalFolder>
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
@@ -184,9 +187,10 @@
     <Elem>../src/system_config/ethernet_sk2</Elem>
     <Elem>../linker</Elem>
     <Elem>../../../common</Elem>
-    <Elem>../../../../../opt/microchip/harmony/v1_02</Elem>
+    <Elem>/opt/microchip/harmony/v1_02</Elem>
     <Elem>../../../linker</Elem>
     <Elem>../src/system_config/number8</Elem>
+    <Elem>/opt/microchip/harmony/v1_02</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -224,133 +228,45 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
+      <item path="../../../linker/bootloader_mx675F512H.ld"
+            ex="true"
+            overriding="false">
+      </item>
+      <item path="../src/system_config/number8/bootloader_settings.h"
+            ex="true"
+            overriding="false">
+      </item>
       <item path="../src/system_config/number8/framework/system/clk/src/sys_clk_static.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/framework/system/clk/sys_clk_static.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/framework/system/ports/src/sys_ports_static.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_config.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_definitions.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_init.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_interrupt.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_tasks.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <C32>
         <property key="additional-warnings" value="false"/>
@@ -603,6 +519,14 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
+      <item path="../../../linker/bootloader_mx795F512L.ld"
+            ex="true"
+            overriding="false">
+      </item>
+      <item path="../src/system_config/ethernet_sk2/bootloader_settings.h"
+            ex="true"
+            overriding="false">
+      </item>
       <item path="../src/system_config/ethernet_sk2/framework/system/clk/src/sys_clk_static.c"
             ex="true"
             overriding="false">
@@ -747,6 +671,34 @@
         <C32Global>
         </C32Global>
       </item>
+      <item path="/opt/microchip/harmony/v1_02/framework/system/common/sys_common.h"
+            ex="true"
+            overriding="false">
+      </item>
+      <item path="/opt/microchip/harmony/v1_02/framework/system/common/sys_module.h"
+            ex="true"
+            overriding="false">
+      </item>
+      <item path="/opt/microchip/harmony/v1_02/framework/system/devcon/sys_devcon.h"
+            ex="true"
+            overriding="false">
+      </item>
+      <item path="/opt/microchip/harmony/v1_02/framework/system/int/sys_int.h"
+            ex="true"
+            overriding="false">
+      </item>
+      <item path="/opt/microchip/harmony/v1_02/framework/system/ports/sys_ports.h"
+            ex="true"
+            overriding="false">
+      </item>
+      <item path="/opt/microchip/harmony/v1_02/framework/system/system.h"
+            ex="true"
+            overriding="false">
+      </item>
+      <item path="/opt/microchip/harmony/v1_02/framework/usb/usb_device.h"
+            ex="true"
+            overriding="false">
+      </item>
       <C32>
         <property key="additional-warnings" value="false"/>
         <property key="enable-app-io" value="false"/>
@@ -755,7 +707,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../../../common;../src/system_config/number8;/opt/microchip/harmony/v1_02/framework;../src/system_config/number8/framework"/>
+                  value="../src;../../../common;../src/system_config/number8;/opt/microchip/harmony/v1_02/framework;../src/system_config/number8/framework;../../../../../../../opt/microchip/harmony/v1_02/framework"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -860,7 +812,7 @@
       </C32Global>
       <PICkit3PlatformTool>
         <property key="ADC 1" value="true"/>
-        <property key="AutoSelectMemRanges" value="auto"/>
+        <property key="AutoSelectMemRanges" value="manual"/>
         <property key="CHANGE NOTICE" value="true"/>
         <property key="COMPARATOR" value="true"/>
         <property key="DMA" value="true"/>
@@ -900,7 +852,6 @@
         <property key="UART4" value="true"/>
         <property key="UART5" value="true"/>
         <property key="UART6" value="true"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>
@@ -911,7 +862,7 @@
         <property key="memories.flashdata" value="true"/>
         <property key="memories.id" value="true"/>
         <property key="memories.programmemory" value="true"/>
-        <property key="memories.programmemory.end" value="0x1d07ffff"/>
+        <property key="memories.programmemory.end" value="0x1d05ffff"/>
         <property key="memories.programmemory.partition2" value="true"/>
         <property key="memories.programmemory.partition2.end"
                   value="${memories.programmemory.partition2.end.value}"/>
@@ -927,7 +878,7 @@
         <property key="programoptions.preserveeeprom" value="false"/>
         <property key="programoptions.preserveprogramrange" value="false"/>
         <property key="programoptions.preserveprogramrange.end" value="0x1d07ffff"/>
-        <property key="programoptions.preserveprogramrange.start" value="0x1d000000"/>
+        <property key="programoptions.preserveprogramrange.start" value="0x1d006000"/>
         <property key="programoptions.preserveuserid" value="false"/>
         <property key="programoptions.programcalmem" value="false"/>
         <property key="programoptions.programuserotp" value="false"/>

@@ -45,6 +45,10 @@ typedef enum {
 } PORTS_MODULE_ID;
 
 
+void PLIB_PORTS_PinDirectionInputSet(PORTS_MODULE_ID index,
+                                     PORTS_CHANNEL channel,
+                                     PORTS_BIT_POS bitPos);
+
 void PLIB_PORTS_PinDirectionOutputSet(PORTS_MODULE_ID index,
                                       PORTS_CHANNEL channel,
                                       PORTS_BIT_POS bitPos);
