@@ -233,7 +233,7 @@ static const struct {
   0x0409
 };
 
-/* Manufacturer string descriptor 1*/
+// Manufacturer string descriptor [1]
 static const struct {
   uint8_t bLength;
   uint8_t bDscType;
@@ -248,7 +248,7 @@ g_manufacturer_string_descriptor = {
   }
 };
 
-// Product string descriptor
+// Product string descriptor [2]
 static const struct {
   uint8_t bLength;
   uint8_t bDscType;
@@ -261,7 +261,7 @@ static const struct {
 };
 
 /*
- * Serial number string descriptor
+ * Serial number string descriptor [3]
  * This is populated from the UID in flash memory so it can't be const.
  */
 static struct {
