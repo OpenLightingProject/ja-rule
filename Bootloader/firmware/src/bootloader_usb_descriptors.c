@@ -79,7 +79,7 @@ static const uint8_t g_config_descriptor[] = {
   USB_DESCRIPTOR_INTERFACE, // Descriptor Type
   DFU_MODE_DFU_INTERFACE_INDEX, // Interface Number
   DFU_ALT_INTERFACE_FIRMWARE, // Alternate Setting Number
-  0x00, // Number of endpoints in this intf
+  0x00, // Number of endpoints in this interface
   0xfe, // Class code
   0x01, // Subclass code
   0x02, // Protocol code
@@ -89,7 +89,7 @@ static const uint8_t g_config_descriptor[] = {
   USB_DESCRIPTOR_INTERFACE, // Descriptor Type
   DFU_MODE_DFU_INTERFACE_INDEX, // Interface Number
   DFU_ALT_INTERFACE_UID, // Alternate Setting Number
-  0x00, // Number of endpoints in this intf
+  0x00, // Number of endpoints in this interface
   0xfe, // Class code
   0x01, // Subclass code
   0x02, // Protocol code
