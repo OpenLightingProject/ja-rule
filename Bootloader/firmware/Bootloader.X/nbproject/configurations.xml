@@ -187,7 +187,7 @@
     <Elem>../src/system_config/ethernet_sk2</Elem>
     <Elem>../linker</Elem>
     <Elem>../../../common</Elem>
-    <Elem>../../../../../opt/microchip/harmony/v1_02</Elem>
+    <Elem>/opt/microchip/harmony/v1_02</Elem>
     <Elem>../../../linker</Elem>
     <Elem>../src/system_config/number8</Elem>
     <Elem>/opt/microchip/harmony/v1_02</Elem>
@@ -500,7 +500,6 @@
         <linkerTool>
           <linkerLibItems>
             <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
-            <linkerLibFileItem>../../../../../../../opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
