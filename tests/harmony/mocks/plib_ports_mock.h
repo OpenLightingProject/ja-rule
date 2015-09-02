@@ -6,6 +6,10 @@
 
 class MockPeripheralPorts {
  public:
+  MOCK_METHOD3(PinDirectionInputSet,
+               void(PORTS_MODULE_ID index,
+                    PORTS_CHANNEL channel,
+                    PORTS_BIT_POS bitPos));
   MOCK_METHOD3(PinDirectionOutputSet,
                void(PORTS_MODULE_ID index,
                     PORTS_CHANNEL channel,

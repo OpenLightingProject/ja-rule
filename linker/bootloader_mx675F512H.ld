@@ -22,4 +22,4 @@ MEMORY
   kseg1_boot_mem              : ORIGIN = 0xBFC00000, LENGTH = 0x490
 }
 
-INCLUDE common_mx695F512H.ld
+INCLUDE common_mx675F512H.ld

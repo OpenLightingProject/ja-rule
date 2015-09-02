@@ -43,20 +43,8 @@
 #include "reset.h"
 #include "usb/usb_device.h"
 
-/*
- * @brief The reset address of the application.
- */
-enum { BOOTLOADER_RESET_ADDRESS = 0x9d008000 };
-
-/*
- * @brief The size of a flash page
- */
-enum { FLASH_PAGE_SIZE = 0x1000 };
-
-/**
- * @brief The size of the words used for flash programming.
- */
-enum { FLASH_WORD_SIZE = 4 };
+// The settings for the bootloader
+#include "bootloader_settings.h"
 
 /**
  * @brief The size of the words used for flash programming.
@@ -67,26 +55,6 @@ static const uint32_t FIRMWARE_HEADER_SIZE = 16u;
  * @brief The version of the firmware header to use.
  */
 static const uint32_t FIRMWARE_HEADER_VERSION = 1u;
-
-/**
- * @brief The port channel of the switch that controls bootloader mode.
- */
-static const PORTS_CHANNEL SWITCH_PORT_CHANNEL = PORT_CHANNEL_D;
-
-/**
- * @brief The port pin of the switch that controls bootloader mode.
- */
-static const PORTS_BIT_POS SWITCH_PORT_BIT = PORTS_BIT_POS_7;
-
-/**
- * @brief The port channel of the led that indicates bootloader mode.
- */
-static const PORTS_CHANNEL LED_PORT_CHANNEL = PORT_CHANNEL_D;
-
-/**
- * @brief The port pin of the led that indicates bootloader mode.
- */
-static const PORTS_BIT_POS LED_PORT_BIT = PORTS_BIT_POS_0;
 
 /**
  * @brief The default value of 4 bytes of erased flash.
@@ -195,9 +163,8 @@ static uint8_t g_data_buffer[DFU_BLOCK_SIZE + FLASH_WORD_SIZE - 1];
 // ----------------------------------------------------------------------------
 
 static inline bool SwitchPressed() {
-  // For some weird reason this is inverted.
-  return 0 == PLIB_PORTS_PinGet(PORTS_ID_0, SWITCH_PORT_CHANNEL,
-                                SWITCH_PORT_BIT);
+  return SWITCH_ACTIVE_HIGH == PLIB_PORTS_PinGet(
+      PORTS_ID_0, SWITCH_PORT_CHANNEL, SWITCH_PORT_BIT);
 }
 
 static inline uint32_t ExtractUInt32(const uint8_t *ptr) {
@@ -648,10 +615,10 @@ void Bootloader_Initialize(void) {
   bool run_bootloader = (
     BootloaderOptions_GetBootOption() == BOOT_BOOTLOADER ||
     SwitchPressed() ||
-    Flash_ReadWord(BOOTLOADER_RESET_ADDRESS) == ERASED_FLASH_VALUE);
+    Flash_ReadWord(APPLICATION_RESET_ADDRESS) == ERASED_FLASH_VALUE);
 
   if (!run_bootloader) {
-    Launcher_RunApp(BOOTLOADER_RESET_ADDRESS);
+    Launcher_RunApp(APPLICATION_RESET_ADDRESS);
   }
 
   g_bootloader.usb_device = USB_DEVICE_HANDLE_INVALID;
@@ -659,6 +626,8 @@ void Bootloader_Initialize(void) {
   g_bootloader.dfu_state = DFU_STATE_IDLE;
   g_bootloader.dfu_status = DFU_STATUS_OK;
   g_bootloader.active_interface = DFU_ALT_INTERFACE_FIRMWARE;
+  PLIB_PORTS_PinDirectionInputSet(PORTS_ID_0, SWITCH_PORT_CHANNEL,
+                                  SWITCH_PORT_BIT);
   PLIB_PORTS_PinDirectionOutputSet(PORTS_ID_0, LED_PORT_CHANNEL, LED_PORT_BIT);
 }
 

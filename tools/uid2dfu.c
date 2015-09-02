@@ -55,6 +55,8 @@ bool InitOptions(Options *options, int argc, char *argv[]) {
   options->manufacturer_id = 0;
   options->device_id = 0;
   options->help = false;
+  options->vendor_id = DEFAULT_VENDOR_ID;
+  options->product_id = DEFAULT_PRODUCT_ID;
 
   bool got_device = false;
   bool got_manufacturer = false;

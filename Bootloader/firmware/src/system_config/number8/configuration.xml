@@ -27,12 +27,12 @@
         <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
       </File>
       <File>
-        <Name>sys_ports.c</Name>
-        <Path>Source Files/framework/system/ports/src</Path>
-      </File>
-      <File>
         <Name>system.h</Name>
         <Path>Header Files/framework/system</Path>
+      </File>
+      <File>
+        <Name>sys_ports.c</Name>
+        <Path>Source Files/framework/system/ports/src</Path>
       </File>
       <File>
         <Name>drv_usb_device.c</Name>
