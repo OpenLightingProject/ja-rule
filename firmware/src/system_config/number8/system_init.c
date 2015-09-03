@@ -49,6 +49,8 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 #include "system_config.h"
 #include "system_definitions.h"
+#include "usb_descriptors.h"
+#include "uid_store.h"
 #include "app.h"
 
 
@@ -267,33 +269,37 @@ const SYS_DEVCON_INIT sysDevconInit =
 
 void SYS_Initialize ( void* data )
 {
-    /* Core Processor Initialization */
-    SYS_CLK_Initialize( NULL );
-    sysObj.sysDevcon = SYS_DEVCON_Initialize(SYS_DEVCON_INDEX_0, (SYS_MODULE_INIT*)&sysDevconInit);
-    SYS_DEVCON_PerformanceConfig(SYS_CLK_SystemFrequencyGet());
-    SYS_DEVCON_JTAGDisable();
-    SYS_PORTS_Initialize();
+  /* Core Processor Initialization */
+  SYS_CLK_Initialize( NULL );
+  sysObj.sysDevcon = SYS_DEVCON_Initialize(SYS_DEVCON_INDEX_0, (SYS_MODULE_INIT*)&sysDevconInit);
+  SYS_DEVCON_PerformanceConfig(SYS_CLK_SystemFrequencyGet());
+  SYS_DEVCON_JTAGDisable();
+  SYS_PORTS_Initialize();
 
-    /* Initialize Drivers */
+  /* Initialize Drivers */
 
-    /* Initialize System Services */
-    SYS_INT_Initialize();  
+  /* Initialize System Services */
+  SYS_INT_Initialize();
 
-    /* Initialize Middleware */
-    /* Set priority of USB interrupt source */
-    SYS_INT_VectorPrioritySet(INT_VECTOR_USB1, INT_PRIORITY_LEVEL4);
+  /* Initialize Middleware */
+  /* Set priority of USB interrupt source */
+  SYS_INT_VectorPrioritySet(INT_VECTOR_USB1, INT_PRIORITY_LEVEL4);
 
-    /* Set Sub-priority of USB interrupt source */
-    SYS_INT_VectorSubprioritySet(INT_VECTOR_USB1, INT_SUBPRIORITY_LEVEL0);
+  /* Set Sub-priority of USB interrupt source */
+  SYS_INT_VectorSubprioritySet(INT_VECTOR_USB1, INT_SUBPRIORITY_LEVEL0);
 
+  /* Copy the UID from flash to the USB descriptor. */
+  UIDStore_AsUnicodeString(USBDescriptor_UnicodeUID());
 
-    /* Initialize the USB device layer */
-    sysObj.usbDevObject0 = USB_DEVICE_Initialize (USB_DEVICE_INDEX_0 , ( SYS_MODULE_INIT* ) & usbDevInitData);
-    /* Enable Global Interrupts */
-    SYS_INT_Enable();
+  /* Initialize the USB device layer */
+  sysObj.usbDevObject0 = USB_DEVICE_Initialize(
+      USB_DEVICE_INDEX_0, (SYS_MODULE_INIT*) USBDescriptor_GetDeviceConfig());
 
-    /* Initialize the Application */
-    APP_Initialize();
+  /* Enable Global Interrupts */
+  SYS_INT_Enable();
+
+  /* Initialize the Application */
+  APP_Initialize();
 
 }
 
