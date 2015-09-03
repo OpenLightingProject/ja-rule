@@ -33,6 +33,7 @@
 #include "rdm_responder.h"
 #include "receiver_counters.h"
 #include "sensor_model.h"
+#include "setting_macros.h"
 #include "spi_rgb.h"
 #include "stream_decoder.h"
 #include "syslog.h"
@@ -43,16 +44,17 @@
 #include "usb_transport.h"
 #include "uid_store.h"
 
-void __ISR(_TIMER_2_VECTOR, ipl6) TimerEvent() {
+void __ISR(AS_TIMER_ISR_VECTOR(COARSE_TIMER_ID), ipl6) TimerEvent() {
   CoarseTimer_TimerEvent();
 }
 
 void APP_Initialize(void) {
   CoarseTimer_Settings timer_settings = {
-    .timer_id = TMR_ID_2,
-    .interrupt_source = INT_SOURCE_TIMER_2
+    .timer_id = AS_TIMER_ID(COARSE_TIMER_ID),
+    .interrupt_source = AS_TIMER_INTERRUPT_SOURCE(COARSE_TIMER_ID)
   };
-  SYS_INT_VectorPrioritySet(INT_VECTOR_T2, INT_PRIORITY_LEVEL6);
+  SYS_INT_VectorPrioritySet(AS_TIMER_INTERRUPT_VECTOR(COARSE_TIMER_ID),
+                            INT_PRIORITY_LEVEL6);
   CoarseTimer_Initialize(&timer_settings);
 
   // Initialize the Logging system, bottom up
@@ -62,19 +64,30 @@ void APP_Initialize(void) {
 
   // Initialize the DMX / RDM Transceiver
   TransceiverHardwareSettings transceiver_settings = {
-    .usart = TRANSCEIVER_UART,
+    .usart = AS_USART_ID(TRANSCEIVER_UART),
+    .usart_vector = AS_USART_INTERRUPT_VECTOR(TRANSCEIVER_UART),
+    .usart_tx_source = AS_USART_INTERRUPT_TX_SOURCE(TRANSCEIVER_UART),
+    .usart_rx_source = AS_USART_INTERRUPT_RX_SOURCE(TRANSCEIVER_UART),
+    .usart_error_source = AS_USART_INTERRUPT_ERROR_SOURCE(TRANSCEIVER_UART),
     .port = TRANSCEIVER_PORT,
     .break_bit = TRANSCEIVER_PORT_BIT,
-    .rx_enable_bit = TRANSCEIVER_TX_ENABLE,
-    .tx_enable_bit = TRANSCEIVER_RX_ENABLE,
+    .rx_enable_bit = TRANSCEIVER_TX_ENABLE_PORT_BIT,
+    .tx_enable_bit = TRANSCEIVER_RX_ENABLE_PORT_BIT,
+    .input_capture_module = AS_IC_ID(TRANSCEIVER_IC),
+    .input_capture_vector = AS_IC_INTERRUPT_VECTOR(TRANSCEIVER_IC),
+    .input_capture_source = AS_IC_INTERRUPT_SOURCE(TRANSCEIVER_IC),
+    .timer_module_id = AS_TIMER_ID(TRANSCEIVER_TIMER),
+    .timer_vector = AS_TIMER_INTERRUPT_VECTOR(TRANSCEIVER_TIMER),
+    .timer_source = AS_TIMER_INTERRUPT_SOURCE(TRANSCEIVER_TIMER),
+    .input_capture_timer = AS_IC_TMR_ID(TRANSCEIVER_TIMER),
   };
   Transceiver_Initialize(&transceiver_settings, NULL, NULL);
 
   // Base RDM Responder
   RDMResponderSettings responder_settings = {
-    .identify_port = RDM_RESPONDER_PORT,
+    .identify_port = RDM_RESPONDER_IDENTIFY_PORT,
     .identify_bit = RDM_RESPONDER_IDENTIFY_PORT_BIT,
-    .mute_port = RDM_RESPONDER_PORT,
+    .mute_port = RDM_RESPONDER_MUTE_PORT,
     .mute_bit = RDM_RESPONDER_MUTE_PORT_BIT,
   };
   memcpy(responder_settings.uid, UIDStore_GetUID(), UID_LENGTH);
@@ -117,7 +130,7 @@ void APP_Initialize(void) {
   SPIRGBConfiguration spi_config;
   spi_config.module_id = SPI_MODULE_ID;
   spi_config.baud_rate = SPI_BAUD_RATE;
-  spi_config.use_enhanced_buffering = true;
+  spi_config.use_enhanced_buffering = SPI_USE_ENHANCED_BUFFERING;
   SPIRGB_Init(&spi_config);
 
   // Send a frame with all pixels set to 0.

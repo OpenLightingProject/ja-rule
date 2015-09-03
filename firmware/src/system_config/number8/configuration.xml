@@ -113,7 +113,7 @@
       <Template>
         <Name>system_init.c</Name>
         <Path>Source Files/app/system_config/number8</Path>
-        <Checksum>A4AE8CA99F145AE229A3B0673CEA32EA</Checksum>
+        <Checksum>E030D5B44EC504D7D7A2D97A69CF5F9C</Checksum>
       </Template>
       <Template>
         <Name>sys_ports_static.c</Name>
