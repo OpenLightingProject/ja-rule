@@ -58,8 +58,11 @@
 
 #include "iovec.h"
 #include "system_config.h"
+#include "peripheral/ic/plib_ic.h"
 #include "peripheral/ports/plib_ports.h"
+#include "peripheral/tmr/plib_tmr.h"
 #include "peripheral/usart/plib_usart.h"
+#include "system/int/sys_int.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -209,13 +212,28 @@ typedef bool (*TransceiverEventCallback)(const TransceiverEvent *event);
 
 /**
  * @brief The hardware settings to use for the Transceiver.
+ *
+ * Alas, this doesn't contain all of the settings. The vector numbers used in
+ * the ISRs are required at compile time, so we can't control that. We'll need
+ * to come up with a better way to make this modular.
  */
 typedef struct {
   USART_MODULE_ID usart;  //!< The USART module to use
+  INT_VECTOR usart_vector;  //!< The vector to use for the USART
+  INT_SOURCE usart_tx_source;  //!< The source of USART TX
+  INT_SOURCE usart_rx_source;  //!< The source of USART RX
+  INT_SOURCE usart_error_source;  //!< The source of USART errors
   PORTS_CHANNEL port;  //!< The port to use for control signals.
   PORTS_BIT_POS break_bit;  //!< The port bit to use to generate breaks.
-  PORTS_BIT_POS rx_enable_bit;  //!< The RX Enable bit.
   PORTS_BIT_POS tx_enable_bit;  //!< The TX Enable bit.
+  PORTS_BIT_POS rx_enable_bit;  //!< The RX Enable bit.
+  IC_MODULE_ID input_capture_module;  //!< The IC module to use
+  INT_VECTOR input_capture_vector;  //!< The vector to use for IC
+  INT_SOURCE input_capture_source;  //!< The source to use for IC
+  TMR_MODULE_ID timer_module_id;  //!< The timer to use
+  INT_VECTOR timer_vector;  //!< The vector to use for timer
+  INT_SOURCE timer_source;  //!< The source to use for timer
+  IC_TIMERS input_capture_timer;  //!< The timer to use for IC
 } TransceiverHardwareSettings;
 
 /**

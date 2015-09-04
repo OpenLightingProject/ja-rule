@@ -23,6 +23,7 @@
 
 #include "Array.h"
 #include "transceiver.h"
+#include "setting_macros.h"
 
 using ::testing::Args;
 using ::testing::StrictMock;
@@ -39,11 +40,22 @@ class TransceiverTest : public testing::Test {
 
   TransceiverHardwareSettings DefaultSettings() const {
     TransceiverHardwareSettings settings = {
-      .usart = USART_ID_1,
+      .usart = AS_USART_ID(1),
+      .usart_vector = AS_USART_INTERRUPT_VECTOR(1),
+      .usart_tx_source = AS_USART_INTERRUPT_TX_SOURCE(1),
+      .usart_rx_source = AS_USART_INTERRUPT_RX_SOURCE(1),
+      .usart_error_source = AS_USART_INTERRUPT_ERROR_SOURCE(1),
       .port = PORT_CHANNEL_F,
       .break_bit = PORTS_BIT_POS_8,
-      .rx_enable_bit = PORTS_BIT_POS_0,
       .tx_enable_bit = PORTS_BIT_POS_1,
+      .rx_enable_bit = PORTS_BIT_POS_0,
+      .input_capture_module = AS_IC_ID(2),
+      .input_capture_vector = AS_IC_INTERRUPT_VECTOR(2),
+      .input_capture_source = AS_IC_INTERRUPT_SOURCE(2),
+      .timer_module_id = AS_TIMER_ID(3),
+      .timer_vector = AS_TIMER_INTERRUPT_VECTOR(3),
+      .timer_source = AS_TIMER_INTERRUPT_SOURCE(3),
+      .input_capture_timer = AS_IC_TMR_ID(3),
     };
     return settings;
   }

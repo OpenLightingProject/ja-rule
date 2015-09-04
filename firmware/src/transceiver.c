@@ -26,20 +26,22 @@
 #include "system/int/sys_int.h"
 #include "system/clk/sys_clk.h"
 
-#include "constants.h"
 #include "coarse_timer.h"
+#include "constants.h"
 #include "dmx_spec.h"
+#include "peripheral/ic/plib_ic.h"
+#include "peripheral/tmr/plib_tmr.h"
+#include "peripheral/usart/plib_usart.h"
+#include "setting_macros.h"
 #include "syslog.h"
 #include "system_definitions.h"
 #include "system_pipeline.h"
-#include "peripheral/ic/plib_ic.h"
-#include "peripheral/usart/plib_usart.h"
-#include "peripheral/tmr/plib_tmr.h"
 #include "transceiver_timing.h"
 #include "random.h"
 
-#define INPUT_CAPTURE_MODULE IC_ID_2
-#define BUFFER_SIZE (DMX_FRAME_SIZE + 1u)
+#include "system_settings.h"
+
+enum { BUFFER_SIZE = DMX_FRAME_SIZE + 1u };
 
 // The number of buffers we maintain for overlapping I/O
 enum { NUMBER_OF_BUFFERS = 2};
@@ -224,8 +226,9 @@ static inline uint16_t MicroSecondsToTicks(uint16_t micro_seconds) {
  * don't know what's a break until after the event.
  */
 static inline void RebaseTimer(uint16_t last_event) {
-  PLIB_TMR_Counter16BitSet(TMR_ID_3,
-                           PLIB_TMR_Counter16BitGet(TMR_ID_3) - last_event);
+  PLIB_TMR_Counter16BitSet(
+      g_hw_settings.timer_module_id,
+      PLIB_TMR_Counter16BitGet(g_hw_settings.timer_module_id) - last_event);
 }
 
 // I/O Functions
@@ -333,7 +336,8 @@ bool UART_RXBytes() {
       }
     }
   }
-  g_transceiver.last_byte = PLIB_TMR_Counter16BitGet(TMR_ID_3);
+  g_transceiver.last_byte = PLIB_TMR_Counter16BitGet(
+      g_hw_settings.timer_module_id);
   g_transceiver.last_byte_coarse = CoarseTimer_GetTime();
   return g_transceiver.data_index >= BUFFER_SIZE;
 }
@@ -397,10 +401,10 @@ static inline void PrepareRDMResponse() {
     jitter = Random_PseudoGet() % g_timing_settings.rdm_responder_jitter;
   }
   PLIB_TMR_Period16BitSet(
-      TMR_ID_3,
+      g_hw_settings.timer_module_id,
       g_timing_settings.rdm_responder_delay - RESPONSE_FUDGE_FACTOR + jitter);
-  SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
-  SYS_INT_SourceEnable(INT_SOURCE_TIMER_3);
+  SYS_INT_SourceStatusClear(g_hw_settings.timer_source);
+  SYS_INT_SourceEnable(g_hw_settings.timer_source);
 }
 
 static inline void StartSendingRDMResponse() {
@@ -414,8 +418,8 @@ static inline void StartSendingRDMResponse() {
   }
   g_transceiver.state = STATE_R_TX_DATA;
 
-  SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
-  SYS_INT_SourceEnable(INT_SOURCE_USART_1_TRANSMIT);
+  SYS_INT_SourceStatusClear(g_hw_settings.usart_tx_source);
+  SYS_INT_SourceEnable(g_hw_settings.usart_tx_source);
 }
 
 static inline void LogStateChange() {
@@ -522,9 +526,10 @@ static void ResetTimingSettings() {
 /*
  * @brief Called when an input capture event occurs.
  */
-void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
-  while (!PLIB_IC_BufferIsEmpty(IC_ID_2)) {
-    uint16_t value = PLIB_IC_Buffer16BitGet(IC_ID_2);
+void __ISR(AS_IC_ISR_VECTOR(TRANSCEIVER_IC), ipl6)
+    InputCaptureEvent(void) {
+  while (!PLIB_IC_BufferIsEmpty(g_hw_settings.input_capture_module)) {
+    uint16_t value = PLIB_IC_Buffer16BitGet(g_hw_settings.input_capture_module);
     switch (g_transceiver.state) {
       case STATE_C_RX_WAIT_FOR_DUB:
         g_timing.dub_response.start = value;
@@ -546,18 +551,18 @@ void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
         } else {
           g_timing.get_set_response.mark_start = value;
           // Break was good, enable UART
-          SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
-          SYS_INT_SourceEnable(INT_SOURCE_USART_1_RECEIVE);
-          SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_ERROR);
-          SYS_INT_SourceEnable(INT_SOURCE_USART_1_ERROR);
+          SYS_INT_SourceStatusClear(g_hw_settings.usart_rx_source);
+          SYS_INT_SourceEnable(g_hw_settings.usart_rx_source);
+          SYS_INT_SourceStatusClear(g_hw_settings.usart_error_source);
+          SYS_INT_SourceEnable(g_hw_settings.usart_error_source);
           PLIB_USART_ReceiverEnable(g_hw_settings.usart);
           g_transceiver.state = STATE_C_RX_DATA;
         }
         break;
       case STATE_C_RX_DATA:
         g_timing.get_set_response.mark_end = value;
-        SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
-        PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
+        SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
+        PLIB_IC_Disable(g_hw_settings.input_capture_module);
         break;
 
       case STATE_R_RX_MBB:
@@ -570,8 +575,8 @@ void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
             value <= RESPONDER_RX_BREAK_TIME_MAX) {
           // Break was good, enable UART
           g_timing.request.break_time = value;
-          SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
-          SYS_INT_SourceEnable(INT_SOURCE_USART_1_RECEIVE);
+          SYS_INT_SourceStatusClear(g_hw_settings.usart_rx_source);
+          SYS_INT_SourceEnable(g_hw_settings.usart_rx_source);
           PLIB_USART_ReceiverEnable(g_hw_settings.usart);
           g_transceiver.state = STATE_R_RX_MARK;
         } else {
@@ -589,8 +594,8 @@ void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
 
           // Disable UART
           PLIB_USART_ReceiverDisable(g_hw_settings.usart);
-          SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
-          SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
+          SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+          SYS_INT_SourceStatusClear(g_hw_settings.usart_rx_source);
           g_transceiver.state = STATE_R_RX_BREAK;
         } else {
           g_timing.request.mark_time = value - g_timing.request.break_time;
@@ -625,13 +630,14 @@ void __ISR(_INPUT_CAPTURE_2_VECTOR, ipl6) InputCaptureEvent(void) {
         {};
     }
   }
-  SYS_INT_SourceStatusClear(INT_SOURCE_INPUT_CAPTURE_2);
+  SYS_INT_SourceStatusClear(g_hw_settings.input_capture_source);
 }
 
 /*
  * @brief Called when the timer expires.
  */
-void __ISR(_TIMER_3_VECTOR, ipl6) Transceiver_TimerEvent() {
+void __ISR(AS_TIMER_ISR_VECTOR(TRANSCEIVER_TIMER), ipl6)
+    Transceiver_TimerEvent() {
   switch (g_transceiver.state) {
     case STATE_C_IN_BREAK:
     case STATE_R_TX_BREAK:
@@ -639,13 +645,14 @@ void __ISR(_TIMER_3_VECTOR, ipl6) Transceiver_TimerEvent() {
       SetMark();
       g_transceiver.state = g_transceiver.state == STATE_C_IN_BREAK ?
           STATE_C_IN_MARK : STATE_R_TX_MARK;
-      PLIB_TMR_Counter16BitClear(TMR_ID_3);
-      PLIB_TMR_Period16BitSet(TMR_ID_3, g_timing_settings.mark_ticks);
+      PLIB_TMR_Counter16BitClear(g_hw_settings.timer_module_id);
+      PLIB_TMR_Period16BitSet(g_hw_settings.timer_module_id,
+                              g_timing_settings.mark_ticks);
       break;
     case STATE_C_IN_MARK:
       // Stop the timer.
-      SYS_INT_SourceDisable(INT_SOURCE_TIMER_3);
-      PLIB_TMR_Stop(TMR_ID_3);
+      SYS_INT_SourceDisable(g_hw_settings.timer_source);
+      PLIB_TMR_Stop(g_hw_settings.timer_module_id);
 
       // Transition to sending the data.
       // Only push a single byte into the TX queue at the begining, otherwise
@@ -660,26 +667,29 @@ void __ISR(_TIMER_3_VECTOR, ipl6) Transceiver_TimerEvent() {
       PLIB_USART_Enable(g_hw_settings.usart);
       PLIB_USART_TransmitterEnable(g_hw_settings.usart);
       g_transceiver.state = STATE_C_TX_DATA;
-      SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
-      SYS_INT_SourceEnable(INT_SOURCE_USART_1_TRANSMIT);
+      SYS_INT_SourceStatusClear(g_hw_settings.usart_tx_source);
+      SYS_INT_SourceEnable(g_hw_settings.usart_tx_source);
       break;
     case STATE_R_TX_WAITING:
       EnableTX();
 
       if (g_transceiver.active->op == OP_RDM_WITH_RESPONSE) {
         SetBreak();
-        PLIB_TMR_PrescaleSelect(TMR_ID_3, TMR_PRESCALE_VALUE_1);
-        PLIB_TMR_Counter16BitClear(TMR_ID_3);
-        PLIB_TMR_Period16BitSet(TMR_ID_3, g_timing_settings.break_ticks);
+        PLIB_TMR_PrescaleSelect(g_hw_settings.timer_module_id,
+                                TMR_PRESCALE_VALUE_1);
+        PLIB_TMR_Counter16BitClear(g_hw_settings.timer_module_id);
+        PLIB_TMR_Period16BitSet(g_hw_settings.timer_module_id,
+                                g_timing_settings.break_ticks);
         g_transceiver.state = STATE_R_TX_BREAK;
       } else {
-        SYS_INT_SourceDisable(INT_SOURCE_TIMER_3);
+        SYS_INT_SourceDisable(g_hw_settings.timer_source);
         StartSendingRDMResponse();
       }
       break;
     case STATE_R_TX_MARK:
-      SYS_INT_SourceDisable(INT_SOURCE_TIMER_3);
-      PLIB_TMR_PrescaleSelect(TMR_ID_3, TMR_PRESCALE_VALUE_8);
+      SYS_INT_SourceDisable(g_hw_settings.timer_source);
+      PLIB_TMR_PrescaleSelect(g_hw_settings.timer_module_id,
+                              TMR_PRESCALE_VALUE_8);
 
       StartSendingRDMResponse();
       break;
@@ -709,7 +719,7 @@ void __ISR(_TIMER_3_VECTOR, ipl6) Transceiver_TimerEvent() {
       // Should never happen
       {}
   }
-  SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
+  SYS_INT_SourceStatusClear(g_hw_settings.timer_source);
 }
 
 /*
@@ -720,8 +730,9 @@ void __ISR(_TIMER_3_VECTOR, ipl6) Transceiver_TimerEvent() {
  *  - The USART RX buffer has data.
  *  - A USART RX error has occurred.
  */
-void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
-  if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_TRANSMIT)) {
+void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6)
+    Transceiver_UARTEvent() {
+  if (SYS_INT_SourceStatusGet(g_hw_settings.usart_tx_source)) {
     if (g_transceiver.state == STATE_C_TX_DATA) {
       UART_TXBytes();
       if (g_transceiver.data_index == g_transceiver.active->size) {
@@ -731,19 +742,21 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
       }
     } else if (g_transceiver.state == STATE_C_TX_DRAIN) {
       // The last byte has been transmitted
-      PLIB_TMR_Counter16BitClear(TMR_ID_3);
-      PLIB_TMR_Period16BitSet(TMR_ID_3, 65535u);  // 6.5 ms until overflow.
-      PLIB_TMR_PrescaleSelect(TMR_ID_3, TMR_PRESCALE_VALUE_8);
-      PLIB_TMR_Start(TMR_ID_3);
+      PLIB_TMR_Counter16BitClear(g_hw_settings.timer_module_id);
+      // 6.5 ms until overflow.
+      PLIB_TMR_Period16BitSet(g_hw_settings.timer_module_id, 65535u);
+      PLIB_TMR_PrescaleSelect(g_hw_settings.timer_module_id,
+                              TMR_PRESCALE_VALUE_8);
+      PLIB_TMR_Start(g_hw_settings.timer_module_id);
 
       g_transceiver.tx_frame_end = CoarseTimer_GetTime();
-      SYS_INT_SourceDisable(INT_SOURCE_USART_1_TRANSMIT);
+      SYS_INT_SourceDisable(g_hw_settings.usart_tx_source);
       PLIB_USART_TransmitterDisable(g_hw_settings.usart);
 
       if (g_transceiver.active->op == OP_TX_ONLY) {
         PLIB_USART_Disable(g_hw_settings.usart);
         SetMark();
-        PLIB_TMR_Stop(TMR_ID_3);
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
         g_transceiver.state = STATE_C_COMPLETE;
       } else {
         // Switch to RX Mode.
@@ -755,23 +768,24 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
           EnableRX();
           UART_FlushRX();
 
-          PLIB_IC_FirstCaptureEdgeSelect(INPUT_CAPTURE_MODULE, IC_EDGE_FALLING);
-          PLIB_IC_Enable(INPUT_CAPTURE_MODULE);
-          SYS_INT_SourceStatusClear(INT_SOURCE_INPUT_CAPTURE_2);
-          SYS_INT_SourceEnable(INT_SOURCE_INPUT_CAPTURE_2);
+          PLIB_IC_FirstCaptureEdgeSelect(g_hw_settings.input_capture_module,
+                                         IC_EDGE_FALLING);
+          PLIB_IC_Enable(g_hw_settings.input_capture_module);
+          SYS_INT_SourceStatusClear(g_hw_settings.input_capture_source);
+          SYS_INT_SourceEnable(g_hw_settings.input_capture_source);
 
           // TODO(simon) I think we can remove this because its done in the IC
           // ISR
           PLIB_USART_ReceiverEnable(g_hw_settings.usart);
-          SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
-          SYS_INT_SourceEnable(INT_SOURCE_USART_1_RECEIVE);
-          SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_ERROR);
-          SYS_INT_SourceEnable(INT_SOURCE_USART_1_ERROR);
+          SYS_INT_SourceStatusClear(g_hw_settings.usart_rx_source);
+          SYS_INT_SourceEnable(g_hw_settings.usart_rx_source);
+          SYS_INT_SourceStatusClear(g_hw_settings.usart_error_source);
+          SYS_INT_SourceEnable(g_hw_settings.usart_error_source);
 
         } else if (g_transceiver.active->op == OP_RDM_BROADCAST &&
                    g_timing_settings.rdm_broadcast_timeout == 0u) {
           // Go directly to the complete state.
-          PLIB_TMR_Stop(TMR_ID_3);
+          PLIB_TMR_Stop(g_hw_settings.timer_module_id);
           g_transceiver.state = STATE_C_COMPLETE;
         } else {
           // Either T_OP_RDM_WITH_RESPONSE or a non-0 broadcast listen time.
@@ -785,10 +799,11 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
           EnableRX();
           UART_FlushRX();
 
-          PLIB_IC_FirstCaptureEdgeSelect(INPUT_CAPTURE_MODULE, IC_EDGE_FALLING);
-          PLIB_IC_Enable(INPUT_CAPTURE_MODULE);
-          SYS_INT_SourceStatusClear(INT_SOURCE_INPUT_CAPTURE_2);
-          SYS_INT_SourceEnable(INT_SOURCE_INPUT_CAPTURE_2);
+          PLIB_IC_FirstCaptureEdgeSelect(g_hw_settings.input_capture_module,
+                                         IC_EDGE_FALLING);
+          PLIB_IC_Enable(g_hw_settings.input_capture_module);
+          SYS_INT_SourceStatusClear(g_hw_settings.input_capture_source);
+          SYS_INT_SourceEnable(g_hw_settings.input_capture_source);
         }
       }
     } else if (g_transceiver.state == STATE_R_TX_DATA) {
@@ -800,19 +815,19 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
       }
     } else if (g_transceiver.state == STATE_R_TX_DRAIN) {
       EnableRX();
-      SYS_INT_SourceDisable(INT_SOURCE_USART_1_TRANSMIT);
+      SYS_INT_SourceDisable(g_hw_settings.usart_tx_source);
       PLIB_USART_TransmitterDisable(g_hw_settings.usart);
       g_transceiver.state = STATE_R_TX_COMPLETE;
     }
-    SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
-  } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_RECEIVE)) {
+    SYS_INT_SourceStatusClear(g_hw_settings.usart_tx_source);
+  } else if (SYS_INT_SourceStatusGet(g_hw_settings.usart_rx_source)) {
     if (g_transceiver.state == STATE_C_RX_IN_DUB ||
         g_transceiver.state == STATE_C_RX_DATA) {
       if (UART_RXBytes()) {
         // RX buffer is full.
-        PLIB_TMR_Stop(TMR_ID_3);
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
+        SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+        SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
         ResetToMark();
         g_transceiver.result = T_RESULT_RX_INVALID;
@@ -822,7 +837,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
       if (PLIB_USART_ErrorsGet(g_hw_settings.usart) & USART_ERROR_FRAMING) {
         // A framing error indicates a possible break.
         // Switch out of RX mode and back into the break state.
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
+        SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
         UART_FlushRX();
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
 
@@ -835,24 +850,24 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
       } else if (UART_RXBytes()) {
         // RX buffer is full.
         // TODO(simon): What should we do here?
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
+        SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+        SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
 
         g_transceiver.state = STATE_R_TX_COMPLETE;
       }
     }
-    SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
-  } else if (SYS_INT_SourceStatusGet(INT_SOURCE_USART_1_ERROR)) {
+    SYS_INT_SourceStatusClear(g_hw_settings.usart_rx_source);
+  } else if (SYS_INT_SourceStatusGet(g_hw_settings.usart_error_source)) {
     switch (g_transceiver.state) {
       case STATE_C_RX_IN_DUB:
-        SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
-        PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
+        SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
+        PLIB_IC_Disable(g_hw_settings.input_capture_module);
         // Fall through
       case STATE_C_RX_DATA:
-        PLIB_TMR_Stop(TMR_ID_3);
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
+        SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+        SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
         ResetToMark();
         g_transceiver.state = STATE_C_COMPLETE;
@@ -886,7 +901,7 @@ void __ISR(_UART_1_VECTOR, ipl6) Transceiver_UARTEvent() {
         // Should never happen.
         {}
     }
-    SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_ERROR);
+    SYS_INT_SourceStatusClear(g_hw_settings.usart_error_source);
   }
 }
 
@@ -919,11 +934,13 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
                                    g_hw_settings.rx_enable_bit);
 
   // Setup the timer
-  PLIB_TMR_ClockSourceSelect(TMR_ID_3, TMR_CLOCK_SOURCE_PERIPHERAL_CLOCK);
-  PLIB_TMR_PrescaleSelect(TMR_ID_3, TMR_PRESCALE_VALUE_1);
-  PLIB_TMR_Mode16BitEnable(TMR_ID_3);
-  SYS_INT_VectorPrioritySet(INT_VECTOR_T3, INT_PRIORITY_LEVEL1);
-  SYS_INT_VectorSubprioritySet(INT_VECTOR_T3, INT_SUBPRIORITY_LEVEL0);
+  PLIB_TMR_ClockSourceSelect(g_hw_settings.timer_module_id,
+                             TMR_CLOCK_SOURCE_PERIPHERAL_CLOCK);
+  PLIB_TMR_PrescaleSelect(g_hw_settings.timer_module_id, TMR_PRESCALE_VALUE_1);
+  PLIB_TMR_Mode16BitEnable(g_hw_settings.timer_module_id);
+  SYS_INT_VectorPrioritySet(g_hw_settings.timer_vector, INT_PRIORITY_LEVEL1);
+  SYS_INT_VectorSubprioritySet(g_hw_settings.timer_vector,
+                               INT_SUBPRIORITY_LEVEL0);
 
   // Setup the UART
   PLIB_USART_BaudRateSet(g_hw_settings.usart,
@@ -938,21 +955,29 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
   PLIB_USART_TransmitterInterruptModeSelect(g_hw_settings.usart,
                                             USART_TRANSMIT_FIFO_EMPTY);
 
-  SYS_INT_VectorPrioritySet(INT_VECTOR_UART1, INT_PRIORITY_LEVEL6);
-  SYS_INT_VectorSubprioritySet(INT_VECTOR_UART1, INT_SUBPRIORITY_LEVEL0);
-  SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
+  SYS_INT_VectorPrioritySet(g_hw_settings.usart_vector,
+                            INT_PRIORITY_LEVEL6);
+  SYS_INT_VectorSubprioritySet(g_hw_settings.usart_vector,
+                               INT_SUBPRIORITY_LEVEL0);
+  SYS_INT_SourceStatusClear(g_hw_settings.usart_tx_source);
 
   // Setup input capture
-  PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
-  PLIB_IC_ModeSelect(INPUT_CAPTURE_MODULE, IC_INPUT_CAPTURE_EVERY_EDGE_MODE);
-  PLIB_IC_FirstCaptureEdgeSelect(INPUT_CAPTURE_MODULE, IC_EDGE_RISING);
-  PLIB_IC_TimerSelect(INPUT_CAPTURE_MODULE, IC_TIMER_TMR3);
-  PLIB_IC_BufferSizeSelect(INPUT_CAPTURE_MODULE, IC_BUFFER_SIZE_16BIT);
-  PLIB_IC_EventsPerInterruptSelect(INPUT_CAPTURE_MODULE,
+  PLIB_IC_Disable(g_hw_settings.input_capture_module);
+  PLIB_IC_ModeSelect(g_hw_settings.input_capture_module,
+                     IC_INPUT_CAPTURE_EVERY_EDGE_MODE);
+  PLIB_IC_FirstCaptureEdgeSelect(g_hw_settings.input_capture_module,
+                                 IC_EDGE_RISING);
+  PLIB_IC_TimerSelect(g_hw_settings.input_capture_module,
+                      g_hw_settings.input_capture_timer);
+  PLIB_IC_BufferSizeSelect(g_hw_settings.input_capture_module,
+                           IC_BUFFER_SIZE_16BIT);
+  PLIB_IC_EventsPerInterruptSelect(g_hw_settings.input_capture_module,
                                    IC_INTERRUPT_ON_EVERY_CAPTURE_EVENT);
 
-  SYS_INT_VectorPrioritySet(INT_VECTOR_IC2, INT_PRIORITY_LEVEL6);
-  SYS_INT_VectorSubprioritySet(INT_VECTOR_IC2, INT_SUBPRIORITY_LEVEL0);
+  SYS_INT_VectorPrioritySet(g_hw_settings.input_capture_vector,
+                            INT_PRIORITY_LEVEL6);
+  SYS_INT_VectorSubprioritySet(g_hw_settings.input_capture_vector,
+                               INT_SUBPRIORITY_LEVEL0);
 }
 
 void Transceiver_SetMode(TransceiverMode mode) {
@@ -975,11 +1000,11 @@ void Transceiver_Tasks() {
 
   switch (g_transceiver.state) {
     case STATE_C_INITIALIZE:
-      PLIB_TMR_Stop(TMR_ID_3);
+      PLIB_TMR_Stop(g_hw_settings.timer_module_id);
       PLIB_USART_ReceiverDisable(g_hw_settings.usart);
       PLIB_USART_TransmitterDisable(g_hw_settings.usart);
       PLIB_USART_Disable(g_hw_settings.usart);
-      PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
+      PLIB_IC_Disable(g_hw_settings.input_capture_module);
       ResetToMark();
       g_transceiver.state = STATE_C_TX_READY;
       // Fall through
@@ -1018,14 +1043,16 @@ void Transceiver_Tasks() {
 
       // Set break and start timer.
       g_transceiver.state = STATE_C_IN_BREAK;
-      PLIB_TMR_PrescaleSelect(TMR_ID_3 , TMR_PRESCALE_VALUE_1);
+      PLIB_TMR_PrescaleSelect(g_hw_settings.timer_module_id,
+                              TMR_PRESCALE_VALUE_1);
       g_transceiver.tx_frame_start = CoarseTimer_GetTime();
-      PLIB_TMR_Counter16BitClear(TMR_ID_3);
-      PLIB_TMR_Period16BitSet(TMR_ID_3, g_timing_settings.break_ticks);
-      SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
-      SYS_INT_SourceEnable(INT_SOURCE_TIMER_3);
+      PLIB_TMR_Counter16BitClear(g_hw_settings.timer_module_id);
+      PLIB_TMR_Period16BitSet(g_hw_settings.timer_module_id,
+                              g_timing_settings.break_ticks);
+      SYS_INT_SourceStatusClear(g_hw_settings.timer_source);
+      SYS_INT_SourceEnable(g_hw_settings.timer_source);
       SetBreak();
-      PLIB_TMR_Start(TMR_ID_3);
+      PLIB_TMR_Start(g_hw_settings.timer_module_id);
 
     case STATE_C_IN_BREAK:
     case STATE_C_IN_MARK:
@@ -1039,13 +1066,13 @@ void Transceiver_Tasks() {
     case STATE_C_RX_WAIT_FOR_BREAK:
       if (CoarseTimer_HasElapsed(g_transceiver.tx_frame_end,
                                  g_transceiver.rdm_response_timeout)) {
-        SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
+        SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
         // Note: the IC ISR may have run between the case check and the
         // SourceDisable and switched us to STATE_C_RX_WAIT_FOR_MARK.
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
-        PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
-        PLIB_TMR_Stop(TMR_ID_3);
+        SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+        SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
+        PLIB_IC_Disable(g_hw_settings.input_capture_module);
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
         ResetToMark();
         g_transceiver.state = STATE_C_RX_TIMEOUT;
@@ -1054,54 +1081,54 @@ void Transceiver_Tasks() {
 
     case STATE_C_RX_WAIT_FOR_MARK:
       // Disable interupts so we don't race
-      SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
+      SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
       if (g_transceiver.state == STATE_C_RX_WAIT_FOR_MARK &&
-          ((uint16_t) (PLIB_TMR_Counter16BitGet(TMR_ID_3) -
+          ((uint16_t) (PLIB_TMR_Counter16BitGet(g_hw_settings.timer_module_id) -
             g_timing.get_set_response.break_start) >
             CONTROLLER_RX_BREAK_TIME_MAX)) {
         // Break was too long
         g_transceiver.result = T_RESULT_RX_INVALID;
-        PLIB_TMR_Stop(TMR_ID_3);
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
         ResetToMark();
         g_transceiver.state = STATE_C_COMPLETE;
       } else {
-        SYS_INT_SourceEnable(INT_SOURCE_INPUT_CAPTURE_2);
+        SYS_INT_SourceEnable(g_hw_settings.input_capture_source);
       }
       break;
 
     case STATE_C_RX_DATA:
       // TODO(simon): handle the timeout case here.
       // It's not a static timeout, rather it varies with the slot count.
-      // PLIB_TMR_Stop(TMR_ID_3);
+      // PLIB_TMR_Stop(g_hw_settings.timer_module_id);
       break;
 
     case STATE_C_RX_WAIT_FOR_DUB:
       if (CoarseTimer_HasElapsed(g_transceiver.tx_frame_end,
                                  g_timing_settings.rdm_response_timeout)) {
-        SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
+        SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
         // Note: the IC ISR may have run between the case check and the
         // SourceDisable and switched us to STATE_C_RX_IN_DUB.
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
-        PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
+        SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+        SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
+        PLIB_IC_Disable(g_hw_settings.input_capture_module);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
-        PLIB_TMR_Stop(TMR_ID_3);
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
         ResetToMark();
         g_transceiver.state = STATE_C_RX_TIMEOUT;
       }
       break;
     case STATE_C_RX_IN_DUB:
-      if ((uint16_t) (PLIB_TMR_Counter16BitGet(TMR_ID_3) -
+      if ((uint16_t) (PLIB_TMR_Counter16BitGet(g_hw_settings.timer_module_id) -
                       g_timing.dub_response.start) >
            g_timing_settings.rdm_dub_response_limit) {
         // The UART Error interupt may have fired, putting us into
         // STATE_C_COMPLETE, already.
-        SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
-        SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
-        PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
+        SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
+        SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+        SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
+        PLIB_IC_Disable(g_hw_settings.input_capture_module);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
-        PLIB_TMR_Stop(TMR_ID_3);
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
         ResetToMark();
         // We got at least a falling edge, so this should probably be
         // considered a collision, rather than a timeout.
@@ -1193,10 +1220,12 @@ void Transceiver_Tasks() {
       EnableRX();
 
       // Setup the timer
-      PLIB_TMR_Counter16BitClear(TMR_ID_3);
-      PLIB_TMR_Period16BitSet(TMR_ID_3, 65535);  // 6.5 ms until overflow.
-      PLIB_TMR_PrescaleSelect(TMR_ID_3, TMR_PRESCALE_VALUE_8);
-      PLIB_TMR_Start(TMR_ID_3);
+      PLIB_TMR_Counter16BitClear(g_hw_settings.timer_module_id);
+      // 6.5 ms until overflow.
+      PLIB_TMR_Period16BitSet(g_hw_settings.timer_module_id, 65535);
+      PLIB_TMR_PrescaleSelect(g_hw_settings.timer_module_id,
+                              TMR_PRESCALE_VALUE_8);
+      PLIB_TMR_Start(g_hw_settings.timer_module_id);
 
       // Fall through
     case STATE_R_RX_PREPARE:
@@ -1222,28 +1251,29 @@ void Transceiver_Tasks() {
       g_transceiver.state = STATE_R_RX_MBB;
 
       // Catch the next falling edge.
-      SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
-      SYS_INT_SourceStatusClear(INT_SOURCE_INPUT_CAPTURE_2);
-      PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
-      PLIB_IC_FirstCaptureEdgeSelect(INPUT_CAPTURE_MODULE, IC_EDGE_FALLING);
-      PLIB_IC_Enable(INPUT_CAPTURE_MODULE);
-      SYS_INT_SourceEnable(INT_SOURCE_INPUT_CAPTURE_2);
+      SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
+      SYS_INT_SourceStatusClear(g_hw_settings.input_capture_source);
+      PLIB_IC_Disable(g_hw_settings.input_capture_module);
+      PLIB_IC_FirstCaptureEdgeSelect(g_hw_settings.input_capture_module,
+                                     IC_EDGE_FALLING);
+      PLIB_IC_Enable(g_hw_settings.input_capture_module);
+      SYS_INT_SourceEnable(g_hw_settings.input_capture_source);
 
       // Fall through
     case STATE_R_RX_MBB:
       // noop, waiting for IC event
 
-      SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
+      SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
       if (g_transceiver.desired_mode != T_MODE_RESPONDER) {
         g_transceiver.mode = g_transceiver.desired_mode;
-        PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
-        PLIB_TMR_Stop(TMR_ID_3);
+        PLIB_IC_Disable(g_hw_settings.input_capture_module);
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
         FreeActiveBuffer();
         SysLog_Print(SYSLOG_INFO, "Switched to controller mode");
         g_transceiver.state = STATE_C_INITIALIZE;
         break;
       }
-      SYS_INT_SourceEnable(INT_SOURCE_INPUT_CAPTURE_2);
+      SYS_INT_SourceEnable(g_hw_settings.input_capture_source);
       break;
 
     case STATE_R_RX_BREAK:
@@ -1254,7 +1284,7 @@ void Transceiver_Tasks() {
       break;
 
     case STATE_R_RX_DATA:
-      SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
+      SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
 
       if (g_transceiver.data_index != 0u) {
         // Got at least one byte, so we have the start code.
@@ -1284,7 +1314,7 @@ void Transceiver_Tasks() {
         PrepareRDMResponse();
       } else {
         // Continue receiving
-        SYS_INT_SourceEnable(INT_SOURCE_USART_1_RECEIVE);
+        SYS_INT_SourceEnable(g_hw_settings.usart_rx_source);
       }
       break;
     case STATE_R_TX_WAITING:
@@ -1299,7 +1329,7 @@ void Transceiver_Tasks() {
       FreeActiveBuffer();
       break;
     case STATE_R_TX_COMPLETE:
-      PLIB_TMR_Period16BitSet(TMR_ID_3, 65535u);
+      PLIB_TMR_Period16BitSet(g_hw_settings.timer_module_id, 65535u);
       g_transceiver.data_index = 0u;
       g_transceiver.state = STATE_R_RX_PREPARE;
       break;
@@ -1407,24 +1437,24 @@ bool Transceiver_QueueRDMResponse(bool include_break,
  */
 void Transceiver_Reset() {
   // Disable & clear all interrupts.
-  SYS_INT_SourceDisable(INT_SOURCE_USART_1_TRANSMIT);
-  SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_TRANSMIT);
-  SYS_INT_SourceDisable(INT_SOURCE_USART_1_RECEIVE);
-  SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_RECEIVE);
-  SYS_INT_SourceDisable(INT_SOURCE_USART_1_ERROR);
-  SYS_INT_SourceStatusClear(INT_SOURCE_USART_1_ERROR);
+  SYS_INT_SourceDisable(g_hw_settings.usart_tx_source);
+  SYS_INT_SourceStatusClear(g_hw_settings.usart_tx_source);
+  SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+  SYS_INT_SourceStatusClear(g_hw_settings.usart_rx_source);
+  SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
+  SYS_INT_SourceStatusClear(g_hw_settings.usart_error_source);
 
   InitializeBuffers();
 
   // Reset Timer
-  SYS_INT_SourceDisable(INT_SOURCE_TIMER_3);
-  SYS_INT_SourceStatusClear(INT_SOURCE_TIMER_3);
-  PLIB_TMR_Stop(TMR_ID_3);
+  SYS_INT_SourceDisable(g_hw_settings.timer_source);
+  SYS_INT_SourceStatusClear(g_hw_settings.timer_source);
+  PLIB_TMR_Stop(g_hw_settings.timer_module_id);
 
   // Reset IC
-  SYS_INT_SourceDisable(INT_SOURCE_INPUT_CAPTURE_2);
-  SYS_INT_SourceStatusClear(INT_SOURCE_INPUT_CAPTURE_2);
-  PLIB_IC_Disable(INPUT_CAPTURE_MODULE);
+  SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
+  SYS_INT_SourceStatusClear(g_hw_settings.input_capture_source);
+  PLIB_IC_Disable(g_hw_settings.input_capture_module);
 
   // Reset UART
   PLIB_USART_ReceiverDisable(g_hw_settings.usart);

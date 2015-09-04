@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * ethernet_sk2/bootloader_settings.c
+ * ethernet_sk2/bootloader_settings.h
  * Copyright (C) 2015 Simon Newton
  */
 
