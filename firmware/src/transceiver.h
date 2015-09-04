@@ -225,8 +225,8 @@ typedef struct {
   INT_SOURCE usart_error_source;  //!< The source of USART errors
   PORTS_CHANNEL port;  //!< The port to use for control signals.
   PORTS_BIT_POS break_bit;  //!< The port bit to use to generate breaks.
-  PORTS_BIT_POS rx_enable_bit;  //!< The RX Enable bit.
   PORTS_BIT_POS tx_enable_bit;  //!< The TX Enable bit.
+  PORTS_BIT_POS rx_enable_bit;  //!< The RX Enable bit.
   IC_MODULE_ID input_capture_module;  //!< The IC module to use
   INT_VECTOR input_capture_vector;  //!< The vector to use for IC
   INT_SOURCE input_capture_source;  //!< The source to use for IC
