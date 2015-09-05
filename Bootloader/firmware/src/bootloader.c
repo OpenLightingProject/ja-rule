@@ -612,6 +612,9 @@ void ProcessDownload() {
 }
 
 void Bootloader_Initialize() {
+  PLIB_PORTS_PinDirectionInputSet(PORTS_ID_0, SWITCH_PORT_CHANNEL,
+                                  SWITCH_PORT_BIT);
+
   bool run_bootloader = (
     BootloaderOptions_GetBootOption() == BOOT_BOOTLOADER ||
     SwitchPressed() ||
@@ -626,8 +629,6 @@ void Bootloader_Initialize() {
   g_bootloader.dfu_state = DFU_STATE_IDLE;
   g_bootloader.dfu_status = DFU_STATUS_OK;
   g_bootloader.active_interface = DFU_ALT_INTERFACE_FIRMWARE;
-  PLIB_PORTS_PinDirectionInputSet(PORTS_ID_0, SWITCH_PORT_CHANNEL,
-                                  SWITCH_PORT_BIT);
 
   unsigned int i = 0u;
   for (; i < BOOTLOADER_LEDS.count; i++) {
