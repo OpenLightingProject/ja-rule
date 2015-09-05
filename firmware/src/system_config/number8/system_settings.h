@@ -20,6 +20,8 @@
 #ifndef FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
 #define FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
 
+#include "board_init.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,6 +32,26 @@ extern "C" {
  *
  * These will need to be adjusted to suit the particular processor / board
  * used.
+ *
+ * @name Board Specific Hooks
+ * These hooks can be used for board specific configuration at various stages
+ * during the initialization sequence.
+ * @{
+ */
+
+/**
+ * @def PRE_APP_INIT_HOOK
+ * @brief This hook is called prior to the initialization of the application
+ * modules (APP_Initialize).
+ *
+ * Remember that pins will default to analog if they share a function with the
+ * A/D Convertor. If any of your pins share with the ADC, you'll need to change
+ * them to digital mode. This should be done using this hook.
+ */
+#define PRE_APP_INIT_HOOK Number8_PreAppHook
+
+/**
+ * @}
  *
  * @name Coarse Timer
  * Settings for the @ref timer. These are used to initialize

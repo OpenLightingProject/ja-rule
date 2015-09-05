@@ -611,7 +611,7 @@ void ProcessDownload() {
   }
 }
 
-void Bootloader_Initialize(void) {
+void Bootloader_Initialize() {
   bool run_bootloader = (
     BootloaderOptions_GetBootOption() == BOOT_BOOTLOADER ||
     SwitchPressed() ||
@@ -628,14 +628,28 @@ void Bootloader_Initialize(void) {
   g_bootloader.active_interface = DFU_ALT_INTERFACE_FIRMWARE;
   PLIB_PORTS_PinDirectionInputSet(PORTS_ID_0, SWITCH_PORT_CHANNEL,
                                   SWITCH_PORT_BIT);
-  PLIB_PORTS_PinDirectionOutputSet(PORTS_ID_0, LED_PORT_CHANNEL, LED_PORT_BIT);
+
+  unsigned int i = 0u;
+  for (; i < BOOTLOADER_LEDS.count; i++) {
+    PLIB_PORTS_PinDirectionOutputSet(PORTS_ID_0,
+                                     BOOTLOADER_LEDS.leds[i].port_channel,
+                                     BOOTLOADER_LEDS.leds[i].port_bit);
+    PLIB_PORTS_PinClear(PORTS_ID_0,
+                        BOOTLOADER_LEDS.leds[i].port_channel,
+                        BOOTLOADER_LEDS.leds[i].port_bit);
+  }
 }
 
-void Bootloader_Tasks(void) {
+void Bootloader_Tasks() {
   // Flash the LED to indicate we're in bootloader mode.
   static unsigned int count = 0u;
   if (++count > 50000u) {
-    PLIB_PORTS_PinToggle(PORTS_ID_0, LED_PORT_CHANNEL, LED_PORT_BIT);
+    unsigned int i = 0u;
+    for (; i < BOOTLOADER_LEDS.count; i++) {
+      PLIB_PORTS_PinToggle(PORTS_ID_0,
+                           BOOTLOADER_LEDS.leds[i].port_channel,
+                           BOOTLOADER_LEDS.leds[i].port_bit);
+    }
     count = 0;
   }
 

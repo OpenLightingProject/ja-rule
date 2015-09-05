@@ -13,15 +13,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * launcher.c
+ * board_init.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "launcher.h"
+#ifndef FIRMWARE_SRC_SYSTEM_CONFIG_NUMBER8_BOARD_INIT_H_
+#define FIRMWARE_SRC_SYSTEM_CONFIG_NUMBER8_BOARD_INIT_H_
 
-typedef void (*ApplicationPointer)(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void Launcher_RunApp(uint32_t address) {
-  ApplicationPointer ptr = (ApplicationPointer) address;
-  ptr();
+void Number8_PreAppHook();
+
+/**
+ * @}
+ */
+
+#ifdef __cplusplus
 }
+#endif
+
+/**
+ * @}
+ */
+
+#endif  // FIRMWARE_SRC_SYSTEM_CONFIG_NUMBER8_BOARD_INIT_H_

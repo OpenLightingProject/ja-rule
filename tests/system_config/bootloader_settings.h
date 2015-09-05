@@ -20,6 +20,9 @@
 #ifndef BOOTLOADER_FIRMWARE_SRC_SYSTEM_CONFIG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_
 #define BOOTLOADER_FIRMWARE_SRC_SYSTEM_CONFIG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_
 
+#include <stdbool.h>
+#include "bootloader.h"
+
 /*
  * @brief The reset address of the application.
  */
@@ -59,5 +62,18 @@ const PORTS_CHANNEL LED_PORT_CHANNEL = PORT_CHANNEL_D;
  * @brief The port pin of the led that indicates bootloader mode.
  */
 const PORTS_BIT_POS LED_PORT_BIT = PORTS_BIT_POS_0;
+
+/**
+ * @brief The LEDS to flash in bootloader mode.
+ */
+const Bootloader_LEDs BOOTLOADER_LEDS = {
+  .count = 1,
+  .leds = {
+    {
+      .port_channel = PORT_CHANNEL_D,
+      .port_bit = PORTS_BIT_POS_0
+    },
+  }
+};
 
 #endif  // BOOTLOADER_FIRMWARE_SRC_SYSTEM_CONFIG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_

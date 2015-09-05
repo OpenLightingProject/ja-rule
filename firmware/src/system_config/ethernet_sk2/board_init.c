@@ -13,15 +13,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * launcher.c
+ * board_init.c
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "launcher.h"
+#include "board_init.h"
 
-typedef void (*ApplicationPointer)(void);
+#include "peripheral/ports/plib_ports.h"
 
-void Launcher_RunApp(uint32_t address) {
-  ApplicationPointer ptr = (ApplicationPointer) address;
-  ptr();
+void EthernetSK2_PreAppHook() {
+  // Nothing to do
 }

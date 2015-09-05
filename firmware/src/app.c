@@ -41,6 +41,7 @@
 #include "system_settings.h"
 #include "transceiver.h"
 #include "uid_store.h"
+#include "usb_descriptors.h"
 #include "usb_transport.h"
 #include "uid_store.h"
 
@@ -49,6 +50,14 @@ void __ISR(AS_TIMER_ISR_VECTOR(COARSE_TIMER_ID), ipl6) TimerEvent() {
 }
 
 void APP_Initialize(void) {
+#ifdef PRE_APP_INIT_HOOK
+  PRE_APP_INIT_HOOK();
+#endif
+
+  // We can do this after USB_DEVICE_Initialize() has been called since it's
+  // not used until we reach the tasks function.
+  UIDStore_AsUnicodeString(USBDescriptor_UnicodeUID());
+
   CoarseTimer_Settings timer_settings = {
     .timer_id = AS_TIMER_ID(COARSE_TIMER_ID),
     .interrupt_source = AS_TIMER_INTERRUPT_SOURCE(COARSE_TIMER_ID)

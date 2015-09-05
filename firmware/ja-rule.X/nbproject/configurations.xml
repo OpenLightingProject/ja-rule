@@ -22,6 +22,7 @@
             <itemPath>../src/system_config/ethernet_sk2/system_config.h</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_definitions.h</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_settings.h</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/board_init.h</itemPath>
           </logicalFolder>
           <logicalFolder name="f1" displayName="number8" projectFiles="true">
             <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -35,6 +36,7 @@
             <itemPath>../src/system_config/number8/system_settings.h</itemPath>
             <itemPath>../src/system_config/number8/system_config.h</itemPath>
             <itemPath>../src/system_config/number8/system_definitions.h</itemPath>
+            <itemPath>../src/system_config/number8/board_init.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../common/bootloader_options.h</itemPath>
@@ -135,6 +137,7 @@
             <itemPath>../src/system_config/ethernet_sk2/system_init.c</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_interrupt.c</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_tasks.c</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/board_init.c</itemPath>
           </logicalFolder>
           <logicalFolder name="f1" displayName="number8" projectFiles="true">
             <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -154,6 +157,7 @@
             <itemPath>../src/system_config/number8/system_init.c</itemPath>
             <itemPath>../src/system_config/number8/system_tasks.c</itemPath>
             <itemPath>../src/system_config/number8/system_interrupt.c</itemPath>
+            <itemPath>../src/system_config/number8/board_init.c</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../common/bootloader_options.c</itemPath>
@@ -298,6 +302,14 @@
         </C32CPP>
         <C32Global>
         </C32Global>
+      </item>
+      <item path="../src/system_config/number8/board_init.c"
+            ex="true"
+            overriding="false">
+      </item>
+      <item path="../src/system_config/number8/board_init.h"
+            ex="true"
+            overriding="false">
       </item>
       <item path="../src/system_config/number8/framework/system/clk/src/sys_clk_static.c"
             ex="true"
@@ -643,6 +655,14 @@
         </C32CPP>
         <C32Global>
         </C32Global>
+      </item>
+      <item path="../src/system_config/ethernet_sk2/board_init.c"
+            ex="true"
+            overriding="false">
+      </item>
+      <item path="../src/system_config/ethernet_sk2/board_init.h"
+            ex="true"
+            overriding="false">
       </item>
       <item path="../src/system_config/ethernet_sk2/framework/system/clk/src/sys_clk_static.c"
             ex="true"
