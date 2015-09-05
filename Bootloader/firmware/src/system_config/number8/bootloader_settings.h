@@ -51,7 +51,7 @@ const PORTS_BIT_POS SWITCH_PORT_BIT = PORTS_BIT_POS_2;
 /**
  * @brief True if the switch is active high, false if active low.
  */
-const bool SWITCH_ACTIVE_HIGH = true;
+const bool SWITCH_ACTIVE_HIGH = false;
 
 /**
  * @brief The LEDS to flash in bootloader mode.
