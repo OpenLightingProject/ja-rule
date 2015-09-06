@@ -82,7 +82,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #define SYS_CLK_UPLL_BEFORE_DIV2_FREQ       48000000ul
 #define SYS_CLK_CONFIG_PRIMARY_XTAL         8000000ul
 #define SYS_CLK_CONFIG_SECONDARY_XTAL       0ul
-
+   
 /*** Interrupt System Service Configuration ***/
 
 #define SYS_INT                     true
@@ -93,7 +93,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #define SYS_PORT_AD1PCFG        ~0xffff
 #define SYS_PORT_CNPUE          0x0
 #define SYS_PORT_CNEN           0x0
-
+  
 
 
 
@@ -105,14 +105,14 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 
 
-
+ 
 
 /*** Console System Service Configuration DISABLED ***/
 
 #define SYS_CONSOLE_MESSAGE(message)
 #define SYS_CONSOLE_PRINT(fmt, ...)
 
-
+ 
 /*** Command Processor System Service Configuration DISABLED ***/
 
 #define SYS_CMD_MESSAGE(message)
