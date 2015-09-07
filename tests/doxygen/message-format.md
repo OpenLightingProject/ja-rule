@@ -674,8 +674,8 @@ returned.
 If the device receives a command ID that is doesn't recognize it will return
 @ref RC_UNKNOWN.
 
-@section message_transport Transport Considerations
-@subsection message_transport_usb USB
+# Transport Considerations {#message-transport}
+## USB {#message-transport-usb}
 
 Communication with the Ja Rule device happens over a custom endpoint.
 

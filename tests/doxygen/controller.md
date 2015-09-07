@@ -1,9 +1,9 @@
-@page controller_sm Controller State Machine
-@brief The Controller State Machine
+Controller State Machine
+================================
 
 [TOC]
 
-@section controller_sm_overview Overview
+# Overview {#controller-overview}
 
 The state diagram for the controller is shown below.
 

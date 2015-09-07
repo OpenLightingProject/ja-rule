@@ -1,4 +1,4 @@
-Memory Organization
+Memory Organization  {#memory}
 ===============================
 
 [TOC]
@@ -113,7 +113,7 @@ covers the different types of memory sections and the use of linker scripts.
 We have a custom linker script for both the bootloader and the application.
 These can be found in the linker directory.
 
-@section memory_references References
+# References {#memory-references}
 
 - [Section 3, Memory Organization]
   (http://ww1.microchip.com/downloads/en/DeviceDoc/60001115H.pdf)
