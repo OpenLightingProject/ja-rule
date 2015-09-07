@@ -79,132 +79,132 @@ typedef enum {
   // Base commands
   /**
    * @brief Reset the device.
-   * See @ref message_cmd_reset.
+   * See @ref message-commands-reset.
    */
   COMMAND_RESET_DEVICE = 0x00,
 
   /**
    * @brief Change the operating mode of the device.
-   * @sa @ref message_cmd_setmode.
+   * @sa @ref message-commands-setmode.
    */
   COMMAND_SET_MODE = 0x01,
 
   /**
    * @brief Get the UID of the device.
-   * @sa @ref message_cmd_getuid.
+   * @sa @ref message-commands-getuid.
    */
   COMMAND_GET_UID = 0x02,
 
   // User Configuration
   /**
    * @brief Set the break time of the transceiver.
-   * See @ref message_cmd_setbreak
+   * See @ref message-commands-setbreaktime
    */
   COMMAND_SET_BREAK_TIME = 0x10,
 
   /**
    * @brief Fetch the current transceiver break time.
-   * See @ref message_cmd_getbreak
+   * See @ref message-commands-getbreaktime
    */
   COMMAND_GET_BREAK_TIME = 0x11,
 
   /**
    * @brief Set the mark-after-break time of the transceiver.
-   * See @ref message_cmd_setmark
+   * See @ref message-commands-setmarktime
    */
   COMMAND_SET_MARK_TIME = 0x12,
 
   /**
    * @brief Fetch the current transceiver mark-after-break time.
-   * See @ref message_cmd_getmark
+   * See @ref message-commands-getmarktime
    */
   COMMAND_GET_MARK_TIME = 0x13,
 
   // Advanced Configuration
   /**
    * @brief Set the RDM Broadcast timeout.
-   * See @ref message_cmd_setrdmbcasttimeout.
+   * See @ref message-commands-setbcasttimeout.
    */
   COMMAND_SET_RDM_BROADCAST_TIMEOUT = 0x20,
 
   /**
    * @brief Get the RDM Broadcast timeout.
-   * See @ref message_cmd_getrdmbcasttimeout.
+   * See @ref message-commands-getbcasttimeout.
    */
   COMMAND_GET_RDM_BROADCAST_TIMEOUT = 0x21,
 
   /**
    * @brief Set the RDM Response timeout.
-   * See @ref message_cmd_setrdmresponsetimeout.
+   * See @ref message-commands-setresponsetimeout.
    */
   COMMAND_SET_RDM_RESPONSE_TIMEOUT = 0x22,
 
   /**
    * @brief Get the RDM Response timeout.
-   * See @ref message_cmd_getrdmresponsetimeout.
+   * See @ref message-commands-getresponsetimeout.
    */
   COMMAND_GET_RDM_RESPONSE_TIMEOUT = 0x23,
 
   /**
    * @brief Set the RDM DUB Response limit.
-   * See @ref message_cmd_setrdmdubresponselimit.
+   * See @ref message-commands-setdublimit.
    */
   COMMAND_SET_RDM_DUB_RESPONSE_LIMIT = 0x24,
 
   /**
    * @brief Get the RDM Response limit.
-   * See @ref message_cmd_getrdmdubresponselimit.
+   * See @ref message-commands-getdublimit.
    */
   COMMAND_GET_RDM_DUB_RESPONSE_LIMIT = 0x25,
 
   /**
    * @brief Set the RDM responder delay.
-   * See @ref message_cmd_setrdmresponderdelay.
+   * See @ref message-commands-setresponderdelay.
    */
   COMMAND_SET_RDM_RESPONDER_DELAY = 0x26,
 
   /**
    * @brief Get the RDM responder delay.
-   * See @ref message_cmd_getrdmresponderdelay.
+   * See @ref message-commands-getresponderdelay.
    */
   COMMAND_GET_RDM_RESPONDER_DELAY = 0x27,
 
   /**
    * @brief Set the RDM responder jitter.
-   * See @ref message_cmd_setrdmresponderjitter.
+   * See @ref message-commands-setresponderjitter.
    */
   COMMAND_SET_RDM_RESPONDER_JITTER = 0x28,
 
   /**
    * @brief Get the RDM responder jitter.
-   * See @ref message_cmd_getrdmresponderjitter.
+   * See @ref message-commands-getresponderjitter.
    */
   COMMAND_GET_RDM_RESPONDER_JITTER = 0x29,
 
   // DMX
-  TX_DMX = 0x30,  //!< Transmit a DMX frame. See @ref message_cmd_txdmx.
+  TX_DMX = 0x30,  //!< Transmit a DMX frame. See @ref message-commands-txdmx.
 
   // RDM
   /**
    * @brief Send an RDM Discovery Unique Branch and wait for a response.
-   * See @ref message_cmd_rdmdub.
+   * See @ref message-commands-txrdmdub.
    */
   COMMAND_RDM_DUB_REQUEST = 0x40,
 
   /**
    * @brief Send an RDM Get / Set command.
-   * See @ref message_cmd_rdm
+   * See @ref message-commands-txrdm
    */
   COMMAND_RDM_REQUEST = 0x41,
 
   /**
    * @brief Send a broadcast RDM command.
-   * See @ref message_cmd_rdmbcast.
+   * See @ref message-commands-txrdmbroadcast.
    */
   COMMAND_RDM_BROADCAST_REQUEST = 0x42,
 
   // Experimental / testing
-  COMMAND_ECHO = 0xf0,  //!< Echo the data back. See @ref message_cmd_echo
+  COMMAND_ECHO = 0xf0,  //!< Echo the data back. See @ref message-commands-echo
   GET_FLAGS = 0xf2,  //!< Get the flags state
 } Command;
 
