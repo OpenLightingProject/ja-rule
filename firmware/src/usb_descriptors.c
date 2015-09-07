@@ -102,7 +102,7 @@ static const uint8_t g_config_descriptor[] = {
   1,  // Index value of this configuration
   0,  // Configuration string index
   USB_ATTRIBUTE_DEFAULT | USB_ATTRIBUTE_SELF_POWERED,  // Attributes
-  USB_POWER_CONSUMPTION,  // Max power consumption (2X mA)
+  USB_POWER_CONSUMPTION,  // Max power consumption
 
   // First CDC Interface Descriptor
   0x09,  // Size of this descriptor in bytes

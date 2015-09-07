@@ -54,16 +54,6 @@ const PORTS_BIT_POS SWITCH_PORT_BIT = PORTS_BIT_POS_7;
 const bool SWITCH_ACTIVE_HIGH = false;
 
 /**
- * @brief The port channel of the led that indicates bootloader mode.
- */
-const PORTS_CHANNEL LED_PORT_CHANNEL = PORT_CHANNEL_D;
-
-/**
- * @brief The port pin of the led that indicates bootloader mode.
- */
-const PORTS_BIT_POS LED_PORT_BIT = PORTS_BIT_POS_0;
-
-/**
  * @brief The LEDS to flash in bootloader mode.
  */
 const Bootloader_LEDs BOOTLOADER_LEDS = {
