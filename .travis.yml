@@ -50,7 +50,7 @@ before_install:
  - sudo add-apt-repository "deb http://llvm.org/apt/precise/ llvm-toolchain-precise main" -y
  - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
  # Required for Doxygen 1.8.8+
- - sudo add-apt-repository ppa:kedazo/ppa -y
+ - sudo add-apt-repository ppa:kedazo/doxygen-updates-precise -y
  # OLA, we need at least 0.9.6 with ByteString
  # TODO: switch this to the PPA when it's ready
  - sudo add-apt-repository http://nomis52.net/data/apt/ -y
