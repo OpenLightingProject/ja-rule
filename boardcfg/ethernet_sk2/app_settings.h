@@ -13,18 +13,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * system_settings.h
+ * ethernet_sk2/app_settings.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
-#define FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
+#ifndef BOARDCFG_ETHERNET_SK2_APP_SETTINGS_H_
+#define BOARDCFG_ETHERNET_SK2_APP_SETTINGS_H_
 
 #include "board_init.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * @file system_settings.h
@@ -180,12 +176,4 @@ extern "C" {
  * @}
  */
 
-#ifdef __cplusplus
-}
-#endif
-
-/**
- * @}
- */
-
-#endif  // FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
+#endif  // BOARDCFG_ETHERNET_SK2_APP_SETTINGS_H_

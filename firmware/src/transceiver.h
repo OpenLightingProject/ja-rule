@@ -242,9 +242,9 @@ typedef struct {
  * @param tx_callback The callback to run when a transceiver TX event occurs.
  * @param rx_callback The callback to run when a transceiver RX event occurs.
  *
- * If PIPELINE_TRANSCEIVER_TX_EVENT is defined in system_pipeline.h, the macro
+ * If PIPELINE_TRANSCEIVER_TX_EVENT is defined in app_pipeline.h, the macro
  * will override the value of tx_callback.
- * If PIPELINE_TRANSCEIVER_RX_EVENT is defined in system_pipeline.h, the macro
+ * If PIPELINE_TRANSCEIVER_RX_EVENT is defined in app_pipeline.h, the macro
  * will override the value of rx_callback.
  */
 void Transceiver_Initialize(const TransceiverHardwareSettings *settings,

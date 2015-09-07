@@ -5,6 +5,16 @@
                    displayName="Header Files"
                    projectFiles="true">
       <logicalFolder name="f2" displayName="app" projectFiles="true">
+        <logicalFolder name="f2" displayName="boardcfg" projectFiles="true">
+          <logicalFolder name="ethernet_sk2"
+                         displayName="ethernet_sk2"
+                         projectFiles="true">
+            <itemPath>../../../boardcfg/ethernet_sk2/bootloader_settings.h</itemPath>
+          </logicalFolder>
+          <logicalFolder name="number8" displayName="number8" projectFiles="true">
+            <itemPath>../../../boardcfg/number8/bootloader_settings.h</itemPath>
+          </logicalFolder>
+        </logicalFolder>
         <logicalFolder name="f1" displayName="system_config" projectFiles="true">
           <logicalFolder name="f1" displayName="ethernet_sk2" projectFiles="true">
             <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -16,7 +26,6 @@
             </logicalFolder>
             <itemPath>../src/system_config/ethernet_sk2/system_config.h</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_definitions.h</itemPath>
-            <itemPath>../src/system_config/ethernet_sk2/bootloader_settings.h</itemPath>
           </logicalFolder>
           <logicalFolder name="f2" displayName="number8" projectFiles="true">
             <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -28,7 +37,6 @@
             </logicalFolder>
             <itemPath>../src/system_config/number8/system_config.h</itemPath>
             <itemPath>../src/system_config/number8/system_definitions.h</itemPath>
-            <itemPath>../src/system_config/number8/bootloader_settings.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../../common/bootloader_options.h</itemPath>
@@ -190,6 +198,8 @@
     <Elem>/opt/microchip/harmony/v1_02</Elem>
     <Elem>../../../linker</Elem>
     <Elem>../src/system_config/number8</Elem>
+    <Elem>../../../boardcfg/ethernet_sk2</Elem>
+    <Elem>../../../boardcfg/number8</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -227,23 +237,11 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>true</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
-      <item path="../../../linker/bootloader_mx675F512H.ld"
+      <item path="../../../boardcfg/number8/bootloader_settings.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
-      <item path="../src/system_config/number8/bootloader_settings.h"
+      <item path="../../../linker/bootloader_mx675F512H.ld"
             ex="true"
             overriding="false">
         <C32>
@@ -395,7 +393,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../../../common;../src/system_config/ethernet_sk2;/opt/microchip/harmony/v1_02/framework;../src/system_config/ethernet_sk2/framework;../../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
+                  value="../src;../../../common;../../../boardcfg/ethernet_sk2;../src/system_config/ethernet_sk2;/opt/microchip/harmony/v1_02/framework;../src/system_config/ethernet_sk2/framework;../../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -638,23 +636,11 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>true</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
-      <item path="../../../linker/bootloader_mx795F512L.ld"
+      <item path="../../../boardcfg/ethernet_sk2/bootloader_settings.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
-      <item path="../src/system_config/ethernet_sk2/bootloader_settings.h"
+      <item path="../../../linker/bootloader_mx795F512L.ld"
             ex="true"
             overriding="false">
         <C32>
@@ -934,7 +920,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../../../common;../src/system_config/number8;/opt/microchip/harmony/v1_02/framework;../src/system_config/number8/framework;../../../../../../../opt/microchip/harmony/v1_02/framework"/>
+                  value="../src;../../../common;../../../boardcfg/number8;../src/system_config/number8;/opt/microchip/harmony/v1_02/framework;../src/system_config/number8/framework"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>

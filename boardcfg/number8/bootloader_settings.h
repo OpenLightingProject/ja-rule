@@ -13,12 +13,12 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * ethernet_sk2/bootloader_settings.h
+ * number8/bootloader_settings.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef BOOTLOADER_FIRMWARE_SRC_SYSTEM_CONFIG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_
-#define BOOTLOADER_FIRMWARE_SRC_SYSTEM_CONFIG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_
+#ifndef BOARDCFG_NUMBER8_BOOTLOADER_SETTINGS_H_
+#define BOARDCFG_NUMBER8_BOOTLOADER_SETTINGS_H_
 
 #include <stdbool.h>
 #include "bootloader.h"
@@ -46,7 +46,7 @@ const PORTS_CHANNEL SWITCH_PORT_CHANNEL = PORT_CHANNEL_D;
 /**
  * @brief The port pin of the switch that controls bootloader mode.
  */
-const PORTS_BIT_POS SWITCH_PORT_BIT = PORTS_BIT_POS_7;
+const PORTS_BIT_POS SWITCH_PORT_BIT = PORTS_BIT_POS_2;
 
 /**
  * @brief True if the switch is active high, false if active low.
@@ -64,14 +64,14 @@ const Bootloader_LEDs BOOTLOADER_LEDS = {
       .port_bit = PORTS_BIT_POS_0
     },
     {
-      .port_channel = PORT_CHANNEL_D,
-      .port_bit = PORTS_BIT_POS_1
+      .port_channel = PORT_CHANNEL_C,
+      .port_bit = PORTS_BIT_POS_13
     },
     {
       .port_channel = PORT_CHANNEL_D,
-      .port_bit = PORTS_BIT_POS_2
+      .port_bit = PORTS_BIT_POS_11
     },
   }
 };
 
-#endif  // BOOTLOADER_FIRMWARE_SRC_SYSTEM_CONFIG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_
+#endif  // BOARDCFG_NUMBER8_BOOTLOADER_SETTINGS_H_

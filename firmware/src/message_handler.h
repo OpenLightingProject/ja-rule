@@ -42,7 +42,7 @@ extern "C" {
  * @brief Initialize the Message Handler sub-system.
  * @param tx_cb The callback to use for sending messages.
  *
- * If PIPELINE_TRANSPORT_TX is defined in system_pipeline.h, the macro
+ * If PIPELINE_TRANSPORT_TX is defined in app_pipeline.h, the macro
  * will override the tx_cb argument.
  */
 void MessageHandler_Initialize(TransportTXFunction tx_cb);

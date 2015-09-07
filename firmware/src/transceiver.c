@@ -26,6 +26,7 @@
 #include "system/int/sys_int.h"
 #include "system/clk/sys_clk.h"
 
+#include "app_pipeline.h"
 #include "coarse_timer.h"
 #include "constants.h"
 #include "dmx_spec.h"
@@ -35,11 +36,10 @@
 #include "setting_macros.h"
 #include "syslog.h"
 #include "system_definitions.h"
-#include "system_pipeline.h"
 #include "transceiver_timing.h"
 #include "random.h"
 
-#include "system_settings.h"
+#include "app_settings.h"
 
 enum { BUFFER_SIZE = DMX_FRAME_SIZE + 1u };
 

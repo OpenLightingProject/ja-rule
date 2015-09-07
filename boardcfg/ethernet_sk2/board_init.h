@@ -13,29 +13,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * number8/board_init.h
+ * ethernet_sk2/board_init.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef FIRMWARE_SRC_SYSTEM_CONFIG_NUMBER8_BOARD_INIT_H_
-#define FIRMWARE_SRC_SYSTEM_CONFIG_NUMBER8_BOARD_INIT_H_
+#ifndef BOARDCFG_ETHERNET_SK2_BOARD_INIT_H_
+#define BOARDCFG_ETHERNET_SK2_BOARD_INIT_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void Number8_PreAppHook();
-
-/**
- * @}
- */
+void EthernetSK2_PreAppHook();
 
 #ifdef __cplusplus
 }
 #endif
 
-/**
- * @}
- */
-
-#endif  // FIRMWARE_SRC_SYSTEM_CONFIG_NUMBER8_BOARD_INIT_H_
+#endif  // BOARDCFG_ETHERNET_SK2_BOARD_INIT_H_
