@@ -32,9 +32,11 @@ IGNORED_FILES = [
 ]
 
 IGNORED_DIRECTORIES = [
+    'Bootloader/firmware/src/system_config',
     'firmware/src/system_config',
     'src/system_config',
     'tests/src/system_config',
+    'tests/boot_src/system_config',
 ]
 
 def Usage(arg0):
@@ -193,11 +195,11 @@ def GetDirectoryLicences(root_dir):
     for sub_dir in subdirs:
       full_path = os.path.join(dir_name, sub_dir)
       relative_path = os.path.relpath(full_path, root_dir)
-      include_directory = True
+      skip_directory = False
       for ignored_directory in IGNORED_DIRECTORIES:
-        include_directory &= relative_path.startswith(ignored_directory)
-      if include_directory:
-        licences[os.path.join(dir_name, sub_dir)] = licence
+        skip_directory |= relative_path.startswith(ignored_directory)
+      if not skip_directory:
+        licences[full_path] = licence
   return licences
 
 def CheckLicenceForDir(dir_name, licence, diff, fix):
@@ -244,7 +246,7 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
       first_line = None
   # strip the trailing newline off as we don't actually want it
   header = f.read(header_size).rstrip('\n')
-  file_name_line = f.readline()  
+  file_name_line = f.readline()
   f.close()
   if header == licence:
     expected_line = TransformLine(os.path.basename(file_name), lang)

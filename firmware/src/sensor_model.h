@@ -44,16 +44,9 @@ extern "C" {
 extern const ModelEntry SENSOR_MODEL_ENTRY;
 
 /**
- * @brief The settings to use for the Sensor RDM Model.
- */
-typedef struct {
-} SensorModelSettings;
-
-/**
  * @brief Initialize the sensor model.
- * @param settings The settings for this model.
  */
-void SensorModel_Initialize(const SensorModelSettings *settings);
+void SensorModel_Initialize();
 
 #ifdef __cplusplus
 }

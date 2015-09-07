@@ -33,6 +33,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "uid.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,17 +42,17 @@ extern "C" {
 /**
  * @brief The root sub device.
  */
-static const uint16_t SUBDEVICE_ROOT = 0;
+static const uint16_t SUBDEVICE_ROOT = 0u;
 
 /**
  * @brief All sub devices.
  */
-static const uint16_t SUBDEVICE_ALL = 0xffff;
+static const uint16_t SUBDEVICE_ALL = 0xffffu;
 
 /**
  * @brief The maximum index for a sub device.
  */
-static const uint16_t SUBDEVICE_MAX = 0x0200;
+static const uint16_t SUBDEVICE_MAX = 0x0200u;
 
 /**
  * @brief The maximum number of product detail ids a responder can have.
@@ -60,47 +62,72 @@ enum { MAX_PRODUCT_DETAILS = 6 };
 /**
  * @brief The RDM Sub Start Code.
  */
-static const uint8_t SUB_START_CODE = 0x01;
+static const uint8_t SUB_START_CODE = 0x01u;
 
 /**
  * @brief The number of bytes in an RDM checksum
  */
-static const uint8_t RDM_CHECKSUM_LENGTH = 2;
+static const uint8_t RDM_CHECKSUM_LENGTH = 2u;
 
 /**
  * @brief The location of the message length field in a frame.
  */
-static const uint8_t MESSAGE_LENGTH_OFFSET = 2;
+static const uint8_t MESSAGE_LENGTH_OFFSET = 2u;
 
 /**
  * @brief The location of the parameter data length in a frame.
  */
-static const uint8_t RDM_PARAM_DATA_LENGTH_OFFSET = 23;
+static const uint8_t RDM_PARAM_DATA_LENGTH_OFFSET = 23u;
 
 /**
  * @brief The location of the parameter data in a frame.
  */
-static const uint8_t RDM_PARAM_DATA_OFFSET = 24;
+static const uint8_t RDM_PARAM_DATA_OFFSET = 24u;
 
 /**
  * @brief The RDM version we support.
  */
-static const uint16_t RDM_VERSION = 0x0100;
+static const uint16_t RDM_VERSION = 0x0100u;
 
 /**
  * @brief The maximum value for a DMX start address.
  */
-static const uint16_t MAX_DMX_START_ADDRESS = 512;
+static const uint16_t MAX_DMX_START_ADDRESS = 512u;
 
 /**
  * @brief The 'unpatched' DMX start address.
  */
-static const uint16_t INVALID_DMX_START_ADDRESS = 0xffff;
+static const uint16_t INVALID_DMX_START_ADDRESS = 0xffffu;
+
+/**
+ * @brief Indicates the responder is a managed proxy.
+ */
+static const uint16_t MUTE_MANAGED_PROXY_FLAG = 0x01;
+
+/**
+ * @brief Indicates the responder has subdevices.
+ */
+static const uint16_t MUTE_SUBDEVICE_FLAG = 0x02;
+
+/**
+ * @brief Indicates the responder is in bootloader mode.
+ */
+static const uint16_t MUTE_BOOTLOADER_FLAG = 0x04;
+
+/**
+ * @brief Indicates the responder is a proxy.
+ */
+static const uint16_t MUTE_PROXY_FLAG = 0x08;
 
 /**
  * @brief The size of the default strings used in RDM.
  */
 enum { RDM_DEFAULT_STRING_SIZE = 32 };
+
+/**
+ * @brief The size of the language strings used in RDM.
+ */
+enum { RDM_LANGUAGE_STRING_SIZE = 2 };
 
 /**
  * @brief The size of a DUB response.
@@ -111,13 +138,6 @@ enum { DUB_RESPONSE_LENGTH = 24 };
  * @brief The size of an RDM frame.
  */
 enum { RDM_MAX_FRAME_SIZE = 257 };
-
-/**
- * @brief The length of a UID.
- */
-enum {
-  UID_LENGTH = 6  //!< The size of a UID.
-};
 
 /**
  * @brief Maximum size of RDM Parameter Data.
@@ -139,22 +159,32 @@ enum { SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK = 0x02 };
 /**
  * @brief The all-sensors value.
  */
-static const uint8_t ALL_SENSORS = 0xff;
+static const uint8_t ALL_SENSORS = 0xffu;
 
 /**
  * @brief Indicates that recorded / highest / lowest values aren't supported.
  */
-static const uint16_t SENSOR_VALUE_UNSUPPORTED = 0;
+static const uint16_t SENSOR_VALUE_UNSUPPORTED = 0u;
+
+/*
+ * @brief The maximum number of status messages per frame.
+ */
+static const unsigned int MAX_STATUS_MESSAGES_PER_FRAME = 21u;
 
 /*
  * @brief The maximum number of slot info entries in a RDM frame.
  */
-static const unsigned int MAX_SLOT_INFO_PER_FRAME = 46;
+static const unsigned int MAX_SLOT_INFO_PER_FRAME = 46u;
 
 /**
  * @brief The maximum number of default slot value entries in a RDM frame.
  */
-static const unsigned int MAX_DEFAULT_SLOT_VALUE_PER_FRAME = 77;
+static const unsigned int MAX_DEFAULT_SLOT_VALUE_PER_FRAME = 77u;
+
+/**
+ * @brief The maximum pin code from E1.37-1.
+ */
+static const uint16_t MAX_PIN_CODE = 9999u;
 
 /**
  * @brief The size of the DNS Host Name field from E1.37-2.
@@ -177,17 +207,17 @@ enum {
 /**
  * @brief Indicates no route is assigned.
  */
-static const uint32_t NO_DEFAULT_ROUTE = 0;
+static const uint32_t NO_DEFAULT_ROUTE = 0u;
 
 /**
  * @brief Indicates no IP address is configured.
  */
-static const uint32_t IPV4_UNCONFIGURED = 0;
+static const uint32_t IPV4_UNCONFIGURED = 0u;
 
 /**
  * @brief The maximum netmask value.
  */
-static const uint8_t MAX_NETMASK = 32;
+static const uint8_t MAX_NETMASK = 32u;
 
 /**
  * @brief The size of a MAC address
@@ -351,7 +381,10 @@ typedef enum {
  */
 typedef enum {
   PID_DEVICE_MODEL = 0x8002,
-  PID_DEVICE_MODEL_LIST = 0x8003
+  PID_DEVICE_MODEL_LIST = 0x8003,
+  // 8004 is reserved for MODEL_ID_DESCRIPTION if we ever implement it
+  PID_PIXEL_TYPE = 0x8005,
+  PID_PIXEL_COUNT = 0x8006
 } OpenLightingManufacturerPID;
 
 /**
@@ -374,6 +407,16 @@ typedef enum {
   NR_ENDPOINT_NUMBER_INVALID = 0x0011
 } RDMNackReason;
 
+typedef enum {
+  STATUS_NONE = 0x0,
+  STATUS_GET_LAST_MESSAGE = 0x1,
+  STATUS_ADVISORY = 0x2,
+  STATUS_WARNING = 0x3,
+  STATUS_ERROR = 0x4,
+  STATUS_ADVISORY_CLEARED = 0x12,
+  STATUS_WARNING_CLEARED = 0x13,
+  STATUS_ERROR_CLEARED = 0x14,
+} RDMStatusType;
 
 /**
  * @brief RDM Product Category codes from E1.20.
@@ -550,6 +593,11 @@ typedef enum {
 } RDMDisplayInvert;
 
 typedef enum {
+  SELF_TEST_OFF = 0x00,
+  SELF_TEST_ALL = 0xff,
+} RDMSelfTest;
+
+typedef enum {
   POWER_STATE_FULL_OFF = 0x00,
   POWER_STATE_SHUTDOWN = 0x01,
   POWER_STATE_STANDBY = 0x02,
@@ -649,6 +697,24 @@ typedef enum {
   PREFIX_YOTTA = 0x1a,
 } __attribute__((packed)) RDMPrefix;
 
+typedef enum {
+  DS_NOT_DEFINED = 0x0,
+  DS_BIT_FIELD = 0x01,
+  DS_ASCII = 0x02,
+  DS_UNSIGNED_BYTE = 0x03,
+  DS_SIGNED_BYTE = 0x04,
+  DS_UNSIGNED_WORD = 0x05,
+  DS_SIGNED_WORD = 0x06,
+  DS_UNSIGNED_DWORD = 0x07,
+  DS_SIGNED_DWORD = 0x08,
+} RDMDataType;
+
+typedef enum {
+  CC_GET = 0x01,
+  CC_SET = 0x02,
+  CC_GET_SET = 0x03,
+} RDMCommandClassSupported;
+
 /**
  * @brief The RDM slot types, from table C-1 of the standard.
  */
@@ -710,6 +776,77 @@ typedef enum {
   SD_UNDEFINED = 0xffff,
 } RDMSlotCategory;
 
+typedef enum {
+  IDENTIFY_MODE_QUIET = 0x00,
+  IDENTIFY_MODE_LOUD = 0xff,
+} RDMIdentifyMode;
+
+typedef enum {
+  PRESET_PLAYBACK_OFF = 0x0000,
+  PRESET_PLAYBACK_ALL = 0xffff,
+} RDMPresetPlayback;
+
+typedef enum {
+  PRESET_NOT_PROGRAMMED = 0x00,
+  PRESET_PROGRAMMED = 0x01,
+  PRESET_PROGRAMMED_READ_ONLY = 0x02
+} RDMPresetProgrammed;
+
+typedef enum {
+  MERGE_MODE_DEFAULT = 0x00,
+  MERGE_MODE_HTP = 0x01,
+  MERGE_MODE_LTP = 0x02,
+  MERGE_MODE_DMX_ONLY = 0x03,
+  MERGE_MODE_OTHER = 0xff,
+} RDMMergeMode;
+
+typedef enum {
+  STS_CAL_FAIL = 0x0001,
+  STS_SENS_NOT_FOUND = 0x0002,
+  STS_SENS_ALWAYS_ON = 0x0003,
+  STS_FEEDBACK_ERROR = 0x0004,
+  STS_INDEX_ERROR = 0x0005,
+  STS_LAMP_DOUSED = 0x0011,
+  STS_LAMP_STRIKE = 0x0012,
+  STS_LAMP_ACCESS_OPEN = 0x0013,
+  STS_LAMP_ALWAYS_ON = 0x0014,
+  STS_OVERTEMP = 0x0021,
+  STS_UNDERTEMP = 0x0022,
+  STS_SENS_OUT_RANGE = 0x0023,
+  STS_OVERVOLTAGE_PHASE = 0x0031,
+  STS_UNDERVOLTAGE_PHASE = 0x0032,
+  STS_OVERCURRENT = 0x0033,
+  STS_UNDERCURRENT = 0x0034,
+  STS_PHASE = 0x0035,
+  STS_PHASE_ERROR = 0x0036,
+  STS_AMPS = 0x0037,
+  STS_VOLTS = 0x0038,
+  STS_DIMSLOT_OCCUPIED = 0x0041,
+  STS_BREAKER_TRIP = 0x0042,
+  STS_WATTS = 0x0043,
+  STS_DIM_FAILURE = 0x0044,
+  STS_DIM_PANIC = 0x0045,
+  STS_LOAD_FAILURE = 0x0046,
+  STS_READY = 0x0050,
+  STS_NOT_READY = 0x0051,
+  STS_LOW_FLUID = 0x0052,
+  STS_EEPROM_ERROR = 0x0060,
+  STS_RAM_ERROR = 0x0061,
+  STS_FPGA_ERROR = 0x0062,
+  STS_PROXY_BROADCAST_DROPPED = 0x0070,
+  STS_ASC_RXOK = 0x0071,
+  STS_ASC_DROPPED = 0x0072,
+  STS_DMXNSCNONE = 0x0080,
+  STS_DMXNSCLOSS = 0x0081,
+  STS_DMXNSCERROR = 0x0082,
+  STS_DMXNSC_OK = 0x0083,
+} RDMStatusMessageId;
+
+typedef enum {
+  STS_OLP_TESTING = 0x8000,
+  STS_OLP_SELFTEST_PASSED = 0x8001,
+  STS_OLP_SELFTEST_FAILED = 0x8002,
+} OpenLightingStatusIdType;
 
 #ifdef __cplusplus
 }

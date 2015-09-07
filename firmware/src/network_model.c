@@ -53,7 +53,7 @@ static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
 static const char DEFAULT_HOSTNAME[] = "responder";
 static const char DEFAULT_DOMAINNAME[] = "local";
-static const uint32_t DHCP_FAILURE_RATIO = 3;  // Fail 1 / n DHCP requests.
+static const uint32_t DHCP_FAILURE_RATIO = 3u;  // Fail 1 / n DHCP requests.
 
 static const ResponderDefinition RESPONDER_DEFINITION;
 
@@ -65,6 +65,8 @@ typedef struct {
   uint32_t id;
   uint16_t hardware_type;
   uint8_t hardware_address[MAC_ADDRESS_SIZE];
+  bool supports_dhcp;
+  bool dhcp_can_fail;
 } InterfaceDefinition;
 
 /*
@@ -108,6 +110,8 @@ static const InterfaceDefinition INTERFACE_DEFINITIONS[] = {
     .hardware_type = ETHERNET_HARDWARE_TYPE,
     // Locally administered MAC address
     .hardware_address = {0x52, 0x12, 0x34, 0x56, 0x78, 0x9a},
+    .supports_dhcp = true,
+    .dhcp_can_fail = false
   },
   {
     .label = IPSEC_INTERFACE_NAME,
@@ -115,6 +119,8 @@ static const InterfaceDefinition INTERFACE_DEFINITIONS[] = {
     .hardware_type = IPSEC_HARDWARE_TYPE,
     // No h/w address for ptp links
     .hardware_address = {0, 0, 0, 0, 0, 0},
+    .supports_dhcp = false,
+    .dhcp_can_fail = false,
   },
   {
     .label = WIFI_INTERFACE_NAME,
@@ -122,6 +128,8 @@ static const InterfaceDefinition INTERFACE_DEFINITIONS[] = {
     .hardware_type = ETHERNET_HARDWARE_TYPE,
     // Local admin MAC address
     .hardware_address = {0x52, 0xab, 0xcd, 0xef, 0x01, 0x23},
+    .supports_dhcp = true,
+    .dhcp_can_fail = true
   },
 };
 
@@ -147,8 +155,8 @@ static int LookupIndex(unsigned int id) {
  *
  * This randomly fails and returns 0.0.0.0.
  */
-static uint32_t GetDHCPAddress() {
-  if (Random_PseudoGet() % DHCP_FAILURE_RATIO == 0) {
+static uint32_t GetDHCPAddress(bool can_fail) {
+  if (can_fail && Random_PseudoGet() % DHCP_FAILURE_RATIO == 0) {
     // fail 1/3 of the time so we can test zeroconf
     return IPV4_UNCONFIGURED;
   }
@@ -161,16 +169,17 @@ static uint32_t GetDHCPAddress() {
 static void UseZeroconfOrUnassign(InterfaceState *interface) {
   if (interface->current_zeroconf_mode) {
     interface->current_ip = 0xa9fe0000 + (Random_PseudoGet() % 0xfeff);
-    interface->current_netmask = 16;
+    interface->current_netmask = 16u;
     interface->config_source = CONFIG_SOURCE_ZEROCONF;
   } else {
     interface->config_source = CONFIG_SOURCE_NONE;
     interface->current_ip = IPV4_UNCONFIGURED;
-    interface->current_netmask = 0;
+    interface->current_netmask = 0u;
   }
 }
 
-static void ConfigureInterface(InterfaceState *interface) {
+static void ConfigureInterface(unsigned int index) {
+  InterfaceState *interface = &g_network_model.interfaces[index];
   interface->current_dhcp_mode = interface->configured_dhcp_mode;
   interface->current_zeroconf_mode = interface->configured_zeroconf_mode;
 
@@ -181,9 +190,10 @@ static void ConfigureInterface(InterfaceState *interface) {
     interface->current_netmask = interface->configured_netmask;
     interface->config_source = CONFIG_SOURCE_STATIC;
   } else if (interface->configured_dhcp_mode &&
-             (dhcp_address = GetDHCPAddress())) {
+             (dhcp_address =
+              GetDHCPAddress(INTERFACE_DEFINITIONS[index].dhcp_can_fail))) {
     interface->current_ip = dhcp_address;
-    interface->current_netmask = 8;
+    interface->current_netmask = 8u;
     interface->config_source = CONFIG_SOURCE_DHCP;
   } else {
     UseZeroconfOrUnassign(interface);
@@ -195,7 +205,7 @@ static void ConfigureInterface(InterfaceState *interface) {
 int NetworkModel_GetListInterfaces(const RDMHeader *header,
                                    UNUSED const uint8_t *param_data) {
   uint8_t *ptr = g_rdm_buffer + sizeof(RDMHeader);
-  unsigned int i = 0;
+  unsigned int i = 0u;
   for (; i < g_network_model.interface_count; i++) {
     ptr = PushUInt32(ptr, INTERFACE_DEFINITIONS[i].id);
     ptr = PushUInt16(ptr, INTERFACE_DEFINITIONS[i].hardware_type);
@@ -250,8 +260,9 @@ int NetworkModel_GetDHCPMode(const RDMHeader *header,
   unsigned int offset = sizeof(RDMHeader);
   memcpy(g_rdm_buffer + offset, param_data, INTERFACE_ID_SIZE);
   offset += INTERFACE_ID_SIZE;
-  g_rdm_buffer[offset++] =
+  g_rdm_buffer[offset] =
       g_network_model.interfaces[index].configured_dhcp_mode;
+  offset++;
   return RDMResponder_AddHeaderAndChecksum(header, ACK, offset);
 }
 
@@ -266,7 +277,7 @@ int NetworkModel_SetDHCPMode(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  if (index == IPSEC_INTERFACE_ID) {
+  if (!INTERFACE_DEFINITIONS[index].supports_dhcp) {
     return RDMResponder_BuildNack(header, NR_ACTION_NOT_SUPPORTED);
   }
 
@@ -302,7 +313,7 @@ int NetworkModel_SetZeroconfMode(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  if (index == IPSEC_INTERFACE_ID) {
+  if (!INTERFACE_DEFINITIONS[index].supports_dhcp) {
     return RDMResponder_BuildNack(header, NR_ACTION_NOT_SUPPORTED);
   }
 
@@ -326,7 +337,7 @@ int NetworkModel_GetCurrentAddress(const RDMHeader *header,
   ptr += INTERFACE_ID_SIZE;
   ptr = PushUInt32(ptr, interface->current_ip);
   *ptr++ = interface->current_netmask;
-  if (index == IPSEC_INTERFACE_ID) {
+  if (!INTERFACE_DEFINITIONS[index].supports_dhcp) {
     *ptr++ = DHCP_STATUS_INACTIVE;
   } else {
     *ptr++ = (interface->config_source == CONFIG_SOURCE_DHCP ?
@@ -401,10 +412,11 @@ int NetworkModel_RenewDHCP(const RDMHeader *header,
       UseZeroconfOrUnassign(interface);
     }
   } else {
-    uint32_t dhcp_address = 0;
-    if (dhcp_address = GetDHCPAddress()) {
+    uint32_t dhcp_address = GetDHCPAddress(
+        INTERFACE_DEFINITIONS[index].dhcp_can_fail);
+    if (dhcp_address) {
       interface->current_ip = dhcp_address;
-      interface->current_netmask = 8;
+      interface->current_netmask = 8u;
       interface->config_source = CONFIG_SOURCE_DHCP;
     } else {
       UseZeroconfOrUnassign(interface);
@@ -445,7 +457,7 @@ int NetworkModel_ApplyInterfaceConfiguration(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
 
-  ConfigureInterface(&g_network_model.interfaces[index]);
+  ConfigureInterface(index);
   return RDMResponder_BuildSetAck(header);
 }
 
@@ -459,7 +471,7 @@ int NetworkModel_GetDefaultRoute(const RDMHeader *header,
 
 int NetworkModel_SetDefaultRoute(const RDMHeader *header,
                                  const uint8_t *param_data) {
-  if (header->param_data_length != 2 * sizeof(uint32_t)) {
+  if (header->param_data_length != 2u * sizeof(uint32_t)) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
@@ -516,7 +528,7 @@ int NetworkModel_GetHostname(const RDMHeader *header,
 
 int NetworkModel_SetHostname(const RDMHeader *header,
                              const uint8_t *param_data) {
-  if (header->param_data_length == 0 ||
+  if (header->param_data_length == 0u ||
       header->param_data_length > DNS_HOST_NAME_SIZE) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
@@ -547,38 +559,38 @@ int NetworkModel_SetDomainName(const RDMHeader *header,
 
 // Public Functions
 // ----------------------------------------------------------------------------
-void NetworkModel_Initialize(const NetworkModelSettings *settings) {
+void NetworkModel_Initialize() {
   // Initialize the InterfaceState array to something interesting.
 
   // eth0 is 192.168.0.1/24
   g_interfaces[0].configured_dhcp_mode = false;
   g_interfaces[0].configured_zeroconf_mode = false;
-  g_interfaces[0].configured_ip = 0xc0a80001;
-  g_interfaces[0].configured_netmask = 24;
+  g_interfaces[0].configured_ip = 0xc0a80001u;
+  g_interfaces[0].configured_netmask = 24u;
 
   // IPSEC is 10.1.1.1/31
   g_interfaces[1].configured_dhcp_mode = false;
   g_interfaces[1].configured_zeroconf_mode = false;
-  g_interfaces[1].configured_ip = 167837953;
-  g_interfaces[1].configured_netmask = 31;
+  g_interfaces[1].configured_ip = 167837953u;
+  g_interfaces[1].configured_netmask = 31u;
 
   // WLAN iface is DHCP
   g_interfaces[2].configured_dhcp_mode = true;
   g_interfaces[2].configured_zeroconf_mode = true;
   g_interfaces[2].configured_ip = IPV4_UNCONFIGURED;
-  g_interfaces[2].configured_netmask = 0;
+  g_interfaces[2].configured_netmask = 0u;
 
   g_network_model.interface_count = NUMBER_OF_INTERFACES;
   g_network_model.interfaces = g_interfaces;
 
-  unsigned int i = 0;
+  unsigned int i = 0u;
   for (; i < g_network_model.interface_count; i++) {
-    ConfigureInterface(&g_network_model.interfaces[i]);
+    ConfigureInterface(i);
   }
 
   g_network_model.default_interface_route = NO_DEFAULT_ROUTE;
   g_network_model.default_route = NO_DEFAULT_ROUTE;
-  for (i = 0; i < NUMBER_OF_NAMESERVERS; i++) {
+  for (i = 0u; i < NUMBER_OF_NAMESERVERS; i++) {
     g_network_model.nameservers[i] = IPV4_UNCONFIGURED;
   }
   RDMUtil_StringCopy(g_network_model.hostname, DNS_HOST_NAME_SIZE,
@@ -588,30 +600,20 @@ void NetworkModel_Initialize(const NetworkModelSettings *settings) {
 }
 
 static void NetworkModel_Activate() {
-  g_responder.def = &RESPONDER_DEFINITION;
+  g_responder->def = &RESPONDER_DEFINITION;
   RDMResponder_ResetToFactoryDefaults();
 }
 
 static void NetworkModel_Deactivate() {}
 
-static int NetworkModel_Ioctl(ModelIoctl command, uint8_t *data,
-                             unsigned int length) {
-  switch (command) {
-    case IOCTL_GET_UID:
-      if (length != UID_LENGTH) {
-        return 0;
-      }
-      RDMResponder_GetUID(data);
-      return 1;
-    default:
-      return 0;
-  }
-}
-
 static int NetworkModel_HandleRequest(const RDMHeader *header,
                                      const uint8_t *param_data) {
-  if (!RDMUtil_RequiresAction(g_responder.uid, header->dest_uid)) {
+  if (!RDMUtil_RequiresAction(g_responder->uid, header->dest_uid)) {
     return RDM_RESPONDER_NO_RESPONSE;
+  }
+
+  if (header->command_class == DISCOVERY_COMMAND) {
+    return RDMResponder_HandleDiscovery(header, param_data);
   }
 
   uint16_t sub_device = ntohs(header->sub_device);
@@ -619,10 +621,6 @@ static int NetworkModel_HandleRequest(const RDMHeader *header,
   // No subdevice support for now.
   if (sub_device != SUBDEVICE_ROOT && sub_device != SUBDEVICE_ALL) {
     return RDMResponder_BuildNack(header, NR_SUB_DEVICE_OUT_OF_RANGE);
-  }
-
-  if (header->command_class == DISCOVERY_COMMAND) {
-    return RDMResponder_HandleDiscovery(header, param_data);
   }
 
   // This model has no sub devices.
@@ -639,68 +637,68 @@ const ModelEntry NETWORK_MODEL_ENTRY = {
   .model_id = NETWORK_MODEL_ID,
   .activate_fn = NetworkModel_Activate,
   .deactivate_fn = NetworkModel_Deactivate,
-  .ioctl_fn = NetworkModel_Ioctl,
+  .ioctl_fn = RDMResponder_Ioctl,
   .request_fn = NetworkModel_HandleRequest,
   .tasks_fn = NetworkModel_Tasks
 };
 
 static const PIDDescriptor PID_DESCRIPTORS[] = {
-  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0,
+  {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0, (PIDCommandHandler) NULL},
-  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0,
+  {PID_DEVICE_INFO, RDMResponder_GetDeviceInfo, 0u, (PIDCommandHandler) NULL},
+  {PID_PRODUCT_DETAIL_ID_LIST, RDMResponder_GetProductDetailIds, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0,
+  {PID_DEVICE_MODEL_DESCRIPTION, RDMResponder_GetDeviceModelDescription, 0u,
     (PIDCommandHandler) NULL},
-  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0,
+  {PID_MANUFACTURER_LABEL, RDMResponder_GetManufacturerLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0,
+  {PID_DEVICE_LABEL, RDMResponder_GetDeviceLabel, 0u,
     RDMResponder_SetDeviceLabel},
-  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0,
+  {PID_SOFTWARE_VERSION_LABEL, RDMResponder_GetSoftwareVersionLabel, 0u,
     (PIDCommandHandler) NULL},
-  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0,
+  {PID_IDENTIFY_DEVICE, RDMResponder_GetIdentifyDevice, 0u,
     RDMResponder_SetIdentifyDevice},
-  {PID_LIST_INTERFACES, NetworkModel_GetListInterfaces, 0,
+  {PID_LIST_INTERFACES, NetworkModel_GetListInterfaces, 0u,
     (PIDCommandHandler) NULL},
-  {PID_INTERFACE_LABEL, NetworkModel_GetInterfaceLabel, 4,
+  {PID_INTERFACE_LABEL, NetworkModel_GetInterfaceLabel, 4u,
     (PIDCommandHandler) NULL},
-  {PID_INTERFACE_HARDWARE_ADDRESS_TYPE1, NetworkModel_GetHardwareAddress, 4,
+  {PID_INTERFACE_HARDWARE_ADDRESS_TYPE1, NetworkModel_GetHardwareAddress, 4u,
     (PIDCommandHandler) NULL},
-  {PID_IPV4_DHCP_MODE, NetworkModel_GetDHCPMode, 4, NetworkModel_SetDHCPMode},
-  {PID_IPV4_ZEROCONF_MODE, NetworkModel_GetZeroconfMode, 4,
+  {PID_IPV4_DHCP_MODE, NetworkModel_GetDHCPMode, 4u, NetworkModel_SetDHCPMode},
+  {PID_IPV4_ZEROCONF_MODE, NetworkModel_GetZeroconfMode, 4u,
     NetworkModel_SetZeroconfMode},
-  {PID_IPV4_CURRENT_ADDRESS, NetworkModel_GetCurrentAddress, 4,
+  {PID_IPV4_CURRENT_ADDRESS, NetworkModel_GetCurrentAddress, 4u,
     (PIDCommandHandler) NULL},
-  {PID_IPV4_STATIC_ADDRESS, NetworkModel_GetStaticAddress, 4,
+  {PID_IPV4_STATIC_ADDRESS, NetworkModel_GetStaticAddress, 4u,
     NetworkModel_SetStaticAddress},
-  {PID_INTERFACE_RENEW_DHCP, (PIDCommandHandler) NULL, 0,
+  {PID_INTERFACE_RENEW_DHCP, (PIDCommandHandler) NULL, 0u,
     NetworkModel_RenewDHCP},
-  {PID_INTERFACE_RELEASE_DHCP, (PIDCommandHandler) NULL, 0,
+  {PID_INTERFACE_RELEASE_DHCP, (PIDCommandHandler) NULL, 0u,
     NetworkModel_ReleaseDHCP},
-  {PID_INTERFACE_APPLY_CONFIGURATION, (PIDCommandHandler) NULL, 4,
+  {PID_INTERFACE_APPLY_CONFIGURATION, (PIDCommandHandler) NULL, 4u,
     NetworkModel_ApplyInterfaceConfiguration},
-  {PID_IPV4_DEFAULT_ROUTE, NetworkModel_GetDefaultRoute, 0,
+  {PID_IPV4_DEFAULT_ROUTE, NetworkModel_GetDefaultRoute, 0u,
     NetworkModel_SetDefaultRoute},
-  {PID_DNS_NAME_SERVER, NetworkModel_GetNameServer, 1,
+  {PID_DNS_NAME_SERVER, NetworkModel_GetNameServer, 1u,
     NetworkModel_SetNameServer},
-  {PID_DNS_HOSTNAME, NetworkModel_GetHostname, 0, NetworkModel_SetHostname},
-  {PID_DNS_DOMAIN_NAME, NetworkModel_GetDomainName, 0,
+  {PID_DNS_HOSTNAME, NetworkModel_GetHostname, 0u, NetworkModel_SetHostname},
+  {PID_DNS_DOMAIN_NAME, NetworkModel_GetDomainName, 0u,
     NetworkModel_SetDomainName},
 };
 
 static const ProductDetailIds PRODUCT_DETAIL_ID_LIST = {
   .ids = {PRODUCT_DETAIL_TEST, PRODUCT_DETAIL_CHANGEOVER_MANUAL,
           PRODUCT_DETAIL_ROUTER},
-  .size = 3
+  .size = 3u
 };
 
 static const ResponderDefinition RESPONDER_DEFINITION = {
   .descriptors = PID_DESCRIPTORS,
   .descriptor_count = sizeof(PID_DESCRIPTORS) / sizeof(PIDDescriptor),
   .sensors = NULL,
-  .sensor_count = 0,
+  .sensor_count = 0u,
   .personalities = NULL,
-  .personality_count = 0,
+  .personality_count = 0u,
   .software_version_label = SOFTWARE_LABEL,
   .manufacturer_label = MANUFACTURER_LABEL,
   .model_description = DEVICE_MODEL_DESCRIPTION,

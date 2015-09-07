@@ -52,9 +52,9 @@ typedef enum {
   NULL_MODEL_ID = 0x0000,  //!< No model set
 
   /**
-   * @brief A simple RDM responder.
+   * @brief A LED driver model
    */
-  BASIC_RESPONDER_MODEL_ID = 0x0100,
+  LED_MODEL_ID = 0x0100,
 
   /**
    * @brief A responder that acts as a proxy.
@@ -74,7 +74,17 @@ typedef enum {
   /**
    * @brief A responder that presents network interfaces.
    */
-  NETWORK_MODEL_ID = 0x0104
+  NETWORK_MODEL_ID = 0x0104,
+
+  /**
+   * @brief A responder that acts as a dimmer with sub-devices.
+   */
+  DIMMER_MODEL_ID = 0x0105,
+
+  /**
+   * @brief A responder that sits behind the PROXY_MODEL_ID device.
+   */
+  PROXY_CHILD_MODEL_ID = 0x0106,
 } ResponderModel;
 
 /**
@@ -130,7 +140,7 @@ typedef struct {
    * @brief The function used to handle an RDM request.
    * @param header The RDM request header.
    * @param param_data The RDM parameter data, or NULL if there wasn't any.
-   * @returns The size of the RDM response, in g_responder.buffer. The sign is
+   * @returns The size of the RDM response, in g_rdm_buffer. The sign is
    * used to indicate if a break should be sent or not. Negative means no break,
    * positive will send a break. 0 means no response will be sent.
    */

@@ -27,9 +27,9 @@
 #include "utils.h"
 
 static uint16_t Checksum(const uint8_t *data, unsigned int length) {
-  uint16_t checksum = 0;
+  uint16_t checksum = 0u;
   unsigned int i;
-  for (i = 0; i < length; i++) {
+  for (i = 0u; i < length; i++) {
     checksum += data[i];
   }
   return checksum;
@@ -50,9 +50,8 @@ bool RDMUtil_RequiresAction(const uint8_t our_uid[UID_LENGTH],
          (uid[0] == 0xff && uid[1] == 0xff);
 }
 
-bool RDMUtil_RequiresResponse(const uint8_t uid[UID_LENGTH]) {
-  return !(uid[2] == 0xff && uid[3] == 0xff && uid[4] == 0xff &&
-           uid[5] == 0xff);
+bool RDMUtil_IsUnicast(const uint8_t uid[UID_LENGTH]) {
+  return uid[2] != 0xff || uid[3] != 0xff || uid[4] != 0xff || uid[5] != 0xff;
 }
 
 bool RDMUtil_VerifyChecksum(const uint8_t *frame, unsigned int size) {
@@ -77,7 +76,7 @@ int RDMUtil_AppendChecksum(uint8_t *frame) {
 
 unsigned int RDMUtil_StringCopy(char *dst, unsigned int dest_size,
                                 const char *src, unsigned int src_size) {
-  unsigned int size = 0;
+  unsigned int size = 0u;
   while (size < src_size && size < dest_size && (*dst++ = *src++)) {
     size++;
   }
@@ -88,7 +87,7 @@ unsigned int RDMUtil_StringCopy(char *dst, unsigned int dest_size,
 }
 
 unsigned int RDMUtil_SafeStringLength(const char *str, unsigned int max_size) {
-  unsigned int size = 0;
+  unsigned int size = 0u;
   while (*str++ && size < max_size) {
     size++;
   }

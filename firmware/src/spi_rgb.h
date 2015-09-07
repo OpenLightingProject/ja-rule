@@ -18,13 +18,13 @@
  */
 
 /**
- * @defgroup spi SPI Pixel Controller
+ * @defgroup spi_dmx SPI Pixel Controller
  * @brief Control RGB Pixels using SPI
  *
  * This only supports the LPD8806 chip for now. We're happy to accept pull
  * requests adding support for different pixel types.
  *
- * @addtogroup spi
+ * @addtogroup spi_dmx
  * @{
  * @file spi_rgb.h
  * @brief Control RGB Pixels using SPI

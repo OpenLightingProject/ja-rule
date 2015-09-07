@@ -41,16 +41,9 @@ extern "C" {
 extern const ModelEntry MOVING_LIGHT_MODEL_ENTRY;
 
 /**
- * @brief The settings to use for the Simple RDM Model.
- */
-typedef struct {
-} MovingLightModelSettings;
-
-/**
  * @brief Initialize the Moving Light Model.
- * @param settings The settings for this model.
  */
-void MovingLightModel_Initialize(const MovingLightModelSettings *settings);
+void MovingLightModel_Initialize();
 
 #ifdef __cplusplus
 }

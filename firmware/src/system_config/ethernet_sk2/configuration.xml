@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<configuration version="1.0.6.12">
+  <General>
+    <HarmonyPath path="/opt/microchip/harmony/v1_02"/>
+    <ForceOptimization flag="true"/>
+  </General>
+  <Manifest>
+    <Files>
+      <File>
+        <Name>sys_module.h</Name>
+        <Path>Header Files/framework/system/common</Path>
+      </File>
+      <File>
+        <Name>usb_cdc.h</Name>
+        <Path>Header Files/framework/usb</Path>
+      </File>
+      <File>
+        <Name>drv_usb.h</Name>
+        <Path>Source Files/framework/driver/usb</Path>
+      </File>
+      <File>
+        <Name>sys_int.h</Name>
+        <Path>Header Files/framework/system/int</Path>
+      </File>
+      <File>
+        <Name>sys_common.h</Name>
+        <Path>Header Files/framework/system/common</Path>
+      </File>
+      <File>
+        <Name>drv_usb.c</Name>
+        <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
+      </File>
+      <File>
+        <Name>usb_device_cdc.c</Name>
+        <Path>Source Files/framework/usb/src/dynamic</Path>
+      </File>
+      <File>
+        <Name>sys_ports.c</Name>
+        <Path>Source Files/framework/system/ports/src</Path>
+      </File>
+      <File>
+        <Name>system.h</Name>
+        <Path>Header Files/framework/system</Path>
+      </File>
+      <File>
+        <Name>drv_usb_device.c</Name>
+        <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
+      </File>
+      <File>
+        <Name>usb_device_endpoint_functions.c</Name>
+        <Path>Source Files/framework/usb/src/dynamic</Path>
+      </File>
+      <File>
+        <Name>usb_device.c</Name>
+        <Path>Source Files/framework/usb/src/dynamic</Path>
+      </File>
+      <File>
+        <Name>usb_device_cdc_acm.c</Name>
+        <Path>Source Files/framework/usb/src/dynamic</Path>
+      </File>
+      <File>
+        <Name>bsp_sys_init.c</Name>
+        <Path>Source Files/bsp/pic32mx_eth_sk2</Path>
+      </File>
+      <File>
+        <Name>sys_devcon.c</Name>
+        <Path>Source Files/framework/system/devcon/src</Path>
+      </File>
+      <File>
+        <Name>usb_device.h</Name>
+        <Path>Header Files/framework/usb</Path>
+      </File>
+      <File>
+        <Name>sys_ports.h</Name>
+        <Path>Header Files/framework/system/ports</Path>
+      </File>
+      <File>
+        <Name>sys_int_pic32.c</Name>
+        <Path>Source Files/framework/system/int/src</Path>
+      </File>
+      <File>
+        <Name>sys_devcon.h</Name>
+        <Path>Header Files/framework/system/devcon</Path>
+      </File>
+      <File>
+        <Name>bsp_config.h</Name>
+        <Path>Header Files/bsp/pic32mx_eth_sk2</Path>
+      </File>
+      <File>
+        <Name>sys_devcon_pic32mx.c</Name>
+        <Path>Source Files/framework/system/devcon/src</Path>
+      </File>
+      <File>
+        <Name>usb_device_cdc.h</Name>
+        <Path>Header Files/framework/usb</Path>
+      </File>
+    </Files>
+    <Templates>
+      <Template>
+        <Name>main.c</Name>
+        <Path>Source Files/app</Path>
+      </Template>
+      <Template>
+        <Name>app.c</Name>
+        <Path>Source Files/app</Path>
+      </Template>
+      <Template>
+        <Name>system_definitions.h</Name>
+        <Path>Header Files/app/system_config/ethernet_sk2</Path>
+        <Checksum>E3C785466446FE85D78057F22D2177F8</Checksum>
+      </Template>
+      <Template>
+        <Name>system_interrupt.c</Name>
+        <Path>Source Files/app/system_config/ethernet_sk2</Path>
+        <Checksum>75EB12F8F93B3CD8CC5C8735D7E48E31</Checksum>
+      </Template>
+      <Template>
+        <Name>system_tasks.c</Name>
+        <Path>Source Files/app/system_config/ethernet_sk2</Path>
+        <Checksum>2545C461C5FD3CD396C0405A4F248D80</Checksum>
+      </Template>
+      <Template>
+        <Name>app.h</Name>
+        <Path>Header Files/app</Path>
+      </Template>
+      <Template>
+        <Name>sys_clk_static.h</Name>
+        <Path>Header Files/app/system_config/ethernet_sk2/framework/system/clk</Path>
+        <Checksum>999179DADE9ECD59953526F5E9F83ACC</Checksum>
+      </Template>
+      <Template>
+        <Name>system_init.c</Name>
+        <Path>Source Files/app/system_config/ethernet_sk2</Path>
+        <Checksum>BFA14AD7005156DE78D525F82C214FFB</Checksum>
+      </Template>
+      <Template>
+        <Name>sys_ports_static.c</Name>
+        <Path>Source Files/app/system_config/ethernet_sk2/framework/system/ports/src</Path>
+        <Checksum>91CF9ED936A4097E90E3F606508FFFF7</Checksum>
+      </Template>
+      <Template>
+        <Name>sys_clk_static.c</Name>
+        <Path>Source Files/app/system_config/ethernet_sk2/framework/system/clk/src</Path>
+        <Checksum>1B968DA82B5DD869A6119C3B7628D753</Checksum>
+      </Template>
+      <Template>
+        <Name>system_config.h</Name>
+        <Path>Header Files/app/system_config/ethernet_sk2</Path>
+        <Checksum>22F7056FDE045788CC4A2257F001A8FB</Checksum>
+      </Template>
+    </Templates>
+    <CompilerItems>
+      <C32>
+        <Include value="../../../../../../opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
+      </C32>
+    </CompilerItems>
+    <Libraries>
+      <Library value="../../../../../../opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a"/>
+    </Libraries>
+  </Manifest>
+</configuration>

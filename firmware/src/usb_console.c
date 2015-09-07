@@ -22,7 +22,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "responder.h"
+#include "receiver_counters.h"
 #include "syslog.h"
 #include "system_definitions.h"
 #include "transceiver.h"
@@ -223,12 +223,13 @@ static bool CheckAndHandleReset() {
  */
 void LogRaw(const char* str) {
   const char* c = str;
-  while (*c) {
+  for (; *c != 0; c++) {
     if (g_usb_console.write.write == g_usb_console.write.read && c != str) {
       return;
     }
 
-    g_usb_console.write.buffer[g_usb_console.write.write++] = *c++;
+    g_usb_console.write.buffer[g_usb_console.write.write] = *c;
+    g_usb_console.write.write++;
     if (g_usb_console.write.write == USB_CONSOLE_BUFFER_SIZE) {
       g_usb_console.write.write = 0;
     }
@@ -387,8 +388,10 @@ void USBConsole_Tasks() {
                        SysLog_LevelToString(SysLog_GetLevel()));
           break;
         case 'c':
-          SysLog_Print(SYSLOG_INFO, "DMX Frames %d", Responder_DMXFrames());
-          SysLog_Print(SYSLOG_INFO, "RDM Frames %d", Responder_RDMFrames());
+          SysLog_Print(SYSLOG_INFO, "DMX Frames %d",
+                       ReceiverCounters_DMXFrames());
+          SysLog_Print(SYSLOG_INFO, "RDM Frames %d",
+                       ReceiverCounters_RDMFrames());
           break;
         case 'd':
           SysLog_Message(SYSLOG_DEBUG, "debug");

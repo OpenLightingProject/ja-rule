@@ -24,13 +24,16 @@
 #include <memory>
 
 #include "responder.h"
+#include "receiver_counters.h"
 #include "Array.h"
 #include "Matchers.h"
 #include "RDMHandlerMock.h"
 #include "SPIRGBMock.h"
 
-using ::testing::StrictMock;
+using ::testing::IgnoreResult;
 using ::testing::Return;
+using ::testing::StrictMock;
+using ::testing::WithArgs;
 using ::testing::_;
 
 class ResponderTest : public testing::Test {
@@ -39,6 +42,7 @@ class ResponderTest : public testing::Test {
     RDMHandler_SetMock(&handler_mock);
     SPIRGB_SetMock(&spi_mock);
     Responder_Initialize();
+    ReceiverCounters_ResetCounters();
   }
 
   void TearDown() {
@@ -67,12 +71,15 @@ class ResponderTest : public testing::Test {
   StrictMock<MockRDMHandler> handler_mock;
   MockSPIRGB spi_mock;
 
+  static const uint8_t TEST_UID[];
   static const uint8_t ASC_FRAME[];
   static const uint8_t DMX_FRAME[];
   static const uint8_t RDM_FRAME[];
   static const uint8_t SHORT_DMX_FRAME[];
   static const uint8_t LONG_DMX_FRAME[];
 };
+
+const uint8_t ResponderTest::TEST_UID[] = {0x7a, 0x70, 0, 0, 0, 1};
 
 const uint8_t ResponderTest::ASC_FRAME[] = {
   99,
@@ -107,76 +114,79 @@ TEST_F(ResponderTest, rxSequence) {
         reinterpret_cast<const RDMHeader*>(RDM_FRAME), NULL))
     .Times(4);
 
-  EXPECT_EQ(0, Responder_DMXFrames());
-  EXPECT_EQ(0, Responder_ASCFrames());
-  EXPECT_EQ(0, Responder_RDMFrames());
+  EXPECT_EQ(0, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(0, ReceiverCounters_ASCFrames());
+  EXPECT_EQ(0, ReceiverCounters_RDMFrames());
 
   SendFrame(DMX_FRAME, arraysize(DMX_FRAME));
 
-  EXPECT_EQ(1, Responder_DMXFrames());
-  EXPECT_EQ(0, Responder_ASCFrames());
-  EXPECT_EQ(0, Responder_RDMFrames());
+  EXPECT_EQ(1, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(0, ReceiverCounters_ASCFrames());
+  EXPECT_EQ(0, ReceiverCounters_RDMFrames());
 
   SendFrame(RDM_FRAME, arraysize(RDM_FRAME));
 
-  EXPECT_EQ(1, Responder_DMXFrames());
-  EXPECT_EQ(0, Responder_ASCFrames());
-  EXPECT_EQ(1, Responder_RDMFrames());
+  EXPECT_EQ(1, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(0, ReceiverCounters_ASCFrames());
+  EXPECT_EQ(1, ReceiverCounters_RDMFrames());
 
   SendFrame(ASC_FRAME, arraysize(ASC_FRAME));
 
-  EXPECT_EQ(1, Responder_DMXFrames());
-  EXPECT_EQ(1, Responder_ASCFrames());
-  EXPECT_EQ(1, Responder_RDMFrames());
+  EXPECT_EQ(1, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(1, ReceiverCounters_ASCFrames());
+  EXPECT_EQ(1, ReceiverCounters_RDMFrames());
 
   SendFrame(RDM_FRAME, arraysize(RDM_FRAME));
 
-  EXPECT_EQ(1, Responder_DMXFrames());
-  EXPECT_EQ(1, Responder_ASCFrames());
-  EXPECT_EQ(2, Responder_RDMFrames());
+  EXPECT_EQ(1, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(1, ReceiverCounters_ASCFrames());
+  EXPECT_EQ(2, ReceiverCounters_RDMFrames());
 
   // 'empty' DMX frame
   SendFrame(DMX_FRAME, 1);
 
-  EXPECT_EQ(2, Responder_DMXFrames());
-  EXPECT_EQ(1, Responder_ASCFrames());
-  EXPECT_EQ(2, Responder_RDMFrames());
+  EXPECT_EQ(2, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(1, ReceiverCounters_ASCFrames());
+  EXPECT_EQ(2, ReceiverCounters_RDMFrames());
 
   SendFrame(RDM_FRAME, arraysize(RDM_FRAME));
 
-  EXPECT_EQ(2, Responder_DMXFrames());
-  EXPECT_EQ(1, Responder_ASCFrames());
-  EXPECT_EQ(3, Responder_RDMFrames());
+  EXPECT_EQ(2, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(1, ReceiverCounters_ASCFrames());
+  EXPECT_EQ(3, ReceiverCounters_RDMFrames());
 
   // Frames that arrive in 2 byte chunks
   SendFrame(DMX_FRAME, arraysize(DMX_FRAME), 2);
 
-  EXPECT_EQ(3, Responder_DMXFrames());
-  EXPECT_EQ(1, Responder_ASCFrames());
-  EXPECT_EQ(3, Responder_RDMFrames());
+  EXPECT_EQ(3, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(1, ReceiverCounters_ASCFrames());
+  EXPECT_EQ(3, ReceiverCounters_RDMFrames());
 
   SendFrame(RDM_FRAME, arraysize(RDM_FRAME), 2);
 
-  EXPECT_EQ(3, Responder_DMXFrames());
-  EXPECT_EQ(1, Responder_ASCFrames());
-  EXPECT_EQ(4, Responder_RDMFrames());
+  EXPECT_EQ(3, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(1, ReceiverCounters_ASCFrames());
+  EXPECT_EQ(4, ReceiverCounters_RDMFrames());
 
   // Confirm counters
-  EXPECT_EQ(55, Responder_DMXLastChecksum());
-  EXPECT_EQ(10, Responder_DMXLastSlotCount());
-  EXPECT_EQ(0, Responder_DMXMinimumSlotCount());
-  EXPECT_EQ(10, Responder_DMXMaximumSlotCount());
+  EXPECT_EQ(55, ReceiverCounters_DMXLastChecksum());
+  EXPECT_EQ(10, ReceiverCounters_DMXLastSlotCount());
+  EXPECT_EQ(0, ReceiverCounters_DMXMinimumSlotCount());
+  EXPECT_EQ(10, ReceiverCounters_DMXMaximumSlotCount());
 }
 
 TEST_F(ResponderTest, rdmChecksumMismatch) {
+  EXPECT_CALL(handler_mock, GetUID(_))
+    .WillOnce(WithArgs<0>(IgnoreResult(CopyUID(TEST_UID))));
+
   const uint8_t bad_frame[] = {
-    0xcc, 0x01, 0x18, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
+    0xcc, 0x01, 0x18, 0x7a, 0x70, 0xff, 0xff, 0xff, 0xff, 0x7a, 0x70, 0x12,
     0x34, 0x56, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x02, 0x00,
     0xAB, 0xCD
   };
   SendFrame(bad_frame, arraysize(bad_frame));
 
-  EXPECT_EQ(1, Responder_RDMChecksumInvalidCounter());
+  EXPECT_EQ(1, ReceiverCounters_RDMChecksumInvalidCounter());
 }
 
 TEST_F(ResponderTest, badSubStartCode) {
@@ -186,7 +196,7 @@ TEST_F(ResponderTest, badSubStartCode) {
     0x03, 0xe0
   };
   SendFrame(frame, arraysize(frame));
-  EXPECT_EQ(1, Responder_RDMSubStartCodeInvalidCounter());
+  EXPECT_EQ(1, ReceiverCounters_RDMSubStartCodeInvalidCounter());
 }
 
 TEST_F(ResponderTest, msgLenTooShort) {
@@ -196,7 +206,7 @@ TEST_F(ResponderTest, msgLenTooShort) {
     0x03, 0xe0
   };
   SendFrame(frame, arraysize(frame));
-  EXPECT_EQ(1, Responder_RDMMessageLengthInvalidCounter());
+  EXPECT_EQ(1, ReceiverCounters_RDMMessageLengthInvalidCounter());
 }
 
 TEST_F(ResponderTest, paramDataLenMismatch) {
@@ -207,7 +217,7 @@ TEST_F(ResponderTest, paramDataLenMismatch) {
   };
 
   SendFrame(frame, arraysize(frame));
-  EXPECT_EQ(1, Responder_RDMParamDataLenInvalidCounter());
+  EXPECT_EQ(1, ReceiverCounters_RDMParamDataLenInvalidCounter());
 
   const uint8_t frame2[] = {
     0xcc, 0x01, 0x18, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x12,
@@ -216,7 +226,7 @@ TEST_F(ResponderTest, paramDataLenMismatch) {
   };
 
   SendFrame(frame2, arraysize(frame2));
-  EXPECT_EQ(2, Responder_RDMParamDataLenInvalidCounter());
+  EXPECT_EQ(2, ReceiverCounters_RDMParamDataLenInvalidCounter());
 }
 
 // Send an RDM frame that's too short, that also contains a valid checksum
@@ -233,43 +243,43 @@ TEST_F(ResponderTest, nonRxOp) {
 }
 
 TEST_F(ResponderTest, dmxCounters) {
-  EXPECT_EQ(0xff, Responder_DMXLastChecksum());
-  EXPECT_EQ(0xffff, Responder_DMXLastSlotCount());
-  EXPECT_EQ(0xffff, Responder_DMXMinimumSlotCount());
-  EXPECT_EQ(0xffff, Responder_DMXMaximumSlotCount());
+  EXPECT_EQ(0xff, ReceiverCounters_DMXLastChecksum());
+  EXPECT_EQ(0xffff, ReceiverCounters_DMXLastSlotCount());
+  EXPECT_EQ(0xffff, ReceiverCounters_DMXMinimumSlotCount());
+  EXPECT_EQ(0xffff, ReceiverCounters_DMXMaximumSlotCount());
 
   SendFrame(DMX_FRAME, arraysize(DMX_FRAME));
 
-  EXPECT_EQ(1, Responder_DMXFrames());
-  EXPECT_EQ(55, Responder_DMXLastChecksum());
-  EXPECT_EQ(10, Responder_DMXLastSlotCount());
-  EXPECT_EQ(0xffff, Responder_DMXMinimumSlotCount());
-  EXPECT_EQ(10, Responder_DMXMaximumSlotCount());
+  EXPECT_EQ(1, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(55, ReceiverCounters_DMXLastChecksum());
+  EXPECT_EQ(10, ReceiverCounters_DMXLastSlotCount());
+  EXPECT_EQ(0xffff, ReceiverCounters_DMXMinimumSlotCount());
+  EXPECT_EQ(10, ReceiverCounters_DMXMaximumSlotCount());
 
   SendFrame(DMX_FRAME, arraysize(DMX_FRAME));
 
-  EXPECT_EQ(2, Responder_DMXFrames());
-  EXPECT_EQ(55, Responder_DMXLastChecksum());
-  EXPECT_EQ(10, Responder_DMXLastSlotCount());
-  EXPECT_EQ(10, Responder_DMXMinimumSlotCount());
-  EXPECT_EQ(10, Responder_DMXMaximumSlotCount());
+  EXPECT_EQ(2, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(55, ReceiverCounters_DMXLastChecksum());
+  EXPECT_EQ(10, ReceiverCounters_DMXLastSlotCount());
+  EXPECT_EQ(10, ReceiverCounters_DMXMinimumSlotCount());
+  EXPECT_EQ(10, ReceiverCounters_DMXMaximumSlotCount());
 
   SendFrame(SHORT_DMX_FRAME, arraysize(SHORT_DMX_FRAME));
   SendFrame(SHORT_DMX_FRAME, arraysize(SHORT_DMX_FRAME));
 
-  EXPECT_EQ(4, Responder_DMXFrames());
-  EXPECT_EQ(3, Responder_DMXLastChecksum());
-  EXPECT_EQ(2, Responder_DMXLastSlotCount());
-  EXPECT_EQ(2, Responder_DMXMinimumSlotCount());
-  EXPECT_EQ(10, Responder_DMXMaximumSlotCount());
+  EXPECT_EQ(4, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(3, ReceiverCounters_DMXLastChecksum());
+  EXPECT_EQ(2, ReceiverCounters_DMXLastSlotCount());
+  EXPECT_EQ(2, ReceiverCounters_DMXMinimumSlotCount());
+  EXPECT_EQ(10, ReceiverCounters_DMXMaximumSlotCount());
 
   SendFrame(LONG_DMX_FRAME, arraysize(LONG_DMX_FRAME));
 
-  EXPECT_EQ(5, Responder_DMXFrames());
-  EXPECT_EQ(0x0b, Responder_DMXLastChecksum());
-  EXPECT_EQ(45, Responder_DMXLastSlotCount());
-  EXPECT_EQ(2, Responder_DMXMinimumSlotCount());
-  EXPECT_EQ(45, Responder_DMXMaximumSlotCount());
+  EXPECT_EQ(5, ReceiverCounters_DMXFrames());
+  EXPECT_EQ(0x0b, ReceiverCounters_DMXLastChecksum());
+  EXPECT_EQ(45, ReceiverCounters_DMXLastSlotCount());
+  EXPECT_EQ(2, ReceiverCounters_DMXMinimumSlotCount());
+  EXPECT_EQ(45, ReceiverCounters_DMXMaximumSlotCount());
 }
 
 TEST_F(ResponderTest, SPIOutput) {

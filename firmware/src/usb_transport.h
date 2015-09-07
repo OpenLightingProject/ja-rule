@@ -39,7 +39,7 @@
 #include "constants.h"
 #include "transport.h"
 #include "system_definitions.h"
-
+#include "usb/usb_device.h"
 
 #ifdef __cplusplus
 extern "C" {

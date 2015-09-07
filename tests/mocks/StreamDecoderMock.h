@@ -26,7 +26,7 @@
 
 class MockStreamDecoder {
  public:
-  MOCK_METHOD2(Send, void(const uint8_t* data, unsigned int size));
+  MOCK_METHOD2(Process, void(const uint8_t* data, unsigned int size));
 };
 
 void StreamDecoder_SetMock(MockStreamDecoder* mock);

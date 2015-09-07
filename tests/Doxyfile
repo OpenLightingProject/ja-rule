@@ -483,7 +483,7 @@ SORT_MEMBERS_CTORS_1ST = NO
 # hierarchy of group names into alphabetical order. If set to NO (the default)
 # the group names will appear in their defined order.
 
-SORT_GROUP_NAMES       = NO
+SORT_GROUP_NAMES       = YES
 
 # If the SORT_BY_SCOPE_NAME tag is set to YES, the class list will be
 # sorted by fully-qualified names, including namespaces. If set to
@@ -653,8 +653,10 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = ../firmware/src \
-                         ../firmware/src/system_config/default \
+INPUT                  = ../Bootloader/firmware/src \
+                         ../common \
+                         ../firmware/src \
+                         ../firmware/src/system_config/ethernet_sk2/system_settings.h \
                          doxygen
 
 # This tag can be used to specify the character encoding of the source files

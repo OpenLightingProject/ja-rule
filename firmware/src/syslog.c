@@ -25,7 +25,7 @@
 
 #include "system_pipeline.h"
 
-#define SYSLOG_PRINT_BUFFER_SIZE 256
+enum { SYSLOG_PRINT_BUFFER_SIZE = 256 };
 
 typedef struct {
   uint8_t log_level;
@@ -79,13 +79,13 @@ void SysLog_SetLevel(SysLogLevel level) {
 
 void SysLog_Increment() {
   if (g_syslog.log_level != SYSLOG_DEBUG) {
-    g_syslog.log_level -= 1;
+    g_syslog.log_level--;
   }
 }
 
 void SysLog_Decrement() {
   if (g_syslog.log_level != SYSLOG_FATAL) {
-    g_syslog.log_level += 1;
+    g_syslog.log_level++;
   }
 }
 

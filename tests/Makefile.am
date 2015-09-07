@@ -12,17 +12,25 @@ WARNING_CXXFLAGS = -fvisibility-inlines-hidden
 # Code Under Test
 ##################################################
 
-BUILD_FLAGS = -I system_config -I harmony/include -I ../firmware/src $(WARNING_CFLAGS)
+BUILD_FLAGS = -I system_config -I harmony/include -I ../firmware/src \
+              -I ../common -I ../Bootloader/firmware/src \
+              $(WARNING_CFLAGS)
 
 noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
+                     boot_src/libbootloader.la \
                      src/libcoarsetimer.la \
+                     src/libdimmermodel.la \
                      src/libflags.la \
+                     src/libledmodel.la \
                      src/libmessagehandler.la \
+                     src/libnetworkmodel.la \
+                     src/libproxymodel.la \
                      src/librandom.la \
                      src/librdmbuffer.la \
                      src/librdmhandler.la \
                      src/librdmresponder.la \
                      src/librdmutil.la \
+                     src/libreceivercounters.la \
                      src/libresponder.la \
                      src/libspirgb.la \
                      src/libstreamdecoder.la \
@@ -32,10 +40,12 @@ noinst_LTLIBRARIES = harmony/mocks/libharmonymock.la \
 harmony_mocks_libharmonymock_la_SOURCES = \
     harmony/mocks/plib_ic_mock.cpp \
     harmony/mocks/plib_ic_mock.h \
+    harmony/mocks/plib_nvm_mock.cpp \
+    harmony/mocks/plib_nvm_mock.h \
     harmony/mocks/plib_ports_mock.cpp \
     harmony/mocks/plib_ports_mock.h \
-    harmony/mocks/plib_spi_mock.h \
     harmony/mocks/plib_spi_mock.cpp \
+    harmony/mocks/plib_spi_mock.h \
     harmony/mocks/plib_tmr_mock.cpp \
     harmony/mocks/plib_tmr_mock.h \
     harmony/mocks/plib_usart_mock.cpp \
@@ -43,19 +53,36 @@ harmony_mocks_libharmonymock_la_SOURCES = \
     harmony/mocks/sys_clk_mock.cpp \
     harmony/mocks/sys_clk_mock.h \
     harmony/mocks/sys_int_mock.cpp \
-    harmony/mocks/sys_int_mock.h
+    harmony/mocks/sys_int_mock.h \
+    harmony/mocks/usb_device_mock.cpp \
+    harmony/mocks/usb_device_mock.h
 harmony_mocks_libharmonymock_la_CXXFLAGS = \
    -I harmony/include $(GMOCK_INCLUDES) $(GTEST_INCLUDES) $(WARNING_CFLAGS)
 harmony_mocks_libharmonymock_la_LIBADD = $(GMOCK_LIBS) $(GTEST_LIBS)
 
+boot_src_libbootloader_la_SOURCES = boot_src/bootloader.c
+boot_src_libbootloader_la_CFLAGS = $(BUILD_FLAGS)
+
 src_libcoarsetimer_la_SOURCES = src/coarse_timer.c
 src_libcoarsetimer_la_CFLAGS = $(BUILD_FLAGS)
+
+src_libdimmermodel_la_SOURCES = src/dimmer_model.c
+src_libdimmermodel_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libflags_la_SOURCES = src/flags.c
 src_libflags_la_CFLAGS = $(BUILD_FLAGS)
 
+src_libledmodel_la_SOURCES = src/led_model.c
+src_libledmodel_la_CFLAGS = $(BUILD_FLAGS)
+
 src_libmessagehandler_la_SOURCES = src/message_handler.c
 src_libmessagehandler_la_CFLAGS = $(BUILD_FLAGS)
+
+src_libnetworkmodel_la_SOURCES = src/network_model.c
+src_libnetworkmodel_la_CFLAGS = $(BUILD_FLAGS)
+
+src_libproxymodel_la_SOURCES = src/proxy_model.c
+src_libproxymodel_la_CFLAGS = $(BUILD_FLAGS)
 
 src_librandom_la_SOURCES = src/random.c
 src_librandom_la_CFLAGS = $(BUILD_FLAGS)
@@ -71,6 +98,9 @@ src_librdmresponder_la_CFLAGS = $(BUILD_FLAGS)
 
 src_librdmutil_la_SOURCES = src/rdm_util.c
 src_librdmutil_la_CFLAGS = $(BUILD_FLAGS)
+
+src_libreceivercounters_la_SOURCES = src/receiver_counters.c
+src_libreceivercounters_la_CFLAGS = $(BUILD_FLAGS)
 
 src_libresponder_la_SOURCES = src/responder.c
 src_libresponder_la_CFLAGS = $(BUILD_FLAGS)

@@ -51,8 +51,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "system_config.h"
+
+#include "peripheral/ports/plib_ports.h"
 #include "rdm.h"
 #include "rdm_frame.h"
+#include "rdm_handler.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,6 +76,23 @@ extern const char MANUFACTURER_LABEL[];
  */
 typedef int (*PIDCommandHandler)(const RDMHeader *incoming_header,
                                  const uint8_t *param_data);
+
+/**
+ * @brief A parameter description.
+ *
+ * See section 10.4.2 from E1.20
+ */
+typedef struct {
+  uint8_t pdl_size;  //!< Size of the parameter data.
+  uint8_t data_type;  //!< Data type.
+  uint8_t command_class;  //!< Command classes accepted
+  uint8_t unit;  //!< Data units
+  uint8_t prefix;  //!< Data prefix
+  uint32_t min_valid_value;  //!< Minimum value of the parameter
+  uint32_t max_valid_value;  //!< Maximum value of the parameter
+  uint32_t default_value;  //!< The default value.
+  const char *description;  //!< Parameter description.
+} ParameterDescription;
 
 /**
  * @brief A descriptor for a PID.
@@ -166,7 +187,7 @@ typedef struct {
   /**
    * @brief The number of slot definitions.
    */
-  unsigned int slot_count;
+  uint16_t slot_count;
 } PersonalityDefinition;
 
 /**
@@ -215,11 +236,6 @@ typedef struct {
   const PIDDescriptor *descriptors;
 
   /**
-   * @brief The number of descriptors in the table.
-   */
-  unsigned int descriptor_count;
-
-  /**
    * @brief The sensor definitions table.
    *
    * This may be NULL if the responder does not have sensors.
@@ -227,21 +243,11 @@ typedef struct {
   const SensorDefinition *sensors;
 
   /**
-   * @brief The number of sensor definitions in the table.
-   */
-  uint8_t sensor_count;  //!< The number of sensors
-
-  /**
    * @brief The personality definition table.
    *
    * This may be NULL if the responder does not have personalities.
    */
   const PersonalityDefinition *personalities;
-
-  /**
-   * @brief The number of personality definitions in the table.
-   */
-  unsigned int personality_count;
 
   const char *software_version_label;  //!< The software version label.
   const char *manufacturer_label;  //!< The manufacturer label.
@@ -253,9 +259,24 @@ typedef struct {
    */
   const ProductDetailIds *product_detail_ids;
 
+  /**
+   * @brief The number of descriptors in the table.
+   */
+  unsigned int descriptor_count;
+
+  /**
+   * @brief The number of personality definitions in the table.
+   */
+  unsigned int personality_count;
+
   uint32_t software_version;  //!< The Software version.
   uint16_t model_id;  //!< The model ID.
   RDMProductCategory product_category;  //!< The product category.
+
+  /**
+   * @brief The number of sensor definitions in the table.
+   */
+  uint8_t sensor_count;  //!< The number of sensors
 } ResponderDefinition;
 
 /**
@@ -264,6 +285,9 @@ typedef struct {
  * This contains the mutable state for a responder.
  */
 typedef struct {
+  char device_label[RDM_DEFAULT_STRING_SIZE];  //!< Device label
+  uint8_t uid[UID_LENGTH];  //!< Responder's UID
+
   /**
    * @brief The ResponderDefinition
    */
@@ -277,8 +301,6 @@ typedef struct {
    */
   SensorData *sensors;
 
-  char device_label[RDM_DEFAULT_STRING_SIZE];  //!< Device label
-  uint8_t uid[UID_LENGTH];  //!< Responder's UID
   uint16_t dmx_start_address;  //!< DMX start address
   uint16_t sub_device_count;  //!< The number of sub devices
   uint8_t current_personality;  //!< Current DMX personality, 1-indexed.
@@ -286,12 +308,15 @@ typedef struct {
   bool is_muted;  //!< The mute state for the responder
   bool identify_on;  //!< The identify state for the responder.
   bool using_factory_defaults;  //!< True if using factory defaults.
+  bool is_subdevice;  // true if this is a subdevice.
+  bool is_managed_proxy;  // true if this is a managed proxy.
+  bool is_proxied_device;  // true if this is a proxied device.
 } RDMResponder;
 
 /**
  * @brief The global RDMResponder object.
  */
-extern RDMResponder g_responder;
+extern RDMResponder *g_responder;
 
 /**
  * @brief Indicates there is no response required for the request.
@@ -299,10 +324,39 @@ extern RDMResponder g_responder;
 static const int RDM_RESPONDER_NO_RESPONSE = 0;
 
 /**
- * @brief Initialize an RDMResponder struct.
- * @param uid The UID to use for the responder.
+ * @brief The settings to use for the RDM Responder.
  */
-void RDMResponder_Initialize(const uint8_t uid[UID_LENGTH]);
+typedef struct {
+  PORTS_CHANNEL identify_port;  //!< The port to use for the identify signal.
+  PORTS_BIT_POS identify_bit;  //!< The port bit to use for the identify signal.
+  PORTS_CHANNEL mute_port;  //!< The port to use to indicate mute state.
+  PORTS_BIT_POS mute_bit;  //!< The port bit used to indicate mute state.
+  uint8_t uid[UID_LENGTH];  //!< The responder's UID.
+} RDMResponderSettings;
+
+/**
+ * @brief Initialize an RDMResponder struct.
+ * @param settings the settings to use for the responder.
+ */
+void RDMResponder_Initialize(const RDMResponderSettings *settings);
+
+/**
+ * @brief Perform the periodic tasks.
+ *
+ * This should be called in the main event loop.
+ */
+void RDMResponder_Tasks();
+
+/**
+ * @brief Switch the current responder.
+ * @param responder The new responder to use.
+ */
+void RDMResponder_SwitchResponder(RDMResponder *responder);
+
+/**
+ * @brief Restore to the default responder.
+ */
+void RDMResponder_RestoreResponder();
 
 /**
  * @brief Reset an RDMResponder to the factory defaults.
@@ -370,6 +424,26 @@ int RDMResponder_BuildNack(const RDMHeader *incoming_header,
                            RDMNackReason reason);
 
 /**
+ * @brief Build an ACK TIMER
+ * @param incoming_header The header of the incoming frame.
+ * @param delay The ack timer delay in 10ths of a second.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_BuildAckTimer(const RDMHeader *incoming_header,
+                               uint16_t delay);
+
+/**
+ * @brief Build a PARAMETER_DESCRIPTION response.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_id The PID this description is for.
+ * @param description the parameter description.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_BuildParamDescription(const RDMHeader *incoming_header,
+                                       uint16_t param_id,
+                                       const ParameterDescription *description);
+
+/**
  * @brief Invoke a PID handler from the ResponderDefinition.
  * @param incoming_header The header of the incoming frame.
  * @param param_data The received parameter data.
@@ -381,6 +455,16 @@ int RDMResponder_BuildNack(const RDMHeader *incoming_header,
  */
 int RDMResponder_DispatchPID(const RDMHeader *incoming_header,
                              const uint8_t *param_data);
+
+/**
+ * @brief A base Ioctl handler.
+ * @param command The ioctl command to run.
+ * @param data arbitary data, depends on the ModelIoctl.
+ * @param length the size of the data.
+ * @returns An int, the meaning of which depends on the ModelIoctl.
+ */
+int RDMResponder_Ioctl(ModelIoctl command, uint8_t *data,
+                       unsigned int length);
 
 // PID Handlers
 // ----------------------------------------------------------------------------
@@ -438,6 +522,26 @@ int RDMResponder_GenericSetUInt8(const RDMHeader *incoming_header,
                                  uint8_t *value);
 
 /**
+ * @brief Handle a request to get a uint16_t value.
+ * @param incoming_header The header of the incoming frame.
+ * @param value The uint16_t value to return.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GenericGetUInt16(const RDMHeader *incoming_header,
+                                  uint16_t value);
+
+/**
+ * @brief Handle a request to set a uint16_t value.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @param value The uint16_t value to set.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GenericSetUInt16(const RDMHeader *incoming_header,
+                                  const uint8_t *param_data,
+                                  uint16_t *value);
+
+/**
  * @brief Handle a request to get a uint32_t value.
  * @param incoming_header The header of the incoming frame.
  * @param value The unsigned int value
@@ -470,6 +574,24 @@ int RDMResponder_SetMute(const RDMHeader *incoming_header);
  * @returns The size of the RDM response frame.
  */
 int RDMResponder_SetUnMute(const RDMHeader *incoming_header);
+
+/**
+ * @brief Handle a GET COMMS_STATUS request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetCommsStatus(const RDMHeader *incoming_header,
+                                const uint8_t *param_data);
+
+/**
+ * @brief Handle a SET COMMS_STATUS request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_SetCommsStatus(const RDMHeader *incoming_header,
+                                const uint8_t *param_data);
 
 /**
  * @brief Handle a GET DEVICE_INFO request.
@@ -524,6 +646,24 @@ int RDMResponder_GetManufacturerLabel(const RDMHeader *incoming_header,
  */
 int RDMResponder_GetSoftwareVersionLabel(const RDMHeader *incoming_header,
                                          const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET BOOT_SOFTWARE_VERSION request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetBootSoftwareVersion(const RDMHeader *incoming_header,
+                                        const uint8_t *param_data);
+
+/**
+ * @brief Handle a GET BOOT_SOFTWARE_LABEL request.
+ * @param incoming_header The header of the incoming frame.
+ * @param param_data The received parameter data.
+ * @returns The size of the RDM response frame.
+ */
+int RDMResponder_GetBootSoftwareVersionLabel(const RDMHeader *incoming_header,
+                                             const uint8_t *param_data);
 
 /**
  * @brief Handle a GET DEVICE_LABEL request.

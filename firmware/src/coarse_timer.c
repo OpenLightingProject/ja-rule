@@ -32,7 +32,7 @@ void CoarseTimer_TimerEvent() {
 }
 
 void CoarseTimer_Initialize(const CoarseTimer_Settings *settings) {
-  g_coarse_timer.timer_count = 0;
+  g_coarse_timer.timer_count = 0u;
   g_coarse_timer.settings = *settings;
 
   PLIB_TMR_Stop(settings->timer_id);
@@ -43,7 +43,7 @@ void CoarseTimer_Initialize(const CoarseTimer_Settings *settings) {
   PLIB_TMR_CounterAsyncWriteDisable(settings->timer_id);
 
   PLIB_TMR_Counter16BitClear(settings->timer_id);
-  PLIB_TMR_Period16BitSet(settings->timer_id, 100 * (SYS_CLK_FREQ / 1000000));
+  PLIB_TMR_Period16BitSet(settings->timer_id, 100u * (SYS_CLK_FREQ / 1000000u));
   PLIB_TMR_Start(settings->timer_id);
 
   SYS_INT_SourceStatusClear(settings->interrupt_source);
