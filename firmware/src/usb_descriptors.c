@@ -24,6 +24,7 @@
 #include "constants.h"
 #include "dfu_spec.h"
 #include "dfu_properties.h"
+#include "system_settings.h"
 #include "uid.h"
 #include "usb/usb_device_cdc.h"
 #include "usb_properties.h"
@@ -101,7 +102,7 @@ static const uint8_t g_config_descriptor[] = {
   1,  // Index value of this configuration
   0,  // Configuration string index
   USB_ATTRIBUTE_DEFAULT | USB_ATTRIBUTE_SELF_POWERED,  // Attributes
-  50,  // Max power consumption (2X mA)
+  USB_POWER_CONSUMPTION,  // Max power consumption (2X mA)
 
   // First CDC Interface Descriptor
   0x09,  // Size of this descriptor in bytes
