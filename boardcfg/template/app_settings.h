@@ -21,6 +21,7 @@
 #define BOARDCFG_TEMPLATE_APP_SETTINGS_H_
 
 #include "board_init.h"
+#include "common_settings.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -161,21 +162,6 @@ extern "C" {
  */
 #define SPI_USE_ENHANCED_BUFFERING true
 
-/**
- * @}
- *
- * @name USB
- * USB Configuration.
- * @{
- */
-
-/**
- * @brief The power consumption of the USB device.
- *
- * Per the USB spec, this is multipled by 2 to give the current in mA.
- * e.g. 50 = 100mA, 100 = 200mA
- */
-#define USB_POWER_CONSUMPTION 100
 /**
  * @}
  */

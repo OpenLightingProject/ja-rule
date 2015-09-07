@@ -27,6 +27,8 @@
 #include "usb/usb_device_cdc.h"
 #include "usb_properties.h"
 
+#include "bootloader_settings.h"
+
 // USB Device Layer Function Driver Registration Table
 // ----------------------------------------------------------------------------
 static const USB_DEVICE_FUNCTION_REGISTRATION_TABLE g_func_table[1] = {
@@ -72,7 +74,7 @@ static const uint8_t g_config_descriptor[] = {
   1, // Index value of this configuration
   0, // Configuration string index
   USB_ATTRIBUTE_DEFAULT | USB_ATTRIBUTE_SELF_POWERED, // Attributes
-  50, // Max power consumption (2X mA)
+  USB_POWER_CONSUMPTION, // Max power consumption
 
   // DFU Interface Descriptor
   0x09, // Size of this descriptor in bytes

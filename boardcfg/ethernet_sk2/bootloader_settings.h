@@ -13,65 +13,54 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * ethernet_sk2/bootloader_settings.h
+ * bootloader_settings.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef BOARDCFG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_
-#define BOARDCFG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_
+#ifndef BOARDCFG_TEMPLATE_BOOTLOADER_SETTINGS_H_
+#define BOARDCFG_TEMPLATE_BOOTLOADER_SETTINGS_H_
 
-#include <stdbool.h>
 #include "bootloader.h"
+#include "common_settings.h"
+
+/**
+ * @file bootloader_settings.h
+ * @brief Configuration settings for the bootloader.
+ */
 
 /*
  * @brief The reset address of the application.
  */
-enum { APPLICATION_RESET_ADDRESS = 0x9d008000 };
+#define APPLICATION_RESET_ADDRESS 0x9d008000
 
 /*
  * @brief The size of a flash page
  */
-enum { FLASH_PAGE_SIZE = 0x1000 };
+#define FLASH_PAGE_SIZE 0x1000
 
 /**
  * @brief The size of the words used for flash programming.
  */
-enum { FLASH_WORD_SIZE = 4 };
+#define FLASH_WORD_SIZE 4
 
 /**
  * @brief The port channel of the switch that controls bootloader mode.
  */
-const PORTS_CHANNEL SWITCH_PORT_CHANNEL = PORT_CHANNEL_D;
+#define SWITCH_PORT_CHANNEL PORT_CHANNEL_D
 
 /**
  * @brief The port pin of the switch that controls bootloader mode.
  */
-const PORTS_BIT_POS SWITCH_PORT_BIT = PORTS_BIT_POS_7;
+#define SWITCH_PORT_BIT PORTS_BIT_POS_7
 
 /**
  * @brief True if the switch is active high, false if active low.
  */
-const bool SWITCH_ACTIVE_HIGH = false;
+#define SWITCH_ACTIVE_HIGH false
 
 /**
  * @brief The LEDS to flash in bootloader mode.
  */
-const Bootloader_LEDs BOOTLOADER_LEDS = {
-  .count = 3,
-  .leds = {
-    {
-      .port_channel = PORT_CHANNEL_D,
-      .port_bit = PORTS_BIT_POS_0
-    },
-    {
-      .port_channel = PORT_CHANNEL_D,
-      .port_bit = PORTS_BIT_POS_1
-    },
-    {
-      .port_channel = PORT_CHANNEL_D,
-      .port_bit = PORTS_BIT_POS_2
-    },
-  }
-};
+const Bootloader_LEDs BOOTLOADER_LEDS;
 
-#endif  // BOARDCFG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_
+#endif  // BOARDCFG_TEMPLATE_BOOTLOADER_SETTINGS_H_

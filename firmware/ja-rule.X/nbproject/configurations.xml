@@ -13,12 +13,14 @@
             <itemPath>../../boardcfg/ethernet_sk2/bootloader_settings.h</itemPath>
             <itemPath>../../boardcfg/ethernet_sk2/app_settings.h</itemPath>
             <itemPath>../../boardcfg/ethernet_sk2/app_pipeline.h</itemPath>
+            <itemPath>../../boardcfg/ethernet_sk2/common_settings.h</itemPath>
           </logicalFolder>
           <logicalFolder name="number8" displayName="number8" projectFiles="true">
             <itemPath>../../boardcfg/number8/board_init.h</itemPath>
             <itemPath>../../boardcfg/number8/bootloader_settings.h</itemPath>
             <itemPath>../../boardcfg/number8/app_settings.h</itemPath>
             <itemPath>../../boardcfg/number8/app_pipeline.h</itemPath>
+            <itemPath>../../boardcfg/number8/common_settings.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="system_config"
@@ -355,6 +357,10 @@
         </C32CPP>
         <C32Global>
         </C32Global>
+      </item>
+      <item path="../../boardcfg/number8/common_settings.h"
+            ex="true"
+            overriding="false">
       </item>
       <item path="../../linker/app_mx675F512H.ld" ex="true" overriding="false">
         <C32>
@@ -738,6 +744,10 @@
         </C32CPP>
         <C32Global>
         </C32Global>
+      </item>
+      <item path="../../boardcfg/ethernet_sk2/common_settings.h"
+            ex="true"
+            overriding="false">
       </item>
       <item path="../../linker/app_mx675F512H.ld" ex="false" overriding="false">
         <C32>

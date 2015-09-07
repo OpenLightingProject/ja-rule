@@ -20,8 +20,8 @@
 #ifndef BOARDCFG_TEMPLATE_BOOTLOADER_SETTINGS_H_
 #define BOARDCFG_TEMPLATE_BOOTLOADER_SETTINGS_H_
 
-#include <stdbool.h>
 #include "bootloader.h"
+#include "common_settings.h"
 
 /**
  * @file bootloader_settings.h
@@ -31,52 +31,36 @@
 /*
  * @brief The reset address of the application.
  */
-enum { APPLICATION_RESET_ADDRESS = 0x9d008000 };
+#define APPLICATION_RESET_ADDRESS 0x9d008000
 
 /*
  * @brief The size of a flash page
  */
-enum { FLASH_PAGE_SIZE = 0x1000 };
+#define FLASH_PAGE_SIZE 0x1000
 
 /**
  * @brief The size of the words used for flash programming.
  */
-enum { FLASH_WORD_SIZE = 4 };
+#define FLASH_WORD_SIZE 4
 
 /**
  * @brief The port channel of the switch that controls bootloader mode.
  */
-const PORTS_CHANNEL SWITCH_PORT_CHANNEL = PORT_CHANNEL_D;
+#define SWITCH_PORT_CHANNEL PORT_CHANNEL_D
 
 /**
  * @brief The port pin of the switch that controls bootloader mode.
  */
-const PORTS_BIT_POS SWITCH_PORT_BIT = PORTS_BIT_POS_2;
+#define SWITCH_PORT_BIT PORTS_BIT_POS_2
 
 /**
  * @brief True if the switch is active high, false if active low.
  */
-const bool SWITCH_ACTIVE_HIGH = false;
+#define SWITCH_ACTIVE_HIGH false
 
 /**
  * @brief The LEDS to flash in bootloader mode.
  */
-const Bootloader_LEDs BOOTLOADER_LEDS = {
-  .count = 3,
-  .leds = {
-    {
-      .port_channel = PORT_CHANNEL_D,
-      .port_bit = PORTS_BIT_POS_0
-    },
-    {
-      .port_channel = PORT_CHANNEL_C,
-      .port_bit = PORTS_BIT_POS_13
-    },
-    {
-      .port_channel = PORT_CHANNEL_D,
-      .port_bit = PORTS_BIT_POS_11
-    },
-  }
-};
+const Bootloader_LEDs BOOTLOADER_LEDS;
 
 #endif  // BOARDCFG_TEMPLATE_BOOTLOADER_SETTINGS_H_

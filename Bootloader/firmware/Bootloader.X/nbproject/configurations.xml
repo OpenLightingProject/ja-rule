@@ -10,9 +10,11 @@
                          displayName="ethernet_sk2"
                          projectFiles="true">
             <itemPath>../../../boardcfg/ethernet_sk2/bootloader_settings.h</itemPath>
+            <itemPath>../../../boardcfg/ethernet_sk2/common_settings.h</itemPath>
           </logicalFolder>
           <logicalFolder name="number8" displayName="number8" projectFiles="true">
             <itemPath>../../../boardcfg/number8/bootloader_settings.h</itemPath>
+            <itemPath>../../../boardcfg/number8/common_settings.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="f1" displayName="system_config" projectFiles="true">
@@ -89,6 +91,16 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="f2" displayName="app" projectFiles="true">
+        <logicalFolder name="f2" displayName="boardcfg" projectFiles="true">
+          <logicalFolder name="ethernet_sk2"
+                         displayName="ethernet_sk2"
+                         projectFiles="true">
+            <itemPath>../../../boardcfg/ethernet_sk2/bootloader_settings.c</itemPath>
+          </logicalFolder>
+          <logicalFolder name="number8" displayName="number8" projectFiles="true">
+            <itemPath>../../../boardcfg/number8/bootloader_settings.c</itemPath>
+          </logicalFolder>
+        </logicalFolder>
         <logicalFolder name="f1" displayName="system_config" projectFiles="true">
           <logicalFolder name="f1" displayName="ethernet_sk2" projectFiles="true">
             <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -237,7 +249,27 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>true</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
+      <item path="../../../boardcfg/number8/bootloader_settings.c"
+            ex="true"
+            overriding="false">
+      </item>
       <item path="../../../boardcfg/number8/bootloader_settings.h"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="../../../boardcfg/number8/common_settings.h"
             ex="true"
             overriding="false">
       </item>
@@ -636,7 +668,27 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>true</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
+      <item path="../../../boardcfg/ethernet_sk2/bootloader_settings.c"
+            ex="true"
+            overriding="false">
+      </item>
       <item path="../../../boardcfg/ethernet_sk2/bootloader_settings.h"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="../../../boardcfg/ethernet_sk2/common_settings.h"
             ex="true"
             overriding="false">
       </item>
