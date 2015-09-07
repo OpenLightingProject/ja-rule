@@ -22,6 +22,7 @@
             <itemPath>../src/system_config/ethernet_sk2/system_config.h</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_definitions.h</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_settings.h</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/board_init.h</itemPath>
           </logicalFolder>
           <logicalFolder name="f1" displayName="number8" projectFiles="true">
             <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -35,6 +36,7 @@
             <itemPath>../src/system_config/number8/system_settings.h</itemPath>
             <itemPath>../src/system_config/number8/system_config.h</itemPath>
             <itemPath>../src/system_config/number8/system_definitions.h</itemPath>
+            <itemPath>../src/system_config/number8/board_init.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../common/bootloader_options.h</itemPath>
@@ -135,6 +137,7 @@
             <itemPath>../src/system_config/ethernet_sk2/system_init.c</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_interrupt.c</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_tasks.c</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/board_init.c</itemPath>
           </logicalFolder>
           <logicalFolder name="f1" displayName="number8" projectFiles="true">
             <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -154,6 +157,7 @@
             <itemPath>../src/system_config/number8/system_init.c</itemPath>
             <itemPath>../src/system_config/number8/system_tasks.c</itemPath>
             <itemPath>../src/system_config/number8/system_interrupt.c</itemPath>
+            <itemPath>../src/system_config/number8/board_init.c</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../common/bootloader_options.c</itemPath>
@@ -285,7 +289,41 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
-      <item path="../../linker/app_mx795F512L.ld" ex="true" overriding="false">
+      <item path="../../linker/app_mx675F512H.ld" ex="true" overriding="false">
+      </item>
+      <item path="../../linker/app_mx795F512L.ld" ex="false" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="../src/system_config/number8/board_init.c"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="../src/system_config/number8/board_init.h"
+            ex="true"
+            overriding="false">
         <C32>
         </C32>
         <C32-AR>
@@ -571,7 +609,7 @@
         <appendMe value="-L&quot;../../linker&quot;"/>
       </C32Global>
       <PKOBSKDEPlatformTool>
-        <property key="AutoSelectMemRanges" value="auto"/>
+        <property key="AutoSelectMemRanges" value="manual"/>
         <property key="SecureSegment.SegmentProgramming" value="FullChipProgramming"/>
         <property key="ToolFirmwareFilePath"
                   value="Press to browse for a specific firmware version"/>
@@ -588,8 +626,8 @@
         <property key="programoptions.eraseb4program" value="true"/>
         <property key="programoptions.preservedataflash" value="false"/>
         <property key="programoptions.preserveeeprom" value="false"/>
-        <property key="programoptions.preserveprogramrange" value="false"/>
-        <property key="programoptions.preserveprogramrange.end" value="0x1d0001ff"/>
+        <property key="programoptions.preserveprogramrange" value="true"/>
+        <property key="programoptions.preserveprogramrange.end" value="0x1d005fff"/>
         <property key="programoptions.preserveprogramrange.start" value="0x1d000000"/>
         <property key="programoptions.usehighvoltageonmclr" value="false"/>
         <property key="programoptions.uselvpprogramming" value="false"/>
@@ -630,7 +668,41 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
-      <item path="../../linker/app_mx675F512H.ld" ex="true" overriding="false">
+      <item path="../../linker/app_mx675F512H.ld" ex="false" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="../../linker/app_mx795F512L.ld" ex="true" overriding="false">
+      </item>
+      <item path="../src/system_config/ethernet_sk2/board_init.c"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="../src/system_config/ethernet_sk2/board_init.h"
+            ex="true"
+            overriding="false">
         <C32>
         </C32>
         <C32-AR>
@@ -1094,8 +1166,8 @@
         <property key="programoptions.pgmspeed" value="2"/>
         <property key="programoptions.preservedataflash" value="false"/>
         <property key="programoptions.preserveeeprom" value="false"/>
-        <property key="programoptions.preserveprogramrange" value="false"/>
-        <property key="programoptions.preserveprogramrange.end" value="0x1d07ffff"/>
+        <property key="programoptions.preserveprogramrange" value="true"/>
+        <property key="programoptions.preserveprogramrange.end" value="0x1d005fff"/>
         <property key="programoptions.preserveprogramrange.start" value="0x1d000000"/>
         <property key="programoptions.preserveuserid" value="false"/>
         <property key="programoptions.programcalmem" value="false"/>

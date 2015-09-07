@@ -97,7 +97,7 @@
       <Template>
         <Name>system_init.c</Name>
         <Path>Source Files/app/system_config/number8</Path>
-        <Checksum>9FC9096640727153153AAC762AB7609D</Checksum>
+        <Checksum>5A4CE1990904102AF6929659AD19F29B</Checksum>
       </Template>
       <Template>
         <Name>sys_ports_static.c</Name>

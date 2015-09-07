@@ -137,11 +137,12 @@ static const struct {
 static const struct {
   uint8_t bLength;
   uint8_t bDscType;
-  uint16_t string[7];
+  uint16_t string[18];
 } g_product_string_descriptor = {
   sizeof(g_product_string_descriptor),
   USB_DESCRIPTOR_STRING, {
-    'J', 'a', ' ', 'R', 'u', 'l', 'e'
+    'J', 'a', ' ', 'R', 'u', 'l', 'e', ' ', 'B', 'o', 'o', 't', 'l', 'o', 'a',
+    'd', 'e', 'r'
   }
 };
 

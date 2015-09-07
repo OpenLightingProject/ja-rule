@@ -23,6 +23,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include "dfu_spec.h"
+#include "system_config.h"
+#include "peripheral/ports/plib_ports.h"
 
 /**
  * @{
@@ -35,14 +37,32 @@ extern "C" {
 #endif
 
 /**
+ * @brief Specifies an LED to flash during bootloader mode.
+ */
+typedef struct {
+  PORTS_CHANNEL port_channel;
+  PORTS_BIT_POS port_bit;
+} Bootloader_LED;
+
+/**
+ * @brief The array of LEDs to flash when we're in bootloader mode.
+ *
+ * This is populated in bootloader_settings.h.
+ */
+typedef struct {
+  uint8_t count;
+  Bootloader_LED leds[];
+} Bootloader_LEDs;
+
+/**
  * @brief Initialize the boot loader
  */
-void Bootloader_Initialize(void);
+void Bootloader_Initialize();
 
 /**
  * @brief The bootloader event loop.
  */
-void Bootloader_Tasks(void);
+void Bootloader_Tasks();
 
 /**
  * @brief Check if USB is active & configured.

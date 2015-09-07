@@ -13,15 +13,22 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * launcher.c
+ * number8/board_init.c
  * Copyright (C) 2015 Simon Newton
  */
 
-#include "launcher.h"
+#include "board_init.h"
 
-typedef void (*ApplicationPointer)(void);
+#include "peripheral/ports/plib_ports.h"
 
-void Launcher_RunApp(uint32_t address) {
-  ApplicationPointer ptr = (ApplicationPointer) address;
-  ptr();
+void Number8_PreAppHook() {
+  // We need to set the necessary ports to digital mode
+  PLIB_PORTS_PinModeSelect(PORTS_ID_0, PORTS_ANALOG_PIN_8,
+                           PORTS_PIN_MODE_DIGITAL);  // U5 RX
+  PLIB_PORTS_PinModeSelect(PORTS_ID_0, PORTS_ANALOG_PIN_9,
+                           PORTS_PIN_MODE_DIGITAL);  // TX En
+  PLIB_PORTS_PinModeSelect(PORTS_ID_0, PORTS_ANALOG_PIN_10,
+                           PORTS_PIN_MODE_DIGITAL);  // RX En
+  PLIB_PORTS_PinModeSelect(PORTS_ID_0, PORTS_ANALOG_PIN_14,
+                           PORTS_PIN_MODE_DIGITAL);  // U5 TX
 }

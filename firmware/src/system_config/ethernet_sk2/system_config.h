@@ -17,7 +17,7 @@
     definitions (or include any files that do).  It only provides macro
     definitions for build-time configuration options that are not instantiated
     until used by another MPLAB Harmony module or application.
-    
+
     Created with MPLAB Harmony Version 1.02
 *******************************************************************************/
 

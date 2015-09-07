@@ -50,7 +50,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #include "system_config.h"
 #include "system_definitions.h"
 #include "usb_descriptors.h"
-#include "uid_store.h"
+#include "app.h"
 
 
 // ****************************************************************************
@@ -63,7 +63,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 #pragma config DEBUG =      OFF
 #pragma config ICESEL =     ICS_PGx2
-#pragma config PWP =        0xff
+#pragma config PWP =        0xf9
 #pragma config BWP =        OFF
 #pragma config CP =         OFF
 
@@ -184,9 +184,6 @@ void SYS_Initialize ( void* data )
 
   /* Set Sub-priority of USB interrupt source */
   SYS_INT_VectorSubprioritySet(INT_VECTOR_USB1, INT_SUBPRIORITY_LEVEL0);
-
-  /* Copy the UID from flash to the USB descriptor. */
-  UIDStore_AsUnicodeString(USBDescriptor_UnicodeUID());
 
   /* Initialize the USB device layer */
   sysObj.usbDevObject0 = USB_DEVICE_Initialize(
