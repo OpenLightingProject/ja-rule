@@ -28,12 +28,12 @@ DMX receiver / RDM responder.
  Together, they support all PIDs from the E1.20, E1.37-1 & E1.37-2
  standards. This allows RDM controllers to be tested without having access
  to a large number of RDM devices. The code can act as:
- - An LED Driver
- - A Moving Light
+ - An LED driver
+ - A moving light
  - A proxy, which will ACK_TIMER all requests to the child devices.
  - A sensor only device (No DMX footprint)
  - A dimmer, with sub-devices including all PIDs from E1.37-1
- - An Network Device, including all PIDs from E1.37-2.
+ - A network device, including all PIDs from E1.37-2.
 - Configurable RDM response delay, with an option to introduce jitter
 - Identify & Mute status indicators.
 - RGB Pixel control using SPI (LPD8806 only for now).

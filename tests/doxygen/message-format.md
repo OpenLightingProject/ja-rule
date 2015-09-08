@@ -51,8 +51,9 @@ range is 0 - 579 bytes.
 @param Payload The payload data associated with the command. See each
 command type below for the specific format of the payload data.
 @param EOM The end of message identifier: @ref END_OF_MESSAGE_ID
-@param Padding Extra padding, the Host should set this to 0. Padding should
-not cause the total message to exceed @ref USB_READ_BUFFER_SIZE.
+@param Padding Extra padding. If present this should be filled with 0s.
+Padding can be added until the total message does not exceed
+@ref USB_READ_BUFFER_SIZE.
 
 ## Response {#message-format-reply}
 
@@ -76,9 +77,7 @@ indicate the return code and status flags.
 </pre>
 
 @param SOM The start of message identifier: @ref START_OF_MESSAGE_ID
-@param Token A token for the command. The same token will be returned in the
-command response. Typically the host will increment the token with each
-request.
+@param Token The token that was provided in the corresponding request.
 @param Command The @ref Command identifier.
 @param Return_Code The @ref ReturnCode of the command.
 @param Status The status bitfield.
@@ -87,8 +86,9 @@ range is 0 - 579 bytes.
 @param Payload The payload data associated with the command. See each
 command type below for the specific format of the payload data.
 @param EOM The end of message identifier: @ref END_OF_MESSAGE_ID
-@param Padding Extra padding, the Host should set this to 0. Padding should
-not cause the total message to exceed @ref USB_READ_BUFFER_SIZE.
+@param Padding Extra padding. If present this should be filled with 0s.
+Padding can be added until the total message does not exceed
+@ref USB_READ_BUFFER_SIZE.
 
 # Commands {#message-commands}
 
@@ -320,7 +320,7 @@ The response contains no data.
 
 @returns @ref RC_OK or @ref RC_BAD_PARAM if the value was out of range.
 
-## Get RDM Response Timerout {#message-commands-getresponsetimeout}
+## Get RDM Response Timeout {#message-commands-getresponsetimeout}
 
 Get the time that the controller will wait for an RDM Response after sending
 an RDM command.
@@ -457,7 +457,7 @@ The response contains no data.
 
 ## Get RDM Responder Jitter {#message-commands-getresponderjitter}
 
-Get the jitter to use when sending RDM responses.
+Get the maximum jitter to use when sending RDM responses.
 
 ### Request Payload {#message-commands-getresponderjitter-req}
 
@@ -573,7 +573,7 @@ RC_OK was returned.
 
 ## Transmit Broadcast RDM Get / Set {#message-commands-txrdmbroadcast}
 
-Sends a broadcast RDM Get / Set command. If the Broadcast Listen Delay is 0,
+Sends a broadcast RDM Get / Set command. If the Broadcast Listen Delay is not 0,
 the transceiver will then listen for a response. If a response is received,
 it will be returned in the response payload.
 

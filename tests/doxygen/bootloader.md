@@ -17,7 +17,7 @@ protocol. This is a standard protocol for upgrading firmware over USB.
 
 @section bootloader_procedure Update Procedure
 
-Generally the update procedure follows:
+Generally the update procedure is:
 - Download or create a new firmware image.
 - Activate the bootloader mode on the device.
 - Perform the update.

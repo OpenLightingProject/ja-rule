@@ -31,6 +31,7 @@ The hardware designs and the documentation is licensed under the
 │   └── firmware
 │       ├── Bootloader.X  # Bootloader MPLAB X project
 │       ├── src  # Bootloader source code
+├── boardcfg     # Software configuration for each board
 ├── common  # Common code shared between the bootloader and application.
 ├── firmware  # The main DMX/RDM application
 │   ├── ja-rule.X
@@ -38,7 +39,7 @@ The hardware designs and the documentation is licensed under the
 ├── linker       # linker scripts for the bootloader & application
 ├── tests        # Unit tests
 ├── tools        # tools to upgrade the firmware on the device.
-└── user_manual  # The user manual documentation
+└── user_manual  # The user manual
 ```
 
 ## Getting Started

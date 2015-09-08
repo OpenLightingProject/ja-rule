@@ -653,6 +653,8 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
+# The order of the .md files controls the order of the pages in the output.
+
 INPUT                  = ../Bootloader/firmware/src \
                          ../common \
                          ../firmware/src \
