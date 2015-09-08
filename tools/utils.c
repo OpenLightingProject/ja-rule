@@ -21,7 +21,7 @@
 #include <stdlib.h>
 
 bool StringToUInt16(const char *input, uint16_t *output) {
-  long i = strtol(input, NULL, 0);
+  long i = strtol(input, NULL, 0);  // NOLINT
   if (i < 0 || i > UINT16_MAX) {
     return false;
   }
@@ -30,7 +30,7 @@ bool StringToUInt16(const char *input, uint16_t *output) {
 }
 
 bool StringToUInt32(const char *input, uint32_t *output) {
-  long i = strtol(input, NULL, 0);
+  long i = strtol(input, NULL, 0);  // NOLINT
   if (i < 0 || i > UINT32_MAX) {
     return false;
   }

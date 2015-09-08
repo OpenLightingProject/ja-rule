@@ -13,12 +13,12 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * bootloader_settings.h
+ * number8/bootloader_settings.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef BOARDCFG_TEMPLATE_BOOTLOADER_SETTINGS_H_
-#define BOARDCFG_TEMPLATE_BOOTLOADER_SETTINGS_H_
+#ifndef BOARDCFG_NUMBER8_BOOTLOADER_SETTINGS_H_
+#define BOARDCFG_NUMBER8_BOOTLOADER_SETTINGS_H_
 
 #include "bootloader.h"
 #include "common_settings.h"
@@ -63,4 +63,4 @@
  */
 const Bootloader_LEDs BOOTLOADER_LEDS;
 
-#endif  // BOARDCFG_TEMPLATE_BOOTLOADER_SETTINGS_H_
+#endif  // BOARDCFG_NUMBER8_BOOTLOADER_SETTINGS_H_
