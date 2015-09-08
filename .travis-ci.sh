@@ -25,7 +25,7 @@ if [[ $TASK = 'lint' ]]; then
   ./cpplint.py \
     --filter=-legal/copyright,-build/include \
     Bootloader/firmware/src/*.h \
-    $(find common boardcfg tools -name "*.h" -type f)
+    $(find common boardcfg tools -name "*.h" -type f) \
     firmware/src/*.h \
     tests/{include,lib,tests}/*.{h,cpp}
   if [[ $? -ne 0 ]]; then
