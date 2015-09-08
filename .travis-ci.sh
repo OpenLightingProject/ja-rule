@@ -15,8 +15,8 @@ if [[ $TASK = 'lint' ]]; then
   ./cpplint.py \
     --filter=-legal/copyright,-build/include,-readability/casting \
     --extensions=c \
-    Bootloader/firmware/src/*.c
-    $(find common boardcfg tools -name "*.c")
+    Bootloader/firmware/src/*.c \
+    $(find common boardcfg tools -name "*.c") \
     firmware/src/*.c
   if [[ $? -ne 0 ]]; then
     exit 1;

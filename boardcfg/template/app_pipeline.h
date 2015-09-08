@@ -22,7 +22,7 @@
  * @file app_pipeline.h
  * @brief Controls how the application modules are combined.
  *
- * These #defines decouple modules from each other and enable us to unit test
+ * These \#defines decouple modules from each other and enable us to unit test
  * each module in isolation.
  */
 #ifndef BOARDCFG_TEMPLATE_APP_PIPELINE_H_
