@@ -659,7 +659,6 @@ INPUT                  = ../Bootloader/firmware/src \
                          ../boardcfg/template \
                          ../common \
                          ../firmware/src \
-                         ../firmware/src/system_config/ethernet_sk2/system_settings.h \
                          doxygen/main.md \
                          doxygen/bootloader.md \
                          doxygen/memory.md \
