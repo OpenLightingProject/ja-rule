@@ -21,10 +21,10 @@
 
 #include <stdint.h>
 
+#include "app_settings.h"
 #include "constants.h"
 #include "dfu_spec.h"
 #include "dfu_properties.h"
-#include "system_settings.h"
 #include "uid.h"
 #include "usb/usb_device_cdc.h"
 #include "usb_properties.h"

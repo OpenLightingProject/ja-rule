@@ -50,7 +50,7 @@ extern "C" {
  * @param rx_cb The function to call when data is received from the host. This
  *   can be overridden, see below.
  *
- * If PIPELINE_TRANSPORT_RX is defined in system_pipeline.h, the macro
+ * If PIPELINE_TRANSPORT_RX is defined in app_pipeline.h, the macro
  * will override the rx_cb argument.
  */
 void USBTransport_Initialize(TransportRxFunction rx_cb);

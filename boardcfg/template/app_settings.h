@@ -13,21 +13,22 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * system_settings.h
+ * app_settings.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
-#define FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
+#ifndef BOARDCFG_TEMPLATE_APP_SETTINGS_H_
+#define BOARDCFG_TEMPLATE_APP_SETTINGS_H_
 
 #include "board_init.h"
+#include "common_settings.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /**
- * @file system_settings.h
+ * @file app_settings.h
  * @brief Configuration settings for the main application.
  *
  * These will need to be adjusted to suit the particular processor / board
@@ -163,29 +164,10 @@ extern "C" {
 
 /**
  * @}
- *
- * @name USB
- * USB Configuration.
- * @{
- */
-
-/**
- * @brief The power consumption of the USB device.
- *
- * Per the USB spec, this is multipled by 2 to give the current in mA.
- * e.g. 50 = 100mA, 100 = 200mA
- */
-#define USB_POWER_CONSUMPTION 100
-/**
- * @}
  */
 
 #ifdef __cplusplus
 }
 #endif
 
-/**
- * @}
- */
-
-#endif  // FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
+#endif  // BOARDCFG_TEMPLATE_APP_SETTINGS_H_

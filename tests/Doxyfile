@@ -656,7 +656,7 @@ WARN_LOGFILE           =
 INPUT                  = ../Bootloader/firmware/src \
                          ../common \
                          ../firmware/src \
-                         ../firmware/src/system_config/ethernet_sk2/system_settings.h \
+                         ../boardcfg/template \
                          doxygen
 
 # This tag can be used to specify the character encoding of the source files

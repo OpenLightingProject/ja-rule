@@ -46,7 +46,7 @@ bool Flash_ErasePage(uint32_t address) {
   PerformOperation(PAGE_ERASE_OPERATION);
 
   while (!PLIB_NVM_FlashWriteCycleHasCompleted(NVM_ID_0)) {
-    ;
+    {}
   }
 
   return !PLIB_NVM_WriteOperationHasTerminated(NVM_ID_0);
@@ -58,7 +58,7 @@ bool Flash_WriteWord(uint32_t address, uint32_t data) {
   PerformOperation(WORD_PROGRAM_OPERATION);
 
   while (!PLIB_NVM_FlashWriteCycleHasCompleted(NVM_ID_0)) {
-    ;
+    {}
   }
 
   return !PLIB_NVM_WriteOperationHasTerminated(NVM_ID_0);

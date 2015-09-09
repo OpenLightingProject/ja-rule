@@ -15,10 +15,9 @@ if [[ $TASK = 'lint' ]]; then
   ./cpplint.py \
     --filter=-legal/copyright,-build/include,-readability/casting \
     --extensions=c \
-    Bootloader/firmware/src/*.c
-    common/*.c \
-    firmware/src/*.c \
-    tools/*.c
+    Bootloader/firmware/src/*.c \
+    $(find common boardcfg tools -name "*.c") \
+    firmware/src/*.c
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
@@ -26,10 +25,9 @@ if [[ $TASK = 'lint' ]]; then
   ./cpplint.py \
     --filter=-legal/copyright,-build/include \
     Bootloader/firmware/src/*.h \
-    common/*.h \
+    $(find common boardcfg tools -name "*.h" -type f) \
     firmware/src/*.h \
-    tests/{include,lib,tests}/*.{h,cpp} \
-    tools/*.h
+    tests/{include,lib,tests}/*.{h,cpp}
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;

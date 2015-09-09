@@ -13,39 +13,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * launcher.h
+ * ethernet_sk2/board_init.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef BOOTLOADER_FIRMWARE_SRC_LAUNCHER_H_
-#define BOOTLOADER_FIRMWARE_SRC_LAUNCHER_H_
-
-#include <stdint.h>
+#ifndef BOARDCFG_ETHERNET_SK2_BOARD_INIT_H_
+#define BOARDCFG_ETHERNET_SK2_BOARD_INIT_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @{
- * @file launcher.h
- * @brief Jump to the main application.
- */
-
-/**
- * @brief Jump to the main application at the specified address.
- * @param address The address of the first instruction to execute.
- *
- * This function will never return.
- */
-void Launcher_RunApp(uint32_t address);
-
-/**
- * @}
- */
+void EthernetSK2_PreAppHook();
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // BOOTLOADER_FIRMWARE_SRC_LAUNCHER_H_
+#endif  // BOARDCFG_ETHERNET_SK2_BOARD_INIT_H_
