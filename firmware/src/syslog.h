@@ -71,7 +71,7 @@ typedef void (*SysLogWriteFn)(const char*);
  * @brief Initialize the System Logging module.
  * @param write_fn The function to use for logging messages.
  *
- * If PIPELINE_LOG_WRITE is defined in system_pipeline.h, the macro
+ * If PIPELINE_LOG_WRITE is defined in app_pipeline.h, the macro
  * will override the write_fn argument.
  */
 void SysLog_Initialize(SysLogWriteFn write_fn);

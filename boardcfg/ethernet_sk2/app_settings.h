@@ -13,16 +13,15 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * system_settings.h
+ * ethernet_sk2/app_settings.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
-#define FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
+#ifndef BOARDCFG_ETHERNET_SK2_APP_SETTINGS_H_
+#define BOARDCFG_ETHERNET_SK2_APP_SETTINGS_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "board_init.h"
+#include "common_settings.h"
 
 /**
  * @file system_settings.h
@@ -30,6 +29,26 @@ extern "C" {
  *
  * These will need to be adjusted to suit the particular processor / board
  * used.
+ *
+ * @name Board Specific Hooks
+ * These hooks can be used for board specific configuration at various stages
+ * during the initialization sequence.
+ * @{
+ */
+
+/**
+ * @def PRE_APP_INIT_HOOK
+ * @brief This hook is called prior to the initialization of the application
+ * modules (APP_Initialize).
+ *
+ * Remember that pins will default to analog if they share a function with the
+ * A/D Convertor. If any of your pins share with the ADC, you'll need to change
+ * them to digital mode. This should be done using this hook.
+ */
+#define PRE_APP_INIT_HOOK EthernetSK2_PreAppHook
+
+/**
+ * @}
  *
  * @name Coarse Timer
  * Settings for the @ref timer. These are used to initialize
@@ -143,12 +162,4 @@ extern "C" {
  * @}
  */
 
-#ifdef __cplusplus
-}
-#endif
-
-/**
- * @}
- */
-
-#endif  // FIRMWARE_SRC_SYSTEM_CONFIG_MX_795_512L_SYSTEM_SETTINGS_H_
+#endif  // BOARDCFG_ETHERNET_SK2_APP_SETTINGS_H_

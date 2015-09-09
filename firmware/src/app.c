@@ -38,12 +38,13 @@
 #include "stream_decoder.h"
 #include "syslog.h"
 #include "system_definitions.h"
-#include "system_settings.h"
 #include "transceiver.h"
 #include "uid_store.h"
 #include "usb_descriptors.h"
 #include "usb_transport.h"
 #include "uid_store.h"
+
+#include "app_settings.h"
 
 void __ISR(AS_TIMER_ISR_VECTOR(COARSE_TIMER_ID), ipl6) TimerEvent() {
   CoarseTimer_TimerEvent();

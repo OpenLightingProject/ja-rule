@@ -13,29 +13,34 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * number8/board_init.h
+ * number8/common_settings.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef FIRMWARE_SRC_SYSTEM_CONFIG_NUMBER8_BOARD_INIT_H_
-#define FIRMWARE_SRC_SYSTEM_CONFIG_NUMBER8_BOARD_INIT_H_
+#ifndef BOARDCFG_NUMBER8_COMMON_SETTINGS_H_
+#define BOARDCFG_NUMBER8_COMMON_SETTINGS_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+/**
+ * @file common_settings.h
+ * @brief Configuration settings by both the bootloader and the main app.
+ */
 
-void Number8_PreAppHook();
+/*
+ * @name USB
+ * USB Configuration.
+ * @{
+ */
+
+/**
+ * @brief The power consumption of the USB device.
+ *
+ * Per the USB spec, this is multipled by 2 to give the current in mA.
+ * e.g. 50 = 100mA, 100 = 200mA
+ */
+#define USB_POWER_CONSUMPTION 100
 
 /**
  * @}
  */
 
-#ifdef __cplusplus
-}
-#endif
-
-/**
- * @}
- */
-
-#endif  // FIRMWARE_SRC_SYSTEM_CONFIG_NUMBER8_BOARD_INIT_H_
+#endif  // BOARDCFG_NUMBER8_COMMON_SETTINGS_H_

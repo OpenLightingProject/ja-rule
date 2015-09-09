@@ -13,39 +13,34 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * launcher.h
+ * ethernet_sk2/common_settings.h
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef BOOTLOADER_FIRMWARE_SRC_LAUNCHER_H_
-#define BOOTLOADER_FIRMWARE_SRC_LAUNCHER_H_
-
-#include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#ifndef BOARDCFG_ETHERNET_SK2_COMMON_SETTINGS_H_
+#define BOARDCFG_ETHERNET_SK2_COMMON_SETTINGS_H_
 
 /**
+ * @file common_settings.h
+ * @brief Configuration settings by both the bootloader and the main app.
+ */
+
+/*
+ * @name USB
+ * USB Configuration.
  * @{
- * @file launcher.h
- * @brief Jump to the main application.
  */
 
 /**
- * @brief Jump to the main application at the specified address.
- * @param address The address of the first instruction to execute.
+ * @brief The power consumption of the USB device.
  *
- * This function will never return.
+ * Per the USB spec, this is multipled by 2 to give the current in mA.
+ * e.g. 50 = 100mA, 100 = 200mA
  */
-void Launcher_RunApp(uint32_t address);
+#define USB_POWER_CONSUMPTION 100
 
 /**
  * @}
  */
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif  // BOOTLOADER_FIRMWARE_SRC_LAUNCHER_H_
+#endif  // BOARDCFG_ETHERNET_SK2_COMMON_SETTINGS_H_

@@ -5,6 +5,24 @@
                    displayName="Header Files"
                    projectFiles="true">
       <logicalFolder name="app" displayName="app" projectFiles="true">
+        <logicalFolder name="f1" displayName="boardcfg" projectFiles="true">
+          <logicalFolder name="ethernet_sk2"
+                         displayName="ethernet_sk2"
+                         projectFiles="true">
+            <itemPath>../../boardcfg/ethernet_sk2/board_init.h</itemPath>
+            <itemPath>../../boardcfg/ethernet_sk2/bootloader_settings.h</itemPath>
+            <itemPath>../../boardcfg/ethernet_sk2/app_settings.h</itemPath>
+            <itemPath>../../boardcfg/ethernet_sk2/app_pipeline.h</itemPath>
+            <itemPath>../../boardcfg/ethernet_sk2/common_settings.h</itemPath>
+          </logicalFolder>
+          <logicalFolder name="number8" displayName="number8" projectFiles="true">
+            <itemPath>../../boardcfg/number8/board_init.h</itemPath>
+            <itemPath>../../boardcfg/number8/bootloader_settings.h</itemPath>
+            <itemPath>../../boardcfg/number8/app_settings.h</itemPath>
+            <itemPath>../../boardcfg/number8/app_pipeline.h</itemPath>
+            <itemPath>../../boardcfg/number8/common_settings.h</itemPath>
+          </logicalFolder>
+        </logicalFolder>
         <logicalFolder name="system_config"
                        displayName="system_config"
                        projectFiles="true">
@@ -18,11 +36,8 @@
                 </logicalFolder>
               </logicalFolder>
             </logicalFolder>
-            <itemPath>../src/system_config/ethernet_sk2/system_pipeline.h</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_config.h</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_definitions.h</itemPath>
-            <itemPath>../src/system_config/ethernet_sk2/system_settings.h</itemPath>
-            <itemPath>../src/system_config/ethernet_sk2/board_init.h</itemPath>
           </logicalFolder>
           <logicalFolder name="f1" displayName="number8" projectFiles="true">
             <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -32,11 +47,8 @@
                 </logicalFolder>
               </logicalFolder>
             </logicalFolder>
-            <itemPath>../src/system_config/number8/system_pipeline.h</itemPath>
-            <itemPath>../src/system_config/number8/system_settings.h</itemPath>
             <itemPath>../src/system_config/number8/system_config.h</itemPath>
             <itemPath>../src/system_config/number8/system_definitions.h</itemPath>
-            <itemPath>../src/system_config/number8/board_init.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../common/bootloader_options.h</itemPath>
@@ -114,6 +126,14 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="app" displayName="app" projectFiles="true">
+        <logicalFolder name="f1" displayName="boardcfg" projectFiles="true">
+          <logicalFolder name="f2" displayName="ethernet_sk2" projectFiles="true">
+            <itemPath>../../boardcfg/ethernet_sk2/board_init.c</itemPath>
+          </logicalFolder>
+          <logicalFolder name="f1" displayName="number8" projectFiles="true">
+            <itemPath>../../boardcfg/number8/board_init.c</itemPath>
+          </logicalFolder>
+        </logicalFolder>
         <logicalFolder name="system_config"
                        displayName="system_config"
                        projectFiles="true">
@@ -137,7 +157,6 @@
             <itemPath>../src/system_config/ethernet_sk2/system_init.c</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_interrupt.c</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_tasks.c</itemPath>
-            <itemPath>../src/system_config/ethernet_sk2/board_init.c</itemPath>
           </logicalFolder>
           <logicalFolder name="f1" displayName="number8" projectFiles="true">
             <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -157,7 +176,6 @@
             <itemPath>../src/system_config/number8/system_init.c</itemPath>
             <itemPath>../src/system_config/number8/system_tasks.c</itemPath>
             <itemPath>../src/system_config/number8/system_interrupt.c</itemPath>
-            <itemPath>../src/system_config/number8/board_init.c</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../common/bootloader_options.c</itemPath>
@@ -252,6 +270,9 @@
     <Elem>../src/system_config/number8</Elem>
     <Elem>/opt/microchip/harmony/v1_02</Elem>
     <Elem>../src/system_config/ethernet_sk2</Elem>
+    <Elem>../../boardcfg/ethernet_sk2</Elem>
+    <Elem>../../boardcfg/number8</Elem>
+    <Elem>../../boardcfg/default</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -289,41 +310,73 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
+      <item path="../../boardcfg/number8/app_pipeline.h" ex="true" overriding="false">
+      </item>
+      <item path="../../boardcfg/number8/app_settings.h" ex="true" overriding="false">
+      </item>
+      <item path="../../boardcfg/number8/board_init.c" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="../../boardcfg/number8/board_init.h" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="../../boardcfg/number8/bootloader_settings.h"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="../../boardcfg/number8/common_settings.h"
+            ex="true"
+            overriding="false">
+      </item>
       <item path="../../linker/app_mx675F512H.ld" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../linker/app_mx795F512L.ld" ex="false" overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="../src/system_config/number8/board_init.c"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="../src/system_config/number8/board_init.h"
-            ex="true"
-            overriding="false">
         <C32>
         </C32>
         <C32-AR>
@@ -449,38 +502,6 @@
         <C32Global>
         </C32Global>
       </item>
-      <item path="../src/system_config/number8/system_pipeline.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="../src/system_config/number8/system_settings.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
       <item path="../src/system_config/number8/system_tasks.c"
             ex="true"
             overriding="false">
@@ -505,7 +526,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../../common;../src;../src/system_config/ethernet_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
+                  value="../../common;../src;../../boardcfg/ethernet_sk2;../src/system_config/ethernet_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -668,6 +689,66 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
+      <item path="../../boardcfg/ethernet_sk2/app_pipeline.h"
+            ex="true"
+            overriding="false">
+      </item>
+      <item path="../../boardcfg/ethernet_sk2/app_settings.h"
+            ex="true"
+            overriding="false">
+      </item>
+      <item path="../../boardcfg/ethernet_sk2/board_init.c"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="../../boardcfg/ethernet_sk2/board_init.h"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="../../boardcfg/ethernet_sk2/bootloader_settings.h"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="../../boardcfg/ethernet_sk2/common_settings.h"
+            ex="true"
+            overriding="false">
+      </item>
       <item path="../../linker/app_mx675F512H.ld" ex="false" overriding="false">
         <C32>
         </C32>
@@ -683,26 +764,6 @@
         </C32Global>
       </item>
       <item path="../../linker/app_mx795F512L.ld" ex="true" overriding="false">
-      </item>
-      <item path="../src/system_config/ethernet_sk2/board_init.c"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="../src/system_config/ethernet_sk2/board_init.h"
-            ex="true"
-            overriding="false">
         <C32>
         </C32>
         <C32-AR>
@@ -813,38 +874,6 @@
         </C32Global>
       </item>
       <item path="../src/system_config/ethernet_sk2/system_interrupt.c"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="../src/system_config/ethernet_sk2/system_pipeline.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="../src/system_config/ethernet_sk2/system_settings.h"
             ex="true"
             overriding="false">
         <C32>
@@ -1014,7 +1043,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../../common;../src/system_config/number8;/opt/microchip/harmony/v1_02/framework;../src/system_config/number8/framework"/>
+                  value="../src;../../common;../src/system_config/number8/framework;../src/system_config/number8;/opt/microchip/harmony/v1_02/framework;../../boardcfg/number8"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -1141,7 +1170,6 @@
         <property key="UART4" value="true"/>
         <property key="UART5" value="true"/>
         <property key="UART6" value="true"/>
-        <property key="firmware.download.all" value="false"/>
         <property key="hwtoolclock.frcindebug" value="false"/>
         <property key="memories.aux" value="false"/>
         <property key="memories.bootflash" value="true"/>

@@ -13,39 +13,26 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * launcher.h
+ * ethernet_sk2/bootloader_settings.c
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef BOOTLOADER_FIRMWARE_SRC_LAUNCHER_H_
-#define BOOTLOADER_FIRMWARE_SRC_LAUNCHER_H_
+#include "bootloader_settings.h"
 
-#include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/**
- * @{
- * @file launcher.h
- * @brief Jump to the main application.
- */
-
-/**
- * @brief Jump to the main application at the specified address.
- * @param address The address of the first instruction to execute.
- *
- * This function will never return.
- */
-void Launcher_RunApp(uint32_t address);
-
-/**
- * @}
- */
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif  // BOOTLOADER_FIRMWARE_SRC_LAUNCHER_H_
+const Bootloader_LEDs BOOTLOADER_LEDS = {
+  .count = 3,
+  .leds = {
+    {
+      .port_channel = PORT_CHANNEL_D,
+      .port_bit = PORTS_BIT_POS_0
+    },
+    {
+      .port_channel = PORT_CHANNEL_D,
+      .port_bit = PORTS_BIT_POS_1
+    },
+    {
+      .port_channel = PORT_CHANNEL_D,
+      .port_bit = PORTS_BIT_POS_2
+    },
+  }
+};
