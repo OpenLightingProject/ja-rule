@@ -1,26 +1,17 @@
 # Ja Rule
 [![Build Status](https://travis-ci.org/OpenLightingProject/ja-rule.svg?branch=master)](https://travis-ci.org/OpenLightingProject/ja-rule) [![Coverity Scan Status](https://scan.coverity.com/projects/3938/badge.svg)](https://scan.coverity.com/projects/3938) [![Coverage Status](https://coveralls.io/repos/OpenLightingProject/ja-rule/badge.png?branch=master)](https://coveralls.io/r/OpenLightingProject/ja-rule?branch=master)
 
-Ja Rule is an open source DMX512 / RDM stack for PIC32 microcontrollers. For
-more information see the [Ja Rule
-Documentation](https://docs.openlighting.org/ja-rule/doc/latest/).
+Ja Rule is an open source DMX512 / RDM stack for PIC32 microcontrollers. The
+software is developed as part of the
+[Open Lighting Project](https://www.openlighting.org/).
 
-## Directory Layout
+## Documentation
 
-*Bootloader* The bootloader code.
+The [Ja Rule Developer
+Documentation](https://docs.openlighting.org/ja-rule/doc/latest/), is targeted
+towards people who want to know more about the platform and how to modify it.
 
-*common* Common code shared between the bootloader and the main application.
-
-*firmware/src* the source code .h and .c files.
-
-*firmware/ja-rule.X* is the MPLABX project.
-
-*linker* Contains the linker scripts used to build the bootloader and
-the main application.
-
-*tests* contains the unit tests.
-
-*tools* Tools used to upgrade firmware on the device.
+The Ja Rule User Guide is not available yet.
 
 ## Licensing
 
@@ -29,6 +20,27 @@ The Ja Rule codebase is licensed under the
 
 The unit-testing code & mocks are licenced under the
 [GPL](http://www.gnu.org/licenses/gpl.html).
+
+The hardware designs and the documentation is licensed under the
+[Creative Commons BY-SA](https://creativecommons.org/licenses/by-sa/3.0/us/).
+
+## Directory Layout
+
+```
+├── Bootloader  # The DFU bootloader
+│   └── firmware
+│       ├── Bootloader.X  # Bootloader MPLAB X project
+│       ├── src  # Bootloader source code
+├── boardcfg     # Software configuration for each board
+├── common  # Common code shared between the bootloader and application.
+├── firmware  # The main DMX/RDM application
+│   ├── ja-rule.X
+│   └── src
+├── linker       # linker scripts for the bootloader & application
+├── tests        # Unit tests
+├── tools        # tools to upgrade the firmware on the device.
+└── user_manual  # The user manual
+```
 
 ## Getting Started
 
@@ -53,12 +65,6 @@ make
 make check
 ```
 
-## Documentation
-
-The documentation can be found at
-https://docs.openlighting.org/ja-rule/doc/latest/index.html . To generate the
-documentation locally run `make doxygen-doc` from the tests/ directory.
-
 ## Dev Notes
 
 A bulk-in transfer with a full 512 bytes of DMX data takes < 1ms on my mac
@@ -67,4 +73,3 @@ buffer would suffice.
 
 For DMX / RDM messages, the response message is sent when the transceiver
 completes the transaction, so the host received positive acknowledgement.
-
