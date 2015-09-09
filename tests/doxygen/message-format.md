@@ -42,17 +42,17 @@ padding. The total message size must not exceed @ref USB_READ_BUFFER_SIZE.
 </pre>
 
 @param SOM The start of message identifier: @ref START_OF_MESSAGE_ID
-@param Token A token for the command. The same token will be returned in the
-command response. Typically the host will increment the token with each
+@param Token A token for the request. The same token will be returned in
+the response. Typically the host will increment the token with each
 request.
 @param Command The @ref Command identifier.
-@param Length The length of the data included in the command. The valid
+@param Length The length of the data included in the request. The valid
 range is 0 - 579 bytes.
-@param Payload The payload data associated with the command. See each
+@param Payload The payload data associated with the request. See each
 command type below for the specific format of the payload data.
 @param EOM The end of message identifier: @ref END_OF_MESSAGE_ID
 @param Padding Extra padding. If present this should be filled with 0s.
-Padding can be added until the total message does not exceed
+Padding can be added as long as the total message does not exceed
 @ref USB_READ_BUFFER_SIZE.
 
 ## Response {#message-format-reply}
@@ -79,7 +79,7 @@ indicate the return code and status flags.
 @param SOM The start of message identifier: @ref START_OF_MESSAGE_ID
 @param Token The token that was provided in the corresponding request.
 @param Command The @ref Command identifier.
-@param Return_Code The @ref ReturnCode of the command.
+@param Return_Code The @ref ReturnCode of the response.
 @param Status The status bitfield.
 @param Length The length of the data included in the command. The valid
 range is 0 - 579 bytes.
@@ -87,7 +87,7 @@ range is 0 - 579 bytes.
 command type below for the specific format of the payload data.
 @param EOM The end of message identifier: @ref END_OF_MESSAGE_ID
 @param Padding Extra padding. If present this should be filled with 0s.
-Padding can be added until the total message does not exceed
+Padding can be added as long as the total message does not exceed
 @ref USB_READ_BUFFER_SIZE.
 
 # Commands {#message-commands}
