@@ -36,7 +36,7 @@ DMX receiver / RDM responder.
  - A network device, including all PIDs from E1.37-2.
 - Configurable RDM response delay, with an option to introduce jitter
 - Identify & Mute status indicators.
-- RGB Pixel control using SPI (LPD8806 only for now).
+- RGB pixel control using SPI (LPD8806 only for now).
 
 ## Common {#main-features-common}
 
