@@ -16,6 +16,7 @@
  * Copyright (C) 2015 Simon Newton.
  */
 
+#include <arpa/inet.h>
 #include <getopt.h>
 #include <stdbool.h>
 #include <stdint.h>
