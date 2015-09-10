@@ -3,7 +3,7 @@
 # This script is triggered from the script section of .travis.yml
 # It runs the appropriate commands depending on the task requested.
 
-CPP_LINT_URL="http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py";
+CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py";
 
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
@@ -11,10 +11,10 @@ if [[ $TASK = 'lint' ]]; then
   # run the lint tool only if it is the requested task
   # first check we've not got any generic NOLINTs
   # count the number of generic NOLINTs
-  nolints=$(grep -IR NOLINT * | grep -v "NOLINT(" | wc -l)
+  nolints=$(grep -PIR 'NOLINT(?!\()' * | wc -l)
   if [[ $nolints -ne 0 ]]; then
     # print the output for info
-    echo $(grep -IR NOLINT * | grep -v "NOLINT(")
+    echo $(grep -PIR 'NOLINT(?!\()' *)
     echo "Found $nolints generic NOLINTs"
     exit 1;
   else
