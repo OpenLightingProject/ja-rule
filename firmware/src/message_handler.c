@@ -22,13 +22,13 @@
 #include <stdlib.h>
 
 #include "app.h"
+#include "app_pipeline.h"
 #include "constants.h"
 #include "flags.h"
 #include "rdm_frame.h"
 #include "rdm_handler.h"
 #include "syslog.h"
 #include "system_definitions.h"
-#include "system_pipeline.h"
 #include "transceiver.h"
 
 #ifndef PIPELINE_TRANSPORT_TX

@@ -21,8 +21,8 @@
 
 #include <string.h>
 
+#include "app_pipeline.h"
 #include "constants.h"
-#include "system_pipeline.h"
 
 FlagsData g_flags;
 

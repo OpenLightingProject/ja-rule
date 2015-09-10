@@ -27,6 +27,8 @@
 #include "usb/usb_device_cdc.h"
 #include "usb_properties.h"
 
+#include "bootloader_settings.h"
+
 // USB Device Layer Function Driver Registration Table
 // ----------------------------------------------------------------------------
 static const USB_DEVICE_FUNCTION_REGISTRATION_TABLE g_func_table[1] = {
@@ -45,55 +47,55 @@ static const USB_DEVICE_FUNCTION_REGISTRATION_TABLE g_func_table[1] = {
 // USB Device Layer Descriptors
 // ----------------------------------------------------------------------------
 static const USB_DEVICE_DESCRIPTOR g_device_descriptor = {
-  0x12, // Size of this descriptor in bytes
-  USB_DESCRIPTOR_DEVICE, // DEVICE descriptor type
-  0x0100, // USB Spec Release Number in BCD format
-  0x00, // Class Code
-  0x00, // Subclass code
-  0x00, // Protocol code
-  DFU_BLOCK_SIZE, // Max packet size for EP0
-  USB_DEVICE_VENDOR_ID, // Vendor ID.
-  USB_DEVICE_BOOTLOADER_PRODUCT_ID, // Product ID.
-  0x0000, // Device release number in BCD format
-  0x01, // Manufacturer string index
-  0x02, // Product string index
-  0x03, // Device serial number string index
-  0x01 // Number of possible configurations
+  0x12,  // Size of this descriptor in bytes
+  USB_DESCRIPTOR_DEVICE,  // DEVICE descriptor type
+  0x0100,  // USB Spec Release Number in BCD format
+  0x00,  // Class Code
+  0x00,  // Subclass code
+  0x00,  // Protocol code
+  DFU_BLOCK_SIZE,  // Max packet size for EP0
+  USB_DEVICE_VENDOR_ID,  // Vendor ID.
+  USB_DEVICE_BOOTLOADER_PRODUCT_ID,  // Product ID.
+  0x0000,  // Device release number in BCD format
+  0x01,  // Manufacturer string index
+  0x02,  // Product string index
+  0x03,  // Device serial number string index
+  0x01  // Number of possible configurations
 };
 
 // Device Configuration Decriptor
 // ----------------------------------------------------------------------------
 static const uint8_t g_config_descriptor[] = {
   // Configuration Descriptor Header
-  0x09, // Size of this descriptor in bytes
-  USB_DESCRIPTOR_CONFIGURATION, // CONFIGURATION descriptor type
-  0x24, 0x00, // Total length of data for this cfg
-  1, // Number of interfaces in this cfg
-  1, // Index value of this configuration
-  0, // Configuration string index
-  USB_ATTRIBUTE_DEFAULT | USB_ATTRIBUTE_SELF_POWERED, // Attributes
-  50, // Max power consumption (2X mA)
+  0x09,  // Size of this descriptor in bytes
+  USB_DESCRIPTOR_CONFIGURATION,  // CONFIGURATION descriptor type
+  0x24, 0x00,  // Total length of data for this cfg
+  1,  // Number of interfaces in this cfg
+  1,  // Index value of this configuration
+  0,  // Configuration string index
+  USB_ATTRIBUTE_DEFAULT | USB_ATTRIBUTE_SELF_POWERED,  // Attributes
+  USB_POWER_CONSUMPTION,  // Max power consumption
 
   // DFU Interface Descriptor
-  0x09, // Size of this descriptor in bytes
-  USB_DESCRIPTOR_INTERFACE, // Descriptor Type
-  DFU_MODE_DFU_INTERFACE_INDEX, // Interface Number
-  DFU_ALT_INTERFACE_FIRMWARE, // Alternate Setting Number
-  0x00, // Number of endpoints in this interface
-  0xfe, // Class code
-  0x01, // Subclass code
-  0x02, // Protocol code
-  0x04, // Interface string index
+  0x09,  // Size of this descriptor in bytes
+  USB_DESCRIPTOR_INTERFACE,  // Descriptor Type
+  DFU_MODE_DFU_INTERFACE_INDEX,  // Interface Number
+  DFU_ALT_INTERFACE_FIRMWARE,  // Alternate Setting Number
+  0x00,  // Number of endpoints in this interface
+  0xfe,  // Class code
+  0x01,  // Subclass code
+  0x02,  // Protocol code
+  0x04,  // Interface string index
 
-  0x09, // Size of this descriptor in bytes
-  USB_DESCRIPTOR_INTERFACE, // Descriptor Type
-  DFU_MODE_DFU_INTERFACE_INDEX, // Interface Number
-  DFU_ALT_INTERFACE_UID, // Alternate Setting Number
-  0x00, // Number of endpoints in this interface
-  0xfe, // Class code
-  0x01, // Subclass code
-  0x02, // Protocol code
-  0x05, // Interface string index
+  0x09,  // Size of this descriptor in bytes
+  USB_DESCRIPTOR_INTERFACE,  // Descriptor Type
+  DFU_MODE_DFU_INTERFACE_INDEX,  // Interface Number
+  DFU_ALT_INTERFACE_UID,  // Alternate Setting Number
+  0x00,  // Number of endpoints in this interface
+  0xfe,  // Class code
+  0x01,  // Subclass code
+  0x02,  // Protocol code
+  0x05,  // Interface string index
 
   // DFU functional descriptor
   0x09,  // size
@@ -169,7 +171,7 @@ static const struct {
 } g_firmware_interface_descriptor = {
   sizeof(g_firmware_interface_descriptor),
   USB_DESCRIPTOR_STRING, {
-    'F','i', 'r', 'm', 'w', 'a', 'r', 'e'
+    'F', 'i', 'r', 'm', 'w', 'a', 'r', 'e'
   }
 };
 
@@ -204,19 +206,19 @@ static const USB_DEVICE_CONFIGURATION_DESCRIPTORS_TABLE g_config_desc_set[1] = {
 // USB Device Layer Master Descriptor Table
 // ----------------------------------------------------------------------------
 static const USB_DEVICE_MASTER_DESCRIPTOR usbMasterDescriptor = {
-  &g_device_descriptor, // Full Speed Device Descriptor.
-  1, // Total number of full speed configurations available.
+  &g_device_descriptor,  // Full Speed Device Descriptor.
+  1,  // Total number of full speed configurations available.
   &g_config_desc_set[0],
 
-  NULL, // High speed device desc is not supported.
-  0, // Total number of high speed configurations available.
-  NULL, // Pointer to array of high speed configurations descriptors.
+  NULL,  // High speed device desc is not supported.
+  0,  // Total number of high speed configurations available.
+  NULL,  // Pointer to array of high speed configurations descriptors.
 
-  6, // Total number of string descriptors available.
-  g_string_descriptors, // Pointer to array of string descriptors
+  6,  // Total number of string descriptors available.
+  g_string_descriptors,  // Pointer to array of string descriptors
 
-  NULL, // Pointer to full speed dev qualifier.
-  NULL, // Pointer to high speed dev qualifier.
+  NULL,  // Pointer to full speed dev qualifier.
+  NULL,  // Pointer to high speed dev qualifier.
 };
 
 // Endpoint Table needed by the Device Layer.
@@ -230,13 +232,13 @@ const USB_DEVICE_INIT usbDevInitData = {
   .moduleInit = {SYS_MODULE_POWER_RUN_FULL},
   .stopInIdle = false,
   .suspendInSleep = false,
-  .endpointTable= g_endpoint_table,
+  .endpointTable = g_endpoint_table,
   .registeredFuncCount = 1,
   .registeredFunctions = (USB_DEVICE_FUNCTION_REGISTRATION_TABLE*) g_func_table,
   .usbMasterDescriptor = (USB_DEVICE_MASTER_DESCRIPTOR*) &usbMasterDescriptor,
   .deviceSpeed = USB_SPEED_FULL,
   .queueSizeEndpointRead = 1,
-  .queueSizeEndpointWrite= 1,
+  .queueSizeEndpointWrite = 1,
 };
 
 const USB_DEVICE_INIT* BootloaderUSBDescriptor_GetDeviceConfig() {

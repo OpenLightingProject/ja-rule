@@ -23,7 +23,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "system_pipeline.h"
+#include "app_pipeline.h"
 
 enum { SYSLOG_PRINT_BUFFER_SIZE = 256 };
 

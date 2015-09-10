@@ -48,4 +48,4 @@ void Launcher_RunApp(uint32_t address);
 }
 #endif
 
-#endif  // BOOTLOADER_FIRMWARE_SRC_FLASH_H_
+#endif  // BOOTLOADER_FIRMWARE_SRC_LAUNCHER_H_

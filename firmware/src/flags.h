@@ -54,7 +54,7 @@ extern FlagsData g_flags;
  *   Flags_SendResponse() is called. This can be overridden, see the note
  *   below.
  *
- * If PIPELINE_TRANSPORT_TX is defined in system_pipeline.h, the macro
+ * If PIPELINE_TRANSPORT_TX is defined in app_pipeline.h, the macro
  * will override the tx_cb argument.
  */
 void Flags_Initialize(TransportTXFunction tx_cb);

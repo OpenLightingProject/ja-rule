@@ -59,7 +59,7 @@ typedef void (*MessageHandler)(const Message*);
  * @brief Initialize the Stream Decoder.
  * @param handler The MessageHandler to call with each new message.
  *
- * If PIPELINE_HANDLE_MESSAGE is defined in system_pipeline.h, the macro
+ * If PIPELINE_HANDLE_MESSAGE is defined in app_pipeline.h, the macro
  * will override the handler argument.
  */
 void StreamDecoder_Initialize(MessageHandler handler);
