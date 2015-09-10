@@ -35,14 +35,14 @@
  *  - Transceiver_QueueRDMRequest();
  *
  * When the operation completes, the TransceiverEventCallback will be run, with
- * the result of the operation. See @ref controller_sm
+ * the result of the operation. See @ref controller-overview
  * "Controller State Machine".
  *
  * @par Responder Mode
  *
  * In responder mode, the TransceiverEventCallback will be run when a frame is
  *   received. The handler should call Transceiver_QueueRDMResponse() to send a
- *   response frame. See @ref responder_sm "Responder State Machine".
+ *   response frame. See @ref responder-overview "Responder State Machine".
  *
  * @addtogroup transceiver
  * @{
@@ -242,9 +242,9 @@ typedef struct {
  * @param tx_callback The callback to run when a transceiver TX event occurs.
  * @param rx_callback The callback to run when a transceiver RX event occurs.
  *
- * If PIPELINE_TRANSCEIVER_TX_EVENT is defined in system_pipeline.h, the macro
+ * If PIPELINE_TRANSCEIVER_TX_EVENT is defined in app_pipeline.h, the macro
  * will override the value of tx_callback.
- * If PIPELINE_TRANSCEIVER_RX_EVENT is defined in system_pipeline.h, the macro
+ * If PIPELINE_TRANSCEIVER_RX_EVENT is defined in app_pipeline.h, the macro
  * will override the value of rx_callback.
  */
 void Transceiver_Initialize(const TransceiverHardwareSettings *settings,

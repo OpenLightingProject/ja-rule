@@ -22,8 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "app_pipeline.h"
 #include "constants.h"
-#include "system_pipeline.h"
 
 // Microchip defines this macro in stdlib.h but it's non standard.
 // We define it here so that the unit tests work.

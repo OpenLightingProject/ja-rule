@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "app_pipeline.h"
 #include "constants.h"
 #include "iovec.h"
 #include "macros.h"
@@ -29,7 +30,6 @@
 #include "rdm_util.h"
 #include "syslog.h"
 #include "utils.h"
-#include "system_pipeline.h"
 
 enum { MAX_RDM_MODELS = 6 };
 

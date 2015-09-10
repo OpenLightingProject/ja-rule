@@ -22,7 +22,7 @@
 #include <arpa/inet.h>
 #endif
 
-#include "system_pipeline.h"
+#include "app_pipeline.h"
 #include "constants.h"
 #include "utils.h"
 

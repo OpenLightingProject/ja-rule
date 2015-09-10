@@ -27,7 +27,7 @@
  *
  * These macros can be used to convert integers to module IDs, interrupt sources
  * & interrupt vectors. This allows us to specify the peripheral index in a
- * single location, see system_settings.h
+ * single location, see app_settings.h
  */
 
 /// @cond INTERNAL

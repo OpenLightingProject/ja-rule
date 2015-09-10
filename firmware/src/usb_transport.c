@@ -21,6 +21,7 @@
 
 #include <string.h>
 
+#include "app_pipeline.h"
 #include "bootloader_options.h"
 #include "constants.h"
 #include "dfu_properties.h"
@@ -31,7 +32,6 @@
 #include "stream_decoder.h"
 #include "system_config.h"
 #include "system_definitions.h"
-#include "system_pipeline.h"
 #include "transport.h"
 #include "usb/usb_device.h"
 #include "utils.h"

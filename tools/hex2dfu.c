@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
+#include <unistd.h>
 
 #include "constants.h"
 #include "dfu.h"
@@ -65,6 +66,22 @@ static const char DFU_SUFFIX[] = ".dfu";
 uint8_t *g_data = NULL;
 unsigned int g_data_size = 0;
 
+uint8_t DigitToInt(char ch) {
+  int d = ch - '0';
+  if ((unsigned) d < 10) {
+    return d;
+  }
+  d = ch - 'a';
+  if ((unsigned) d < 6) {
+    return d + 10;
+  }
+  d = ch - 'A';
+  if ((unsigned) d < 6) {
+    return d + 10;
+  }
+  return -1;
+}
+
 /**
  * @brief Convert a pair of characters to a byte.
  */
@@ -74,7 +91,7 @@ bool HexToUInt8(const char *str, uint8_t *output) {
     return false;
   }
 
-  *output = (digittoint(str[0]) * 16) + digittoint(str[1]);
+  *output = (DigitToInt(str[0]) * 16) + DigitToInt(str[1]);
   return true;
 }
 
@@ -186,7 +203,7 @@ void ProcessHexFile(int fd, const Options *options) {
     }
 
     unsigned int hex_data_size = 2 * byte_count;
-    char hex_data[hex_data_size];
+    char hex_data[hex_data_size];  // NOLINT(runtime/arrays)
     r = read(fd, &hex_data, hex_data_size);
     if (r != hex_data_size) {
       printf("Failed to read %d bytes on line %d\n", hex_data_size, line);
@@ -197,7 +214,7 @@ void ProcessHexFile(int fd, const Options *options) {
         byte_count + (address >> 8) + address + record_type);
 
     // convert hex data to actual data
-    uint8_t data[byte_count];
+    uint8_t data[byte_count];  // NOLINT(runtime/arrays)
     for (unsigned int i = 0; i < byte_count; i++) {
       if (!HexToUInt8(hex_data + (i * 2), (uint8_t*) &data + i)) {
         printf("Invalid data on line %d\n", line);
@@ -354,7 +371,7 @@ int main(int argc, char *argv[]) {
 
   // Setup the output file path, and make sure the input file ends in
   // HEX_SUFFIX.
-  char output_file[strlen(options.input_file) + 1];
+  char output_file[strlen(options.input_file) + 1];  // NOLINT(runtime/arrays)
   strncpy(output_file, options.input_file, strlen(options.input_file) + 1);
 
   char *ext = strrchr(output_file, '.');

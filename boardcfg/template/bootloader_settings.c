@@ -13,29 +13,26 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * ethernet_sk2/board_init.h
+ * bootloader_settings.c
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef FIRMWARE_SRC_SYSTEM_CONFIG_ETHERNET_SK2_BOARD_INIT_H_
-#define FIRMWARE_SRC_SYSTEM_CONFIG_ETHERNET_SK2_BOARD_INIT_H_
+#include "bootloader_settings.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void EthernetSK2_PreAppHook();
-
-/**
- * @}
- */
-
-#ifdef __cplusplus
-}
-#endif
-
-/**
- * @}
- */
-
-#endif  // FIRMWARE_SRC_SYSTEM_CONFIG_ETHERNET_SK2_BOARD_INIT_H_
+const Bootloader_LEDs BOOTLOADER_LEDS = {
+  .count = 3,
+  .leds = {
+    {
+      .port_channel = PORT_CHANNEL_D,
+      .port_bit = PORTS_BIT_POS_0
+    },
+    {
+      .port_channel = PORT_CHANNEL_C,
+      .port_bit = PORTS_BIT_POS_13
+    },
+    {
+      .port_channel = PORT_CHANNEL_D,
+      .port_bit = PORTS_BIT_POS_11
+    },
+  }
+};
