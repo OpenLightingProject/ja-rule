@@ -66,7 +66,7 @@ static const char DFU_SUFFIX[] = ".dfu";
 uint8_t *g_data = NULL;
 unsigned int g_data_size = 0;
 
-uint8_t digittoint(char ch) {
+uint8_t DigitToInt(char ch) {
   int d = ch - '0';
   if ((unsigned) d < 10) {
     return d;
@@ -91,7 +91,7 @@ bool HexToUInt8(const char *str, uint8_t *output) {
     return false;
   }
 
-  *output = (digittoint(str[0]) * 16) + digittoint(str[1]);
+  *output = (DigitToInt(str[0]) * 16) + DigitToInt(str[1]);
   return true;
 }
 
