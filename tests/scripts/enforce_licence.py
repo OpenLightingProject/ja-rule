@@ -28,15 +28,42 @@ import textwrap
 CPP, JS, PROTOBUF, PYTHON = xrange(4)
 
 IGNORED_FILES = [
+  'Bootloader/firmware/src/system_config/ethernet_sk2/system_config.h',
+  'Bootloader/firmware/src/system_config/ethernet_sk2/system_definitions.h',
+  'Bootloader/firmware/src/system_config/ethernet_sk2/system_init.c',
+  'Bootloader/firmware/src/system_config/ethernet_sk2/system_interrupt.c',
+  'Bootloader/firmware/src/system_config/ethernet_sk2/system_tasks.c',
+  'Bootloader/firmware/src/system_config/number8/system_config.h',
+  'Bootloader/firmware/src/system_config/number8/system_definitions.h',
+  'Bootloader/firmware/src/system_config/number8/system_init.c',
+  'Bootloader/firmware/src/system_config/number8/system_interrupt.c',
+  'Bootloader/firmware/src/system_config/number8/system_tasks.c',
+  'firmware/src/system_config/ethernet_sk2/system_config.h',
+  'firmware/src/system_config/ethernet_sk2/system_definitions.h',
+  'firmware/src/system_config/ethernet_sk2/system_init.c',
+  'firmware/src/system_config/ethernet_sk2/system_interrupt.c',
+  'firmware/src/system_config/ethernet_sk2/system_pipeline.h',
+  'firmware/src/system_config/ethernet_sk2/system_tasks.c',
+  'firmware/src/system_config/number8/system_config.h',
+  'firmware/src/system_config/number8/system_definitions.h',
+  'firmware/src/system_config/number8/system_init.c',
+  'firmware/src/system_config/number8/system_interrupt.c',
+  'firmware/src/system_config/number8/system_pipeline.h',
+  'firmware/src/system_config/number8/system_tasks.c',
   'src/main.c'
 ]
 
 IGNORED_DIRECTORIES = [
-    'Bootloader/firmware/src/system_config',
-    'firmware/src/system_config',
-    'src/system_config',
-    'tests/src/system_config',
-    'tests/boot_src/system_config',
+    'Bootloader/firmware/src/system_config/ethernet_sk2/framework/',
+    'Bootloader/firmware/src/system_config/number8/framework/',
+    'firmware/src/system_config/ethernet_sk2/framework/',
+    'firmware/src/system_config/number8/framework/',
+    'src/system_config/ethernet_sk2/framework/',
+    'src/system_config/number8/framework/',
+    'tests/src/system_config/ethernet_sk2/framework/',
+    'tests/src/system_config/number8/framework/',
+    'tests/boot_src/system_config/ethernet_sk2/framework/',
+    'tests/boot_src/system_config/number8/framework/',
 ]
 
 def Usage(arg0):
