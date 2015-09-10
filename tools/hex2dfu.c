@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sysexits.h>
+#include <unistd.h>
 
 #include "constants.h"
 #include "dfu.h"
@@ -65,6 +66,22 @@ static const char DFU_SUFFIX[] = ".dfu";
 uint8_t *g_data = NULL;
 unsigned int g_data_size = 0;
 
+uint8_t DigitToInt(char ch) {
+  int d = ch - '0';
+  if ((unsigned) d < 10) {
+    return d;
+  }
+  d = ch - 'a';
+  if ((unsigned) d < 6) {
+    return d + 10;
+  }
+  d = ch - 'A';
+  if ((unsigned) d < 6) {
+    return d + 10;
+  }
+  return -1;
+}
+
 /**
  * @brief Convert a pair of characters to a byte.
  */
@@ -74,7 +91,7 @@ bool HexToUInt8(const char *str, uint8_t *output) {
     return false;
   }
 
-  *output = (digittoint(str[0]) * 16) + digittoint(str[1]);
+  *output = (DigitToInt(str[0]) * 16) + DigitToInt(str[1]);
   return true;
 }
 
