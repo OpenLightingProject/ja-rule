@@ -43,9 +43,9 @@ def Usage(arg0):
   print textwrap.dedent("""\
   Usage: %s
 
-  Walk the directory tree from the current directory, and make sure all .cpp,
-  .h, .js, .proto and .py files have the appropriate Licence. The licence is
-  determined from the LICENCE file in each branch of the directory tree.
+  Walk the directory tree from the current directory, and make sure all .c,
+  .cpp, .h, .js, .proto and .py files have the appropriate Licence. The licence
+  is determined from the LICENCE file in each branch of the directory tree.
 
     --diff               Print the diffs.
     --fix                Fix the files.
