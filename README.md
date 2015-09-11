@@ -56,7 +56,7 @@ https://code.google.com/p/googletest/wiki/FAQ for the reasons.
 The install-gmock.sh helper script will download and build gmock & gtest in the
 local directory.
 
-Once gmock has been built, change into the test/ directory run:
+Once gmock has been built, run:
 
 ```
 autoreconf -i
