@@ -65,7 +65,7 @@ DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile, [], 1.8.0)
 #####################################################
 AC_ARG_WITH([gmock],
   [AS_HELP_STRING([--with-gmock=PATH], [The location of a built gmock)])],
-  [], [with_gmock=../googlemock-read-only])
+  [], [with_gmock=./googlemock-read-only])
 
 GMOCK_INCLUDES="-isystem $with_gmock/include"
 GMOCK_LIBS="$with_gmock/lib/libgmock.la $with_gmock/lib/libgmock_main.la"

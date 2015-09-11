@@ -655,10 +655,10 @@ WARN_LOGFILE           =
 
 # The order of the .md files controls the order of the pages in the output.
 
-INPUT                  = ../Bootloader/firmware/src \
-                         ../boardcfg/template \
-                         ../common \
-                         ../firmware/src \
+INPUT                  = Bootloader/firmware/src \
+                         boardcfg/template \
+                         common \
+                         firmware/src \
                          doxygen/main.md \
                          doxygen/bootloader.md \
                          doxygen/memory.md \
