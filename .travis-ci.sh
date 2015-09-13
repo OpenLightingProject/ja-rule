@@ -50,7 +50,6 @@ elif [[ $TASK = 'check-licences' ]]; then
   fi;
 elif [[ $TASK = 'doxygen' ]]; then
   # check doxygen only if it is the requested task
-  cd tests
   autoreconf -i && ./configure --without-ola
   # the following is a bit of a hack to build the files normally built during
   # the build, so they are present for Doxygen to run against
@@ -67,7 +66,6 @@ elif [[ $TASK = 'doxygen' ]]; then
   fi;
 elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
-  cd tests
   autoreconf -i && ./configure --enable-gcov && make && make check
 elif [[ $TASK = 'coverity' ]]; then
   # Run Coverity Scan unless token is zero length
@@ -80,6 +78,5 @@ elif [[ $TASK = 'coverity' ]]; then
   fi;
 else
   # Otherwise compile and check as normal
-  cd tests
   autoreconf -i && ./configure && make check
 fi
