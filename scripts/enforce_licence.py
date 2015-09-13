@@ -255,7 +255,7 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   if header == licence:
     relative_path = os.path.relpath(os.path.dirname(file_name), os.getcwd())
     expected_filename_depth = 0
-    for dir_name, depth in FILENAME_DEPTH_OVERRIDE:
+    for dir_name, depth in FILENAME_DEPTH_OVERRIDE.iteritems():
       if relative_path.startswith(dir_name):
         expected_filename_depth = depth
     expected_filename_parts = [os.path.basename(file_name)]
