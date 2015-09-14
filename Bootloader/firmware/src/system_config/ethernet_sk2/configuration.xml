@@ -36,10 +36,6 @@
         <Path>Header Files/framework/system/common</Path>
       </File>
       <File>
-        <Name>drv_usb.h</Name>
-        <Path>Source Files/framework/driver/usb</Path>
-      </File>
-      <File>
         <Name>sys_int.h</Name>
         <Path>Header Files/framework/system/int</Path>
       </File>
@@ -48,20 +44,12 @@
         <Path>Header Files/framework/system/common</Path>
       </File>
       <File>
-        <Name>drv_usb.c</Name>
-        <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
-      </File>
-      <File>
         <Name>system.h</Name>
         <Path>Header Files/framework/system</Path>
       </File>
       <File>
         <Name>sys_ports.c</Name>
         <Path>Source Files/framework/system/ports/src</Path>
-      </File>
-      <File>
-        <Name>drv_usb_device.c</Name>
-        <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
       </File>
       <File>
         <Name>usb_device_endpoint_functions.c</Name>
