@@ -44,7 +44,7 @@ if [[ $TASK = 'lint' ]]; then
   fi;
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
-  ./tests/scripts/enforce_licence.py
+  ./scripts/enforce_licence.py
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;

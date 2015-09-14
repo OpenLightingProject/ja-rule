@@ -28,24 +28,30 @@ import textwrap
 CPP, JS, PROTOBUF, PYTHON = xrange(4)
 
 IGNORED_FILES = [
+  'boardcfg/ethernet_sk2/app_pipeline.h', # Symlink
+  'boardcfg/number8/app_pipeline.h', # Symlink
   'src/main.c'
 ]
 
 IGNORED_DIRECTORIES = [
-    'Bootloader/firmware/src/system_config',
-    'firmware/src/system_config',
-    'src/system_config',
-    'tests/src/system_config',
-    'tests/boot_src/system_config',
+    'Bootloader/firmware/src/system_config/',
+    'firmware/src/system_config/',
+    'src/system_config/',
+    'tests/src/system_config/',
+    'tests/boot_src/system_config/'
 ]
+
+FILENAME_DEPTH_OVERRIDE = {
+  'boardcfg/': 1
+}
 
 def Usage(arg0):
   print textwrap.dedent("""\
   Usage: %s
 
-  Walk the directory tree from the current directory, and make sure all .cpp,
-  .h, .js, .proto and .py files have the appropriate Licence. The licence is
-  determined from the LICENCE file in each branch of the directory tree.
+  Walk the directory tree from the current directory, and make sure all .c,
+  .cpp, .h, .js, .proto and .py files have the appropriate Licence. The licence
+  is determined from the LICENCE file in each branch of the directory tree.
 
     --diff               Print the diffs.
     --fix                Fix the files.
@@ -249,7 +255,20 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   file_name_line = f.readline()
   f.close()
   if header == licence:
-    expected_line = TransformLine(os.path.basename(file_name), lang)
+    relative_path = os.path.relpath(os.path.dirname(file_name), os.getcwd())
+    expected_filename_depth = 0
+    for dir_name, depth in FILENAME_DEPTH_OVERRIDE.iteritems():
+      if relative_path.startswith(dir_name):
+        expected_filename_depth = depth
+    expected_filename_parts = [os.path.basename(file_name)]
+    depth_path = relative_path
+    for i in range(expected_filename_depth):
+      depth_path, folder = os.path.split(depth_path)
+      expected_filename_parts.append(folder)
+    expected_filename_parts.reverse()
+    expected_filename = os.path.join(*expected_filename_parts)
+    #print "Expected file name %s for %s" % (expected_filename, file_name)
+    expected_line = TransformLine(expected_filename, lang)
     if lang != JS and file_name_line.rstrip('\n') != expected_line:
       print "File %s does not have a filename line after the licence; found \"%s\" expected \"%s\"" % (
           file_name, file_name_line.rstrip('\n'), expected_line)
