@@ -263,7 +263,7 @@ def CheckLicenceForFile(file_name, licence, lang, diff, fix):
     expected_filename_parts = [os.path.basename(file_name)]
     depth_path = relative_path
     for i in range(expected_filename_depth):
-      (depth_path, folder) = os.path.split(depth_path)
+      depth_path, folder = os.path.split(depth_path)
       expected_filename_parts.append(folder)
     expected_filename_parts.reverse()
     expected_filename = os.path.join(*expected_filename_parts)
