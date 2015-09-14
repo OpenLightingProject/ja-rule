@@ -155,6 +155,19 @@
         </logicalFolder>
       </logicalFolder>
       <logicalFolder name="f1" displayName="framework" projectFiles="true">
+        <logicalFolder name="f2" displayName="driver" projectFiles="true">
+          <logicalFolder name="f1" displayName="usb" projectFiles="true">
+            <logicalFolder name="f1" displayName="usbfs" projectFiles="true">
+              <logicalFolder name="f1" displayName="src" projectFiles="true">
+                <logicalFolder name="f1" displayName="dynamic" projectFiles="true">
+                  <itemPath>/opt/microchip/harmony/v1_02/framework/driver/usb/usbfs/src/dynamic/drv_usb.c</itemPath>
+                  <itemPath>/opt/microchip/harmony/v1_02/framework/driver/usb/usbfs/src/dynamic/drv_usb_device.c</itemPath>
+                </logicalFolder>
+              </logicalFolder>
+            </logicalFolder>
+            <itemPath>/opt/microchip/harmony/v1_02/framework/driver/usb/drv_usb.h</itemPath>
+          </logicalFolder>
+        </logicalFolder>
         <logicalFolder name="f1" displayName="system" projectFiles="true">
           <logicalFolder name="f1" displayName="devcon" projectFiles="true">
             <logicalFolder name="f1" displayName="src" projectFiles="true">
