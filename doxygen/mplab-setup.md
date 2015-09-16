@@ -24,7 +24,7 @@ which auto-generates the boiler plate code from a Harmony configuration.
 When used with Harmony, the design of the MPLAB X build / configuration
 system makes it difficult to move a project's directory to a new location on
 the filesystem. In fact, by default, a project's configurations.xml file
-uses relative paths!
+uses relative paths to Harmony!
 
 This project is set up to assume Harmony 1.02 is installed in
 /opt/microchip/harmony/v1_02 . If this is not the case on your system you
@@ -39,7 +39,7 @@ have two options:
 # Building {#mplabx-building}
 
 First of all, read the [MPLAB X Getting Started Guide](
-http://ww1.microchip.com/downloads/en/DeviceDoc/50002027C.pdf)
-Getting Started Guide</a>. From within MPLAB X, choose File -> Open Project,
-and then select the firmware/ja-rule.X file. Once the project has loaded,
-you can perform a build (Run -> Build Project) and program your device.
+http://ww1.microchip.com/downloads/en/DeviceDoc/50002027C.pdf). From within
+MPLAB X, choose File -> Open Project, and then select the firmware/ja-rule.X
+file. Once the project has loaded, you can perform a build (Run -> Build
+Project) and program your device.

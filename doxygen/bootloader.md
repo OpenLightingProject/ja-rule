@@ -15,7 +15,7 @@ The bootloader uses the
 (http://www.usb.org/developers/docs/devclass_docs/DFU_1.1.pdf)
 protocol. This is a standard protocol for upgrading firmware over USB.
 
-@section bootloader_procedure Update Procedure
+# Update Procedure {#bootloader-procedure}
 
 Generally the update procedure is:
 - Download or create a new firmware image.
