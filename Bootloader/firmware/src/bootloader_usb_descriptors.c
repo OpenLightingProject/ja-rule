@@ -63,7 +63,7 @@ static const USB_DEVICE_DESCRIPTOR g_device_descriptor = {
   0x01  // Number of possible configurations
 };
 
-// Device Configuration Decriptor
+// Device Configuration Descriptor
 // ----------------------------------------------------------------------------
 static const uint8_t g_config_descriptor[] = {
   // Configuration Descriptor Header
