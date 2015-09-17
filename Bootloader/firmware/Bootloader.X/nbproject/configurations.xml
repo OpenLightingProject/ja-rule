@@ -251,7 +251,6 @@
     <Elem>../src/system_config/number8</Elem>
     <Elem>../../../boardcfg/ethernet_sk2</Elem>
     <Elem>../../../boardcfg/number8</Elem>
-    <Elem>../../../../../opt/microchip/harmony/v1_02</Elem>
     <Elem>../src/system_config/number1</Elem>
     <Elem>../../../boardcfg/number1</Elem>
   </sourceRootList>
@@ -1346,7 +1345,6 @@
         <linkerTool>
           <linkerLibItems>
             <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
-            <linkerLibFileItem>../../../../../../../opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
