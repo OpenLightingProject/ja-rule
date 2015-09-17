@@ -77,3 +77,7 @@ Bootloader/firmware/Bootloader.X/nbproject/Makefile*
 Bootloader/firmware/Bootloader.X/nbproject/Package*
 Bootloader/firmware/Bootloader.X/nbproject/private/
 Bootloader/firmware/src/system_config/default/asset.cache
+/Bootloader/firmware/Bootloader.X/build/number1/
+/Bootloader/firmware/Bootloader.X/dist/number1/
+/firmware/ja-rule.X/build/number1/
+/firmware/ja-rule.X/dist/number1/
