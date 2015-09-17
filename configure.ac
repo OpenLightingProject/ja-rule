@@ -65,12 +65,12 @@ DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile, [], 1.8.0)
 #####################################################
 AC_ARG_WITH([gmock],
   [AS_HELP_STRING([--with-gmock=PATH], [The location of a built gmock)])],
-  [], [with_gmock=./googlemock-read-only])
+  [], [with_gmock=./gtest-read-only])
 
-GMOCK_INCLUDES="-isystem $with_gmock/include"
-GMOCK_LIBS="$with_gmock/lib/libgmock.la $with_gmock/lib/libgmock_main.la"
-GTEST_INCLUDES="-isystem $with_gmock/gtest/include"
-GTEST_LIBS="$with_gmock/gtest/lib/libgtest.la $with_gmock/gtest/lib/libgtest_main.la"
+GMOCK_INCLUDES="-isystem $with_gmock/googlemock/include"
+GMOCK_LIBS="$with_gmock/googlemock/lib/libgmock.la $with_gmock/googlemock/lib/libgmock_main.la"
+GTEST_INCLUDES="-isystem $with_gmock/googletest/include"
+GTEST_LIBS="$with_gmock/googletest/lib/libgtest.la $with_gmock/googletest/lib/libgtest_main.la"
 
 # save CPPFLAGS
 old_cppflags=$CPPFLAGS
