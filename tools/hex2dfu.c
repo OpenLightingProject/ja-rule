@@ -228,7 +228,7 @@ void ProcessHexFile(int fd, const Options *options) {
     char checksum_data[3];
     r = read(fd, &checksum_data, sizeof(checksum_data));
     if (r != sizeof(checksum_data)) {
-      printf("Failed to checksum on line %d\n", line);
+      printf("Failed to read checksum on line %d\n", line);
       free(data);
       return;
     }
