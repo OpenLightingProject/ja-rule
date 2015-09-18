@@ -68,7 +68,6 @@
         <itemPath>../../../common/dfu_properties.h</itemPath>
         <itemPath>../../../common/dfu_spec.h</itemPath>
         <itemPath>../src/bootloader_usb_descriptors.h</itemPath>
-        <itemPath>../src/app.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">
@@ -186,7 +185,6 @@
         <itemPath>../src/launcher.c</itemPath>
         <itemPath>../../../common/reset.c</itemPath>
         <itemPath>../src/bootloader_usb_descriptors.c</itemPath>
-        <itemPath>../src/app.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">
