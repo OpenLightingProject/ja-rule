@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <configuration version="1.0.6.12">
   <General>
-    <HarmonyPath path="../../../../opt/microchip/harmony/v1_02"/>
+    <HarmonyPath path="/opt/microchip/harmony/v1_02"/>
     <ForceOptimization flag="true"/>
   </General>
   <Manifest>
@@ -35,12 +35,12 @@
         <Path>Source Files/framework/usb/src/dynamic</Path>
       </File>
       <File>
-        <Name>system.h</Name>
-        <Path>Header Files/framework/system</Path>
-      </File>
-      <File>
         <Name>sys_ports.c</Name>
         <Path>Source Files/framework/system/ports/src</Path>
+      </File>
+      <File>
+        <Name>system.h</Name>
+        <Path>Header Files/framework/system</Path>
       </File>
       <File>
         <Name>drv_usb_device.c</Name>
@@ -89,6 +89,11 @@
     </Files>
     <Templates>
       <Template>
+        <Name>system_tasks.c</Name>
+        <Path>Source Files/app/system_config/number1</Path>
+        <Checksum>2545C461C5FD3CD396C0405A4F248D80</Checksum>
+      </Template>
+      <Template>
         <Name>main.c</Name>
         <Path>Source Files/app</Path>
       </Template>
@@ -97,52 +102,47 @@
         <Path>Source Files/app</Path>
       </Template>
       <Template>
-        <Name>system_interrupt.c</Name>
-        <Path>Source Files/app/system_config/number8</Path>
-        <Checksum>75EB12F8F93B3CD8CC5C8735D7E48E31</Checksum>
+        <Name>system_definitions.h</Name>
+        <Path>Header Files/app/system_config/number1</Path>
+        <Checksum>E3C785466446FE85D78057F22D2177F8</Checksum>
       </Template>
       <Template>
-        <Name>system_tasks.c</Name>
-        <Path>Source Files/app/system_config/number8</Path>
-        <Checksum>2545C461C5FD3CD396C0405A4F248D80</Checksum>
+        <Name>sys_clk_static.c</Name>
+        <Path>Source Files/app/system_config/number1/framework/system/clk/src</Path>
+        <Checksum>1B968DA82B5DD869A6119C3B7628D753</Checksum>
+      </Template>
+      <Template>
+        <Name>sys_clk_static.h</Name>
+        <Path>Header Files/app/system_config/number1/framework/system/clk</Path>
+        <Checksum>999179DADE9ECD59953526F5E9F83ACC</Checksum>
+      </Template>
+      <Template>
+        <Name>system_init.c</Name>
+        <Path>Source Files/app/system_config/number1</Path>
+        <Checksum>E0B73B37416C50ED4B2049E93380A9BA</Checksum>
+      </Template>
+      <Template>
+        <Name>sys_ports_static.c</Name>
+        <Path>Source Files/app/system_config/number1/framework/system/ports/src</Path>
+        <Checksum>91CF9ED936A4097E90E3F606508FFFF7</Checksum>
       </Template>
       <Template>
         <Name>app.h</Name>
         <Path>Header Files/app</Path>
       </Template>
       <Template>
-        <Name>sys_ports_static.c</Name>
-        <Path>Source Files/app/system_config/number8/framework/system/ports/src</Path>
-        <Checksum>91CF9ED936A4097E90E3F606508FFFF7</Checksum>
-      </Template>
-      <Template>
-        <Name>system_init.c</Name>
-        <Path>Source Files/app/system_config/number8</Path>
-        <Checksum>E0B73B37416C50ED4B2049E93380A9BA</Checksum>
-      </Template>
-      <Template>
         <Name>system_config.h</Name>
-        <Path>Header Files/app/system_config/number8</Path>
+        <Path>Header Files/app/system_config/number1</Path>
         <Checksum>4BD8E884293F11B0E3D3DE19FF3BC67B</Checksum>
       </Template>
       <Template>
-        <Name>system_definitions.h</Name>
-        <Path>Header Files/app/system_config/number8</Path>
-        <Checksum>E3C785466446FE85D78057F22D2177F8</Checksum>
-      </Template>
-      <Template>
-        <Name>sys_clk_static.h</Name>
-        <Path>Header Files/app/system_config/number8/framework/system/clk</Path>
-        <Checksum>999179DADE9ECD59953526F5E9F83ACC</Checksum>
-      </Template>
-      <Template>
-        <Name>sys_clk_static.c</Name>
-        <Path>Source Files/app/system_config/number8/framework/system/clk/src</Path>
-        <Checksum>1B968DA82B5DD869A6119C3B7628D753</Checksum>
+        <Name>system_interrupt.c</Name>
+        <Path>Source Files/app/system_config/number1</Path>
+        <Checksum>75EB12F8F93B3CD8CC5C8735D7E48E31</Checksum>
       </Template>
     </Templates>
     <Libraries>
-      <Library value="../../../../../../opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a"/>
+      <Library value="/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a"/>
     </Libraries>
   </Manifest>
 </configuration>

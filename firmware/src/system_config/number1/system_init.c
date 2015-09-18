@@ -163,34 +163,34 @@ const SYS_DEVCON_INIT sysDevconInit =
 
 void SYS_Initialize ( void* data )
 {
-  /* Core Processor Initialization */
-  SYS_CLK_Initialize( NULL );
-  sysObj.sysDevcon = SYS_DEVCON_Initialize(SYS_DEVCON_INDEX_0, (SYS_MODULE_INIT*)&sysDevconInit);
-  SYS_DEVCON_PerformanceConfig(SYS_CLK_SystemFrequencyGet());
-  SYS_DEVCON_JTAGDisable();
-  SYS_PORTS_Initialize();
+    /* Core Processor Initialization */
+    SYS_CLK_Initialize( NULL );
+    sysObj.sysDevcon = SYS_DEVCON_Initialize(SYS_DEVCON_INDEX_0, (SYS_MODULE_INIT*)&sysDevconInit);
+    SYS_DEVCON_PerformanceConfig(SYS_CLK_SystemFrequencyGet());
+    SYS_DEVCON_JTAGDisable();
+    SYS_PORTS_Initialize();
 
-  /* Initialize Drivers */
+    /* Initialize Drivers */
 
-  /* Initialize System Services */
-  SYS_INT_Initialize();
+    /* Initialize System Services */
+    SYS_INT_Initialize();
 
-  /* Initialize Middleware */
-  /* Set priority of USB interrupt source */
-  SYS_INT_VectorPrioritySet(INT_VECTOR_USB1, INT_PRIORITY_LEVEL4);
+    /* Initialize Middleware */
+    /* Set priority of USB interrupt source */
+    SYS_INT_VectorPrioritySet(INT_VECTOR_USB1, INT_PRIORITY_LEVEL4);
 
-  /* Set Sub-priority of USB interrupt source */
-  SYS_INT_VectorSubprioritySet(INT_VECTOR_USB1, INT_SUBPRIORITY_LEVEL0);
+    /* Set Sub-priority of USB interrupt source */
+    SYS_INT_VectorSubprioritySet(INT_VECTOR_USB1, INT_SUBPRIORITY_LEVEL0);
 
-  /* Initialize the USB device layer */
-  sysObj.usbDevObject0 = USB_DEVICE_Initialize(
-      USB_DEVICE_INDEX_0, (SYS_MODULE_INIT*) USBDescriptor_GetDeviceConfig());
+    /* Initialize the USB device layer */
+    sysObj.usbDevObject0 = USB_DEVICE_Initialize(
+        USB_DEVICE_INDEX_0, (SYS_MODULE_INIT*) USBDescriptor_GetDeviceConfig());
 
-  /* Enable Global Interrupts */
-  SYS_INT_Enable();
+    /* Enable Global Interrupts */
+    SYS_INT_Enable();
 
-  /* Initialize the Application */
-  APP_Initialize();
+    /* Initialize the Application */
+    APP_Initialize();
 
 }
 
