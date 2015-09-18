@@ -29,6 +29,7 @@ CPP, JS, PROTOBUF, PYTHON = xrange(4)
 
 IGNORED_FILES = [
   'boardcfg/ethernet_sk2/app_pipeline.h', # Symlink
+  'boardcfg/number1/app_pipeline.h', # Symlink
   'boardcfg/number8/app_pipeline.h', # Symlink
   'src/main.c'
 ]
