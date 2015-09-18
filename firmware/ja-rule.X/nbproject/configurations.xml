@@ -305,7 +305,7 @@
     <Elem>../src</Elem>
     <Elem>../../linker</Elem>
     <Elem>../../common</Elem>
-    <Elem>../../../../opt/microchip/harmony/v1_02</Elem>
+    <Elem>/opt/microchip/harmony/v1_02</Elem>
     <Elem>../src/system_config/number8</Elem>
     <Elem>/opt/microchip/harmony/v1_02</Elem>
     <Elem>../src/system_config/ethernet_sk2</Elem>
@@ -1423,7 +1423,7 @@
           <linkerLibItems>
             <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
             <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
-            <linkerLibFileItem>../../../../../../opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
+            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -1913,7 +1913,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../../common;../src/system_config/number1/framework;../src/system_config/number1;/opt/microchip/harmony/v1_02/framework;../../boardcfg/number1;../../../../../../opt/microchip/harmony/v1_02/framework"/>
+                  value="../src;../../common;../src/system_config/number1/framework;../src/system_config/number1;/opt/microchip/harmony/v1_02/framework;../../boardcfg/number1;/opt/microchip/harmony/v1_02/framework"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
