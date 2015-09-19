@@ -26,6 +26,7 @@
 #include "syslog.h"
 #include "system_definitions.h"
 #include "transceiver.h"
+#include "uid_store.h"
 
 #define USB_CONSOLE_BUFFER_SIZE 1024
 // #define USB_CONSOLE_BUFFER_SIZE 70
@@ -114,6 +115,13 @@ static void AbortTransfers() {
   USB_DEVICE_IRPCancelAll(USBTransport_GetHandle(), 0x83);
   g_usb_console.write.read = -1;
   g_usb_console.write.write = 0;
+}
+
+static void DisplayUID() {
+  char uid[UID_LENGTH * 2 + 2];
+  uid[UID_LENGTH * 2 + 1] = 0;
+  UIDStore_AsAsciiString(uid);
+  SysLog_Message(SYSLOG_INFO, uid);
 }
 
 /*
@@ -410,6 +418,7 @@ void USBConsole_Tasks() {
           SysLog_Message(SYSLOG_INFO, "h   Show help message");
           SysLog_Message(SYSLOG_INFO, "m   Get operating mode");
           SysLog_Message(SYSLOG_INFO, "M   Switch operating mode");
+          SysLog_Message(SYSLOG_INFO, "u   Show UID");
           SysLog_Message(SYSLOG_INFO, "-   Decrease Log Level");
           SysLog_Message(SYSLOG_INFO, "+   Increase Log Level");
           SysLog_Message(SYSLOG_INFO, "----------------------");
@@ -443,6 +452,9 @@ void USBConsole_Tasks() {
           break;
         case 'w':
           SysLog_Message(SYSLOG_WARN, "warning");
+          break;
+        case 'u':
+          DisplayUID();
           break;
         default:
           if (g_usb_console.read_length == USB_CONSOLE_READ_BUFFER_SIZE) {

@@ -1,5 +1,4 @@
-/*
- * This library is free software; you can redistribute it and/or
+/* * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
@@ -36,6 +35,13 @@
  * @returns A pointer to the device's UID
  */
 const uint8_t* UIDStore_GetUID();
+
+/**
+ * @brief Convert the UID to a string representation, e.g. abcd:01020304
+ * @param output The location to store the string in, must be at least
+ *   UID_LENGTH * 2 + 1 characters.
+ */
+void UIDStore_AsAsciiString(char *output);
 
 /**
  * @brief Convert the UID to a string representation, e.g. abcd:01020304

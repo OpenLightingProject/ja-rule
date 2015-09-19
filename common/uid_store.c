@@ -41,6 +41,19 @@ const uint8_t* UIDStore_GetUID() {
   return &_uid;
 }
 
+void UIDStore_AsAsciiString(char *output) {
+  const uint8_t *uid = &_uid;
+  unsigned int i = 0u;
+  unsigned int offset = 0u;
+  for (; i < UID_LENGTH; i++) {
+    output[offset++] = LowerToHex((uid[i] >> 4) & 0x0f);
+    output[offset++] = LowerToHex(uid[i] & 0x0f);
+    if (offset == 4) {
+      output[offset++] = ':';
+    }
+  }
+}
+
 void UIDStore_AsUnicodeString(uint16_t *output) {
   const uint8_t *uid = &_uid;
   unsigned int i = 0u;
