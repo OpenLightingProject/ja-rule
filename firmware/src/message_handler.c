@@ -284,6 +284,14 @@ static void ReturnRDMResponderJitter(uint8_t token, unsigned int length) {
   SendMessage(token, COMMAND_GET_RDM_RESPONDER_JITTER, RC_OK, &iovec, 1u);
 }
 
+static bool CheckForTXMode(const Message *message) {
+  if (Transceiver_GetMode() == T_MODE_CONTROLLER) {
+    return true;
+  }
+  SendMessage(message->token, message->command, RC_INVALID_MODE, NULL, 0u);
+  return false;
+}
+
 // Public Functions
 // ----------------------------------------------------------------------------
 void MessageHandler_Initialize(TransportTXFunction tx_cb) {
@@ -298,7 +306,8 @@ void MessageHandler_HandleMessage(const Message *message) {
       Echo(message);
       break;
     case TX_DMX:
-      if (!Transceiver_QueueDMX(message->token, message->payload,
+      if (CheckForTXMode(message) &&
+          !Transceiver_QueueDMX(message->token, message->payload,
                                 message->length)) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0u);
       }
@@ -317,13 +326,15 @@ void MessageHandler_HandleMessage(const Message *message) {
       GetUID(message->token, message->length);
       break;
     case COMMAND_RDM_DUB_REQUEST:
-      if (!Transceiver_QueueRDMDUB(message->token, message->payload,
+      if (CheckForTXMode(message) &&
+          !Transceiver_QueueRDMDUB(message->token, message->payload,
                                    message->length)) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0u);
       }
       break;
     case COMMAND_RDM_REQUEST:
-      if (!Transceiver_QueueRDMRequest(message->token, message->payload,
+      if (CheckForTXMode(message) &&
+          !Transceiver_QueueRDMRequest(message->token, message->payload,
                                        message->length, false)) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0u);
       }
@@ -372,7 +383,8 @@ void MessageHandler_HandleMessage(const Message *message) {
       break;
 
     case COMMAND_RDM_BROADCAST_REQUEST:
-      if (!Transceiver_QueueRDMRequest(message->token, message->payload,
+      if (CheckForTXMode(message) &&
+          !Transceiver_QueueRDMRequest(message->token, message->payload,
                                        message->length, true)) {
         SendMessage(message->token, message->command, RC_BUFFER_FULL, NULL, 0u);
       }
