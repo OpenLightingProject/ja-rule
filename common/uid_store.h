@@ -38,7 +38,14 @@
 const uint8_t* UIDStore_GetUID();
 
 /**
- * @brief Convert the UID to a string representation, e.g. abcd:01020304
+ * @brief Convert the UID to an ASCII string representation, e.g. abcd:01020304
+ * @param output The location to store the string in, must be at least
+ *   UID_LENGTH * 2 + 1 characters.
+ */
+void UIDStore_AsAsciiString(char *output);
+
+/**
+ * @brief Convert the UID to a Unicode string representation, e.g. abcd:01020304
  * @param output The location to store the string in, must be at least
  *   UID_LENGTH * 2 + 1 characters.
  */
