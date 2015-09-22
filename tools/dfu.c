@@ -109,7 +109,8 @@ static const uint32_t CRC_POLYNOMIAL[] = {
  */
 static uint32_t CalculateCRC(uint32_t crc, const uint8_t *data,
                              unsigned int size) {
-  for (unsigned int i = 0; i < size; i++) {
+  unsigned int i = 0;
+  for (; i < size; i++) {
     crc = CRC_POLYNOMIAL[(crc ^ data[i]) & 0xff] ^ (crc >> 8);
   }
   return crc;
@@ -180,7 +181,8 @@ bool WriteDFUFile(const FirmwareOptions *options,
 
   // Write the suffix out backwards.
   const uint8_t *suffix_ptr = (const uint8_t*) &suffix;
-  for (int i = sizeof(suffix) - 1; i >= 0; i--) {
+  int i = sizeof(suffix) - 1;
+  for (; i >= 0; i--) {
     crc = CalculateCRC(crc, suffix_ptr + i, 1);
     if (!Write(fd, suffix_ptr + i, 1)) {
       close(fd);
