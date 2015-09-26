@@ -655,7 +655,7 @@ void __ISR(AS_TIMER_ISR_VECTOR(TRANSCEIVER_TIMER), ipl6)
       PLIB_TMR_Stop(g_hw_settings.timer_module_id);
 
       // Transition to sending the data.
-      // Only push a single byte into the TX queue at the begining, otherwise
+      // Only push a single byte into the TX queue at the beginning, otherwise
       // we blow our timing budget.
       if (!PLIB_USART_TransmitterBufferIsFull(g_hw_settings.usart) &&
           g_transceiver.data_index != g_transceiver.active->size) {
