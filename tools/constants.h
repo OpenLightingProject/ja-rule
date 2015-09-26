@@ -21,6 +21,6 @@
 #define TOOLS_CONSTANTS_H_
 
 static const uint16_t DEFAULT_VENDOR_ID = 0x1209;
-static const uint16_t DEFAULT_PRODUCT_ID = 0xacee;
+static const uint16_t DEFAULT_PRODUCT_ID = 0xaced;
 
 #endif  // TOOLS_CONSTANTS_H_

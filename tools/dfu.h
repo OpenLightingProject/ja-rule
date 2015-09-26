@@ -29,6 +29,7 @@
 typedef struct {
   uint16_t vendor_id;  //!< The vendor ID to use in the DFU suffix
   uint16_t product_id;  //!< The product ID to use in the DFU suffix.
+  uint16_t model_id;  //!< The hardware model this firmware is for.
 } FirmwareOptions;
 
 /**

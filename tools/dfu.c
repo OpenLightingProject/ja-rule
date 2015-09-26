@@ -53,6 +53,8 @@ static const uint32_t INITIAL_CRC = 0xffffffff;
 struct FirmwareHeaderV1Struct {
   uint32_t header_version;  //!< 1 for now
   uint32_t firmware_size;  //!< The size of the firmware.
+  uint16_t model_id;  // The hardware model.
+  uint16_t padding;  // not used.
   uint32_t crc;  //!< CRC, we use the same CRC as the DFU suffix.
   uint32_t options;  //!< Bit mask of options.
 } __attribute__((__packed__));
@@ -142,6 +144,8 @@ bool WriteDFUFile(const FirmwareOptions *options,
   struct FirmwareHeaderV1Struct firmware_header = {
     .header_version = htonl(HEADER_VERSION),
     .firmware_size = htonl(size),
+    .model_id = htons(options->model_id),
+    .padding = 0,
     .crc = htonl(data_crc),
     .options = htonl(0u)
   };

@@ -304,17 +304,19 @@ class TransferTest : public testing::Test {
 
   static const uint8_t FW_IMAGE[];
   static const uint8_t UID_IMAGE[];
-  enum { IMAGE_HEADER_SIZE = 16 };
+  enum { IMAGE_HEADER_SIZE = 20 };
 };
 
 const uint8_t TransferTest::FW_IMAGE[] = {
-  0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x10, 0x6a, 0x51, 0xa0, 0xa2,
+  0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x10,
+  0x00, 0x03, 0x00, 0x00, 0x6a, 0x51, 0xa0, 0xa2,
   0x00, 0x00, 0x00, 0x00,
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
 };
 
 const uint8_t TransferTest::UID_IMAGE[] = {
-  0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x06, 0x6a, 0x51, 0xa0, 0xa2,
+  0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x06,
+  0x00, 0x00, 0x00, 0x00, 0x6a, 0x51, 0xa0, 0xa2,
   0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x01
 };
 
@@ -330,6 +332,20 @@ TEST_F(TransferTest, simpleFWTransfer) {
   m_flash.ReadData(FW_BASE_ADDRESS, flash_data, arraysize(flash_data));
   EXPECT_THAT(ArrayTuple(flash_data, arraysize(flash_data)),
               DataIs(FW_IMAGE + IMAGE_HEADER_SIZE, arraysize(flash_data)));
+}
+
+TEST_F(TransferTest, incorrectHardwareModel) {
+  m_host.SetAlternateInterface(0);
+
+  uint8_t fw_image[arraysize(FW_IMAGE)];
+  memcpy(fw_image, FW_IMAGE, arraysize(FW_IMAGE));
+  fw_image[9] = 2;  // Not the Ethernet SK II
+
+  DFUClient client(&m_host, fw_image, arraysize(fw_image));
+  ASSERT_TRUE(client.Download(DFUClient::Options()));
+  EXPECT_EQ(DFU_STATE_ERROR, Bootloader_GetState());
+  EXPECT_EQ(DFU_STATUS_ERR_TARGET, Bootloader_GetStatus());
+  EXPECT_FALSE(m_flash.WasErased());
 }
 
 TEST_F(TransferTest, simpleUIDTransfer) {
@@ -356,7 +372,7 @@ TEST_F(TransferTest, oddSizeBlockTransfer) {
   uint8_t flash_data[6];
   m_flash.ReadData(UID_BASE_ADDRESS, flash_data, arraysize(flash_data));
   EXPECT_THAT(ArrayTuple(flash_data, arraysize(flash_data)),
-              DataIs(UID_IMAGE + 16, arraysize(flash_data)));
+              DataIs(UID_IMAGE + IMAGE_HEADER_SIZE, arraysize(flash_data)));
 }
 
 TEST_F(TransferTest, flashEraseError) {
