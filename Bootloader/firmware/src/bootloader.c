@@ -33,6 +33,7 @@
 #include "system_config.h"
 
 #include "bootloader_options.h"
+#include "crc.h"
 #include "dfu_properties.h"
 #include "dfu_spec.h"
 #include "flash.h"
@@ -123,10 +124,12 @@ typedef struct {
   AppState state;
   DFUState dfu_state;  //!< The DFU state machine.
   DFUStatus dfu_status;  //!< The current DFU status code.
+  uint32_t expected_crc;  //!< The CRC we expect
+  uint32_t crc;  //!< The CRC for data received so far.
   uint8_t active_interface;  //!< The index of the active interface.
-} AppData;
+} BootloaderData;
 
-static AppData g_bootloader;
+static BootloaderData g_bootloader;
 
 /**
  * @brief The state associated with a DFU transfer.
@@ -253,6 +256,8 @@ static bool ProgramFlash(bool include_all, unsigned int offset) {
   unsigned int i = offset;
   while (i + FLASH_WORD_SIZE <= g_transfer.block_size) {
     uint32_t data = ExtractUInt32(g_data_buffer + i);
+    g_bootloader.crc = CalculateCRC(g_bootloader.crc, g_data_buffer + i,
+                                    FLASH_WORD_SIZE);
 
     if (!WriteAndVerify(g_transfer.write_address, data)) {
       g_transfer.block_size = 0u;
@@ -276,6 +281,9 @@ static bool ProgramFlash(bool include_all, unsigned int offset) {
     for (; i != FLASH_WORD_SIZE; i++) {
       g_data_buffer[i] = 0xff;
     }
+
+    g_bootloader.crc = CalculateCRC(g_bootloader.crc, g_data_buffer,
+                                    bytes_remaining);
 
     uint32_t data = ExtractUInt32(g_data_buffer);
     g_transfer.block_size = 0u;
@@ -601,6 +609,15 @@ void ProcessDownload() {
         return;
       }
 
+      uint32_t crc_offset = 3 * sizeof(uint32_t);
+      g_bootloader.expected_crc = ExtractUInt32(g_data_buffer + crc_offset);
+      // We need to 0 the CRC to begin calculating the new one
+      g_data_buffer[crc_offset++] = 0;
+      g_data_buffer[crc_offset++] = 0;
+      g_data_buffer[crc_offset++] = 0;
+      g_data_buffer[crc_offset++] = 0;
+      g_bootloader.crc = CalculateCRC(0, g_data_buffer, FIRMWARE_HEADER_SIZE);
+
       // At this point we've checked as much as we can, go ahead and erase the
       // flash.
       if (!EraseFlash()) {
@@ -690,6 +707,11 @@ void Bootloader_Tasks() {
         // bytes now.
         if (ProgramFlash(true, 0u)) {
           g_transfer.transfer_state = TRANSFER_WRITE_COMPLETE;
+        }
+        // Check the CRC matches now
+        if (g_bootloader.expected_crc &&
+            g_bootloader.crc != g_bootloader.expected_crc) {
+          SetError(DFU_STATUS_ERR_FIRMWARE);
         }
       } else if (g_bootloader.dfu_state == DFU_STATE_MANIFEST) {
         // Nothing to do during the manifest stage, reset the variables

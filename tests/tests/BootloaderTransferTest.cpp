@@ -309,14 +309,14 @@ class TransferTest : public testing::Test {
 
 const uint8_t TransferTest::FW_IMAGE[] = {
   0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x10,
-  0x00, 0x03, 0x00, 0x00, 0x6a, 0x51, 0xa0, 0xa2,
+  0x00, 0x03, 0x00, 0x00, 0xe6, 0x59, 0xfb, 0x91,
   0x00, 0x00, 0x00, 0x00,
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
 };
 
 const uint8_t TransferTest::UID_IMAGE[] = {
   0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x06,
-  0x00, 0x00, 0x00, 0x00, 0x6a, 0x51, 0xa0, 0xa2,
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x7a, 0x70, 0x00, 0x00, 0x00, 0x01
 };
 
@@ -346,6 +346,20 @@ TEST_F(TransferTest, incorrectHardwareModel) {
   EXPECT_EQ(DFU_STATE_ERROR, Bootloader_GetState());
   EXPECT_EQ(DFU_STATUS_ERR_TARGET, Bootloader_GetStatus());
   EXPECT_FALSE(m_flash.WasErased());
+}
+
+TEST_F(TransferTest, invalidCRC) {
+  m_host.SetAlternateInterface(0);
+
+  uint8_t fw_image[arraysize(FW_IMAGE)];
+  memcpy(fw_image, FW_IMAGE, arraysize(FW_IMAGE));
+  fw_image[12] = 2;  // Set to non-0
+
+  DFUClient client(&m_host, fw_image, arraysize(fw_image));
+  ASSERT_TRUE(client.Download(DFUClient::Options()));
+  EXPECT_EQ(DFU_STATE_ERROR, Bootloader_GetState());
+  EXPECT_EQ(DFU_STATUS_ERR_FIRMWARE, Bootloader_GetStatus());
+  EXPECT_TRUE(m_flash.WasErased());
 }
 
 TEST_F(TransferTest, simpleUIDTransfer) {
