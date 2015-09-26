@@ -224,8 +224,8 @@ void ProcessHexFile(int fd, const Options *options) {
       calculated_checksum += data[i];
     }
 
-    // read the checksum & new line
-    char checksum_data[3];
+    // read the checksum
+    char checksum_data[2];
     r = read(fd, &checksum_data, sizeof(checksum_data));
     if (r != sizeof(checksum_data)) {
       printf("Failed to read checksum on line %d\n", line);
@@ -248,10 +248,17 @@ void ProcessHexFile(int fd, const Options *options) {
       return;
     }
 
-    if (checksum_data[2] != '\n') {
-      printf("Missing \\n on line %d\n", line);
-      return;
-    }
+    char line_ending[1];
+    do {
+      r = read(fd, &line_ending, sizeof(line_ending));
+      if (r != sizeof(line_ending)) {
+        printf("Unexpected character count on line %d\n", line);
+        return;
+      } else if ((line_ending[0] != '\n') && (line_ending[0] != '\r')) {
+        printf("Unexpected character '%c' on line %d\n", line_ending[0], line);
+        return;
+      }
+    } while (line_ending[0] != '\n');
 
     HexRecord record = {
       .byte_count = byte_count,
@@ -407,7 +414,7 @@ int main(int argc, char *argv[]) {
   off_t current = lseek(fd, 0, SEEK_CUR);
   off_t end = lseek(fd, 0, SEEK_END);
   if (current != end) {
-    printf("%zd bytes remain in hex file\n", end - current);
+    printf("%zd bytes remain in hex file\n", (ssize_t)(end - current));
   }
   close(fd);
 }
