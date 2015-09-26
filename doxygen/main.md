@@ -40,7 +40,8 @@ DMX receiver / RDM responder.
 
 ## Common {#main-features-common}
 
-- \ref usb-logging, with adjustable log levels. Requires OS X 10.7 or greater.
+- \ref usb-logging, with adjustable log levels. Requires Linux or MAC OS X 10.7 or
+  greater.
 - Extensive @ref testing.
 
 # Supported Platforms {#main-platforms}
