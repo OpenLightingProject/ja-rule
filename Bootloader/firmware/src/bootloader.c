@@ -62,6 +62,11 @@ static const uint32_t FIRMWARE_HEADER_VERSION = 1u;
  */
 static const uint32_t ERASED_FLASH_VALUE = 0xffffffff;
 
+/**
+ * @brief The initial CRC value
+ */
+static const uint32_t INITIAL_CRC = 0xffffffff;
+
 /*
  * @brief The memory addresses associated with a DFU interface.
  *
@@ -609,14 +614,9 @@ void ProcessDownload() {
         return;
       }
 
-      uint32_t crc_offset = 3 * sizeof(uint32_t);
-      g_bootloader.expected_crc = ExtractUInt32(g_data_buffer + crc_offset);
-      // We need to 0 the CRC to begin calculating the new one
-      unsigned int i = 0;
-      for (; i < 4; i++) {
-        g_data_buffer[crc_offset + i] = 0;
-      }
-      g_bootloader.crc = CalculateCRC(0, g_data_buffer, FIRMWARE_HEADER_SIZE);
+      g_bootloader.expected_crc = ExtractUInt32(
+          g_data_buffer + 3 * sizeof(uint32_t));
+      g_bootloader.crc = INITIAL_CRC;
 
       // At this point we've checked as much as we can, go ahead and erase the
       // flash.
