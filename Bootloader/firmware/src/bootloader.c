@@ -612,10 +612,10 @@ void ProcessDownload() {
       uint32_t crc_offset = 3 * sizeof(uint32_t);
       g_bootloader.expected_crc = ExtractUInt32(g_data_buffer + crc_offset);
       // We need to 0 the CRC to begin calculating the new one
-      g_data_buffer[crc_offset++] = 0;
-      g_data_buffer[crc_offset++] = 0;
-      g_data_buffer[crc_offset++] = 0;
-      g_data_buffer[crc_offset++] = 0;
+      unsigned int i = 0;
+      for (; i < 4; i++) {
+        g_data_buffer[crc_offset + i] = 0;
+      }
       g_bootloader.crc = CalculateCRC(0, g_data_buffer, FIRMWARE_HEADER_SIZE);
 
       // At this point we've checked as much as we can, go ahead and erase the
