@@ -39,6 +39,7 @@ typedef struct {
   uint32_t upper_address;
   uint16_t vendor_id;
   uint16_t product_id;
+  uint16_t model_id;
   bool help;
   bool force;
 } Options;
@@ -272,6 +273,8 @@ void DisplayHelpAndExit(const char *arg0, int exit_code) {
          "default 0x%x\n", DEFAULT_LOWER_ADDRESS);
   printf("  -p, --pid    The USB Product ID, default 0x%x\n",
          DEFAULT_PRODUCT_ID);
+  printf("  -m, --model  Limits the f/w to a particular hardware model, "
+         "default 0\n");
   printf("  -u, --upper  The upper bound of the memory to extract, "
          "default 0x%x\n", DEFAULT_UPPER_ADDRESS);
   printf("  -v, --vid    The USB Vendor ID, default 0x%x\n", DEFAULT_VENDOR_ID);
@@ -284,6 +287,7 @@ bool InitOptions(Options *options, int argc, char *argv[]) {
   options->upper_address = DEFAULT_UPPER_ADDRESS;
   options->vendor_id = DEFAULT_VENDOR_ID;
   options->product_id = DEFAULT_PRODUCT_ID;
+  options->model_id = 0;
   options->help = false;
   options->force = false;
 
@@ -293,6 +297,7 @@ bool InitOptions(Options *options, int argc, char *argv[]) {
       {"pid", required_argument, 0, 'p'},
       {"upper", required_argument, 0, 'u'},
       {"vid", required_argument, 0, 'v'},
+      {"model", required_argument, 0, 'm'},
       {0, 0, 0, 0}
     };
 
@@ -300,7 +305,7 @@ bool InitOptions(Options *options, int argc, char *argv[]) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "hl:p:u:v:", long_options, &option_index);
+    c = getopt_long(argc, argv, "hl:m:p:u:v:", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -314,6 +319,12 @@ bool InitOptions(Options *options, int argc, char *argv[]) {
       case 'l':
         if (!StringToUInt32(optarg, &options->lower_address)) {
           printf("Invalid lower address id\n");
+          exit(EX_USAGE);
+        }
+        break;
+      case 'm':
+        if (!StringToUInt16(optarg, &options->model_id)) {
+          printf("Invalid model id\n");
           exit(EX_USAGE);
         }
         break;
@@ -397,7 +408,8 @@ int main(int argc, char *argv[]) {
   if (g_data_size) {
     FirmwareOptions fw_options = {
       .vendor_id = options.vendor_id,
-      .product_id = options.product_id
+      .product_id = options.product_id,
+      .model_id = options.model_id
     };
     WriteDFUFile(&fw_options, g_data, g_data_size, output_file);
   }

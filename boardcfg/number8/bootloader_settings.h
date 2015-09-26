@@ -22,6 +22,7 @@
 
 #include "bootloader.h"
 #include "common_settings.h"
+#include "models.h"
 
 /**
  * @file bootloader_settings.h
@@ -57,6 +58,11 @@
  * @brief True if the switch is active high, false if active low.
  */
 #define SWITCH_ACTIVE_HIGH false
+
+/**
+ * @brief The hardware model.
+ */
+#define HARDWARE_MODEL MODEL_NUMBER8
 
 /**
  * @brief The LEDS to flash in bootloader mode.

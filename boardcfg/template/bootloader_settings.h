@@ -59,6 +59,11 @@
 #define SWITCH_ACTIVE_HIGH false
 
 /**
+ * @brief The hardware model.
+ */
+#define HARDWARE_MODEL 0
+
+/**
  * @brief The LEDS to flash in bootloader mode.
  */
 const Bootloader_LEDs BOOTLOADER_LEDS;

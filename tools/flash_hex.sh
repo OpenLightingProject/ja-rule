@@ -25,7 +25,17 @@ fi
 
 type $DFU_UTIL > /dev/null 2>&1 || { echo "Can't execute $DFU_UTIL"; exit 1; }
 
-$hex2dfu $hex_file
+model_id=0
+
+if [[ "$hex_file" == *"number1"* ]]; then
+  model_id=1;
+elif [[ "$hex_file" == *"number8"* ]]; then
+  model_id=2;
+elif [[ "$hex_file" == *"ethernet_sk2"* ]]; then
+  model_id=3;
+fi
+
+$hex2dfu -m $model_id $hex_file
 if [ $? -ne 0 ]; then
   echo "hex2dfu failed";
   exit;

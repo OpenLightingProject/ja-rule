@@ -17,11 +17,12 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef BOOTLOADER_FIRMWARE_SRC_SYSTEM_CONFIG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_
-#define BOOTLOADER_FIRMWARE_SRC_SYSTEM_CONFIG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_
+#ifndef TESTS_SYSTEM_CONFIG_BOOTLOADER_SETTINGS_H_
+#define TESTS_SYSTEM_CONFIG_BOOTLOADER_SETTINGS_H_
 
 #include <stdbool.h>
 #include "bootloader.h"
+#include "common/models.h"
 
 /*
  * @brief The reset address of the application.
@@ -54,6 +55,11 @@ const PORTS_BIT_POS SWITCH_PORT_BIT = PORTS_BIT_POS_7;
 const bool SWITCH_ACTIVE_HIGH = false;
 
 /**
+ * @brief The hardware model.
+ */
+#define HARDWARE_MODEL MODEL_ETHERNET_SK2
+
+/**
  * @brief The LEDS to flash in bootloader mode.
  */
 const Bootloader_LEDs BOOTLOADER_LEDS = {
@@ -66,4 +72,4 @@ const Bootloader_LEDs BOOTLOADER_LEDS = {
   }
 };
 
-#endif  // BOOTLOADER_FIRMWARE_SRC_SYSTEM_CONFIG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_
+#endif  // TESTS_SYSTEM_CONFIG_BOOTLOADER_SETTINGS_H_

@@ -49,7 +49,7 @@
 /**
  * @brief The size of the words used for flash programming.
  */
-static const uint32_t FIRMWARE_HEADER_SIZE = 16u;
+static const uint32_t FIRMWARE_HEADER_SIZE = 20u;
 
 /**
  * @brief The version of the firmware header to use.
@@ -169,6 +169,10 @@ static inline bool SwitchPressed() {
 
 static inline uint32_t ExtractUInt32(const uint8_t *ptr) {
   return (ptr[0] << 24) + (ptr[1] << 16) + (ptr[2] << 8) + ptr[3];
+}
+
+static inline uint32_t ExtractUInt16(const uint8_t *ptr) {
+  return (ptr[0] << 8) + ptr[1];
 }
 
 /*
@@ -589,6 +593,13 @@ void ProcessDownload() {
         return;
       }
       g_transfer.total_size = total_size;
+
+      uint16_t model_id = ExtractUInt16(g_data_buffer + 2 * sizeof(uint32_t));
+      if (model_id != MODEL_UNDEFINED && model_id != HARDWARE_MODEL) {
+        // Firmware model mismatch
+        SetError(DFU_STATUS_ERR_TARGET);
+        return;
+      }
 
       // At this point we've checked as much as we can, go ahead and erase the
       // flash.
