@@ -45,7 +45,7 @@
  * Intended for development use only. This can be used to avoid linker errors
  * when running without a bootloader.
  */
-//#define CFG_USE_DEVELOPMENT_UID
+// #define CFG_USE_DEVELOPMENT_UID
 
 /**
  * @brief Controls if we use the magic bootloader symbol from the linker
@@ -54,7 +54,7 @@
  * Intended for development use only. This can be used to avoid linker errors
  * when running without a bootloader.
  */
-//#define CFG_NO_BOOTLOADER_OPTION
+// #define CFG_NO_BOOTLOADER_OPTION
 
 /**
  * @}
