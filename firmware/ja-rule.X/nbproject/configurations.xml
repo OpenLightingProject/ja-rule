@@ -307,7 +307,6 @@
     <Elem>../../common</Elem>
     <Elem>/opt/microchip/harmony/v1_02</Elem>
     <Elem>../src/system_config/number8</Elem>
-    <Elem>/opt/microchip/harmony/v1_02</Elem>
     <Elem>../src/system_config/ethernet_sk2</Elem>
     <Elem>../../boardcfg/ethernet_sk2</Elem>
     <Elem>../../boardcfg/number8</Elem>
@@ -352,16 +351,76 @@
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
       <item path="../../boardcfg/number1/app_pipeline.h" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number1/app_settings.h" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number1/board_init.c" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number1/board_init.h" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number1/common_settings.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number8/app_pipeline.h" ex="true" overriding="false">
         <C32>
@@ -482,34 +541,130 @@
       <item path="../src/system_config/number1/framework/system/clk/src/sys_clk_static.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/framework/system/clk/sys_clk_static.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/framework/system/ports/src/sys_ports_static.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_config.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_definitions.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_init.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_interrupt.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_tasks.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number8/framework/system/clk/src/sys_clk_static.c"
             ex="true"
@@ -907,16 +1062,76 @@
         </C32Global>
       </item>
       <item path="../../boardcfg/number1/app_pipeline.h" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number1/app_settings.h" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number1/board_init.c" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number1/board_init.h" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number1/common_settings.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../linker/app_mx675F512H.ld" ex="false" overriding="false">
         <C32>
@@ -1077,34 +1292,130 @@
       <item path="../src/system_config/number1/framework/system/clk/src/sys_clk_static.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/framework/system/clk/sys_clk_static.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/framework/system/ports/src/sys_ports_static.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_config.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_definitions.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_init.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_interrupt.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_tasks.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_init.c"
             ex="false"
@@ -1540,20 +1851,92 @@
         </C32Global>
       </item>
       <item path="../../boardcfg/number8/app_pipeline.h" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number8/app_settings.h" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number8/board_init.c" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number8/board_init.h" ex="true" overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number8/bootloader_settings.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../boardcfg/number8/common_settings.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../../linker/app_mx675F512H.ld" ex="false" overriding="false">
         <C32>
@@ -1714,22 +2097,82 @@
       <item path="../src/system_config/number8/framework/system/clk/src/sys_clk_static.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number8/framework/system/clk/sys_clk_static.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number8/framework/system/ports/src/sys_ports_static.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_config.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_definitions.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_init.c"
             ex="true"
@@ -1832,10 +2275,34 @@
       <item path="../src/system_config/number8/system_interrupt.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_tasks.c"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2/bsp_config.h"
             ex="true"
@@ -1872,38 +2339,146 @@
       <item path="/opt/microchip/harmony/v1_02/framework/system/common/sys_common.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="/opt/microchip/harmony/v1_02/framework/system/common/sys_module.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="/opt/microchip/harmony/v1_02/framework/system/devcon/sys_devcon.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="/opt/microchip/harmony/v1_02/framework/system/int/sys_int.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="/opt/microchip/harmony/v1_02/framework/system/ports/sys_ports.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="/opt/microchip/harmony/v1_02/framework/system/system.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="/opt/microchip/harmony/v1_02/framework/usb/usb_cdc.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="/opt/microchip/harmony/v1_02/framework/usb/usb_device.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <item path="/opt/microchip/harmony/v1_02/framework/usb/usb_device_cdc.h"
             ex="true"
             overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
       </item>
       <C32>
         <property key="additional-warnings" value="false"/>

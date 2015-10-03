@@ -40,6 +40,23 @@
 #define USB_POWER_CONSUMPTION 100
 
 /**
+ * @brief Use a development UID rather than reading the UID from flash.
+ *
+ * Intended for development use only. This can be used to avoid linker errors
+ * when running without a bootloader.
+ */
+#define CFG_USE_DEVELOPMENT_UID
+
+/**
+ * @brief Controls if we use the magic bootloader symbol from the linker
+ * script.
+ *
+ * Intended for development use only. This can be used to avoid linker errors
+ * when running without a bootloader.
+ */
+#define CFG_NO_BOOTLOADER_OPTION
+
+/**
  * @}
  */
 

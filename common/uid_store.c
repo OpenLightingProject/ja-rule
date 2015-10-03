@@ -18,15 +18,22 @@
  */
 
 #include "uid_store.h"
+#include "common_settings.h"
 
 #include <stdint.h>
 
-/*
- * @brief The location of the UID.
- *
- * This is setup in the linker script.
- */
+#ifdef CFG_USE_DEVELOPMENT_UID
+// Fallback to a static development UID
+static const uint8_t test_uid[UID_LENGTH] = {
+  0x7a, 0x70, 0xff, 0xff, 0xff, 0x00
+};
+const uint8_t *uid = &test_uid[0];
+
+#else
+// Use the UID symbol from the linker script
 extern uint8_t __attribute__((space(prog))) _uid;
+const uint8_t *uid = &_uid;
+#endif
 
 static char LowerToHex(uint8_t byte) {
   if (byte < 10u) {
@@ -38,11 +45,10 @@ static char LowerToHex(uint8_t byte) {
 }
 
 const uint8_t* UIDStore_GetUID() {
-  return &_uid;
+  return uid;
 }
 
 void UIDStore_AsAsciiString(char *output) {
-  const uint8_t *uid = &_uid;
   unsigned int i = 0u;
   unsigned int offset = 0u;
   for (; i < UID_LENGTH; i++) {
@@ -55,7 +61,6 @@ void UIDStore_AsAsciiString(char *output) {
 }
 
 void UIDStore_AsUnicodeString(uint16_t *output) {
-  const uint8_t *uid = &_uid;
   unsigned int i = 0u;
   unsigned int offset = 0u;
   for (; i < UID_LENGTH; i++) {

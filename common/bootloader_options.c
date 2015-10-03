@@ -22,15 +22,21 @@
 #include <stdbool.h>
 #include <peripheral/reset/plib_reset.h>
 
+#include "common_settings.h"
+
 /*
  * @brief The magic value that triggers the bootloader.
  */
 enum { MAGIC_BOOTLOADER_TOKEN = 0xb11dfe53 };
 
+#ifdef CFG_NO_BOOTLOADER_OPTION
+static uint32_t _boot_option = 0;
+#else
 /*
  * @brief The location of the bootloader token.
  */
 extern uint32_t __attribute__((space(prog))) _boot_option;
+#endif
 
 BootOption BootloaderOptions_GetBootOption() {
   BootOption option = BOOT_PRIMARY_APPLICATION;
