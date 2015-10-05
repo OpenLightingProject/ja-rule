@@ -1,0 +1,18 @@
+/**
+ * @defgroup boardcfg Board Configuration
+ * @brief Hardware configuration.
+ *
+ * The board configuration holds all the options for configuring the bootloader
+ * and main application to run on specific hardware. The hardware
+ * configurations are maintained within subdirectories of boardcfg/. To create
+ * a new config:
+ *
+ * -# Create a new directory boardcfg/<my-hardware>
+ * -# Copy the contents of boardcfg/templates to boardcfg/<my-hardware>
+ * -# Edit the board config options to suit your platform
+ * -# Create a new configuration in MPLAB X
+ * -# Set the configuration properties to include the new board config
+ * -# Edit the harmony configuration as required
+ * -# Generate the harmony code.
+ * -# Build
+ */
