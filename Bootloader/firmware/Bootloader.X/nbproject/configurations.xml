@@ -68,7 +68,7 @@
         <itemPath>../../../common/dfu_properties.h</itemPath>
         <itemPath>../../../common/dfu_spec.h</itemPath>
         <itemPath>../src/bootloader_usb_descriptors.h</itemPath>
-        <itemPath>../../../common/models.h</itemPath>
+        <itemPath>../../../common/config_options.h</itemPath>
         <itemPath>../src/crc.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="bsp" projectFiles="true">
