@@ -57,7 +57,7 @@ extern "C" {
 /**
  * @brief Enables updating the flash based UID using DFU.
  */
-//#define CFG_ALLOW_DFU_UID_UPDATES
+// #define CFG_ALLOW_DFU_UID_UPDATES
 
 /**
  * @brief The port channel of the switch that controls bootloader mode.
