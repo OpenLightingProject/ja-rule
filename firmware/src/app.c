@@ -57,6 +57,7 @@ void APP_Initialize(void) {
 
   // We can do this after USB_DEVICE_Initialize() has been called since it's
   // not used until we reach the tasks function.
+  UIDStore_Init();
   UIDStore_AsUnicodeString(USBDescriptor_UnicodeUID());
 
   CoarseTimer_Settings timer_settings = {

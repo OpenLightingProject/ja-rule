@@ -65,11 +65,11 @@ static const USB_DEVICE_DESCRIPTOR g_device_descriptor = {
 
 // Device Configuration Descriptor
 // ----------------------------------------------------------------------------
-static const uint8_t g_config_descriptor[] = {
+static uint8_t g_config_descriptor[] = {
   // Configuration Descriptor Header
   0x09,  // Size of this descriptor in bytes
   USB_DESCRIPTOR_CONFIGURATION,  // CONFIGURATION descriptor type
-  0x24, 0x00,  // Total length of data for this cfg
+  0x1b, 0x00,  // Total length of data for this cfg
   1,  // Number of interfaces in this cfg
   1,  // Index value of this configuration
   0,  // Configuration string index
@@ -87,6 +87,7 @@ static const uint8_t g_config_descriptor[] = {
   0x02,  // Protocol code
   0x04,  // Interface string index
 
+#ifdef CFG_ALLOW_DFU_UID_UPDATES
   0x09,  // Size of this descriptor in bytes
   USB_DESCRIPTOR_INTERFACE,  // Descriptor Type
   DFU_MODE_DFU_INTERFACE_INDEX,  // Interface Number
@@ -96,6 +97,7 @@ static const uint8_t g_config_descriptor[] = {
   0x01,  // Subclass code
   0x02,  // Protocol code
   0x05,  // Interface string index
+#endif
 
   // DFU functional descriptor
   0x09,  // size
@@ -242,6 +244,11 @@ const USB_DEVICE_INIT usbDevInitData = {
 };
 
 const USB_DEVICE_INIT* BootloaderUSBDescriptor_GetDeviceConfig() {
+#ifdef CFG_ALLOW_DFU_UID_UPDATES
+  // Fix the total length
+  g_config_descriptor[3] += 9;
+#endif
+
   return &usbDevInitData;
 }
 

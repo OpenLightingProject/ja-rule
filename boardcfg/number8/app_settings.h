@@ -23,7 +23,13 @@
 #include "board_init.h"
 #include "common_settings.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
+ * @addtogroup boardcfg
+ * @{
  * @file app_settings.h
  * @brief Configuration settings for the main application.
  *
@@ -160,6 +166,11 @@
 
 /**
  * @}
+ * @}
  */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // BOARDCFG_NUMBER8_APP_SETTINGS_H_

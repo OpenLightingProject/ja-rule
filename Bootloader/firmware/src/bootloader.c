@@ -86,13 +86,16 @@ DFUConfiguration DFU_CONFIGURATION[2] = {
   {
     .start_address = 0x9d007000,
     .end_address = 0x9d07ffff
-  },
+  }
+#ifdef CFG_ALLOW_DFU_UID_UPDATES
+  ,
   // The page containing the UID, right now we only use 6 bytes, but we allow
   // the full 4kB in case we want to store something else here.
   {
     .start_address = 0x9d006000,
     .end_address = 0x9d006fff
   }
+#endif
 };
 
 

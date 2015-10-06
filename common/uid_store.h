@@ -27,9 +27,12 @@
  * @{
  * @file uid_store.h
  * @brief The API to retrieve the device's UID.
- *
- * For now, we store the UID in program flash.
  */
+
+/**
+ * @brief Initialize the UID store.
+ */
+void UIDStore_Init();
 
 /**
  * @brief Get the device's UID.

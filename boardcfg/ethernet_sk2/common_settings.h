@@ -20,12 +20,20 @@
 #ifndef BOARDCFG_ETHERNET_SK2_COMMON_SETTINGS_H_
 #define BOARDCFG_ETHERNET_SK2_COMMON_SETTINGS_H_
 
+#include "config_options.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
+ * @addtogroup boardcfg
+ * @{
  * @file common_settings.h
  * @brief Configuration settings by both the bootloader and the main app.
  */
 
-/*
+/**
  * @name USB
  * USB Configuration.
  * @{
@@ -40,24 +48,47 @@
 #define USB_POWER_CONSUMPTION 100
 
 /**
- * @brief Use a development UID rather than reading the UID from flash.
+ * @}
  *
- * Intended for development use only. This can be used to avoid linker errors
- * when running without a bootloader.
+ * @name RDM Identification
+ * Testing
+ * @{
  */
-// #define CFG_USE_DEVELOPMENT_UID
+
+/**
+ * @brief The RDM manufacturer ID
+ */
+#define CFG_MANUFACTURER_ID 0x7a70
+
+/**
+ * @brief The source of the device's UID.
+ * @sa UIDSource
+ */
+#define CFG_UID_SOURCE CFG_OPT_UID_FROM_MAC
+
+/**
+ * @}
+ *
+ * @name Developer Settings
+ * These settings are intended for developer use only
+ * @{
+ */
 
 /**
  * @brief Controls if we use the magic bootloader symbol from the linker
  * script.
  *
- * Intended for development use only. This can be used to avoid linker errors
- * when running without a bootloader.
+ * This can be used to avoid linker errors when running without a bootloader.
  */
 // #define CFG_NO_BOOTLOADER_OPTION
 
 /**
  * @}
+ * @}
  */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // BOARDCFG_ETHERNET_SK2_COMMON_SETTINGS_H_

@@ -28,6 +28,8 @@ extern "C" {
 #endif
 
 /**
+ * @addtogroup boardcfg
+ * @{
  * @file app_settings.h
  * @brief Configuration settings for the main application.
  *
@@ -163,6 +165,7 @@ extern "C" {
 #define SPI_USE_ENHANCED_BUFFERING true
 
 /**
+ * @}
  * @}
  */
 

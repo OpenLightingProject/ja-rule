@@ -22,19 +22,29 @@
 
 #include "bootloader.h"
 #include "common_settings.h"
-#include "models.h"
+#include "config_options.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
+ * @addtogroup boardcfg
+ * @{
  * @file bootloader_settings.h
  * @brief Configuration settings for the bootloader.
+ *
+ * @name Bootloader Settings
+ * These options control the bootloader memory settings.
+ * @{
  */
 
-/*
+/**
  * @brief The reset address of the application.
  */
 #define APPLICATION_RESET_ADDRESS 0x9d008000
 
-/*
+/**
  * @brief The size of a flash page
  */
 #define FLASH_PAGE_SIZE 0x1000
@@ -43,6 +53,11 @@
  * @brief The size of the words used for flash programming.
  */
 #define FLASH_WORD_SIZE 4
+
+/**
+ * @brief Enables updating the flash based UID using DFU.
+ */
+// #define CFG_ALLOW_DFU_UID_UPDATES
 
 /**
  * @brief The port channel of the switch that controls bootloader mode.
@@ -61,6 +76,7 @@
 
 /**
  * @brief The hardware model.
+ * @sa JaRuleModel
  */
 #define HARDWARE_MODEL MODEL_ETHERNET_SK2
 
@@ -68,5 +84,14 @@
  * @brief The LEDS to flash in bootloader mode.
  */
 const Bootloader_LEDs BOOTLOADER_LEDS;
+
+/**
+ * @}
+ * @}
+ */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // BOARDCFG_ETHERNET_SK2_BOOTLOADER_SETTINGS_H_

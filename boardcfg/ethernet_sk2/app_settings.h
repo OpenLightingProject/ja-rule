@@ -23,8 +23,14 @@
 #include "board_init.h"
 #include "common_settings.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
- * @file system_settings.h
+ * @addtogroup boardcfg
+ * @{
+ * @file app_settings.h
  * @brief Configuration settings for the main application.
  *
  * These will need to be adjusted to suit the particular processor / board
@@ -160,6 +166,11 @@
 
 /**
  * @}
+ * @}
  */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // BOARDCFG_ETHERNET_SK2_APP_SETTINGS_H_

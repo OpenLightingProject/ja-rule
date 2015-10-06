@@ -22,7 +22,7 @@
 
 #include <stdbool.h>
 #include "bootloader.h"
-#include "common/models.h"
+#include "common/config_options.h"
 
 /*
  * @brief The reset address of the application.
@@ -38,6 +38,11 @@ enum { FLASH_PAGE_SIZE = 0x1000 };
  * @brief The size of the words used for flash programming.
  */
 enum { FLASH_WORD_SIZE = 4 };
+
+/**
+ * @brief Enables updating the flash based UID using DFU.
+ */
+#define CFG_ALLOW_DFU_UID_UPDATES
 
 /**
  * @brief The port channel of the switch that controls bootloader mode.

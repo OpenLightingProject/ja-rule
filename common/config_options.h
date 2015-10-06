@@ -13,18 +13,18 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * models.h
+ * config_options.h
  * Copyright (C) 2015 Simon Newton
  */
 
-/**
- * @{
- * @file models.h
- * @brief The model numbers for different hardware devices.
- */
+#ifndef COMMON_CONFIG_OPTIONS_H_
+#define COMMON_CONFIG_OPTIONS_H_
 
-#ifndef COMMON_MODELS_H_
-#define COMMON_MODELS_H_
+/**
+ * @file config_options.h
+ * @brief Settings used for board configuration.
+ *
+ */
 
 /**
  * @brief Hardware model IDs.
@@ -38,8 +38,13 @@ typedef enum {
   MODEL_ETHERNET_SK2 = 3,  //!< Ethernet Starter Kit II
 } JaRuleModel;
 
-#endif  // COMMON_MODELS_H_
-
 /**
- * @}
+ * @brief Controls how the device's UID is derived.
  */
+typedef enum {
+  UID_FROM_MAC = 0,  //!< Use the MAC address
+  UID_FROM_FLASH = 1,  //!< Read from flash
+  UID_TEST_UID = 2  //!< Use the test UID
+} UIDSource;
+
+#endif  // COMMON_CONFIG_OPTIONS_H_
