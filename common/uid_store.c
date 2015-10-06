@@ -75,7 +75,7 @@ void UIDStore_Init() {}
 static const uint8_t kDevUID[UID_LENGTH] = {
   CFG_MANUFACTURER_ID >> 8,
   CFG_MANUFACTURER_ID & 0xff,
-  0xff, 0xff, 0xff, 0x00
+  0xff, 0xff, 0xfe, 0x00
 };
 const uint8_t *kUID = &kDevUID[0];
 

@@ -178,7 +178,7 @@ void SYS_Initialize ( void* data )
 
     /* Initialize Middleware */
 
-    /* Copy the UID from to the USB descriptor. */
+    /* Copy the UID to the USB descriptor. */
     UIDStore_Init();
     UIDStore_AsUnicodeString(BootloaderUSBDescriptor_UnicodeUID());
 

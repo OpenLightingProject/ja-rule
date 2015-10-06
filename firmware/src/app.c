@@ -67,12 +67,12 @@ void APP_Initialize(void) {
   SYS_INT_VectorPrioritySet(AS_TIMER_INTERRUPT_VECTOR(COARSE_TIMER_ID),
                             INT_PRIORITY_LEVEL6);
   CoarseTimer_Initialize(&timer_settings);
-    
+
   // Initialize the Logging system, bottom up
   USBTransport_Initialize(NULL);
   USBConsole_Initialize();
   SysLog_Initialize(NULL);
-          
+
   // Initialize the DMX / RDM Transceiver
   TransceiverHardwareSettings transceiver_settings = {
     .usart = AS_USART_ID(TRANSCEIVER_UART),
