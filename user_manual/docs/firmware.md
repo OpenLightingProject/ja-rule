@@ -16,7 +16,7 @@ To enter the Bootloader mode press and hold the button on the board when powerin
 
 ## Flash Firmware {#update-flash}
 Download the latest firmware package from [firmware] and note its location
-### On Linux {#update-flash-Linux}
+### On Linux {#update-flash-linux}
 Download the **dfu-util** application using
 
 `sudo apt-get install dfu-util`
@@ -25,19 +25,19 @@ To update the firmware run the following command replacing "firmware.dfu" with t
 
 `sudo dfu-util -a 0 -R -D firmware.dfu`
 
-### On Mac {#update-flash-Mac}
+### On Mac {#update-flash-mac}
 
-### On Windows {#update-flash-Windows}
+### On Windows {#update-flash-windows}
 
-# Bootloader Update {#Bootloader-Update}
+# Bootloader Update {#bootloader-update}
 In order to update the bootloader you will need a special set of hardware and software that can interface with the PIC32 microcontroller. 
 
-## Hardware Required {#Bootloader-update-hardware}
+## Hardware Required {#bootloader-update-hardware}
 You will need a PicKit 3 programmer or similar
 
-## Software Required {#Bootloader-update-software}
+## Software Required {#bootloader-update-software}
 MPLAB IPE
 
-## Steps {#Bootloader-update-Steps}
+## Steps {#bootloader-update-steps}
 
 [firmware]:	http://dl.openlighting.org	"firmware"
