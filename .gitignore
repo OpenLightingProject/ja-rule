@@ -12,7 +12,7 @@
 *.zip
 .deps
 .dirstamp
-googlemock-read-only/
+gtest-read-only/
 Makefile
 Makefile.in
 aclocal.m4

@@ -7,15 +7,23 @@ AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([config])
 AM_INIT_AUTOMAKE([subdir-objects foreign])
-AC_LANG_PUSH([C++])
+AC_LANG([C++])
 
 # Checks for programs.
 AC_PROG_CXX
+AC_LANG_PUSH(C)
+AC_PROG_CC
+AC_LANG_POP(C)
 
 # Checks for libraries.
 
 LT_INIT
 AC_PROG_LIBTOOL
+
+AC_LANG_PUSH(C)
+# Switch the C compiler into C99 mode
+AC_PROG_CC_C99
+AC_LANG_POP(C)
 
 # Check we have -std=c++11 support
 AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
@@ -113,7 +121,8 @@ echo \
 ${PACKAGE_NAME} Version ${PACKAGE_VERSION}
 
 Prefix: '${prefix}'
-Compiler: '${CXX} ${CXXFLAGS} ${CPPFLAGS}'
+C++ Compiler: '${CXX} ${CXXFLAGS} ${CPPFLAGS}'
+C Compiler: '${CC} ${CFLAGS} ${CPPFLAGS}'
 Linker: '${LD} ${LDFLAGS} ${LIBS}'
 
 Now type 'make @<:@<target>@:>@'

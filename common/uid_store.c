@@ -48,12 +48,12 @@ void UIDStore_Init() {
   // To support more than one responder per device, we set the lower 4 bits of
   // the UID to 0 so we have 16 responders per device. These means the complete
   // UID takes the form:
-  //   MMMM:0AAAAAA0
+  //   MMMM:1AAAAAA0
   // Where M is the PLASA manufacturer ID and A are the values from the MAC
   // address.
   kUIDArray[0] = CFG_MANUFACTURER_ID >> 8;
   kUIDArray[1] = CFG_MANUFACTURER_ID & 0xff;
-  kUIDArray[2] = ShiftRight(PLIB_ETH_StationAddressGet(ETH_ID_0, 4));
+  kUIDArray[2] = 0x10 + ShiftRight(PLIB_ETH_StationAddressGet(ETH_ID_0, 4));
   kUIDArray[3] = ShiftLeft(PLIB_ETH_StationAddressGet(ETH_ID_0, 4)) +
                  ShiftRight(PLIB_ETH_StationAddressGet(ETH_ID_0, 5));
   kUIDArray[4] = ShiftLeft(PLIB_ETH_StationAddressGet(ETH_ID_0, 5)) +
