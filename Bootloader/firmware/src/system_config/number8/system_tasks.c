@@ -11,7 +11,7 @@
   Description:
     This file contains source code necessary to maintain system's polled state
     machines.  It implements the "SYS_Tasks" function that calls the individual
-    "Tasks" functions for all the MPLAB Harmony modules in the system.
+    "Tasks" functions for all polled MPLAB Harmony modules in the system.
 
   Remarks:
     This file requires access to the systemObjects global data structure that
@@ -22,7 +22,7 @@
 
 // DOM-IGNORE-BEGIN
 /*******************************************************************************
-Copyright (c) 2013-2014 released Microchip Technology Inc.  All rights reserved.
+Copyright (c) 2013-2015 released Microchip Technology Inc.  All rights reserved.
 
 Microchip licenses to you the right to use, modify, copy and distribute
 Software only when embedded on a Microchip microcontroller or digital signal
@@ -73,15 +73,21 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 void SYS_Tasks ( void )
 {
-    /* Maintain the state machines of all library modules executing polled in
-    the system. */
-
     /* Maintain system services */
     SYS_DEVCON_Tasks(sysObj.sysDevcon);
 
     /* Maintain Device Drivers */
+
+    /* Maintain Middleware & Other Libraries */
+
+ 
+    /* USB FS Driver Task Routine */ 
+     DRV_USBFS_Tasks(sysObj.drvUSBObject);
+     
     /* USB Device layer tasks routine */
     USB_DEVICE_Tasks(sysObj.usbDevObject0);
+
+
 
     /* Maintain the application's state machine. */
     Bootloader_Tasks();
