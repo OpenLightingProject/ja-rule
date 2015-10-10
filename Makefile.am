@@ -34,4 +34,3 @@ include tests/Makefile.mk
 include tools/Makefile.mk
 
 check_PROGRAMS = $(TESTS)
-
