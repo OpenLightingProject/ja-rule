@@ -11,6 +11,7 @@ AC_LANG_PUSH([C++])
 
 # Checks for programs.
 AC_PROG_CXX
+AC_PROG_CC
 
 # Checks for libraries.
 
@@ -19,6 +20,9 @@ AC_PROG_LIBTOOL
 
 # Check we have -std=c++11 support
 AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
+
+# Switch the C compiler into C99 mode
+AC_PROG_CC_C99
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h stdint.h stdlib.h string.h])
