@@ -20,7 +20,7 @@
 
 #include "Matchers.h"
 
-#include <cctype>;
+#include <cctype>
 #include <gmock/gmock.h>
 
 
