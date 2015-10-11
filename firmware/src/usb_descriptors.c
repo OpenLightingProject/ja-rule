@@ -79,8 +79,8 @@ static const USB_DEVICE_DESCRIPTOR g_device_descriptor = {
   0x12,  // Size of this descriptor in bytes
   USB_DESCRIPTOR_DEVICE,  // DEVICE descriptor type
   0x0200,  // USB Spec Release Number in BCD format
-  // Since we use an Interface Association, we need to set the class, subclass and
-  // protocol according to:
+  // Since we use an Interface Association, we need to set the class, subclass
+  // and protocol according to:
   // https://msdn.microsoft.com/en-us/library/windows/hardware/ff540054(v=vs.85).aspx
   0xef,  // Class Code
   0x02,  // Subclass code
