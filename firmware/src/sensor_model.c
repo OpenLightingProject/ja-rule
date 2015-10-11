@@ -87,9 +87,10 @@ static void SensorModel_Activate() {
   g_responder->def = &RESPONDER_DEFINITION;
   unsigned int i = 0u;
   for (; i < NUMBER_OF_SENSORS; i++) {
-    g_sensor_model.sensors[i].present_value = 0u;
-    g_sensor_model.sensors[i].lowest_value = 0u;
-    g_sensor_model.sensors[i].highest_value = 0u;
+    uint16_t value = GetSensorValue(i);
+    g_sensor_model.sensors[i].present_value = value;
+    g_sensor_model.sensors[i].lowest_value = value;
+    g_sensor_model.sensors[i].highest_value = value;
     g_sensor_model.sensors[i].recorded_value = 0u;
     if (i == 1) {
       // The 2nd sensor (index 1) always nacks with a HARDWARE_FAULT
