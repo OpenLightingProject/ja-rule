@@ -25,6 +25,7 @@
 #include "dfu_properties.h"
 #include "uid.h"
 #include "usb/usb_device_cdc.h"
+#include "driver/usb/usbfs/drv_usbfs.h"
 #include "usb_properties.h"
 
 #include "bootloader_settings.h"
@@ -32,7 +33,7 @@
 // USB Device Layer Function Driver Registration Table
 // ----------------------------------------------------------------------------
 static const USB_DEVICE_FUNCTION_REGISTRATION_TABLE g_func_table[1] = {
-  /* Function 3 - The DFU Interface */
+  // Function 3 - The DFU Interface
   {
     .configurationValue = 1,
     .interfaceNumber = 0,
@@ -223,22 +224,16 @@ static const USB_DEVICE_MASTER_DESCRIPTOR usbMasterDescriptor = {
   NULL,  // Pointer to high speed dev qualifier.
 };
 
-// Endpoint Table needed by the Device Layer.
-// ----------------------------------------------------------------------------
-static uint8_t __attribute__((aligned(512)))
-    g_endpoint_table[USB_DEVICE_ENDPOINT_TABLE_SIZE];
-
 // USB Device Layer Initialization Data
 // ----------------------------------------------------------------------------
 const USB_DEVICE_INIT usbDevInitData = {
   .moduleInit = {SYS_MODULE_POWER_RUN_FULL},
-  .stopInIdle = false,
-  .suspendInSleep = false,
-  .endpointTable = g_endpoint_table,
   .registeredFuncCount = 1,
   .registeredFunctions = (USB_DEVICE_FUNCTION_REGISTRATION_TABLE*) g_func_table,
   .usbMasterDescriptor = (USB_DEVICE_MASTER_DESCRIPTOR*) &usbMasterDescriptor,
   .deviceSpeed = USB_SPEED_FULL,
+  .driverIndex = DRV_USBFS_INDEX_0,
+  .usbDriverInterface = DRV_USBFS_DEVICE_INTERFACE,
   .queueSizeEndpointRead = 1,
   .queueSizeEndpointWrite = 1,
 };
