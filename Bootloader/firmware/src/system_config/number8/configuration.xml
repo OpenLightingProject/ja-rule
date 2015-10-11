@@ -43,6 +43,10 @@
         <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
       </File>
       <File>
+        <Name>sys_reset.c</Name>
+        <Path>Source Files/framework/system/reset/src</Path>
+      </File>
+      <File>
         <Name>sys_devcon.c</Name>
         <Path>Source Files/framework/system/devcon/src</Path>
       </File>
@@ -69,6 +73,10 @@
       <File>
         <Name>drv_usbfs.c</Name>
         <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
+      </File>
+      <File>
+        <Name>sys_reset.h</Name>
+        <Path>Header Files/framework/system/reset</Path>
       </File>
     </Files>
     <Templates>
@@ -112,7 +120,7 @@
       <Template>
         <Name>system_definitions.h</Name>
         <Path>Header Files/app/system_config/number8</Path>
-        <Checksum>C6785C685DC369BA3FA09D75205BB944</Checksum>
+        <Checksum>4C15FF48ED162717B757C2A8EB16A04B</Checksum>
       </Template>
       <Template>
         <Name>system_config.h</Name>
@@ -131,7 +139,7 @@
       </Template>
     </Templates>
     <Libraries>
-      <Library value="/opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX675F512H_peripherals.a"/>
+      <Library value="../../../../../../../opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX675F512H_peripherals.a"/>
     </Libraries>
   </Manifest>
 </configuration>

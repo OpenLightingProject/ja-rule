@@ -32,12 +32,10 @@
         <logicalFolder name="system_config"
                        displayName="system_config"
                        projectFiles="true">
-          <logicalFolder name="ethernet_sk2"
-                         displayName="ethernet_sk2"
-                         projectFiles="true">
-            <logicalFolder name="framework" displayName="framework" projectFiles="true">
-              <logicalFolder name="system" displayName="system" projectFiles="true">
-                <logicalFolder name="clk" displayName="clk" projectFiles="true">
+          <logicalFolder name="f3" displayName="ethernet_sk2" projectFiles="true">
+            <logicalFolder name="f1" displayName="framework" projectFiles="true">
+              <logicalFolder name="f1" displayName="system" projectFiles="true">
+                <logicalFolder name="f1" displayName="clk" projectFiles="true">
                   <itemPath>../src/system_config/ethernet_sk2/framework/system/clk/sys_clk_static.h</itemPath>
                 </logicalFolder>
               </logicalFolder>
@@ -106,30 +104,38 @@
       </logicalFolder>
       <logicalFolder name="f2" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">
-          <itemPath>/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2/bsp_config.h</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_config.h</itemPath>
         </logicalFolder>
       </logicalFolder>
       <logicalFolder name="f1" displayName="framework" projectFiles="true">
+        <logicalFolder name="f3" displayName="driver" projectFiles="true">
+          <logicalFolder name="f1" displayName="usb" projectFiles="true">
+            <itemPath>/opt/microchip/harmony/v1_06/framework/driver/usb/drv_usb.h</itemPath>
+          </logicalFolder>
+        </logicalFolder>
         <logicalFolder name="f1" displayName="system" projectFiles="true">
           <logicalFolder name="f1" displayName="common" projectFiles="true">
-            <itemPath>/opt/microchip/harmony/v1_02/framework/system/common/sys_common.h</itemPath>
-            <itemPath>/opt/microchip/harmony/v1_02/framework/system/common/sys_module.h</itemPath>
+            <itemPath>/opt/microchip/harmony/v1_06/framework/system/common/sys_common.h</itemPath>
+            <itemPath>/opt/microchip/harmony/v1_06/framework/system/common/sys_module.h</itemPath>
           </logicalFolder>
           <logicalFolder name="f2" displayName="devcon" projectFiles="true">
-            <itemPath>/opt/microchip/harmony/v1_02/framework/system/devcon/sys_devcon.h</itemPath>
+            <itemPath>/opt/microchip/harmony/v1_06/framework/system/devcon/sys_devcon.h</itemPath>
           </logicalFolder>
           <logicalFolder name="f3" displayName="int" projectFiles="true">
-            <itemPath>/opt/microchip/harmony/v1_02/framework/system/int/sys_int.h</itemPath>
+            <itemPath>/opt/microchip/harmony/v1_06/framework/system/int/sys_int.h</itemPath>
           </logicalFolder>
           <logicalFolder name="f4" displayName="ports" projectFiles="true">
-            <itemPath>/opt/microchip/harmony/v1_02/framework/system/ports/sys_ports.h</itemPath>
+            <itemPath>/opt/microchip/harmony/v1_06/framework/system/ports/sys_ports.h</itemPath>
           </logicalFolder>
-          <itemPath>/opt/microchip/harmony/v1_02/framework/system/system.h</itemPath>
+          <logicalFolder name="f5" displayName="reset" projectFiles="true">
+            <itemPath>/opt/microchip/harmony/v1_06/framework/system/reset/sys_reset.h</itemPath>
+          </logicalFolder>
+          <itemPath>/opt/microchip/harmony/v1_06/framework/system/system.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f2" displayName="usb" projectFiles="true">
-          <itemPath>/opt/microchip/harmony/v1_02/framework/usb/usb_device.h</itemPath>
-          <itemPath>/opt/microchip/harmony/v1_02/framework/usb/usb_cdc.h</itemPath>
-          <itemPath>/opt/microchip/harmony/v1_02/framework/usb/usb_device_cdc.h</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_06/framework/usb/usb_device.h</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_06/framework/usb/usb_cdc.h</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_06/framework/usb/usb_device_cdc.h</itemPath>
         </logicalFolder>
       </logicalFolder>
     </logicalFolder>
@@ -157,18 +163,16 @@
         <logicalFolder name="system_config"
                        displayName="system_config"
                        projectFiles="true">
-          <logicalFolder name="ethernet_sk2"
-                         displayName="ethernet_sk2"
-                         projectFiles="true">
-            <logicalFolder name="framework" displayName="framework" projectFiles="true">
-              <logicalFolder name="system" displayName="system" projectFiles="true">
-                <logicalFolder name="clk" displayName="clk" projectFiles="true">
-                  <logicalFolder name="src" displayName="src" projectFiles="true">
+          <logicalFolder name="f3" displayName="ethernet_sk2" projectFiles="true">
+            <logicalFolder name="f1" displayName="framework" projectFiles="true">
+              <logicalFolder name="f1" displayName="system" projectFiles="true">
+                <logicalFolder name="f1" displayName="clk" projectFiles="true">
+                  <logicalFolder name="f1" displayName="src" projectFiles="true">
                     <itemPath>../src/system_config/ethernet_sk2/framework/system/clk/src/sys_clk_static.c</itemPath>
                   </logicalFolder>
                 </logicalFolder>
-                <logicalFolder name="ports" displayName="ports" projectFiles="true">
-                  <logicalFolder name="src" displayName="src" projectFiles="true">
+                <logicalFolder name="f2" displayName="ports" projectFiles="true">
+                  <logicalFolder name="f1" displayName="src" projectFiles="true">
                     <itemPath>../src/system_config/ethernet_sk2/framework/system/ports/src/sys_ports_static.c</itemPath>
                   </logicalFolder>
                 </logicalFolder>
@@ -176,6 +180,7 @@
             </logicalFolder>
             <itemPath>../src/system_config/ethernet_sk2/system_init.c</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_interrupt.c</itemPath>
+            <itemPath>../src/system_config/ethernet_sk2/system_exceptions.c</itemPath>
             <itemPath>../src/system_config/ethernet_sk2/system_tasks.c</itemPath>
           </logicalFolder>
           <logicalFolder name="f2" displayName="number1" projectFiles="true">
@@ -195,6 +200,7 @@
             </logicalFolder>
             <itemPath>../src/system_config/number1/system_init.c</itemPath>
             <itemPath>../src/system_config/number1/system_interrupt.c</itemPath>
+            <itemPath>../src/system_config/number1/system_exceptions.c</itemPath>
             <itemPath>../src/system_config/number1/system_tasks.c</itemPath>
           </logicalFolder>
           <logicalFolder name="f1" displayName="number8" projectFiles="true">
@@ -213,14 +219,14 @@
               </logicalFolder>
             </logicalFolder>
             <itemPath>../src/system_config/number8/system_init.c</itemPath>
-            <itemPath>../src/system_config/number8/system_tasks.c</itemPath>
             <itemPath>../src/system_config/number8/system_interrupt.c</itemPath>
+            <itemPath>../src/system_config/number8/system_exceptions.c</itemPath>
+            <itemPath>../src/system_config/number8/system_tasks.c</itemPath>
           </logicalFolder>
         </logicalFolder>
         <itemPath>../../common/bootloader_options.c</itemPath>
         <itemPath>../../common/reset.c</itemPath>
         <itemPath>../../common/uid_store.c</itemPath>
-        <itemPath>../src/app.c</itemPath>
         <itemPath>../src/coarse_timer.c</itemPath>
         <itemPath>../src/dimmer_model.c</itemPath>
         <itemPath>../src/flags.c</itemPath>
@@ -245,10 +251,11 @@
         <itemPath>../src/usb_console.c</itemPath>
         <itemPath>../src/usb_descriptors.c</itemPath>
         <itemPath>../src/usb_transport.c</itemPath>
+        <itemPath>../src/app.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">
-          <itemPath>/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2/bsp_sys_init.c</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_sys_init.c</itemPath>
         </logicalFolder>
       </logicalFolder>
       <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -257,39 +264,43 @@
             <logicalFolder name="f1" displayName="usbfs" projectFiles="true">
               <logicalFolder name="f1" displayName="src" projectFiles="true">
                 <logicalFolder name="f1" displayName="dynamic" projectFiles="true">
-                  <itemPath>/opt/microchip/harmony/v1_02/framework/driver/usb/usbfs/src/dynamic/drv_usb.c</itemPath>
-                  <itemPath>/opt/microchip/harmony/v1_02/framework/driver/usb/usbfs/src/dynamic/drv_usb_device.c</itemPath>
+                  <itemPath>/opt/microchip/harmony/v1_06/framework/driver/usb/usbfs/src/dynamic/drv_usbfs.c</itemPath>
+                  <itemPath>/opt/microchip/harmony/v1_06/framework/driver/usb/usbfs/src/dynamic/drv_usbfs_device.c</itemPath>
                 </logicalFolder>
               </logicalFolder>
             </logicalFolder>
-            <itemPath>/opt/microchip/harmony/v1_02/framework/driver/usb/drv_usb.h</itemPath>
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="f1" displayName="system" projectFiles="true">
           <logicalFolder name="f1" displayName="devcon" projectFiles="true">
             <logicalFolder name="f1" displayName="src" projectFiles="true">
-              <itemPath>/opt/microchip/harmony/v1_02/framework/system/devcon/src/sys_devcon.c</itemPath>
-              <itemPath>/opt/microchip/harmony/v1_02/framework/system/devcon/src/sys_devcon_pic32mx.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_06/framework/system/devcon/src/sys_devcon.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_06/framework/system/devcon/src/sys_devcon_pic32mx.c</itemPath>
             </logicalFolder>
           </logicalFolder>
           <logicalFolder name="f2" displayName="int" projectFiles="true">
             <logicalFolder name="f1" displayName="src" projectFiles="true">
-              <itemPath>/opt/microchip/harmony/v1_02/framework/system/int/src/sys_int_pic32.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_06/framework/system/int/src/sys_int_pic32.c</itemPath>
             </logicalFolder>
           </logicalFolder>
           <logicalFolder name="f3" displayName="ports" projectFiles="true">
             <logicalFolder name="f1" displayName="src" projectFiles="true">
-              <itemPath>/opt/microchip/harmony/v1_02/framework/system/ports/src/sys_ports.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_06/framework/system/ports/src/sys_ports.c</itemPath>
+            </logicalFolder>
+          </logicalFolder>
+          <logicalFolder name="f4" displayName="reset" projectFiles="true">
+            <logicalFolder name="f1" displayName="src" projectFiles="true">
+              <itemPath>/opt/microchip/harmony/v1_06/framework/system/reset/src/sys_reset.c</itemPath>
             </logicalFolder>
           </logicalFolder>
         </logicalFolder>
         <logicalFolder name="f3" displayName="usb" projectFiles="true">
           <logicalFolder name="f1" displayName="src" projectFiles="true">
             <logicalFolder name="f1" displayName="dynamic" projectFiles="true">
-              <itemPath>/opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device.c</itemPath>
-              <itemPath>/opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_cdc.c</itemPath>
-              <itemPath>/opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_cdc_acm.c</itemPath>
-              <itemPath>/opt/microchip/harmony/v1_02/framework/usb/src/dynamic/usb_device_endpoint_functions.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_06/framework/usb/src/dynamic/usb_device.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_06/framework/usb/src/dynamic/usb_device_endpoint_functions.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_06/framework/usb/src/dynamic/usb_device_cdc.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_06/framework/usb/src/dynamic/usb_device_cdc_acm.c</itemPath>
             </logicalFolder>
           </logicalFolder>
         </logicalFolder>
@@ -305,7 +316,6 @@
     <Elem>../src</Elem>
     <Elem>../../linker</Elem>
     <Elem>../../common</Elem>
-    <Elem>/opt/microchip/harmony/v1_02</Elem>
     <Elem>../src/system_config/number8</Elem>
     <Elem>../src/system_config/ethernet_sk2</Elem>
     <Elem>../../boardcfg/ethernet_sk2</Elem>
@@ -313,6 +323,7 @@
     <Elem>../../boardcfg/default</Elem>
     <Elem>../../boardcfg/number1</Elem>
     <Elem>../src/system_config/number1</Elem>
+    <Elem>/opt/microchip/harmony/v1_06</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -324,13 +335,13 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PKOBSKDEPlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.33</languageToolchainVersion>
+        <languageToolchainVersion>1.40</languageToolchainVersion>
         <platform>4</platform>
       </toolsSet>
       <compileType>
         <linkerTool>
           <linkerLibItems>
-            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
+            <linkerLibFileItem>/opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -541,258 +552,74 @@
       <item path="../src/system_config/number1/framework/system/clk/src/sys_clk_static.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number1/framework/system/clk/sys_clk_static.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number1/framework/system/ports/src/sys_ports_static.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_config.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_definitions.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
+      </item>
+      <item path="../src/system_config/number1/system_exceptions.c"
+            ex="true"
+            overriding="false">
       </item>
       <item path="../src/system_config/number1/system_init.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_interrupt.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_tasks.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/framework/system/clk/src/sys_clk_static.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/framework/system/clk/sys_clk_static.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/framework/system/ports/src/sys_ports_static.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_config.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_definitions.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
+      </item>
+      <item path="../src/system_config/number8/system_exceptions.c"
+            ex="true"
+            overriding="false">
       </item>
       <item path="../src/system_config/number8/system_init.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_interrupt.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_tasks.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <C32>
         <property key="additional-warnings" value="false"/>
@@ -802,7 +629,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../../common;../src;../../boardcfg/ethernet_sk2;../src/system_config/ethernet_sk2;/opt/microchip/harmony/v1_02/framework;/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2"/>
+                  value="../../common;../src;../../boardcfg/ethernet_sk2;../src/system_config/ethernet_sk2;/opt/microchip/harmony/v1_06/framework;../src/system_config/ethernet_sk2/framework;../../../../../../opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -938,14 +765,13 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PICkit3PlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.33</languageToolchainVersion>
+        <languageToolchainVersion>1.40</languageToolchainVersion>
         <platform>4</platform>
       </toolsSet>
       <compileType>
         <linkerTool>
           <linkerLibItems>
-            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
-            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
+            <linkerLibFileItem>/opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -965,6 +791,390 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
+      <item path="/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_config.h"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_sys_init.c"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/driver/usb/drv_usb.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/driver/usb/usbfs/src/dynamic/drv_usbfs.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/driver/usb/usbfs/src/dynamic/drv_usbfs_device.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/common/sys_common.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/common/sys_module.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/devcon/src/sys_devcon.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/devcon/src/sys_devcon_pic32mx.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/devcon/sys_devcon.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/int/src/sys_int_pic32.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/int/sys_int.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/ports/src/sys_ports.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/ports/sys_ports.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/reset/src/sys_reset.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/reset/sys_reset.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/system.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/src/dynamic/usb_device.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/src/dynamic/usb_device_cdc.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/src/dynamic/usb_device_cdc_acm.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/src/dynamic/usb_device_endpoint_functions.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/usb_cdc.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/usb_device.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/usb_device_cdc.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
       <item path="../../boardcfg/ethernet_sk2/app_pipeline.h"
             ex="true"
             overriding="false">
@@ -1241,6 +1451,22 @@
         <C32Global>
         </C32Global>
       </item>
+      <item path="../src/system_config/ethernet_sk2/system_exceptions.c"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
       <item path="../src/system_config/ethernet_sk2/system_init.c"
             ex="true"
             overriding="false">
@@ -1292,260 +1518,38 @@
       <item path="../src/system_config/number1/framework/system/clk/src/sys_clk_static.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number1/framework/system/clk/sys_clk_static.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number1/framework/system/ports/src/sys_ports_static.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_config.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_definitions.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
+      </item>
+      <item path="../src/system_config/number1/system_exceptions.c"
+            ex="true"
+            overriding="false">
       </item>
       <item path="../src/system_config/number1/system_init.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_interrupt.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number1/system_tasks.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="../src/system_config/number8/system_init.c"
-            ex="false"
-            overriding="false">
-        <C32>
-          <property key="additional-warnings" value="false"/>
-          <property key="enable-app-io" value="false"/>
-          <property key="enable-omit-frame-pointer" value="false"/>
-          <property key="enable-symbols" value="true"/>
-          <property key="enable-unroll-loops" value="false"/>
-          <property key="exclude-floating-point" value="false"/>
-          <property key="extra-include-directories"
-                    value="../src;../../common;../src/system_config/number8;/opt/microchip/harmony/v1_02/framework;../src/system_config/number8/framework;"/>
-          <property key="generate-16-bit-code" value="false"/>
-          <property key="generate-micro-compressed-code" value="false"/>
-          <property key="isolate-each-function" value="true"/>
-          <property key="make-warnings-into-errors" value="false"/>
-          <property key="optimization-level" value="-O1"/>
-          <property key="place-data-into-section" value="false"/>
-          <property key="post-instruction-scheduling" value="default"/>
-          <property key="pre-instruction-scheduling" value="default"/>
-          <property key="preprocessor-macros" value=""/>
-          <property key="strict-ansi" value="false"/>
-          <property key="support-ansi" value="false"/>
-          <property key="use-cci" value="false"/>
-          <property key="use-iar" value="false"/>
-          <property key="use-indirect-calls" value="false"/>
-        </C32>
-        <C32-AR>
-          <property key="additional-options-chop-files" value="false"/>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-          <property key="additional-options-use-response-files" value="false"/>
-          <property key="enable-check-sections" value="false"/>
-          <property key="exclude-floating-point-library" value="false"/>
-          <property key="exclude-standard-libraries" value="false"/>
-          <property key="extra-lib-directories" value=""/>
-          <property key="fill-flash-options-addr" value=""/>
-          <property key="fill-flash-options-const" value=""/>
-          <property key="fill-flash-options-how" value="0"/>
-          <property key="fill-flash-options-inc-const" value="1"/>
-          <property key="fill-flash-options-increment" value=""/>
-          <property key="fill-flash-options-seq" value=""/>
-          <property key="fill-flash-options-what" value="0"/>
-          <property key="generate-16-bit-code" value="false"/>
-          <property key="generate-cross-reference-file" value="false"/>
-          <property key="generate-micro-compressed-code" value="false"/>
-          <property key="heap-size" value="0"/>
-          <property key="input-libraries" value=""/>
-          <property key="linker-symbols" value=""/>
-          <property key="map-file" value="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map"/>
-          <property key="no-startup-files" value="false"/>
-          <property key="oXC32ld-extra-opts" value=""/>
-          <property key="optimization-level" value=""/>
-          <property key="preprocessor-macros" value=""/>
-          <property key="remove-unused-sections" value="true"/>
-          <property key="report-memory-usage" value="false"/>
-          <property key="stack-size" value=""/>
-          <property key="symbol-stripping" value=""/>
-          <property key="trace-symbols" value=""/>
-          <property key="warn-section-align" value="false"/>
-        </C32-LD>
-        <C32CPP>
-          <property key="additional-warnings" value="false"/>
-          <property key="check-new" value="false"/>
-          <property key="eh-specs" value="true"/>
-          <property key="enable-app-io" value="false"/>
-          <property key="enable-omit-frame-pointer" value="false"/>
-          <property key="enable-symbols" value="true"/>
-          <property key="enable-unroll-loops" value="false"/>
-          <property key="exceptions" value="true"/>
-          <property key="exclude-floating-point" value="false"/>
-          <property key="extra-include-directories" value=""/>
-          <property key="generate-16-bit-code" value="false"/>
-          <property key="generate-micro-compressed-code" value="false"/>
-          <property key="isolate-each-function" value="true"/>
-          <property key="make-warnings-into-errors" value="false"/>
-          <property key="optimization-level" value="-O1"/>
-          <property key="place-data-into-section" value="false"/>
-          <property key="post-instruction-scheduling" value="default"/>
-          <property key="pre-instruction-scheduling" value="default"/>
-          <property key="preprocessor-macros" value=""/>
-          <property key="rtti" value="true"/>
-          <property key="strict-ansi" value="false"/>
-          <property key="use-cci" value="false"/>
-          <property key="use-iar" value="false"/>
-          <property key="use-indirect-calls" value="false"/>
-        </C32CPP>
-        <C32Global>
-          <property key="common-include-directories" value=""/>
-          <property key="gp-relative-option" value=""/>
-          <property key="legacy-libc" value="false"/>
-          <property key="relaxed-math" value="false"/>
-          <property key="save-temps" value="false"/>
-          <property key="wpo-lto" value="false"/>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2/bsp_config.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2/bsp_sys_init.c"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <C32>
         <property key="additional-warnings" value="false"/>
@@ -1555,7 +1559,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../../common;../src/system_config/number8/framework;../src/system_config/number8;/opt/microchip/harmony/v1_02/framework;../../boardcfg/number8"/>
+                  value="../src;../../common;../src/system_config/number8/framework;../src/system_config/number8;../../boardcfg/number8;/opt/microchip/harmony/v1_06/framework"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -1726,15 +1730,13 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>PICkit3PlatformTool</platformTool>
         <languageToolchain>XC32</languageToolchain>
-        <languageToolchainVersion>1.33</languageToolchainVersion>
+        <languageToolchainVersion>1.40</languageToolchainVersion>
         <platform>4</platform>
       </toolsSet>
       <compileType>
         <linkerTool>
           <linkerLibItems>
-            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
-            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
-            <linkerLibFileItem>/opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
+            <linkerLibFileItem>/opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -1754,6 +1756,390 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>false</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
+      <item path="/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_config.h"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_sys_init.c"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/driver/usb/drv_usb.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/driver/usb/usbfs/src/dynamic/drv_usbfs.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/driver/usb/usbfs/src/dynamic/drv_usbfs_device.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/common/sys_common.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/common/sys_module.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/devcon/src/sys_devcon.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/devcon/src/sys_devcon_pic32mx.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/devcon/sys_devcon.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/int/src/sys_int_pic32.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/int/sys_int.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/ports/src/sys_ports.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/ports/sys_ports.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/reset/src/sys_reset.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/reset/sys_reset.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/system/system.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/src/dynamic/usb_device.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/src/dynamic/usb_device_cdc.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/src/dynamic/usb_device_cdc_acm.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/src/dynamic/usb_device_endpoint_functions.c"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/usb_cdc.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/usb_device.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
+      <item path="/opt/microchip/harmony/v1_06/framework/usb/usb_device_cdc.h"
+            ex="false"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
       <item path="../../boardcfg/ethernet_sk2/app_pipeline.h"
             ex="true"
             overriding="false">
@@ -2046,6 +2432,22 @@
         <C32Global>
         </C32Global>
       </item>
+      <item path="../src/system_config/ethernet_sk2/system_exceptions.c"
+            ex="true"
+            overriding="false">
+        <C32>
+        </C32>
+        <C32-AR>
+        </C32-AR>
+        <C32-AS>
+        </C32-AS>
+        <C32-LD>
+        </C32-LD>
+        <C32CPP>
+        </C32CPP>
+        <C32Global>
+        </C32Global>
+      </item>
       <item path="../src/system_config/ethernet_sk2/system_init.c"
             ex="true"
             overriding="false">
@@ -2097,388 +2499,38 @@
       <item path="../src/system_config/number8/framework/system/clk/src/sys_clk_static.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/framework/system/clk/sys_clk_static.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/framework/system/ports/src/sys_ports_static.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_config.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_definitions.h"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
+      </item>
+      <item path="../src/system_config/number8/system_exceptions.c"
+            ex="true"
+            overriding="false">
       </item>
       <item path="../src/system_config/number8/system_init.c"
             ex="true"
             overriding="false">
-        <C32>
-          <property key="additional-warnings" value="false"/>
-          <property key="enable-app-io" value="false"/>
-          <property key="enable-omit-frame-pointer" value="false"/>
-          <property key="enable-symbols" value="true"/>
-          <property key="enable-unroll-loops" value="false"/>
-          <property key="exclude-floating-point" value="false"/>
-          <property key="extra-include-directories"
-                    value="../src;../../common;../src/system_config/number8;/opt/microchip/harmony/v1_02/framework;../src/system_config/number8/framework;"/>
-          <property key="generate-16-bit-code" value="false"/>
-          <property key="generate-micro-compressed-code" value="false"/>
-          <property key="isolate-each-function" value="true"/>
-          <property key="make-warnings-into-errors" value="false"/>
-          <property key="optimization-level" value="-O1"/>
-          <property key="place-data-into-section" value="false"/>
-          <property key="post-instruction-scheduling" value="default"/>
-          <property key="pre-instruction-scheduling" value="default"/>
-          <property key="preprocessor-macros" value=""/>
-          <property key="strict-ansi" value="false"/>
-          <property key="support-ansi" value="false"/>
-          <property key="use-cci" value="false"/>
-          <property key="use-iar" value="false"/>
-          <property key="use-indirect-calls" value="false"/>
-        </C32>
-        <C32-AR>
-          <property key="additional-options-chop-files" value="false"/>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-          <property key="additional-options-use-response-files" value="false"/>
-          <property key="enable-check-sections" value="false"/>
-          <property key="exclude-floating-point-library" value="false"/>
-          <property key="exclude-standard-libraries" value="false"/>
-          <property key="extra-lib-directories" value=""/>
-          <property key="fill-flash-options-addr" value=""/>
-          <property key="fill-flash-options-const" value=""/>
-          <property key="fill-flash-options-how" value="0"/>
-          <property key="fill-flash-options-inc-const" value="1"/>
-          <property key="fill-flash-options-increment" value=""/>
-          <property key="fill-flash-options-seq" value=""/>
-          <property key="fill-flash-options-what" value="0"/>
-          <property key="generate-16-bit-code" value="false"/>
-          <property key="generate-cross-reference-file" value="false"/>
-          <property key="generate-micro-compressed-code" value="false"/>
-          <property key="heap-size" value="0"/>
-          <property key="input-libraries" value=""/>
-          <property key="linker-symbols" value=""/>
-          <property key="map-file" value="${DISTDIR}/${PROJECTNAME}.${IMAGE_TYPE}.map"/>
-          <property key="no-startup-files" value="false"/>
-          <property key="oXC32ld-extra-opts" value=""/>
-          <property key="optimization-level" value=""/>
-          <property key="preprocessor-macros" value=""/>
-          <property key="remove-unused-sections" value="true"/>
-          <property key="report-memory-usage" value="false"/>
-          <property key="stack-size" value=""/>
-          <property key="symbol-stripping" value=""/>
-          <property key="trace-symbols" value=""/>
-          <property key="warn-section-align" value="false"/>
-        </C32-LD>
-        <C32CPP>
-          <property key="additional-warnings" value="false"/>
-          <property key="check-new" value="false"/>
-          <property key="eh-specs" value="true"/>
-          <property key="enable-app-io" value="false"/>
-          <property key="enable-omit-frame-pointer" value="false"/>
-          <property key="enable-symbols" value="true"/>
-          <property key="enable-unroll-loops" value="false"/>
-          <property key="exceptions" value="true"/>
-          <property key="exclude-floating-point" value="false"/>
-          <property key="extra-include-directories" value=""/>
-          <property key="generate-16-bit-code" value="false"/>
-          <property key="generate-micro-compressed-code" value="false"/>
-          <property key="isolate-each-function" value="true"/>
-          <property key="make-warnings-into-errors" value="false"/>
-          <property key="optimization-level" value="-O1"/>
-          <property key="place-data-into-section" value="false"/>
-          <property key="post-instruction-scheduling" value="default"/>
-          <property key="pre-instruction-scheduling" value="default"/>
-          <property key="preprocessor-macros" value=""/>
-          <property key="rtti" value="true"/>
-          <property key="strict-ansi" value="false"/>
-          <property key="use-cci" value="false"/>
-          <property key="use-iar" value="false"/>
-          <property key="use-indirect-calls" value="false"/>
-        </C32CPP>
-        <C32Global>
-          <property key="common-include-directories" value=""/>
-          <property key="gp-relative-option" value=""/>
-          <property key="legacy-libc" value="false"/>
-          <property key="relaxed-math" value="false"/>
-          <property key="save-temps" value="false"/>
-          <property key="wpo-lto" value="false"/>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_interrupt.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <item path="../src/system_config/number8/system_tasks.c"
             ex="true"
             overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2/bsp_config.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/bsp/pic32mx_eth_sk2/bsp_sys_init.c"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/framework/system/common/sys_common.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/framework/system/common/sys_module.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/framework/system/devcon/sys_devcon.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/framework/system/int/sys_int.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/framework/system/ports/sys_ports.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/framework/system/system.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/framework/usb/usb_cdc.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/framework/usb/usb_device.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
-      </item>
-      <item path="/opt/microchip/harmony/v1_02/framework/usb/usb_device_cdc.h"
-            ex="true"
-            overriding="false">
-        <C32>
-        </C32>
-        <C32-AR>
-        </C32-AR>
-        <C32-AS>
-        </C32-AS>
-        <C32-LD>
-        </C32-LD>
-        <C32CPP>
-        </C32CPP>
-        <C32Global>
-        </C32Global>
       </item>
       <C32>
         <property key="additional-warnings" value="false"/>
@@ -2488,7 +2540,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../../common;../src/system_config/number1/framework;../src/system_config/number1;/opt/microchip/harmony/v1_02/framework;../../boardcfg/number1;/opt/microchip/harmony/v1_02/framework"/>
+                  value="../src;../../common;../src/system_config/number1/framework;../src/system_config/number1;../../boardcfg/number1;/opt/microchip/harmony/v1_06/framework"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>

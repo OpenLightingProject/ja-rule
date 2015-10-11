@@ -18,12 +18,12 @@
     definitions for build-time configuration options that are not instantiated
     until used by another MPLAB Harmony module or application.
     
-    Created with MPLAB Harmony Version 1.02
+    Created with MPLAB Harmony Version 1.06
 *******************************************************************************/
 
 // DOM-IGNORE-BEGIN
 /*******************************************************************************
-Copyright (c) 2013-2014 released Microchip Technology Inc.  All rights reserved.
+Copyright (c) 2013-2015 released Microchip Technology Inc.  All rights reserved.
 
 Microchip licenses to you the right to use, modify, copy and distribute
 Software only when embedded on a Microchip microcontroller or digital signal
@@ -72,6 +72,11 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // *****************************************************************************
 // *****************************************************************************
 
+// *****************************************************************************
+/* Common System Service Configuration Options
+*/
+#define SYS_VERSION_STR           "1.06"
+#define SYS_VERSION               10600
 
 // *****************************************************************************
 /* Clock System Service Configuration Options
@@ -83,42 +88,16 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #define SYS_CLK_CONFIG_SECONDARY_XTAL       0ul
    
 /*** Interrupt System Service Configuration ***/
-
 #define SYS_INT                     true
 
-
 /*** Ports System Service Configuration ***/
-
 #define SYS_PORT_AD1PCFG        ~0xffff
 #define SYS_PORT_CNPUE          0x0
 #define SYS_PORT_CNEN           0x0
-  
-
-
 
 #define SYS_PORT_D_TRIS         0xff8
+#define SYS_PORT_D_LAT          0x0
 #define SYS_PORT_D_ODC          0x0
-
-
-
-
-
-
- 
-
-/*** Console System Service Configuration DISABLED ***/
-
-#define SYS_CONSOLE_MESSAGE(message)
-#define SYS_CONSOLE_PRINT(fmt, ...)
-
- 
-/*** Command Processor System Service Configuration DISABLED ***/
-
-#define SYS_CMD_MESSAGE(message)
-#define SYS_CMD_PRINT(fmt, ...)
-#define SYS_CMD_READY_TO_READ()
-
-
 
 
 // *****************************************************************************
@@ -126,6 +105,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // Section: Driver Configuration
 // *****************************************************************************
 // *****************************************************************************
+
 
 // *****************************************************************************
 // *****************************************************************************
@@ -135,29 +115,42 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 /*** USB Driver Configuration ***/
 
-/* Enables Device Support */
-#define DRV_USB_DEVICE_SUPPORT      true
 
 /* Enables Device Support */
-#define DRV_USB_HOST_SUPPORT        false
+#define DRV_USBFS_DEVICE_SUPPORT      true
 
+/* Disable Device Support */
+#define DRV_USBFS_HOST_SUPPORT      false
 
 /* Maximum USB driver instances */
-#define DRV_USB_INSTANCES_NUMBER    1
+#define DRV_USBFS_INSTANCES_NUMBER    1
+
 
 /* Interrupt mode enabled */
-#define DRV_USB_INTERRUPT_MODE      true
+#define DRV_USBFS_INTERRUPT_MODE      true
+
 
 /* Number of Endpoints used */
-#define DRV_USB_ENDPOINTS_NUMBER    5
+#define DRV_USBFS_ENDPOINTS_NUMBER    5
+
+
+
 
 /*** USB Device Stack Configuration ***/
+
+
+/* The USB Device Layer will not initialize the USB Driver */
+#define USB_DEVICE_DRIVER_INITIALIZE_EXPLICIT
 
 /* Maximum device layer instances */
 #define USB_DEVICE_INSTANCES_NUMBER     1
 
 /* EP0 size in bytes */
 #define USB_DEVICE_EP0_BUFFER_SIZE      64
+
+
+
+
 
 
 
@@ -183,6 +176,9 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 
 /* Endpoint Transfer Queue Size combined for Read and write */
 #define USB_DEVICE_ENDPOINT_QUEUE_DEPTH_COMBINED    2
+
+
+
 
 
 

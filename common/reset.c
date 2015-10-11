@@ -18,9 +18,8 @@
  */
 
 #include "reset.h"
-
-#include <peripheral/reset/plib_reset.h>
+#include <system/reset/sys_reset.h>
 
 void Reset_SoftReset() {
-  PLIB_RESET_SoftwareResetEnable(RESET_ID_0);
+  SYS_RESET_SoftwareReset();
 }

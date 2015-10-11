@@ -9,15 +9,15 @@
 
   Description:
     This file contains source code necessary to initialize the system.  It
-    implements the "SYS_Initialize" function, configuration bits, and allocates
-    any necessary global system resources, such as the systemObjects structure
-    that contains the object handles to all the MPLAB Harmony module objects in
-    the system.
+    implements the "SYS_Initialize" function, defines the configuration bits, 
+    and allocates any necessary global system resources, such as the 
+    sysObj structure that contains the object handles to all the MPLAB Harmony 
+    module objects in the system.
  *******************************************************************************/
 
 // DOM-IGNORE-BEGIN
 /*******************************************************************************
-Copyright (c) 2013-2014 released Microchip Technology Inc.  All rights reserved.
+Copyright (c) 2013-2015 released Microchip Technology Inc.  All rights reserved.
 
 Microchip licenses to you the right to use, modify, copy and distribute
 Software only when embedded on a Microchip microcontroller or digital signal
@@ -58,12 +58,13 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // Section: Configuration Bits
 // ****************************************************************************
 // ****************************************************************************
+// <editor-fold defaultstate="collapsed" desc="Configuration Bits">
 
 /*** DEVCFG0 ***/
 
 #pragma config DEBUG =      OFF
 #pragma config ICESEL =     ICS_PGx1
-#pragma config PWP =        0xf9
+#pragma config PWP =        PWP24K
 #pragma config BWP =        OFF
 #pragma config CP =         OFF
 
@@ -95,13 +96,14 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 #pragma config FETHIO =     OFF
 #pragma config FUSBIDIO =   OFF
 #pragma config FVBUSONIO =  OFF
+// </editor-fold>
 
 
 // *****************************************************************************
 // *****************************************************************************
 // Section: Library/Stack Initialization Data
 // *****************************************************************************
-// *****************************************************************************/
+// *****************************************************************************
 
 // *****************************************************************************
 // *****************************************************************************
@@ -109,6 +111,41 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // *****************************************************************************
 // *****************************************************************************
 
+//<editor-fold defaultstate="collapsed" desc="DRV_USB Initialization Data">
+
+/******************************************************
+ * USB Driver Initialization
+ ******************************************************/
+/****************************************************
+ * Endpoint Table needed by the Device Layer.
+ ****************************************************/
+uint8_t __attribute__((aligned(512))) endPointTable[DRV_USBFS_ENDPOINTS_NUMBER * 32];
+const DRV_USBFS_INIT drvUSBInit =
+{
+    /* Assign the endpoint table */
+    .endpointTable= endPointTable,
+
+    /* Interrupt Source for USB module */
+    .interruptSource = INT_SOURCE_USB_1,
+    
+    /* System module initialization */
+    .moduleInit = {SYS_MODULE_POWER_RUN_FULL},
+    
+    .operationMode = DRV_USBFS_OPMODE_DEVICE,
+    
+    .operationSpeed = USB_SPEED_FULL,
+    
+    /* Stop in idle */
+    .stopInIdle = false,
+
+    /* Suspend in sleep */
+    .suspendInSleep = false,
+
+    /* Identifies peripheral (PLIB-level) ID */
+    .usbID = USB_ID_1
+};
+
+// </editor-fold>
 
 // *****************************************************************************
 // *****************************************************************************
@@ -119,29 +156,33 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 /* Structure to hold the object handles for the modules in the system. */
 SYSTEM_OBJECTS sysObj;
 
+
 // *****************************************************************************
 // *****************************************************************************
 // Section: Module Initialization Data
 // *****************************************************************************
 // *****************************************************************************
 
+/*******************************************************************************
+  Device Control System Service Initialization Data
 
-//<editor-fold defaultstate="collapsed" desc="SYS_DEVCON Configuration">
-
-/*** System Device Control Initialization Data ***/
+  <editor-fold defaultstate="collapsed" 
+  desc="Device Control System Service Initialization Data">
+*/
 
 const SYS_DEVCON_INIT sysDevconInit =
 {
     .moduleInit = {0},
 };
+
 // </editor-fold>
+
 
 // *****************************************************************************
 // *****************************************************************************
 // Section: Static Initialization Functions
 // *****************************************************************************
 // *****************************************************************************
-
 
 
 // *****************************************************************************
@@ -171,6 +212,8 @@ void SYS_Initialize ( void* data )
   SYS_PORTS_Initialize();
 
   /* Initialize Drivers */
+    /* Initialize USB Driver */ 
+    sysObj.drvUSBObject = DRV_USBFS_Initialize(DRV_USBFS_INDEX_0, (SYS_MODULE_INIT *) &drvUSBInit);
 
   /* Initialize System Services */
   SYS_INT_Initialize();
@@ -182,6 +225,7 @@ void SYS_Initialize ( void* data )
   /* Set Sub-priority of USB interrupt source */
   SYS_INT_VectorSubprioritySet(INT_VECTOR_USB1, INT_SUBPRIORITY_LEVEL0);
 
+
   /* Initialize the USB device layer */
   sysObj.usbDevObject0 = USB_DEVICE_Initialize(
       USB_DEVICE_INDEX_0, (SYS_MODULE_INIT*) USBDescriptor_GetDeviceConfig());
@@ -191,8 +235,8 @@ void SYS_Initialize ( void* data )
 
   /* Initialize the Application */
   APP_Initialize();
-
 }
+
 
 /*******************************************************************************
  End of File
