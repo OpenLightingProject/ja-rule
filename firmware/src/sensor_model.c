@@ -65,7 +65,7 @@ static uint16_t GetSensorValue(unsigned int i) {
       RESPONDER_DEFINITION.sensors[i].range_maximum_value -
       RESPONDER_DEFINITION.sensors[i].range_minimum_value)) +
       RESPONDER_DEFINITION.sensors[i].range_minimum_value;
-};
+}
 
 void SampleSensors() {
   g_sensor_model.sensor_sample_time = CoarseTimer_GetTime();

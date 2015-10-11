@@ -24,7 +24,6 @@
 #include "sys/attribs.h"
 
 #include "coarse_timer.h"
-#include "syslog.h"
 
 #include "app_settings.h"
 
@@ -92,7 +91,7 @@ void Temperature_Init() {
       ADC_ID_1, ADC_CLOCK_SOURCE_SYSTEM_CLOCK);
   PLIB_ADC_SampleAcquisitionTimeSet(ADC_ID_1, 0x1f);  // 31 x Tad
 
-  //AD1CON2 = 0;  // VDD & VSS, no scan, mux A
+  // AD1CON2 = 0;  // VDD & VSS, no scan, mux A
   PLIB_ADC_MuxAInputScanDisable(ADC_ID_1);
   PLIB_ADC_SamplesPerInterruptSelect(ADC_ID_1, ADC_1SAMPLE_PER_INTERRUPT);
 
@@ -124,8 +123,6 @@ void Temperature_Tasks() {
     g_adc_data.new_sample = false;
     g_adc_data.temperature = CONVERSION_MULTIPLIER * g_adc_data.sample_value +
         CONVERSION_OFFSET;
-    SysLog_Print(SYSLOG_INFO, "%d %d", g_adc_data.sample_value,
-                 g_adc_data.temperature);
   }
 #endif
 }

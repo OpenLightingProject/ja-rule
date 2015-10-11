@@ -145,7 +145,7 @@ extern "C" {
  *
  * If undefined, we use a 'dummy' sensor that generates random values.
  */
-//#define RDM_RESPONDER_TEMPERATURE_SENSOR
+// #define RDM_RESPONDER_TEMPERATURE_SENSOR
 
 /**
  * @}
