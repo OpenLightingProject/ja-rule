@@ -20,6 +20,7 @@
 
 #include "Matchers.h"
 
+#include <cctype>;
 #include <gmock/gmock.h>
 
 
@@ -48,15 +49,14 @@ bool MemoryCompare(
       uint8_t expected = reinterpret_cast<const uint8_t*>(expected_data)[i];
 
       *listener
-         << "\n" << std::dec << i << ": 0x" << std::hex
+         << "\n" << i << ": 0x" << std::hex
          << static_cast<int>(expected)
          << (expected == actual ? " == " : " != ")
          << "0x" << static_cast<int>(actual) << " ("
-         << ((expected >= '!' && expected <= '~') ?
-             static_cast<char>(expected) : ' ')
+         << (std::isprint(expected) ? static_cast<char>(expected) : ' ')
          << (expected == actual ? " == " : " != ")
-         << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
-         << ")";
+         << (std::isprint(actual) ? static_cast<char>(actual) : ' ')
+         << ")" << std::dec;
 
     }
     listener->stream()->flags(ostream_flags);
@@ -175,15 +175,14 @@ bool PayloadMatcher::MatchAndExplain(
 
     if (listener->IsInterested()) {
       *listener
-         << "\n" << std::dec << i << ": 0x" << std::hex
+         << "\n" << i << ": 0x" << std::hex
          << static_cast<int>(expected)
          << (expected == actual ? " == " : " != ")
          << "0x" << static_cast<int>(actual) << " ("
-         << ((expected >= '!' && expected <= '~') ?
-             static_cast<char>(expected) : ' ')
+         << (std::isprint(expected) ? static_cast<char>(expected) : ' ')
          << (expected == actual ? " == " : " != ")
-         << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
-         << ")";
+         << (std::isprint(actual) ? static_cast<char>(actual) : ' ')
+         << ")" << std::dec;
     }
 
     matched &= (expected == actual);

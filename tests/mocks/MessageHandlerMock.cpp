@@ -61,15 +61,14 @@ bool MessageMatcher::MatchAndExplain(
       uint8_t expected = reinterpret_cast<const uint8_t*>(m_payload)[i];
 
       *listener
-         << "\n" << std::dec << i << ": 0x" << std::hex
+         << "\n" << i << ": 0x" << std::hex
          << static_cast<int>(expected)
          << (expected == actual ? " == " : " != ")
          << "0x" << static_cast<int>(actual) << " ("
-         << ((expected >= '!' && expected <= '~') ?
-             static_cast<char>(expected) : ' ')
+         << (std::isprint(expected) ? static_cast<char>(expected) : ' ')
          << (expected == actual ? " == " : " != ")
-         << (actual >= '!' && actual <= '~' ? static_cast<char>(actual) : ' ')
-         << ")";
+         << (std::isprint(actual) ? static_cast<char>(actual) : ' ')
+         << ")" << std::dec;
 
       matched &= (expected == actual);
     }
