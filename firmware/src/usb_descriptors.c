@@ -79,7 +79,7 @@ static const USB_DEVICE_DESCRIPTOR g_device_descriptor = {
   0x12,  // Size of this descriptor in bytes
   USB_DESCRIPTOR_DEVICE,  // DEVICE descriptor type
   0x0200,  // USB Spec Release Number in BCD format
-  // Since we use a interface Association, we need to set the class, subclass &
+  // Since we use an Interface Association, we need to set the class, subclass and
   // protocol according to:
   // https://msdn.microsoft.com/en-us/library/windows/hardware/ff540054(v=vs.85).aspx
   0xef,  // Class Code
@@ -111,8 +111,8 @@ static const uint8_t g_config_descriptor[] = {
   // Interface Association Descriptor: CDC Function 1
   0x08,   // Size of this descriptor in bytes
   0x0B,   // Interface association descriptor type
-  0,   // The first associated interfaces
-  0x02,   // Number of contiguous associated interface
+  0,   // The first associated interface
+  0x02,   // Number of contiguous associated interfaces
   0x02,   // bInterfaceClass of the first interface
   0x02,   // bInterfaceSubclass of the first interface
   0x01,   // bInterfaceProtocol of the first interface
