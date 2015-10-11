@@ -25,8 +25,16 @@ AC_LANG_PUSH(C)
 AC_PROG_CC_C99
 AC_LANG_POP(C)
 
-# Check we have -std=c++11 support
-AX_CXX_COMPILE_STDCXX_11(noext,mandatory)
+# Allow us to just build the tools without the unit tests
+AC_ARG_ENABLE(
+  [unit-tests],
+  [AS_HELP_STRING([--disable-unit-tests],
+  [Just build the tools without the unit tests])])
+AM_CONDITIONAL(BUILD_UNIT_TESTS, test "x$enable_unit_tests" != xno)
+
+# Check we have -std=c++11 support if required
+AM_COND_IF([BUILD_UNIT_TESTS],
+           [AX_CXX_COMPILE_STDCXX_11(noext,mandatory)])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h stdint.h stdlib.h string.h])
@@ -84,7 +92,10 @@ GTEST_LIBS="$with_gmock/googletest/lib/libgtest.la $with_gmock/googletest/lib/li
 old_cppflags=$CPPFLAGS
 CPPFLAGS="$GMOCK_INCLUDES $GTEST_INCLUDES"
 
-AC_CHECK_HEADER([gmock/gmock.h], [], [AC_MSG_ERROR([Missing gmock/gmock.h])])
+AM_COND_IF([BUILD_UNIT_TESTS],
+           [AC_CHECK_HEADER([gmock/gmock.h],
+                            [],
+                            [AC_MSG_ERROR([Missing gmock/gmock.h])])])
 
 # restore CPPFLAGS
 CPPFLAGS=$old_cppflags
@@ -104,12 +115,11 @@ AC_ARG_WITH(
   [ola],
   [AS_HELP_STRING([--without-ola],
                   [Skip OLA checks, unittests will not work correctly])])
-AS_IF([test "x$with_ola" != xno],
-      [PKG_CHECK_MODULES(
-        OLA,
-        [libola],
-        [],
-        [AC_MSG_ERROR([Missing OLA, please install])])])
+AS_IF([test "x$enable_unit_tests" != xno && test "x$with_ola" != xno],
+      [PKG_CHECK_MODULES(OLA,
+                         [libola],
+                         [],
+                         [AC_MSG_ERROR([Missing OLA, please install])])])
 
 # Output
 #####################################################
@@ -124,6 +134,8 @@ Prefix: '${prefix}'
 C++ Compiler: '${CXX} ${CXXFLAGS} ${CPPFLAGS}'
 C Compiler: '${CC} ${CFLAGS} ${CPPFLAGS}'
 Linker: '${LD} ${LDFLAGS} ${LIBS}'
+
+Unit Tests: ${enable_unit_tests}
 
 Now type 'make @<:@<target>@:>@'
   where the optional <target> is:

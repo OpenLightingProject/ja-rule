@@ -28,9 +28,12 @@ TESTS =
 
 ###################
 
+if BUILD_UNIT_TESTS
 include Bootloader/firmware/src/Makefile.mk
 include firmware/src/Makefile.mk
 include tests/Makefile.mk
+endif
+
 include tools/Makefile.mk
 
 check_PROGRAMS = $(TESTS)
