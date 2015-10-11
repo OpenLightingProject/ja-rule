@@ -97,22 +97,17 @@
     </Files>
     <Templates>
       <Template>
+        <Name>main.c</Name>
+        <Path>Source Files/app</Path>
+      </Template>
+      <Template>
         <Name>system_tasks.c</Name>
         <Path>Source Files/app/system_config/number1</Path>
         <Checksum>C051440866B3433982D20908212CADC7</Checksum>
       </Template>
       <Template>
-        <Name>main.c</Name>
-        <Path>Source Files/app</Path>
-      </Template>
-      <Template>
         <Name>app.c</Name>
         <Path>Source Files/app</Path>
-      </Template>
-      <Template>
-        <Name>system_definitions.h</Name>
-        <Path>Header Files/app/system_config/number1</Path>
-        <Checksum>B52697CBE24AAE9AAFADC2D26B525FD7</Checksum>
       </Template>
       <Template>
         <Name>sys_clk_static.c</Name>
@@ -120,14 +115,14 @@
         <Checksum>1B968DA82B5DD869A6119C3B7628D753</Checksum>
       </Template>
       <Template>
+        <Name>system_definitions.h</Name>
+        <Path>Header Files/app/system_config/number1</Path>
+        <Checksum>B52697CBE24AAE9AAFADC2D26B525FD7</Checksum>
+      </Template>
+      <Template>
         <Name>sys_clk_static.h</Name>
         <Path>Header Files/app/system_config/number1/framework/system/clk</Path>
         <Checksum>999179DADE9ECD59953526F5E9F83ACC</Checksum>
-      </Template>
-      <Template>
-        <Name>system_init.c</Name>
-        <Path>Source Files/app/system_config/number1</Path>
-        <Checksum>240F37F5BCEBB485B2D31C3983DCC1B6</Checksum>
       </Template>
       <Template>
         <Name>sys_ports_static.c</Name>
@@ -135,13 +130,18 @@
         <Checksum>9285B6A1FA58BCB32BF9519086AC0E21</Checksum>
       </Template>
       <Template>
-        <Name>system_exceptions.c</Name>
+        <Name>system_init.c</Name>
         <Path>Source Files/app/system_config/number1</Path>
-        <Checksum>C111969CA43D6CEA1E9E33A6164E7AE0</Checksum>
+        <Checksum>240F37F5BCEBB485B2D31C3983DCC1B6</Checksum>
       </Template>
       <Template>
         <Name>app.h</Name>
         <Path>Header Files/app</Path>
+      </Template>
+      <Template>
+        <Name>system_exceptions.c</Name>
+        <Path>Source Files/app/system_config/number1</Path>
+        <Checksum>C111969CA43D6CEA1E9E33A6164E7AE0</Checksum>
       </Template>
       <Template>
         <Name>system_config.h</Name>
