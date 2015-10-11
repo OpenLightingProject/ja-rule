@@ -111,7 +111,7 @@ static const uint8_t g_config_descriptor[] = {
   // Interface Association Descriptor: CDC Function 1
   0x08,   // Size of this descriptor in bytes
   0x0B,   // Interface association descriptor type
-  0,   // The first associated interface
+  0,   // The first associated interfaces
   0x02,   // Number of contiguous associated interface
   0x02,   // bInterfaceClass of the first interface
   0x02,   // bInterfaceSubclass of the first interface
