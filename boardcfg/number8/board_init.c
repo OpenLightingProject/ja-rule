@@ -22,5 +22,13 @@
 #include "peripheral/ports/plib_ports.h"
 
 void Number8_PreAppHook() {
-  // Nothing to do
+  // We need to set the necessary ports to digital mode
+  PLIB_PORTS_PinModeSelect(PORTS_ID_0, PORTS_ANALOG_PIN_8,
+                           PORTS_PIN_MODE_DIGITAL);  // U5 RX
+  PLIB_PORTS_PinModeSelect(PORTS_ID_0, PORTS_ANALOG_PIN_9,
+                           PORTS_PIN_MODE_DIGITAL);  // TX En
+  PLIB_PORTS_PinModeSelect(PORTS_ID_0, PORTS_ANALOG_PIN_10,
+                           PORTS_PIN_MODE_DIGITAL);  // RX En
+  PLIB_PORTS_PinModeSelect(PORTS_ID_0, PORTS_ANALOG_PIN_14,
+                           PORTS_PIN_MODE_DIGITAL);  // U5 TX
 }
