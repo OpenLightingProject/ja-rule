@@ -86,7 +86,7 @@ void Temperature_Init() {
 
   // The only method Harmony 1.06 provides to set ADCS uses the bus speed, so
   // rather than depend on that, we set it here manually.
-  AD1CON3 = 0x0002; // ADCS
+  AD1CON3 = 0x0002;  // ADCS
   PLIB_ADC_ConversionClockSourceSelect(
       ADC_ID_1, ADC_CLOCK_SOURCE_SYSTEM_CLOCK);
   PLIB_ADC_SampleAcquisitionTimeSet(ADC_ID_1, 0x1f);  // 31 x Tad
