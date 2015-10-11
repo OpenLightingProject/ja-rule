@@ -73,7 +73,7 @@
       </logicalFolder>
       <logicalFolder name="f3" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">
-          <itemPath>../../../../../../../opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_config.h</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_config.h</itemPath>
         </logicalFolder>
       </logicalFolder>
       <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -97,7 +97,7 @@
             <itemPath>/opt/microchip/harmony/v1_06/framework/system/ports/sys_ports.h</itemPath>
           </logicalFolder>
           <logicalFolder name="f5" displayName="reset" projectFiles="true">
-            <itemPath>../../../../../../../opt/microchip/harmony/v1_06/framework/system/reset/sys_reset.h</itemPath>
+            <itemPath>/opt/microchip/harmony/v1_06/framework/system/reset/sys_reset.h</itemPath>
           </logicalFolder>
           <itemPath>/opt/microchip/harmony/v1_06/framework/system/system.h</itemPath>
         </logicalFolder>
@@ -203,7 +203,7 @@
       </logicalFolder>
       <logicalFolder name="f3" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">
-          <itemPath>../../../../../../../opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_sys_init.c</itemPath>
+          <itemPath>/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_sys_init.c</itemPath>
         </logicalFolder>
       </logicalFolder>
       <logicalFolder name="f1" displayName="framework" projectFiles="true">
@@ -238,7 +238,7 @@
           </logicalFolder>
           <logicalFolder name="f4" displayName="reset" projectFiles="true">
             <logicalFolder name="f1" displayName="src" projectFiles="true">
-              <itemPath>../../../../../../../opt/microchip/harmony/v1_06/framework/system/reset/src/sys_reset.c</itemPath>
+              <itemPath>/opt/microchip/harmony/v1_06/framework/system/reset/src/sys_reset.c</itemPath>
             </logicalFolder>
           </logicalFolder>
         </logicalFolder>
@@ -287,7 +287,7 @@
       <compileType>
         <linkerTool>
           <linkerLibItems>
-            <linkerLibFileItem>../../../../../../../opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
+            <linkerLibFileItem>/opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX795F512L_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -827,7 +827,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../../../common;../../../boardcfg/ethernet_sk2;../src/system_config/ethernet_sk2;/opt/microchip/harmony/v1_06/framework;../src/system_config/ethernet_sk2/framework;/opt/microchip/harmony/v1_06/framework;/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2;../../../../../../../opt/microchip/harmony/v1_06/framework;../../../../../../../opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2"/>
+                  value="../src;../../../common;../../../boardcfg/ethernet_sk2;../src/system_config/ethernet_sk2;/opt/microchip/harmony/v1_06/framework;../src/system_config/ethernet_sk2/framework;/opt/microchip/harmony/v1_06/framework;/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2;/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -1050,7 +1050,7 @@
       <compileType>
         <linkerTool>
           <linkerLibItems>
-            <linkerLibFileItem>../../../../../../../opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
+            <linkerLibFileItem>/opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -1070,7 +1070,7 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>true</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
-      <item path="../../../../../../../opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_config.h"
+      <item path="/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_config.h"
             ex="true"
             overriding="false">
         <C32>
@@ -1086,7 +1086,7 @@
         <C32Global>
         </C32Global>
       </item>
-      <item path="../../../../../../../opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_sys_init.c"
+      <item path="/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_sys_init.c"
             ex="true"
             overriding="false">
         <C32>
@@ -1654,7 +1654,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../../../common;../../../boardcfg/number8;../src/system_config/number8;/opt/microchip/harmony/v1_06/framework;../src/system_config/number8/framework;/opt/microchip/harmony/v1_06/framework;../../../../../../../opt/microchip/harmony/v1_06/framework"/>
+                  value="../src;../../../common;../../../boardcfg/number8;../src/system_config/number8;/opt/microchip/harmony/v1_06/framework;../src/system_config/number8/framework"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
@@ -1850,7 +1850,7 @@
       <compileType>
         <linkerTool>
           <linkerLibItems>
-            <linkerLibFileItem>../../../../../../../opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
+            <linkerLibFileItem>/opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX675F512H_peripherals.a</linkerLibFileItem>
           </linkerLibItems>
         </linkerTool>
         <archiverTool>
@@ -1870,7 +1870,7 @@
         <makeCustomizationEnableLongLines>false</makeCustomizationEnableLongLines>
         <makeCustomizationNormalizeHexFile>true</makeCustomizationNormalizeHexFile>
       </makeCustomizationType>
-      <item path="../../../../../../../opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_config.h"
+      <item path="/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_config.h"
             ex="true"
             overriding="false">
         <C32>
@@ -1886,7 +1886,7 @@
         <C32Global>
         </C32Global>
       </item>
-      <item path="../../../../../../../opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_sys_init.c"
+      <item path="/opt/microchip/harmony/v1_06/bsp/pic32mx_eth_sk2/bsp_sys_init.c"
             ex="true"
             overriding="false">
         <C32>
@@ -2454,7 +2454,7 @@
         <property key="enable-unroll-loops" value="false"/>
         <property key="exclude-floating-point" value="false"/>
         <property key="extra-include-directories"
-                  value="../src;../../../common;../../../boardcfg/number1;../src/system_config/number1;/opt/microchip/harmony/v1_06/framework;/opt/microchip/harmony/v1_06/framework;../src/system_config/number1/framework;../../../../../../../opt/microchip/harmony/v1_06/framework"/>
+                  value="../src;../../../common;../../../boardcfg/number1;../src/system_config/number1;/opt/microchip/harmony/v1_06/framework;../src/system_config/number1/framework"/>
         <property key="generate-16-bit-code" value="false"/>
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>

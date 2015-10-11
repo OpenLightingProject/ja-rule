@@ -139,7 +139,7 @@
       </Template>
     </Templates>
     <Libraries>
-      <Library value="../../../../../../../opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX675F512H_peripherals.a"/>
+      <Library value="/opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX675F512H_peripherals.a"/>
     </Libraries>
   </Manifest>
 </configuration>
