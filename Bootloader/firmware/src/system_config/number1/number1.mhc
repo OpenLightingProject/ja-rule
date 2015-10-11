@@ -260,7 +260,7 @@ CONFIG_USE_SYS_RANDOM=n
 #
 # from $HARMONY_VERSION_PATH/framework/system/reset/config/sys_reset.hconfig
 #
-CONFIG_USE_SYS_RESET=n
+CONFIG_USE_SYS_RESET=y
 #
 # from $HARMONY_VERSION_PATH/framework/system/touch/config/sys_touch.hconfig
 #

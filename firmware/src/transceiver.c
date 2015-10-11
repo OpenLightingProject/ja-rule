@@ -526,7 +526,7 @@ static void ResetTimingSettings() {
 /*
  * @brief Called when an input capture event occurs.
  */
-void __ISR(AS_IC_ISR_VECTOR(TRANSCEIVER_IC), ipl6)
+void __ISR(AS_IC_ISR_VECTOR(TRANSCEIVER_IC), ipl6AUTO)
     InputCaptureEvent(void) {
   while (!PLIB_IC_BufferIsEmpty(g_hw_settings.input_capture_module)) {
     uint16_t value = PLIB_IC_Buffer16BitGet(g_hw_settings.input_capture_module);
@@ -636,7 +636,7 @@ void __ISR(AS_IC_ISR_VECTOR(TRANSCEIVER_IC), ipl6)
 /*
  * @brief Called when the timer expires.
  */
-void __ISR(AS_TIMER_ISR_VECTOR(TRANSCEIVER_TIMER), ipl6)
+void __ISR(AS_TIMER_ISR_VECTOR(TRANSCEIVER_TIMER), ipl6AUTO)
     Transceiver_TimerEvent() {
   switch (g_transceiver.state) {
     case STATE_C_IN_BREAK:
@@ -730,7 +730,7 @@ void __ISR(AS_TIMER_ISR_VECTOR(TRANSCEIVER_TIMER), ipl6)
  *  - The USART RX buffer has data.
  *  - A USART RX error has occurred.
  */
-void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6)
+void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
     Transceiver_UARTEvent() {
   if (SYS_INT_SourceStatusGet(g_hw_settings.usart_tx_source)) {
     if (g_transceiver.state == STATE_C_TX_DATA) {
@@ -951,7 +951,6 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
   PLIB_USART_OperationModeSelect(g_hw_settings.usart,
                                  USART_ENABLE_TX_RX_USED);
   PLIB_USART_LineControlModeSelect(g_hw_settings.usart, USART_8N2);
-  PLIB_USART_SyncModeSelect(g_hw_settings.usart, USART_ASYNC_MODE);
   PLIB_USART_TransmitterInterruptModeSelect(g_hw_settings.usart,
                                             USART_TRANSMIT_FIFO_EMPTY);
 

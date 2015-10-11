@@ -47,18 +47,32 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // *****************************************************************************
 // *****************************************************************************
 
+#include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 #include "system/common/sys_common.h"
 #include "system/common/sys_module.h"
 #include "system/clk/sys_clk.h"
-#include "framework/system/clk/sys_clk_static.h"
+#include "system/clk/sys_clk_static.h"
 #include "system/devcon/sys_devcon.h"
 #include "system/int/sys_int.h"
+#include "system/reset/sys_reset.h"
 #include "system/ports/sys_ports.h"
-#include "system/debug/sys_debug.h"
+#include "driver/usb/usbfs/drv_usbfs.h"
 #include "usb/usb_device.h"
-#include "usb/usb_device_cdc.h"
 
+
+#include "usb/usb_device_cdc.h"
+#include "app.h"
+
+
+// DOM-IGNORE-BEGIN
+#ifdef __cplusplus  // Provide C++ Compatibility
+
+extern "C" {
+
+#endif
+// DOM-IGNORE-END 
 
 // *****************************************************************************
 // *****************************************************************************
@@ -84,10 +98,10 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 typedef struct
 {
     SYS_MODULE_OBJ  sysDevcon;
-
-
-
+    SYS_MODULE_OBJ  drvUSBObject;
+    
     SYS_MODULE_OBJ  usbDevObject0;
+
 
 
 } SYSTEM_OBJECTS;
@@ -100,6 +114,14 @@ typedef struct
 // *****************************************************************************
 
 extern SYSTEM_OBJECTS sysObj;
+
+
+
+//DOM-IGNORE-BEGIN
+#ifdef __cplusplus
+}
+#endif
+//DOM-IGNORE-END
 
 #endif /* _SYS_DEFINITIONS_H */
 /*******************************************************************************

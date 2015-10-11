@@ -46,7 +46,7 @@
 
 #include "app_settings.h"
 
-void __ISR(AS_TIMER_ISR_VECTOR(COARSE_TIMER_ID), ipl6) TimerEvent() {
+void __ISR(AS_TIMER_ISR_VECTOR(COARSE_TIMER_ID), ipl6AUTO) TimerEvent() {
   CoarseTimer_TimerEvent();
 }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <configuration version="1.0.6.12">
   <General>
-    <HarmonyPath path="../../../../opt/microchip/harmony/v1_02"/>
+    <HarmonyPath path="/opt/microchip/harmony/v1_06"/>
     <ForceOptimization flag="true"/>
   </General>
   <Manifest>
@@ -15,20 +15,16 @@
         <Path>Header Files/framework/usb</Path>
       </File>
       <File>
-        <Name>drv_usb.h</Name>
-        <Path>Source Files/framework/driver/usb</Path>
-      </File>
-      <File>
         <Name>sys_int.h</Name>
         <Path>Header Files/framework/system/int</Path>
       </File>
       <File>
-        <Name>sys_common.h</Name>
-        <Path>Header Files/framework/system/common</Path>
+        <Name>drv_usb.h</Name>
+        <Path>Header Files/framework/driver/usb</Path>
       </File>
       <File>
-        <Name>drv_usb.c</Name>
-        <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
+        <Name>sys_common.h</Name>
+        <Path>Header Files/framework/system/common</Path>
       </File>
       <File>
         <Name>usb_device_cdc.c</Name>
@@ -43,10 +39,6 @@
         <Path>Source Files/framework/system/ports/src</Path>
       </File>
       <File>
-        <Name>drv_usb_device.c</Name>
-        <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
-      </File>
-      <File>
         <Name>usb_device_endpoint_functions.c</Name>
         <Path>Source Files/framework/usb/src/dynamic</Path>
       </File>
@@ -57,6 +49,14 @@
       <File>
         <Name>usb_device_cdc_acm.c</Name>
         <Path>Source Files/framework/usb/src/dynamic</Path>
+      </File>
+      <File>
+        <Name>drv_usbfs_device.c</Name>
+        <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
+      </File>
+      <File>
+        <Name>sys_reset.c</Name>
+        <Path>Source Files/framework/system/reset/src</Path>
       </File>
       <File>
         <Name>sys_devcon.c</Name>
@@ -86,6 +86,14 @@
         <Name>usb_device_cdc.h</Name>
         <Path>Header Files/framework/usb</Path>
       </File>
+      <File>
+        <Name>drv_usbfs.c</Name>
+        <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
+      </File>
+      <File>
+        <Name>sys_reset.h</Name>
+        <Path>Header Files/framework/system/reset</Path>
+      </File>
     </Files>
     <Templates>
       <Template>
@@ -93,42 +101,47 @@
         <Path>Source Files/app</Path>
       </Template>
       <Template>
+        <Name>system_exceptions.c</Name>
+        <Path>Source Files/app/system_config/number8</Path>
+        <Checksum>C111969CA43D6CEA1E9E33A6164E7AE0</Checksum>
+      </Template>
+      <Template>
         <Name>app.c</Name>
         <Path>Source Files/app</Path>
       </Template>
       <Template>
-        <Name>system_interrupt.c</Name>
-        <Path>Source Files/app/system_config/number8</Path>
-        <Checksum>75EB12F8F93B3CD8CC5C8735D7E48E31</Checksum>
-      </Template>
-      <Template>
         <Name>system_tasks.c</Name>
         <Path>Source Files/app/system_config/number8</Path>
-        <Checksum>2545C461C5FD3CD396C0405A4F248D80</Checksum>
+        <Checksum>C051440866B3433982D20908212CADC7</Checksum>
+      </Template>
+      <Template>
+        <Name>system_interrupt.c</Name>
+        <Path>Source Files/app/system_config/number8</Path>
+        <Checksum>47A5076AA91BAE06631DEEC4F640395C</Checksum>
       </Template>
       <Template>
         <Name>app.h</Name>
         <Path>Header Files/app</Path>
       </Template>
       <Template>
-        <Name>sys_ports_static.c</Name>
-        <Path>Source Files/app/system_config/number8/framework/system/ports/src</Path>
-        <Checksum>91CF9ED936A4097E90E3F606508FFFF7</Checksum>
-      </Template>
-      <Template>
         <Name>system_init.c</Name>
         <Path>Source Files/app/system_config/number8</Path>
-        <Checksum>E0B73B37416C50ED4B2049E93380A9BA</Checksum>
+        <Checksum>240F37F5BCEBB485B2D31C3983DCC1B6</Checksum>
       </Template>
       <Template>
-        <Name>system_config.h</Name>
-        <Path>Header Files/app/system_config/number8</Path>
-        <Checksum>4BD8E884293F11B0E3D3DE19FF3BC67B</Checksum>
+        <Name>sys_ports_static.c</Name>
+        <Path>Source Files/app/system_config/number8/framework/system/ports/src</Path>
+        <Checksum>9285B6A1FA58BCB32BF9519086AC0E21</Checksum>
       </Template>
       <Template>
         <Name>system_definitions.h</Name>
         <Path>Header Files/app/system_config/number8</Path>
-        <Checksum>E3C785466446FE85D78057F22D2177F8</Checksum>
+        <Checksum>B52697CBE24AAE9AAFADC2D26B525FD7</Checksum>
+      </Template>
+      <Template>
+        <Name>system_config.h</Name>
+        <Path>Header Files/app/system_config/number8</Path>
+        <Checksum>308C47A6358E92AD0C2306C7E935EDDA</Checksum>
       </Template>
       <Template>
         <Name>sys_clk_static.h</Name>
@@ -142,7 +155,7 @@
       </Template>
     </Templates>
     <Libraries>
-      <Library value="../../../../../../opt/microchip/harmony/v1_02/bin/framework/peripheral/PIC32MX675F512H_peripherals.a"/>
+      <Library value="/opt/microchip/harmony/v1_06/bin/framework/peripheral/PIC32MX675F512H_peripherals.a"/>
     </Libraries>
   </Manifest>
 </configuration>

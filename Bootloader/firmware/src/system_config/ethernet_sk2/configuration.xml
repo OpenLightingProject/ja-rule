@@ -48,12 +48,12 @@
         <Path>Header Files/framework/system/common</Path>
       </File>
       <File>
-        <Name>system.h</Name>
-        <Path>Header Files/framework/system</Path>
-      </File>
-      <File>
         <Name>sys_ports.c</Name>
         <Path>Source Files/framework/system/ports/src</Path>
+      </File>
+      <File>
+        <Name>system.h</Name>
+        <Path>Header Files/framework/system</Path>
       </File>
       <File>
         <Name>usb_device_endpoint_functions.c</Name>
@@ -66,6 +66,10 @@
       <File>
         <Name>drv_usbfs_device.c</Name>
         <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
+      </File>
+      <File>
+        <Name>sys_reset.c</Name>
+        <Path>Source Files/framework/system/reset/src</Path>
       </File>
       <File>
         <Name>bsp_sys_init.c</Name>
@@ -103,6 +107,10 @@
         <Name>drv_usbfs.c</Name>
         <Path>Source Files/framework/driver/usb/usbfs/src/dynamic</Path>
       </File>
+      <File>
+        <Name>sys_reset.h</Name>
+        <Path>Header Files/framework/system/reset</Path>
+      </File>
     </Files>
     <Templates>
       <Template>
@@ -121,7 +129,7 @@
       <Template>
         <Name>system_definitions.h</Name>
         <Path>Header Files/app/system_config/ethernet_sk2</Path>
-        <Checksum>C6785C685DC369BA3FA09D75205BB944</Checksum>
+        <Checksum>4C15FF48ED162717B757C2A8EB16A04B</Checksum>
       </Template>
       <Template>
         <Name>system_interrupt.c</Name>

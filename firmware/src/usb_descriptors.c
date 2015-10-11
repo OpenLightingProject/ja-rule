@@ -25,6 +25,7 @@
 #include "constants.h"
 #include "dfu_spec.h"
 #include "dfu_properties.h"
+#include "driver/usb/usbfs/drv_usbfs.h"
 #include "uid.h"
 #include "usb/usb_device_cdc.h"
 #include "usb_properties.h"
@@ -44,8 +45,8 @@ static const USB_DEVICE_FUNCTION_REGISTRATION_TABLE g_func_table[3] = {
   {
     .configurationValue = 1,
     .interfaceNumber = 0,
-    .numberOfInterfaces = 2,
     .speed = USB_SPEED_FULL,
+    .numberOfInterfaces = 2,
     .funcDriverIndex = 0,
     .driver = (void*) USB_DEVICE_CDC_FUNCTION_DRIVER,
     .funcDriverInit = (void*) &g_cdc_init0
@@ -54,8 +55,8 @@ static const USB_DEVICE_FUNCTION_REGISTRATION_TABLE g_func_table[3] = {
   {
     .configurationValue = 1,
     .interfaceNumber = 2,
-    .numberOfInterfaces = 1,
     .speed = USB_SPEED_FULL,
+    .numberOfInterfaces = 1,
     .funcDriverIndex = 0,
     .driver = NULL,  // No function driver
     .funcDriverInit = NULL
@@ -64,8 +65,8 @@ static const USB_DEVICE_FUNCTION_REGISTRATION_TABLE g_func_table[3] = {
   {
     .configurationValue = 1,
     .interfaceNumber = RUNTIME_MODE_DFU_INTERFACE_INDEX,
-    .numberOfInterfaces = 1,
     .speed = USB_SPEED_FULL,
+    .numberOfInterfaces = 1,
     .funcDriverIndex = 0,
     .driver = NULL,  // No function driver
     .funcDriverInit = NULL
@@ -143,7 +144,7 @@ static const uint8_t g_config_descriptor[] = {
   USB_DESCRIPTOR_ENDPOINT,  // Endpoint Descriptor
   0x2 | USB_EP_DIRECTION_IN,  // EndpointAddress ( EP2 IN INTERRUPT)
   USB_TRANSFER_TYPE_INTERRUPT,  // Attributes type of EP (INTERRUPT)
-  0x0A, 0x00,  // Max packet size of this EP
+  0x10, 0x00,  // Max packet size of this EP
   0x02,  // Poll interval (in ms)
 
   // Second CDC Interface Descriptor
@@ -308,29 +309,20 @@ static const USB_DEVICE_MASTER_DESCRIPTOR g_usb_master_descriptor = {
   NULL,  // Pointer to high speed dev qualifier.
 };
 
-// Endpoint Table needed by the Device Layer.
-// ----------------------------------------------------------------------------
-static uint8_t __attribute__((aligned(512)))
-    g_endpoint_table[USB_DEVICE_ENDPOINT_TABLE_SIZE];
-
 // USB Device Layer Initialization Data
 // ----------------------------------------------------------------------------
 static const USB_DEVICE_INIT g_usb_device_config = {
   .moduleInit = {SYS_MODULE_POWER_RUN_FULL},
-  .usbID = USB_ID_1,
-  .stopInIdle = false,
-  .suspendInSleep = false,
-  .interruptSource = INT_SOURCE_USB_1,
-  .endpointTable = g_endpoint_table,
   .registeredFuncCount = 3,  // Must match the size of the g_func_table
   .registeredFunctions = (USB_DEVICE_FUNCTION_REGISTRATION_TABLE*) g_func_table,
   .usbMasterDescriptor =
       (USB_DEVICE_MASTER_DESCRIPTOR*) &g_usb_master_descriptor,
   .deviceSpeed = USB_SPEED_FULL,
+  .driverIndex = DRV_USBFS_INDEX_0,
+  .usbDriverInterface = DRV_USBFS_DEVICE_INTERFACE,
   .queueSizeEndpointRead = 1,
-  .queueSizeEndpointWrite = 1,
+  .queueSizeEndpointWrite = 1
 };
-
 
 uint16_t* USBDescriptor_UnicodeUID() {
   return g_serial_number_string_descriptor.string;
