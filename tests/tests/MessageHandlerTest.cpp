@@ -277,16 +277,23 @@ TEST_F(MessageHandlerTest, testSetMode) {
   MessageHandler_HandleMessage(&message);
 }
 
-TEST_F(MessageHandlerTest, testGetUID) {
-  uint8_t uid_data[UID_LENGTH] = {0x7a, 0x70, 0x01, 0x02, 0x03, 0x04};
+TEST_F(MessageHandlerTest, testGetInfo) {
+  uint8_t response[] = {
+    0x03, 0x00,
+    0x7a, 0x70, 0x01, 0x02, 0x03, 0x04,
+    0, 0, 0, 0, 0, 0
+  };
 
-  EXPECT_CALL(m_transport_mock, Send(kToken, COMMAND_GET_UID, RC_OK, _, 1))
-      .With(Args<3, 4>(PayloadIs(uid_data, arraysize(uid_data))))
+  EXPECT_CALL(m_transport_mock, Send(kToken, COMMAND_GET_HARDWARE_INFO, RC_OK,
+              _, 1))
+      .With(Args<3, 4>(PayloadIs(response, arraysize(response))))
       .WillOnce(Return(true));
   EXPECT_CALL(m_rdm_handler_mock, GetUID(_))
-      .WillOnce(SetArrayArgument<0>(uid_data, uid_data + UID_LENGTH));
+      .WillOnce(SetArrayArgument<0>(
+            response + sizeof(uint16_t),
+            response + sizeof(uint16_t) + UID_LENGTH));
 
-  Message message = { kToken, COMMAND_GET_UID, 0, NULL};
+  Message message = { kToken, COMMAND_GET_HARDWARE_INFO, 0, NULL};
   MessageHandler_HandleMessage(&message);
 }
 

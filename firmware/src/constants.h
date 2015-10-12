@@ -55,6 +55,15 @@
 #define USB_POLLING_INTERVAL 1u
 
 // *****************************************************************************
+// Network specific constants
+// *****************************************************************************
+
+/**
+ * @brief The size of a MAC address
+ */
+enum { MAC_ADDRESS_SIZE = 6 };
+
+// *****************************************************************************
 // RDM specific constants
 // *****************************************************************************
 
@@ -90,10 +99,10 @@ typedef enum {
   COMMAND_SET_MODE = 0x01,
 
   /**
-   * @brief Get the UID of the device.
-   * @sa @ref message-commands-getuid.
+   * @brief Get the hardware info for the device.
+   * @sa @ref message-commands-gethardware.
    */
-  COMMAND_GET_UID = 0x02,
+  COMMAND_GET_HARDWARE_INFO = 0x02,
 
   // User Configuration
   /**

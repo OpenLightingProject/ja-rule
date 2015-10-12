@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include "bootloader.h"
 #include "common/config_options.h"
+#include "common_settings.h"
 
 /*
  * @brief The reset address of the application.
@@ -58,11 +59,6 @@ const PORTS_BIT_POS SWITCH_PORT_BIT = PORTS_BIT_POS_7;
  * @brief True if the switch is active high, false if active low.
  */
 const bool SWITCH_ACTIVE_HIGH = false;
-
-/**
- * @brief The hardware model.
- */
-#define HARDWARE_MODEL MODEL_ETHERNET_SK2
 
 /**
  * @brief The LEDS to flash in bootloader mode.

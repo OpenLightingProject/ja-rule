@@ -21,15 +21,19 @@
 
 #include <stdlib.h>
 
+#include "system_definitions.h"
+
 #include "app.h"
 #include "app_pipeline.h"
 #include "constants.h"
 #include "flags.h"
+#include "peripheral/eth/plib_eth.h"
 #include "rdm_frame.h"
 #include "rdm_handler.h"
 #include "syslog.h"
-#include "system_definitions.h"
 #include "transceiver.h"
+
+#include "app_settings.h"
 
 #ifndef PIPELINE_TRANSPORT_TX
 static TransportTXFunction g_message_tx_cb;
@@ -68,17 +72,31 @@ static void SetMode(uint8_t token,
   SendMessage(token, COMMAND_SET_MODE, RC_OK, NULL, 0u);
 }
 
-static void GetUID(uint8_t token, unsigned int length) {
+static void GetHardwareInfo(uint8_t token, unsigned int length) {
   if (length) {
-    SendMessage(token, COMMAND_GET_UID, RC_BAD_PARAM, NULL, 0u);
+    SendMessage(token, COMMAND_GET_HARDWARE_INFO, RC_BAD_PARAM, NULL, 0u);
     return;
   }
-  uint8_t uid[UID_LENGTH];
-  RDMHandler_GetUID(uid);
+
+  typedef struct {
+    uint16_t model;
+    uint8_t uid[UID_LENGTH];
+    uint8_t mac[MAC_ADDRESS_SIZE];
+  } __attribute__((packed)) HardwareResponse;
+
+  HardwareResponse response;
+  response.model = HARDWARE_MODEL;
+  RDMHandler_GetUID(response.uid);
+
+  unsigned int i = 0;
+  for (; i < MAC_ADDRESS_SIZE; i++) {
+    response.mac[i] = PLIB_ETH_StationAddressGet(ETH_ID_0, i + 1);
+  }
+
   IOVec iovec;
-  iovec.base = (uint8_t*) uid;
-  iovec.length = UID_LENGTH;
-  SendMessage(token, COMMAND_GET_UID, RC_OK, &iovec, 1u);
+  iovec.base = &response;
+  iovec.length = sizeof(HardwareResponse);
+  SendMessage(token, COMMAND_GET_HARDWARE_INFO, RC_OK, &iovec, 1u);
 }
 
 static void SetBreakTime(uint8_t token,
@@ -322,8 +340,8 @@ void MessageHandler_HandleMessage(const Message *message) {
     case COMMAND_SET_MODE:
       SetMode(message->token, message->payload, message->length);
       break;
-    case COMMAND_GET_UID:
-      GetUID(message->token, message->length);
+    case COMMAND_GET_HARDWARE_INFO:
+      GetHardwareInfo(message->token, message->length);
       break;
     case COMMAND_RDM_DUB_REQUEST:
       if (CheckForTXMode(message) &&

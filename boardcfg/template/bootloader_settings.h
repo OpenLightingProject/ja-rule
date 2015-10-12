@@ -75,12 +75,6 @@ extern "C" {
 #define SWITCH_ACTIVE_HIGH false
 
 /**
- * @brief The hardware model.
- * @sa JaRuleModel
- */
-#define HARDWARE_MODEL MODEL_UNDEFINED
-
-/**
  * @brief The LEDS to flash in bootloader mode.
  */
 const Bootloader_LEDs BOOTLOADER_LEDS;
