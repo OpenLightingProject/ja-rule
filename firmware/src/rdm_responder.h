@@ -359,6 +359,11 @@ void RDMResponder_SwitchResponder(RDMResponder *responder);
 void RDMResponder_RestoreResponder();
 
 /**
+ * @brief Initialize the current responder with default values.
+ */
+void RDMResponder_InitResponder();
+
+/**
  * @brief Reset an RDMResponder to the factory defaults.
  */
 void RDMResponder_ResetToFactoryDefaults();

@@ -155,8 +155,7 @@ void LEDModel_Initialize() {}
 
 static void LEDModel_Activate() {
   g_responder->def = &RESPONDER_DEFINITION;
-  RDMResponder_ResetToFactoryDefaults();
-
+  RDMResponder_InitResponder();
   g_model.pixel_type = PIXEL_TYPE_LPD8806;
   g_model.pixel_count = DEFAULT_PIXEL_COUNT;
 }

@@ -457,7 +457,7 @@ void MovingLightModel_Initialize() {
 
 static void MovingLightModel_Activate() {
   g_responder->def = &RESPONDER_DEFINITION;
-  RDMResponder_ResetToFactoryDefaults();
+  RDMResponder_InitResponder();
   g_moving_light.clock_timer = CoarseTimer_GetTime();
 }
 

@@ -1060,7 +1060,7 @@ void DimmerModel_Initialize() {
 
     RDMResponder_SwitchResponder(&subdevice->responder);
     memcpy(g_responder->uid, parent_uid, UID_LENGTH);
-    RDMResponder_ResetToFactoryDefaults();
+    RDMResponder_InitResponder();
     g_responder->is_subdevice = true;
     g_responder->sub_device_count = NUMBER_OF_SUB_DEVICES;
   }
@@ -1081,7 +1081,7 @@ void DimmerModel_Initialize() {
 
 static void DimmerModel_Activate() {
   g_responder->def = &ROOT_RESPONDER_DEFINITION;
-  RDMResponder_ResetToFactoryDefaults();
+  RDMResponder_InitResponder();
   g_responder->sub_device_count = NUMBER_OF_SUB_DEVICES;
   g_root_device.status_message_timer = CoarseTimer_GetTime();
 }
