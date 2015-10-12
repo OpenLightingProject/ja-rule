@@ -45,15 +45,15 @@ inline uint8_t ShiftLeft(uint8_t b) {
 void UIDStore_Init() {
   // The UID is derived from the RDM manufacturer ID & the MAC address.
   // The first 3 bytes of the MAC address is the Microchip OIDs, which are one
-  // of 00:1e:c0, 00:04:A3 or D8:80:39. The bottom 3 bytes contain the unique
+  // of 00:1E:C0, 00:04:A3 or D8:80:39. The bottom 3 bytes contain the unique
   // serial number.
   //
   // To support more than one responder per device, we set the lower 4 bits of
   // the UID to 0 so we have 16 responders per device. These means the complete
   // UID takes the form:
   //   MMMM:XAAAAAA0
-  // Where M is the PLASA manufacturer ID and A are the values from the MAC
-  // address. X is derived from the OID:
+  // Where M is the PLASA manufacturer ID, X is derived from the OID and A is
+  // the values from the MAC address. X is derived from the OID as follows:
   //
   //   00:1E:C0 -> 1
   //   D8:80:39 -> 2
