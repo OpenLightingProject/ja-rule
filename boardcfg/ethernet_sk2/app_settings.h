@@ -141,6 +141,13 @@ extern "C" {
 #define RDM_RESPONDER_MUTE_PORT_BIT PORTS_BIT_POS_12
 
 /**
+ * @brief The pin to use for the RDM temperature sensor.
+ *
+ * If undefined, we use a 'dummy' sensor that generates random values.
+ */
+// #define RDM_RESPONDER_TEMPERATURE_SENSOR
+
+/**
  * @}
  *
  * @name SPI DMX

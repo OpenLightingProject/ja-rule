@@ -25,7 +25,10 @@
 #include "rdm_frame.h"
 #include "rdm_responder.h"
 #include "rdm_util.h"
+#include "temperature.h"
 #include "utils.h"
+
+#include "app_settings.h"
 
 // Various constants
 
@@ -52,19 +55,27 @@ typedef struct {
 
 static SensorModel g_sensor_model;
 
+static uint16_t GetSensorValue(unsigned int i) {
+#ifdef RDM_RESPONDER_TEMPERATURE_SENSOR
+  if (i == 0) {
+    return Temperature_GetValue(TEMPERATURE_BOARD_TEMP);
+  }
+#endif
+  return (Random_PseudoGet() % (
+      RESPONDER_DEFINITION.sensors[i].range_maximum_value -
+      RESPONDER_DEFINITION.sensors[i].range_minimum_value)) +
+      RESPONDER_DEFINITION.sensors[i].range_minimum_value;
+}
+
 void SampleSensors() {
   g_sensor_model.sensor_sample_time = CoarseTimer_GetTime();
 
   unsigned int i = 0;
   for (; i < NUMBER_OF_SENSORS; i++) {
-    int16_t new_value = (Random_PseudoGet() % (
-        RESPONDER_DEFINITION.sensors[i].range_maximum_value -
-        RESPONDER_DEFINITION.sensors[i].range_minimum_value)) +
-        RESPONDER_DEFINITION.sensors[i].range_minimum_value;
     RDMUtil_UpdateSensor(
         &g_sensor_model.sensors[i],
         RESPONDER_DEFINITION.sensors[i].recorded_value_support,
-        new_value);
+        GetSensorValue(i));
   }
 }
 
@@ -76,9 +87,10 @@ static void SensorModel_Activate() {
   g_responder->def = &RESPONDER_DEFINITION;
   unsigned int i = 0u;
   for (; i < NUMBER_OF_SENSORS; i++) {
-    g_sensor_model.sensors[i].present_value = 0u;
-    g_sensor_model.sensors[i].lowest_value = 0u;
-    g_sensor_model.sensors[i].highest_value = 0u;
+    uint16_t value = GetSensorValue(i);
+    g_sensor_model.sensors[i].present_value = value;
+    g_sensor_model.sensors[i].lowest_value = value;
+    g_sensor_model.sensors[i].highest_value = value;
     g_sensor_model.sensors[i].recorded_value = 0u;
     if (i == 1) {
       // The 2nd sensor (index 1) always nacks with a HARDWARE_FAULT
@@ -182,15 +194,15 @@ static const ProductDetailIds PRODUCT_DETAIL_ID_LIST = {
 static const SensorDefinition SENSOR_DEFINITIONS[] = {
   {
     .description = SENSOR_NAME1,
-    .normal_maximum_value = 50,
-    .normal_minimum_value = 0,
-    .range_maximum_value = 100,
-    .range_minimum_value = -10,
+    .normal_maximum_value = 500,
+    .normal_minimum_value = 300,
+    .range_maximum_value = 1000,
+    .range_minimum_value = -400,
     .recorded_value_support = SENSOR_SUPPORTS_RECORDING_MASK |
         SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK,
     .type = SENSOR_TEMPERATURE,
     .unit = UNITS_CENTIGRADE,
-    .prefix = PREFIX_NONE
+    .prefix = PREFIX_DECI
   },
   {
     .description = SENSOR_NAME2,

@@ -38,6 +38,7 @@
 #include "stream_decoder.h"
 #include "syslog.h"
 #include "system_definitions.h"
+#include "temperature.h"
 #include "transceiver.h"
 #include "uid_store.h"
 #include "usb_descriptors.h"
@@ -72,6 +73,8 @@ void APP_Initialize(void) {
   USBTransport_Initialize(NULL);
   USBConsole_Initialize();
   SysLog_Initialize(NULL);
+
+  Temperature_Init();
 
   // Initialize the DMX / RDM Transceiver
   TransceiverHardwareSettings transceiver_settings = {
@@ -158,6 +161,7 @@ void APP_Tasks(void) {
   if (Transceiver_GetMode() == T_MODE_RESPONDER) {
     RDMHandler_Tasks();
     SPIRGB_Tasks();
+    Temperature_Tasks();
   }
 }
 
