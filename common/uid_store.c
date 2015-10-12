@@ -31,8 +31,8 @@
 #include "peripheral/eth/plib_eth.h"
 
 static uint8_t kUIDArray[UID_LENGTH];
-static const uint32_t MICROCHIP_OID1 = 0x00001ec0;
-static const uint32_t MICROCHIP_OID2 = 0x00d88039;
+static const uint32_t MICROCHIP_OUI1 = 0x00001ec0;
+static const uint32_t MICROCHIP_OUI2 = 0x00d88039;
 
 inline uint8_t ShiftRight(uint8_t b) {
   return (b >> 4) & 0x0f;
@@ -44,7 +44,7 @@ inline uint8_t ShiftLeft(uint8_t b) {
 
 void UIDStore_Init() {
   // The UID is derived from the RDM manufacturer ID & the MAC address.
-  // The first 3 bytes of the MAC address is the Microchip OIDs, which are one
+  // The first 3 bytes of the MAC address is the Microchip OUIs, which are one
   // of 00:1E:C0, 00:04:A3 or D8:80:39. The bottom 3 bytes contain the unique
   // serial number.
   //
@@ -52,18 +52,18 @@ void UIDStore_Init() {
   // the UID to 0 so we have 16 responders per device. These means the complete
   // UID takes the form:
   //   MMMM:XAAAAAA0
-  // Where M is the PLASA manufacturer ID, X is derived from the OID and A is
-  // the values from the MAC address. X is derived from the OID as follows:
+  // Where M is the PLASA manufacturer ID, X is derived from the OUI and A is
+  // the values from the MAC address. X is derived from the OUI as follows:
   //
   //   00:1E:C0 -> 1
   //   D8:80:39 -> 2
-  uint32_t oid = (PLIB_ETH_StationAddressGet(ETH_ID_0, 1) << 16) +
+  uint32_t oui = (PLIB_ETH_StationAddressGet(ETH_ID_0, 1) << 16) +
                  (PLIB_ETH_StationAddressGet(ETH_ID_0, 2) << 8) +
                  PLIB_ETH_StationAddressGet(ETH_ID_0, 3);
   uint8_t upper_id = 0;
-  if (oid == MICROCHIP_OID1) {
+  if (oui == MICROCHIP_OUI1) {
     upper_id = 0x10;
-  } else if (oid == MICROCHIP_OID2) {
+  } else if (oui == MICROCHIP_OUI2) {
     upper_id = 0x20;
   }
 
@@ -78,7 +78,7 @@ void UIDStore_Init() {
                    ShiftRight(PLIB_ETH_StationAddressGet(ETH_ID_0, 6));
     kUIDArray[5] = ShiftLeft(PLIB_ETH_StationAddressGet(ETH_ID_0, 6));
   } else {
-    // If we didn't match the OID, default to the NULL UID to make it obvious
+    // If we didn't match the OUI, default to the NULL UID to make it obvious
     // what happened
     kUIDArray[0] = 0;
     kUIDArray[1] = 0;
