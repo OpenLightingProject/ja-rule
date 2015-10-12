@@ -67,6 +67,12 @@ extern "C" {
 #define CFG_UID_SOURCE CFG_OPT_UID_FROM_MAC
 
 /**
+ * @brief The hardware model.
+ * @sa JaRuleModel
+ */
+#define HARDWARE_MODEL MODEL_ETHERNET_SK2
+
+/**
  * @}
  *
  * @name Developer Settings

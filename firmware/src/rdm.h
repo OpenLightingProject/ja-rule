@@ -220,11 +220,6 @@ static const uint32_t IPV4_UNCONFIGURED = 0u;
 static const uint8_t MAX_NETMASK = 32u;
 
 /**
- * @brief The size of a MAC address
- */
-enum { MAC_ADDRESS_SIZE = 6 };
-
-/**
  * @brief DHCP Status
  */
 typedef enum {

@@ -15,7 +15,8 @@ the Device to the Host are *Responses*.
 
 # Byte Ordering {#message-endian}
 
-All multi-byte fields are sent little endian (LSB first)
+All multi-byte fields are sent little endian (LSB first) unless otherwise
+specified.
 
 # Message Format {#message-format}
 
@@ -146,27 +147,34 @@ The response contains no data.
 
 @returns @ref RC_OK.
 
-## Get UID  {#message-commands-getuid}
+## Get Hardware Information  {#message-commands-gethardware}
 
-Get the UID of the device.
+Get the hardware infomation for the device.
 
-### Request Payload {#message-commands-getuid-req}
+### Request Payload {#message-commands-gethardware-req}
 
 The request contains no data.
 
-### Response Payload {#message-commands-getuid-res}
+### Response Payload {#message-commands-gethardware-res}
 
 <pre>
   0                   1                   2                   3
   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |                                UID                            |
+ |          Model ID               |             UID             |
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- |           UID (cont.)           |
+ |                             UID (cont.)                       |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |                            MAC Address                        |
+ +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ |       MAC Address (cont.)       |
  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 </pre>
 
+@param Model_Id The \ref JaRuleModel of the device.
 @param UID The UID of the device, in network byte order.
+@param MAC The MAC address of the device, in network byte order. If the device
+does not have a MAC this will be 0.
 
 @returns @ref RC_OK.
 

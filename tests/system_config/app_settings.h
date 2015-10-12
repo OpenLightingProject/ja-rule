@@ -20,6 +20,8 @@
 #ifndef TESTS_SYSTEM_CONFIG_APP_SETTINGS_H_
 #define TESTS_SYSTEM_CONFIG_APP_SETTINGS_H_
 
+#include "common_settings.h"
+
 /**
  * @file system_settings.h
  * @brief Configuration settings for the main application.

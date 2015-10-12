@@ -1,6 +1,8 @@
 noinst_LTLIBRARIES += tests/harmony/mocks/libharmonymock.la
 
 tests_harmony_mocks_libharmonymock_la_SOURCES = \
+    tests/harmony/mocks/plib_eth_mock.cpp \
+    tests/harmony/mocks/plib_eth_mock.h \
     tests/harmony/mocks/plib_ic_mock.cpp \
     tests/harmony/mocks/plib_ic_mock.h \
     tests/harmony/mocks/plib_nvm_mock.cpp \

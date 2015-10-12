@@ -122,7 +122,8 @@ tests_tests_message_handler_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
                                          tests/mocks/librdmhandlermock.la \
                                          tests/mocks/libsyslogmock.la \
                                          tests/mocks/libtransceivermock.la \
-                                         tests/mocks/libtransportmock.la
+                                         tests/mocks/libtransportmock.la \
+                                         tests/harmony/mocks/libharmonymock.la
 
 tests_tests_network_model_test_SOURCES = tests/tests/NetworkModelTest.cpp
 tests_tests_network_model_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)

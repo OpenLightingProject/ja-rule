@@ -22,7 +22,6 @@
 
 #include "bootloader.h"
 #include "common_settings.h"
-#include "config_options.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,12 +72,6 @@ extern "C" {
  * @brief True if the switch is active high, false if active low.
  */
 #define SWITCH_ACTIVE_HIGH false
-
-/**
- * @brief The hardware model.
- * @sa JaRuleModel
- */
-#define HARDWARE_MODEL MODEL_ETHERNET_SK2
 
 /**
  * @brief The LEDS to flash in bootloader mode.
