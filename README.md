@@ -70,7 +70,7 @@ make check
 The code by default uses the Open Lighting PLASA ID (0x7a70). This range is
 owned by the Open Lighting Project and at this time we do not sub-license
 ranges to anyone else. You *may not* ship product with the Open Lighting
-PLASA id.
+PLASA ID.
 
 Per https://wiki.openlighting.org/index.php/Open_Lighting_Allocations the
 UIDs 7a70:fffffe00 to 7a70:fffffefe may be used for development (in house)
