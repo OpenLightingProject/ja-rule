@@ -262,7 +262,7 @@ void ProxyModel_Initialize() {
     memcpy(g_responder->uid, parent_uid, UID_LENGTH);
     g_responder->uid[UID_LENGTH - 1] += (i + 1u);
     g_responder->def = &CHILD_DEVICE_RESPONDER_DEFINITION;
-    RDMResponder_ResetToFactoryDefaults();
+    RDMResponder_InitResponder();
     g_responder->is_proxied_device = true;
   }
 
@@ -271,7 +271,7 @@ void ProxyModel_Initialize() {
 
 static void ProxyModel_Activate() {
   g_responder->def = &ROOT_RESPONDER_DEFINITION;
-  RDMResponder_ResetToFactoryDefaults();
+  RDMResponder_InitResponder();
   g_responder->is_managed_proxy = true;
   ResetProxyBuffers();
 }
