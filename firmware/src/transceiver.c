@@ -99,9 +99,6 @@ typedef enum {
   STATE_ERROR = 100
 } TransceiverState;
 
-/*
- * @brief
- */
 typedef enum {
   OP_TX_ONLY = T_OP_TX_ONLY,
   OP_RDM_DUB = T_OP_RDM_DUB,

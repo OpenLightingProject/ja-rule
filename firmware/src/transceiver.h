@@ -284,8 +284,8 @@ void Transceiver_Initialize(const TransceiverHardwareSettings *settings,
 /**
  * @brief Change the operating mode of the transceiver.
  * @param mode the new operating mode.
- * @param token to token to the TransceiverEventCallback when the mode change
- *   completes.
+ * @param token The token passed to the TransceiverEventCallback when the mode
+ *   change completes.
  * @returns True if the mode change is queued, false if there was already
  *   another mode change pending or the device is already in the requested
  *   mode.
