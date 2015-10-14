@@ -31,17 +31,18 @@ class MockTransceiver {
   MOCK_METHOD3(Initialize, void(const TransceiverHardwareSettings* settings,
                                 TransceiverEventCallback tx_callback,
                                 TransceiverEventCallback rx_callback));
-  MOCK_METHOD1(SetMode, void(TransceiverMode mode));
+  MOCK_METHOD2(SetMode, bool(TransceiverMode mode, int16_t token));
   MOCK_METHOD0(GetMode, TransceiverMode());
   MOCK_METHOD0(Tasks, void());
-  MOCK_METHOD3(QueueDMX, bool(uint8_t token, const uint8_t* data,
+  MOCK_METHOD3(QueueDMX, bool(int16_t token, const uint8_t* data,
                               unsigned int size));
-  MOCK_METHOD4(QueueASC, bool(uint8_t token, uint8_t start_code,
+  MOCK_METHOD4(QueueASC, bool(int16_t token, uint8_t start_code,
                               const uint8_t* data, unsigned int size));
-  MOCK_METHOD3(QueueRDMDUB, bool(uint8_t token, const uint8_t* data,
+  MOCK_METHOD3(QueueRDMDUB, bool(int16_t token, const uint8_t* data,
                                  unsigned int size));
-  MOCK_METHOD4(QueueRDMRequest, bool(uint8_t token, const uint8_t* data,
+  MOCK_METHOD4(QueueRDMRequest, bool(int16_t token, const uint8_t* data,
                                      unsigned int size, bool is_broadcast));
+  MOCK_METHOD1(QueueSelfTest, bool(int16_t token));
   MOCK_METHOD0(Transceiver_Reset, void());
   MOCK_METHOD1(SetBreakTime, bool(uint16_t break_time_us));
   MOCK_METHOD0(GetBreakTime, uint16_t());

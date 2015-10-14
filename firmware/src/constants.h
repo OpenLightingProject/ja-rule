@@ -104,6 +104,12 @@ typedef enum {
    */
   COMMAND_GET_HARDWARE_INFO = 0x02,
 
+  /**
+   * @brief Run a loopback self test.
+   * @sa @ref message-commands-selftest.
+   */
+  COMMAND_RUN_SELF_TEST = 0x03,
+
   // User Configuration
   /**
    * @brief Set the break time of the transceiver.
@@ -238,7 +244,10 @@ typedef enum {
    */
   RC_RDM_BCAST_RESPONSE = 6,
   RC_RDM_INVALID_RESPONSE = 7,  //!< An invalid RDM response was received.
-  RC_INVALID_MODE = 8  //!< The command is invalid in the current mode.
+  RC_INVALID_MODE = 8,  //!< The command is invalid in the current mode.
+
+  RC_TEST_FAILED = 9,  //!< The self test failed
+  RC_CANCELLED = 10  //!< The request was preempted or cancelled
 } ReturnCode;
 
 /**

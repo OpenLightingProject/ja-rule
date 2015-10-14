@@ -260,13 +260,16 @@ TEST_F(MessageHandlerTest, testEcho) {
 }
 
 TEST_F(MessageHandlerTest, testSetMode) {
-  EXPECT_CALL(m_transport_mock, Send(kToken, COMMAND_SET_MODE, RC_OK, _, 0))
-      .Times(2)
+  EXPECT_CALL(m_transport_mock, Send(kToken, COMMAND_SET_MODE,
+              RC_INVALID_MODE, _, 0))
+      .Times(1)
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(m_transceiver_mock, SetMode(T_MODE_CONTROLLER))
-      .Times(1);
-  EXPECT_CALL(m_transceiver_mock, SetMode(T_MODE_RESPONDER))
-      .Times(1);
+  EXPECT_CALL(m_transceiver_mock, SetMode(T_MODE_CONTROLLER, kToken))
+      .WillOnce(Return(true));
+  EXPECT_CALL(m_transceiver_mock, SetMode(T_MODE_RESPONDER, kToken))
+      .WillOnce(Return(true));
+  EXPECT_CALL(m_transceiver_mock, SetMode(T_MODE_SELF_TEST, kToken))
+      .WillOnce(Return(false));
 
   uint8_t request_payload = 0;
   Message message = { kToken, COMMAND_SET_MODE, sizeof(request_payload),
@@ -274,6 +277,9 @@ TEST_F(MessageHandlerTest, testSetMode) {
   MessageHandler_HandleMessage(&message);
 
   request_payload = 1;
+  MessageHandler_HandleMessage(&message);
+
+  request_payload = 2;
   MessageHandler_HandleMessage(&message);
 }
 
@@ -353,7 +359,7 @@ TEST_F(MessageHandlerTest, transceiverDMXEvent) {
       .With(Args<3, 4>(EmptyPayload()))
       .WillOnce(Return(true));
 
-  SendEvent(kToken, T_OP_TX_ONLY, T_RESULT_TX_OK, NULL, 0);
+  SendEvent(kToken, T_OP_TX_ONLY, T_RESULT_OK, NULL, 0);
   SendEvent(kToken + 1, T_OP_TX_ONLY, T_RESULT_TX_ERROR, NULL, 0);
 }
 

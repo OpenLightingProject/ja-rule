@@ -433,7 +433,8 @@ void USBConsole_Tasks() {
           break;
         case 'M':
           Transceiver_SetMode(Transceiver_GetMode() == T_MODE_CONTROLLER ?
-                              T_MODE_RESPONDER : T_MODE_CONTROLLER);
+                              T_MODE_RESPONDER : T_MODE_CONTROLLER,
+                              TRANSCEIVER_NO_NOTIFICATION);
           break;
         case 'r':
           APP_Reset();

@@ -63,13 +63,14 @@ static void SetMode(uint8_t token,
                     const uint8_t* payload,
                     unsigned int length) {
   uint8_t mode;
-  if (length != sizeof(mode)) {
+  if (length != sizeof(mode) || payload[0] >= T_MODE_LAST) {
     SendMessage(token, COMMAND_SET_MODE, RC_BAD_PARAM, NULL, 0u);
     return;
   }
-  mode = payload[0];
-  Transceiver_SetMode(mode ? T_MODE_RESPONDER : T_MODE_CONTROLLER);
-  SendMessage(token, COMMAND_SET_MODE, RC_OK, NULL, 0u);
+  if (!Transceiver_SetMode(payload[0], token)) {
+    SendMessage(token, COMMAND_SET_MODE, RC_INVALID_MODE, NULL, 0u);
+    return;
+  }
 }
 
 static void GetHardwareInfo(uint8_t token, unsigned int length) {
@@ -97,6 +98,17 @@ static void GetHardwareInfo(uint8_t token, unsigned int length) {
   iovec.base = &response;
   iovec.length = sizeof(HardwareResponse);
   SendMessage(token, COMMAND_GET_HARDWARE_INFO, RC_OK, &iovec, 1u);
+}
+
+static void RunSelfTest(uint8_t token, unsigned int length) {
+  if (length) {
+    SendMessage(token, COMMAND_RUN_SELF_TEST, RC_BAD_PARAM, NULL, 0u);
+    return;
+  }
+
+  if (!Transceiver_QueueSelfTest(token)) {
+    SendMessage(token, COMMAND_RUN_SELF_TEST, RC_TEST_FAILED, NULL, 0u);
+  }
 }
 
 static void SetBreakTime(uint8_t token,
@@ -343,6 +355,9 @@ void MessageHandler_HandleMessage(const Message *message) {
     case COMMAND_GET_HARDWARE_INFO:
       GetHardwareInfo(message->token, message->length);
       break;
+    case COMMAND_RUN_SELF_TEST:
+      RunSelfTest(message->token, message->length);
+      break;
     case COMMAND_RDM_DUB_REQUEST:
       if (CheckForTXMode(message) &&
           !Transceiver_QueueRDMDUB(message->token, message->payload,
@@ -421,7 +436,7 @@ void MessageHandler_TransceiverEvent(const TransceiverEvent *event) {
   Command command;
   ReturnCode rc;
   switch (event->result) {
-    case T_RESULT_TX_OK:
+    case T_RESULT_OK:
       rc = RC_OK;
       break;
     case T_RESULT_TX_ERROR:
@@ -435,6 +450,12 @@ void MessageHandler_TransceiverEvent(const TransceiverEvent *event) {
       break;
     case T_RESULT_RX_INVALID:
       rc = RC_RDM_INVALID_RESPONSE;
+      break;
+    case T_RESULT_CANCELLED:
+      rc = RC_CANCELLED;
+      break;
+    case T_RESULT_SELF_TEST_FAILED:
+      rc = RC_TEST_FAILED;
       break;
     default:
       rc = RC_UNKNOWN;
@@ -459,8 +480,14 @@ void MessageHandler_TransceiverEvent(const TransceiverEvent *event) {
     case T_OP_RDM_BROADCAST:
       command = COMMAND_RDM_BROADCAST_REQUEST;
       break;
+    case T_OP_SELF_TEST:
+      command = COMMAND_RUN_SELF_TEST;
+      break;
+    case T_OP_MODE_CHANGE:
+      command = COMMAND_SET_MODE;
+      break;
     default:
-      SysLog_Print(SYSLOG_INFO, "Unknown Transceiver event %d", event->op);
+      SysLog_Print(SYSLOG_INFO, "Unknown Transceiver op %d", event->op);
       return;
   }
 
