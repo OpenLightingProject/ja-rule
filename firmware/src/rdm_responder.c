@@ -170,10 +170,7 @@ void RDMResponder_Initialize(const RDMResponderSettings *settings) {
 
   memcpy(g_responder->uid, settings->uid, UID_LENGTH);
   g_responder->def = NULL;
-  g_responder->is_subdevice = false;
-  g_responder->is_managed_proxy = false;
-  g_responder->is_proxied_device = false;
-  RDMResponder_ResetToFactoryDefaults();
+  RDMResponder_InitResponder();
 }
 
 void RDMResponder_Tasks() {
@@ -202,14 +199,25 @@ void RDMResponder_RestoreResponder() {
   g_responder = &root_responder;
 }
 
+void RDMResponder_InitResponder() {
+  // This resets the non-mutable state of the responder and then calls
+  // RDMResponder_ResetToFactoryDefaults() to reset the mutable state.
+  g_responder->sensors = NULL;
+  g_responder->is_subdevice = false;
+  g_responder->is_managed_proxy = false;
+  g_responder->is_proxied_device = false;
+
+  RDMResponder_ResetToFactoryDefaults();
+}
+
 void RDMResponder_ResetToFactoryDefaults() {
-  g_responder->queued_message_count = 0u;
   g_responder->dmx_start_address = INVALID_DMX_START_ADDRESS;
   g_responder->sub_device_count = 0u;
   g_responder->current_personality = 1u;
+  g_responder->queued_message_count = 0u;
+
   g_responder->is_muted = false;
   g_responder->identify_on = false;
-  g_responder->sensors = NULL;
 
   if (g_responder->def) {
     RDMUtil_StringCopy(g_responder->device_label, RDM_DEFAULT_STRING_SIZE,
@@ -220,7 +228,6 @@ void RDMResponder_ResetToFactoryDefaults() {
       g_responder->dmx_start_address = 1u;
     }
   }
-
   g_responder->using_factory_defaults = true;
 }
 

@@ -101,7 +101,7 @@ static void SensorModel_Activate() {
     }
   }
 
-  RDMResponder_ResetToFactoryDefaults();
+  RDMResponder_InitResponder();
   SampleSensors();
   g_responder->sensors = g_sensor_model.sensors;
 }

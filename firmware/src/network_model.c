@@ -601,7 +601,7 @@ void NetworkModel_Initialize() {
 
 static void NetworkModel_Activate() {
   g_responder->def = &RESPONDER_DEFINITION;
-  RDMResponder_ResetToFactoryDefaults();
+  RDMResponder_InitResponder();
 }
 
 static void NetworkModel_Deactivate() {}
