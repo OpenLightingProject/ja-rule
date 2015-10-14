@@ -178,6 +178,21 @@ does not have a MAC this will be 0.
 
 @returns @ref RC_OK.
 
+## Run Self Test {#message-commands-selftest}
+
+Run the loopback self test. The device must be in self test mode to perform
+this.
+
+### Request Payload {#message-commands-selftest-req}
+
+The request contains no data.
+
+### Response Payload {#message-commands-selftest-res}
+
+The response contains no data.
+
+@returns @ref RC_OK or @ref RC_TEST_FAILED.
+
 ## Reset  {#message-commands-reset}
 
 Resets the device. This can be used to recover from failures.
