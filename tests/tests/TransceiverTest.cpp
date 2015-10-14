@@ -28,14 +28,35 @@
 using ::testing::Args;
 using ::testing::StrictMock;
 using ::testing::Return;
+using ::testing::Field;
 using ::testing::_;
+
+MATCHER_P3(EventIs, token, op, result, "") {
+  return arg->token == token && arg->op == op && arg->result == result;
+}
+
+class MockEventHandler {
+ public:
+  MOCK_METHOD1(Run, bool(const TransceiverEvent *event));
+};
+
+MockEventHandler *g_event_handler = nullptr;
+
+bool EventHandler(const TransceiverEvent *event) {
+  if (g_event_handler) {
+    return g_event_handler->Run(event);
+  }
+  return true;
+}
 
 class TransceiverTest : public testing::Test {
  public:
   void SetUp() {
+    g_event_handler = &m_event_handler;
   }
 
   void TearDown() {
+    g_event_handler = nullptr;
   }
 
   TransceiverHardwareSettings DefaultSettings() const {
@@ -59,11 +80,70 @@ class TransceiverTest : public testing::Test {
     };
     return settings;
   }
+
+ protected:
+  StrictMock<MockEventHandler> m_event_handler;
 };
 
 TEST_F(TransceiverTest, testUnsetTransceiver) {
   TransceiverHardwareSettings settings = DefaultSettings();
   Transceiver_Initialize(&settings, NULL, NULL);
+}
+
+TEST_F(TransceiverTest, testModeChanges) {
+  TransceiverHardwareSettings settings = DefaultSettings();
+  Transceiver_Initialize(&settings, &EventHandler, &EventHandler);
+
+  uint8_t token = 1;
+
+  ASSERT_EQ(T_MODE_RESPONDER, Transceiver_GetMode());
+  // In responder mode, the following are not permitted
+  EXPECT_FALSE(Transceiver_QueueDMX(token, NULL, 0));
+  EXPECT_FALSE(Transceiver_QueueASC(token, 0xdd, NULL, 0));
+  EXPECT_FALSE(Transceiver_QueueRDMDUB(token, NULL, 0));
+  EXPECT_FALSE(Transceiver_QueueRDMRequest(token, NULL, 0, false));
+  EXPECT_FALSE(Transceiver_QueueSelfTest(token));
+
+  // Switch to controller mode, note the switch doesn't actually take place
+  // until _Tasks() is called.
+  EXPECT_TRUE(Transceiver_SetMode(T_MODE_CONTROLLER, token));
+  ASSERT_EQ(T_MODE_RESPONDER, Transceiver_GetMode());
+
+  // We still can't queue frames since the mode change hasn't completed yet
+  EXPECT_FALSE(Transceiver_QueueDMX(token, NULL, 0));
+  EXPECT_FALSE(Transceiver_QueueASC(token, 0xdd, NULL, 0));
+  EXPECT_FALSE(Transceiver_QueueRDMDUB(token, NULL, 0));
+  EXPECT_FALSE(Transceiver_QueueRDMRequest(token, NULL, 0, false));
+  EXPECT_FALSE(Transceiver_QueueSelfTest(token));
+
+  // Allow the mode change to complete
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_MODE_CHANGE, T_RESULT_OK)))
+    .WillOnce(Return(true));
+  Transceiver_Tasks();
+  ASSERT_EQ(T_MODE_CONTROLLER, Transceiver_GetMode());
+
+  token++;
+
+  // In controller mode the follow are not permitted
+  EXPECT_FALSE(Transceiver_QueueRDMResponse(token, NULL, 0));
+  EXPECT_FALSE(Transceiver_QueueSelfTest(token));
+
+  // Switch to self test mode.
+  EXPECT_TRUE(Transceiver_SetMode(T_MODE_SELF_TEST, token));
+  ASSERT_EQ(T_MODE_CONTROLLER, Transceiver_GetMode());
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_MODE_CHANGE, T_RESULT_OK)))
+    .WillOnce(Return(true));
+  Transceiver_Tasks();
+  ASSERT_EQ(T_MODE_SELF_TEST, Transceiver_GetMode());
+
+  // In self-test mode the follow are not permitted
+  EXPECT_FALSE(Transceiver_QueueDMX(token, NULL, 0));
+  EXPECT_FALSE(Transceiver_QueueASC(token, 0xdd, NULL, 0));
+  EXPECT_FALSE(Transceiver_QueueRDMDUB(token, NULL, 0));
+  EXPECT_FALSE(Transceiver_QueueRDMRequest(token, NULL, 0, false));
+  EXPECT_FALSE(Transceiver_QueueRDMResponse(token, NULL, 0));
 }
 
 TEST_F(TransceiverTest, testSetBreakTime) {

@@ -37,10 +37,11 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
   }
 }
 
-void Transceiver_SetMode(TransceiverMode mode) {
+bool Transceiver_SetMode(TransceiverMode mode, int16_t token) {
   if (g_transceiver_mock) {
-    g_transceiver_mock->SetMode(mode);
+    return g_transceiver_mock->SetMode(mode, token);
   }
+  return true;
 }
 
 TransceiverMode Transceiver_GetMode() {
@@ -56,7 +57,7 @@ void Transceiver_Tasks() {
   }
 }
 
-bool Transceiver_QueueDMX(uint8_t token, const uint8_t* data,
+bool Transceiver_QueueDMX(int16_t token, const uint8_t* data,
                           unsigned int size) {
   if (g_transceiver_mock) {
     return g_transceiver_mock->QueueDMX(token, data, size);
@@ -64,7 +65,7 @@ bool Transceiver_QueueDMX(uint8_t token, const uint8_t* data,
   return true;
 }
 
-bool Transceiver_QueueASC(uint8_t token, uint8_t start_code,
+bool Transceiver_QueueASC(int16_t token, uint8_t start_code,
                           const uint8_t* data, unsigned int size) {
   if (g_transceiver_mock) {
     return g_transceiver_mock->QueueASC(token, start_code, data, size);
@@ -72,7 +73,7 @@ bool Transceiver_QueueASC(uint8_t token, uint8_t start_code,
   return true;
 }
 
-bool Transceiver_QueueRDMDUB(uint8_t token, const uint8_t* data,
+bool Transceiver_QueueRDMDUB(int16_t token, const uint8_t* data,
                              unsigned int size) {
   if (g_transceiver_mock) {
     return g_transceiver_mock->QueueRDMDUB(token, data, size);
@@ -80,10 +81,17 @@ bool Transceiver_QueueRDMDUB(uint8_t token, const uint8_t* data,
   return true;
 }
 
-bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
+bool Transceiver_QueueRDMRequest(int16_t token, const uint8_t* data,
                                  unsigned int size, bool is_broadcast) {
   if (g_transceiver_mock) {
     return g_transceiver_mock->QueueRDMRequest(token, data, size, is_broadcast);
+  }
+  return true;
+}
+
+bool Transceiver_QueueSelfTest(int16_t token) {
+  if (g_transceiver_mock) {
+    return g_transceiver_mock->QueueSelfTest(token);
   }
   return true;
 }

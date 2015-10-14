@@ -46,9 +46,16 @@ enum { BUFFER_SIZE = DMX_FRAME_SIZE + 1u };
 // The number of buffers we maintain for overlapping I/O
 enum { NUMBER_OF_BUFFERS = 2};
 
+const int16_t TRANSCEIVER_NO_NOTIFICATION = -1;
+
+// Timing offsets
 static const uint16_t BREAK_FUDGE_FACTOR = 74u;
 static const uint16_t MARK_FUDGE_FACTOR = 217u;
 static const uint16_t RESPONSE_FUDGE_FACTOR = 24u;
+
+// The value of the test byte we send during the self test
+static const uint8_t SELF_TEST_VALUE = 0xa5;
+static const uint32_t SELF_TEST_TIMEOUT = 100;  // 10ms
 
 typedef enum {
   // Controller states
@@ -81,20 +88,24 @@ typedef enum {
   STATE_R_TX_DRAIN = 24,  //!< Wait for last byte to be sent.
   STATE_R_TX_COMPLETE = 25,  //!< Response complete
 
+  // Self test states
+  STATE_T_INITIALIZE = 26,  //!< Init self test
+  STATE_T_TX_READY = 27,  //!< Wait for send operation
+  STATE_T_RX_WAIT = 28,  //!< Wait for response
+  STATE_T_VERIFY = 29,  //!< Check response
+
   // Common states
   STATE_RESET = 99,
   STATE_ERROR = 100
 } TransceiverState;
 
-/*
- * @brief
- */
 typedef enum {
   OP_TX_ONLY = T_OP_TX_ONLY,
   OP_RDM_DUB = T_OP_RDM_DUB,
   OP_RDM_BROADCAST = T_OP_RDM_BROADCAST,
   OP_RDM_WITH_RESPONSE = T_OP_RDM_WITH_RESPONSE,
   OP_RX = T_OP_RX,
+  OP_SELF_TEST = T_OP_SELF_TEST,
   OP_RDM_DUB_RESPONSE,  //!< No break
   OP_RDM_RESEPONSE  //!< With a break
 } InternalOperation;
@@ -102,7 +113,7 @@ typedef enum {
 typedef struct {
   uint16_t size;
   InternalOperation op;
-  uint8_t token;
+  int16_t token;
   uint8_t data[BUFFER_SIZE];
 } TransceiverBuffer;
 
@@ -166,6 +177,14 @@ typedef struct {
    */
   uint8_t expected_length;
   bool found_expected_length;  //!< If expected_length is valid.
+
+  /**
+   * @brief The token for a mode change event.
+   *
+   * If desired_mode != mode, this will be the token used when the mode change
+   * completes.
+   */
+  int16_t mode_change_token;
 
   /**
    * @brief The buffer current used for transmit / receive.
@@ -383,6 +402,111 @@ static void TakeNextBuffer() {
   g_transceiver.data_index = 0u;
 }
 
+// Event Handler functions
+// ----------------------------------------------------------------------------
+static inline void RunEventHandler(TransceiverEvent *event) {
+  if (event->token < 0) {
+    return;
+  }
+
+#ifdef PIPELINE_TRANSCEIVER_TX_EVENT
+  PIPELINE_TRANSCEIVER_TX_EVENT(event);
+#else
+  if (g_tx_callback) {
+    g_tx_callback(event);
+  }
+#endif
+}
+
+/*
+ * @brief Run the completion callback.
+ */
+static inline void FrameComplete() {
+  const uint8_t* data = NULL;
+  unsigned int length = 0u;
+  if (g_transceiver.active->op != OP_TX_ONLY &&
+      g_transceiver.data_index != 0u) {
+    // We actually got some data.
+    data = g_transceiver.active->data;
+    length = g_transceiver.data_index;
+    g_transceiver.result = T_RESULT_RX_DATA;
+  }
+
+  TransceiverEvent event = {
+    g_transceiver.active->token,
+    (TransceiverOperation) g_transceiver.active->op,
+    g_transceiver.result,
+    data,
+    length,
+    &g_timing
+  };
+  RunEventHandler(&event);
+}
+
+/*
+ * @brief Run the RX callback.
+ */
+static inline void RXFrameEvent() {
+  TransceiverEvent event = {
+    0u,
+    T_OP_RX,
+    g_transceiver.event_index == 0u ? T_RESULT_RX_START_FRAME :
+        T_RESULT_RX_CONTINUE_FRAME,
+    g_transceiver.active->data,
+    g_transceiver.data_index,
+    &g_timing
+  };
+  RunEventHandler(&event);
+}
+
+/*
+ * @brief Run the RX callback with an end-of-frame event.
+ */
+static inline void RXEndFrameEvent() {
+  TransceiverEvent event = {
+    0u,
+    T_OP_RX,
+    T_RESULT_RX_FRAME_TIMEOUT,
+    NULL,
+    0u,
+    &g_timing
+  };
+  RunEventHandler(&event);
+}
+
+// Operating Mode management
+// ----------------------------------------------------------------------------
+static void SwitchMode() {
+  g_transceiver.mode = g_transceiver.desired_mode;
+  switch (g_transceiver.mode) {
+    case T_MODE_CONTROLLER:
+      SysLog_Message(SYSLOG_INFO, "Changed to Controller mode");
+      g_transceiver.state = STATE_C_INITIALIZE;
+      break;
+    case T_MODE_RESPONDER:
+      SysLog_Message(SYSLOG_INFO, "Changed to Responder mode");
+      g_transceiver.state = STATE_R_INITIALIZE;
+      break;
+    case T_MODE_SELF_TEST:
+      SysLog_Message(SYSLOG_INFO, "Changed to self-test mode");
+      g_transceiver.state = STATE_T_INITIALIZE;
+      break;
+    default:
+      SysLog_Print(SYSLOG_INFO, "Unknown mode: %d",
+                   g_transceiver.desired_mode);
+      return;
+  }
+  // Reset in case there were any pending commands
+  InitializeBuffers();
+  TransceiverEvent event = {
+    g_transceiver.mode_change_token,
+    T_OP_MODE_CHANGE,
+    T_RESULT_OK,
+    NULL, 0, NULL
+  };
+  RunEventHandler(&event);
+}
+
 // ----------------------------------------------------------------------------
 static inline void PrepareRDMResponse() {
   // Rebase the timer to when the last byte was received
@@ -429,83 +553,6 @@ static inline void LogStateChange() {
     SysLog_Print(SYSLOG_DEBUG, "Changed to %d", g_transceiver.state);
     last_state = g_transceiver.state;
   }
-}
-
-/*
- * @brief Run the completion callback.
- */
-static inline void FrameComplete() {
-  const uint8_t* data = NULL;
-  unsigned int length = 0u;
-  if (g_transceiver.active->op != OP_TX_ONLY &&
-      g_transceiver.data_index != 0u) {
-    // We actually got some data.
-    data = g_transceiver.active->data;
-    length = g_transceiver.data_index;
-    g_transceiver.result = T_RESULT_RX_DATA;
-  }
-
-  TransceiverEvent event = {
-    g_transceiver.active->token,
-    (TransceiverOperation) g_transceiver.active->op,
-    g_transceiver.result,
-    data,
-    length,
-    &g_timing
-  };
-
-#ifdef PIPELINE_TRANSCEIVER_TX_EVENT
-  PIPELINE_TRANSCEIVER_TX_EVENT(&event);
-#else
-  if (g_tx_callback) {
-    g_tx_callback(&event);
-  }
-#endif
-}
-
-/*
- * @brief Run the RX callback.
- */
-static inline void RXFrameEvent() {
-  TransceiverEvent event = {
-    0u,
-    T_OP_RX,
-    g_transceiver.event_index == 0u ? T_RESULT_RX_START_FRAME :
-        T_RESULT_RX_CONTINUE_FRAME,
-    g_transceiver.active->data,
-    g_transceiver.data_index,
-    &g_timing
-  };
-
-#ifdef PIPELINE_TRANSCEIVER_RX_EVENT
-  PIPELINE_TRANSCEIVER_RX_EVENT(&event);
-#else
-  if (g_rx_callback) {
-    g_rx_callback(&event);
-  }
-#endif
-}
-
-/*
- * @brief Run the RX callback with an end-of-frame event.
- */
-static inline void RXEndFrameEvent() {
-  TransceiverEvent event = {
-    0u,
-    T_OP_RX,
-    T_RESULT_RX_FRAME_TIMEOUT,
-    NULL,
-    0u,
-    &g_timing
-  };
-
-#ifdef PIPELINE_TRANSCEIVER_RX_EVENT
-  PIPELINE_TRANSCEIVER_RX_EVENT(&event);
-#else
-  if (g_rx_callback) {
-    g_rx_callback(&event);
-  }
-#endif
 }
 
 /*
@@ -624,6 +671,10 @@ void __ISR(AS_IC_ISR_VECTOR(TRANSCEIVER_IC), ipl6AUTO)
       case STATE_R_TX_DATA:
       case STATE_R_TX_DRAIN:
       case STATE_R_TX_COMPLETE:
+      case STATE_T_INITIALIZE:
+      case STATE_T_TX_READY:
+      case STATE_T_RX_WAIT:
+      case STATE_T_VERIFY:
       case STATE_ERROR:
       case STATE_RESET:
         // Should never happen.
@@ -714,6 +765,10 @@ void __ISR(AS_TIMER_ISR_VECTOR(TRANSCEIVER_TIMER), ipl6AUTO)
     case STATE_R_TX_DATA:
     case STATE_R_TX_DRAIN:
     case STATE_R_TX_COMPLETE:
+    case STATE_T_INITIALIZE:
+    case STATE_T_TX_READY:
+    case STATE_T_RX_WAIT:
+    case STATE_T_VERIFY:
     case STATE_ERROR:
     case STATE_RESET:
       // Should never happen
@@ -732,6 +787,7 @@ void __ISR(AS_TIMER_ISR_VECTOR(TRANSCEIVER_TIMER), ipl6AUTO)
  */
 void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
     Transceiver_UARTEvent() {
+  // TX
   if (SYS_INT_SourceStatusGet(g_hw_settings.usart_tx_source)) {
     if (g_transceiver.state == STATE_C_TX_DATA) {
       UART_TXBytes();
@@ -818,9 +874,14 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
       SYS_INT_SourceDisable(g_hw_settings.usart_tx_source);
       PLIB_USART_TransmitterDisable(g_hw_settings.usart);
       g_transceiver.state = STATE_R_TX_COMPLETE;
+    } else if (g_transceiver.state == STATE_T_RX_WAIT) {
+      PLIB_USART_TransmitterDisable(g_hw_settings.usart);
     }
     SYS_INT_SourceStatusClear(g_hw_settings.usart_tx_source);
-  } else if (SYS_INT_SourceStatusGet(g_hw_settings.usart_rx_source)) {
+  }
+
+  // RX
+  if (SYS_INT_SourceStatusGet(g_hw_settings.usart_rx_source)) {
     if (g_transceiver.state == STATE_C_RX_IN_DUB ||
         g_transceiver.state == STATE_C_RX_DATA) {
       if (UART_RXBytes()) {
@@ -856,9 +917,15 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
 
         g_transceiver.state = STATE_R_TX_COMPLETE;
       }
+    } else if (g_transceiver.state == STATE_T_RX_WAIT) {
+      UART_RXBytes();
+      g_transceiver.state = STATE_T_VERIFY;
     }
     SYS_INT_SourceStatusClear(g_hw_settings.usart_rx_source);
-  } else if (SYS_INT_SourceStatusGet(g_hw_settings.usart_error_source)) {
+  }
+
+  // Error
+  if (SYS_INT_SourceStatusGet(g_hw_settings.usart_error_source)) {
     switch (g_transceiver.state) {
       case STATE_C_RX_IN_DUB:
         SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
@@ -896,6 +963,10 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
       case STATE_R_TX_DATA:
       case STATE_R_TX_DRAIN:
       case STATE_R_TX_COMPLETE:
+      case STATE_T_INITIALIZE:
+      case STATE_T_TX_READY:
+      case STATE_T_RX_WAIT:
+      case STATE_T_VERIFY:
       case STATE_ERROR:
       case STATE_RESET:
         // Should never happen.
@@ -979,14 +1050,33 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
                                INT_SUBPRIORITY_LEVEL0);
 }
 
-void Transceiver_SetMode(TransceiverMode mode) {
-  if (mode == T_MODE_CONTROLLER) {
-    SysLog_Print(SYSLOG_INFO, "Switching to Controller mode");
-  } else {
-    SysLog_Print(SYSLOG_INFO, "Switching to Responder mode");
+bool Transceiver_SetMode(TransceiverMode mode, int16_t token) {
+  if (g_transceiver.mode != g_transceiver.desired_mode) {
+    SysLog_Message(SYSLOG_WARN, "Mode change already pending");
+    return false;
   }
 
+  if (g_transceiver.mode == mode) {
+    return false;
+  }
+
+  switch (mode) {
+    case T_MODE_CONTROLLER:
+      SysLog_Message(SYSLOG_INFO, "Switching to Controller mode");
+      break;
+    case T_MODE_RESPONDER:
+      SysLog_Message(SYSLOG_INFO, "Switching to Responder mode");
+      break;
+    case T_MODE_SELF_TEST:
+      SysLog_Message(SYSLOG_INFO, "Switching to self-test mode");
+      break;
+    default:
+      SysLog_Print(SYSLOG_INFO, "Unknown mode: %d", mode);
+      return false;
+  }
   g_transceiver.desired_mode = mode;
+  g_transceiver.mode_change_token = token;
+  return true;
 }
 
 TransceiverMode Transceiver_GetMode() {
@@ -998,6 +1088,7 @@ void Transceiver_Tasks() {
   LogStateChange();
 
   switch (g_transceiver.state) {
+    // Controller States
     case STATE_C_INITIALIZE:
       PLIB_TMR_Stop(g_hw_settings.timer_module_id);
       PLIB_USART_ReceiverDisable(g_hw_settings.usart);
@@ -1009,11 +1100,7 @@ void Transceiver_Tasks() {
       // Fall through
     case STATE_C_TX_READY:
       if (g_transceiver.desired_mode != T_MODE_CONTROLLER) {
-        TakeNextBuffer();
-        FreeActiveBuffer();
-        SysLog_Print(SYSLOG_INFO, "Switched to responder mode");
-        g_transceiver.mode = g_transceiver.desired_mode;
-        g_transceiver.state = STATE_R_INITIALIZE;
+        SwitchMode();
         break;
       }
 
@@ -1032,7 +1119,7 @@ void Transceiver_Tasks() {
       // Reset state
       g_transceiver.found_expected_length = false;
       g_transceiver.expected_length = 0u;
-      g_transceiver.result = T_RESULT_TX_OK;
+      g_transceiver.result = T_RESULT_OK;
       memset(&g_timing, 0, sizeof(g_timing));
 
       // Prepare the UART
@@ -1197,6 +1284,7 @@ void Transceiver_Tasks() {
           break;
         case OP_RDM_DUB_RESPONSE:
         case OP_RDM_RESEPONSE:
+        case OP_SELF_TEST:
         case OP_RX:
           // Noop
           {}
@@ -1207,6 +1295,8 @@ void Transceiver_Tasks() {
         g_transceiver.state = STATE_C_TX_READY;
       }
       break;
+
+    // Responder States
     case STATE_R_INITIALIZE:
       // This is done once when we switch to Responder mode
       // Reset the UART
@@ -1268,8 +1358,7 @@ void Transceiver_Tasks() {
         PLIB_IC_Disable(g_hw_settings.input_capture_module);
         PLIB_TMR_Stop(g_hw_settings.timer_module_id);
         FreeActiveBuffer();
-        SysLog_Print(SYSLOG_INFO, "Switched to controller mode");
-        g_transceiver.state = STATE_C_INITIALIZE;
+        SwitchMode();
         break;
       }
       SYS_INT_SourceEnable(g_hw_settings.input_capture_source);
@@ -1332,10 +1421,72 @@ void Transceiver_Tasks() {
       g_transceiver.data_index = 0u;
       g_transceiver.state = STATE_R_RX_PREPARE;
       break;
+
+    // Self Test States
+    case STATE_T_INITIALIZE:
+      PLIB_USART_TransmitterDisable(g_hw_settings.usart);
+      UART_FlushRX();
+      SYS_INT_SourceDisable(g_hw_settings.usart_tx_source);
+      SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+      SYS_INT_SourceStatusClear(g_hw_settings.usart_tx_source);
+      SYS_INT_SourceStatusClear(g_hw_settings.usart_tx_source);
+      PLIB_USART_TransmitterInterruptModeSelect(g_hw_settings.usart,
+                                                USART_TRANSMIT_FIFO_EMPTY);
+      PLIB_USART_Enable(g_hw_settings.usart);
+
+      // Setup loopback
+      PLIB_PORTS_PinClear(PORTS_ID_0,
+                          g_hw_settings.port,
+                          g_hw_settings.rx_enable_bit);
+      PLIB_PORTS_PinSet(PORTS_ID_0,
+                        g_hw_settings.port,
+                        g_hw_settings.tx_enable_bit);
+
+      g_transceiver.state = STATE_T_TX_READY;
+      // Fall through
+    case STATE_T_TX_READY:
+      if (g_transceiver.desired_mode != T_MODE_SELF_TEST) {
+        SwitchMode();
+        return;
+      }
+      if (!g_transceiver.next) {
+        return;
+      }
+      TakeNextBuffer();
+      g_transceiver.data_index = 0;
+      g_transceiver.tx_frame_start = CoarseTimer_GetTime();
+      g_transceiver.state = STATE_T_RX_WAIT;
+
+      SYS_INT_SourceStatusClear(g_hw_settings.usart_rx_source);
+      SYS_INT_SourceEnable(g_hw_settings.usart_rx_source);
+      PLIB_USART_ReceiverEnable(g_hw_settings.usart);
+      PLIB_USART_TransmitterEnable(g_hw_settings.usart);
+      PLIB_USART_TransmitterByteSend(g_hw_settings.usart, SELF_TEST_VALUE);
+      // Fall through
+    case STATE_T_RX_WAIT:
+      if (CoarseTimer_HasElapsed(g_transceiver.tx_frame_start,
+                                 SELF_TEST_TIMEOUT)) {
+        SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+        g_transceiver.state = STATE_T_VERIFY;
+      }
+      break;
+    case STATE_T_VERIFY:
+      SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+      PLIB_USART_ReceiverDisable(g_hw_settings.usart);
+      PLIB_USART_TransmitterDisable(g_hw_settings.usart);
+
+      g_transceiver.result = T_RESULT_SELF_TEST_FAILED;
+      if (g_transceiver.data_index > 0 &&
+          g_transceiver.active->data[0] == SELF_TEST_VALUE) {
+        g_transceiver.result = T_RESULT_OK;
+      }
+      FrameComplete();
+      FreeActiveBuffer();
+      g_transceiver.state = STATE_T_TX_READY;
+      break;
+
     case STATE_RESET:
-      g_transceiver.mode = g_transceiver.desired_mode;
-      g_transceiver.state = (g_transceiver.mode == T_MODE_RESPONDER ?
-          STATE_R_INITIALIZE : STATE_C_INITIALIZE);
+      SwitchMode();
       break;
     case STATE_ERROR:
       break;
@@ -1351,10 +1502,18 @@ void Transceiver_Tasks() {
  * @param size The number of slots.
  * @returns true if the operation was queued, false if the buffer was full.
  */
-bool Transceiver_QueueFrame(uint8_t token, uint8_t start_code,
+bool Transceiver_QueueFrame(int16_t token, uint8_t start_code,
                             InternalOperation op, const uint8_t* data,
                             unsigned int size) {
-  if (g_transceiver.mode == T_MODE_RESPONDER || g_transceiver.free_size == 0u) {
+  if (g_transceiver.free_size == 0u) {
+    return false;
+  }
+
+  if (op == OP_SELF_TEST) {
+    if (g_transceiver.mode != T_MODE_SELF_TEST) {
+      return false;
+    }
+  } else if (g_transceiver.mode != T_MODE_CONTROLLER) {
     return false;
   }
 
@@ -1369,30 +1528,32 @@ bool Transceiver_QueueFrame(uint8_t token, uint8_t start_code,
   g_transceiver.next->token = token;
   g_transceiver.next->data[0] = start_code;
   SysLog_Print(SYSLOG_INFO, "Start code %d", start_code);
-  memcpy(&g_transceiver.next->data[1], data, size);
+  if (size) {
+    memcpy(&g_transceiver.next->data[1], data, size);
+  }
   return true;
 }
 
-bool Transceiver_QueueDMX(uint8_t token, const uint8_t* data,
+bool Transceiver_QueueDMX(int16_t token, const uint8_t* data,
                           unsigned int size) {
   return Transceiver_QueueFrame(
       token, NULL_START_CODE, OP_TX_ONLY, data, size);
 }
 
-bool Transceiver_QueueASC(uint8_t token, uint8_t start_code,
+bool Transceiver_QueueASC(int16_t token, uint8_t start_code,
                           const uint8_t* data, unsigned int size) {
   return Transceiver_QueueFrame(
       token, start_code, OP_TX_ONLY, data, size);
 }
 
-bool Transceiver_QueueRDMDUB(uint8_t token, const uint8_t* data,
+bool Transceiver_QueueRDMDUB(int16_t token, const uint8_t* data,
                              unsigned int size) {
   return Transceiver_QueueFrame(
       token, RDM_START_CODE, OP_RDM_DUB,
       data, size);
 }
 
-bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
+bool Transceiver_QueueRDMRequest(int16_t token, const uint8_t* data,
                                  unsigned int size, bool is_broadcast) {
   return Transceiver_QueueFrame(
       token, RDM_START_CODE,
@@ -1403,7 +1564,7 @@ bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
 bool Transceiver_QueueRDMResponse(bool include_break,
                                   const IOVec* data,
                                   unsigned int iov_count) {
-  if (g_transceiver.free_size == 0u) {
+  if (g_transceiver.mode != T_MODE_RESPONDER || g_transceiver.free_size == 0u) {
     return false;
   }
 
@@ -1430,6 +1591,10 @@ bool Transceiver_QueueRDMResponse(bool include_break,
   return true;
 }
 
+bool Transceiver_QueueSelfTest(int16_t token) {
+  return Transceiver_QueueFrame(token, 0, OP_SELF_TEST, NULL, 0);
+}
+
 /*
  *  This is called by the MessageHandler, so we know we're not in _Tasks or an
  *  ISR.
@@ -1442,8 +1607,6 @@ void Transceiver_Reset() {
   SYS_INT_SourceStatusClear(g_hw_settings.usart_rx_source);
   SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
   SYS_INT_SourceStatusClear(g_hw_settings.usart_error_source);
-
-  InitializeBuffers();
 
   // Reset Timer
   SYS_INT_SourceDisable(g_hw_settings.timer_source);

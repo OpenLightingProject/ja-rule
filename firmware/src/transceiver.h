@@ -23,26 +23,48 @@
  *
  * This module handles communications on the RS485 line.
  *
- * The transceiver can be in either controller or responder mode. Modes can be
- * changed with Transceiver_SetMode().
+ * The general model is that a client initiates a transceiver operation, passing
+ * in a token (cookie) to identify the operation. When the transceiver
+ * operation completes, the appropriate TransceiverEventCallback is run, which
+ * receives the same token and any operation-specific data. This allows the
+ * client to associate the callback with the original request that generated
+ * the event.
+ *
+ * If a TRANSCEIVER_NO_NOTIFICATION is used for the token, the callback will
+ * not be run.
+ *
+ * The transceiver can operate in various modes:
+ *  - DMX / RDM Controller
+ *  - DMX / RDM Receiver
+ *  - Self Test
+ *
+ * Since we may be in the middle of performing an operation when the mode
+ * change request occurs, the Transceiver_SetMode() function takes a token
+ * argument. When the mode change completes, a T_OP_MODE_CHANGE event will
+ * occur.
  *
  * @par Controller Mode
  *
- * In controller mode, operations can be triggered by calling one of:
+ * In controller mode, clients can send E1.11 frames by calling one of:
  *  - Transceiver_QueueDMX();
  *  - Transceiver_QueueASC();
  *  - Transceiver_QueueRDMDUB();
  *  - Transceiver_QueueRDMRequest();
  *
- * When the operation completes, the TransceiverEventCallback will be run, with
- * the result of the operation. See @ref controller-overview
- * "Controller State Machine".
+ * See @ref controller-overview "Controller State Machine".
  *
  * @par Responder Mode
  *
  * In responder mode, the TransceiverEventCallback will be run when a frame is
- *   received. The handler should call Transceiver_QueueRDMResponse() to send a
- *   response frame. See @ref responder-overview "Responder State Machine".
+ * received. The handler should call Transceiver_QueueRDMResponse() to send a
+ * response frame. See @ref responder-overview "Responder State Machine".
+ *
+ * @par Self Test Mode
+ *
+ * This puts the E1.11 driver circuit into loopback mode and allows the client
+ * to call Transceiver_QueueSelfTest(). The self test operation will send a
+ * single byte which can be used to confirm the driver circuit is working
+ * correctly.
  *
  * @addtogroup transceiver
  * @{
@@ -69,36 +91,41 @@ extern "C" {
 #endif
 
 /**
+ * @brief Suppress event notifications
+ *
+ * This value can be used as a token to avoid the event handler notification.
+ */
+extern const int16_t TRANSCEIVER_NO_NOTIFICATION;
+
+/**
  * @brief The operating modes of the transciever.
  */
 typedef enum {
-  T_MODE_CONTROLLER,  //!< An RDM controller / source of DMX512
-  T_MODE_RESPONDER,  //!< An RDM device / receiver of DMX512.
+  T_MODE_CONTROLLER,  //!< An RDM controller and/or source of DMX512
+  T_MODE_RESPONDER,  //!< An RDM device and/or receiver of DMX512.
+  T_MODE_SELF_TEST,  //!< Self test mode.
+  T_MODE_LAST  //!< The first 'undefined' mode
 } TransceiverMode;
 
 /**
- * @brief Identifies the type of transceiver operation.
- *
- * Certain start-codes such as RDM may result in bi-directional communication.
- * There is also a difference between DUB response and normal GET/SET responses
- * as the latter require a break.
+ * @brief Identifies the various types of transceiver operation.
  */
 typedef enum {
   T_OP_TX_ONLY,  //!< No response (DMX512) or ASC.
   T_OP_RDM_DUB,  //!< An RDM Discovery Unique Branch
   T_OP_RDM_BROADCAST,  //!< A broadcast Get / Set Request.
   T_OP_RDM_WITH_RESPONSE,  //!< A RDM Get / Set Request.
-  T_OP_RX  //!< Receive mode.
+  T_OP_RX,  //!< Receive mode.
+  T_OP_MODE_CHANGE,  //!< Mode change complete
+  T_OP_SELF_TEST  //!< Self test complete
 } TransceiverOperation;
 
 /**
  * @brief The result of an operation.
  */
 typedef enum {
-  /**
-   * @brief The frame was sent sucessfully and no response was expected.
-   */
-  T_RESULT_TX_OK,
+  T_RESULT_OK,  //!< The operation completed sucessfully.
+
   T_RESULT_TX_ERROR,  //!< A TX error occurred.
   T_RESULT_RX_DATA,  //!< Data was received.
   T_RESULT_RX_TIMEOUT,  //!< No response was received within the RDM wait time.
@@ -110,7 +137,10 @@ typedef enum {
   /**
    * @brief The frame timed out (inter-slot delay exceeded)
    */
-  T_RESULT_RX_FRAME_TIMEOUT
+  T_RESULT_RX_FRAME_TIMEOUT,
+
+  T_RESULT_CANCELLED,  //!< The operation was cancelled
+  T_RESULT_SELF_TEST_FAILED  //!< The test failed.
 } TransceiverOperationResult;
 
 /**
@@ -152,7 +182,7 @@ typedef union {
 } TransceiverTiming;
 
 /**
- * @brief A transceiver event.
+ * @brief Information about a transceiver event.
  *
  * In controller mode an event occurs when:
  *  - A DMX frame has been completely sent.
@@ -173,7 +203,7 @@ typedef struct {
    *
    * In responder mode, the token will be 0.
    */
-  uint8_t token;
+  int16_t token;
 
   /**
    * @brief The type of operation that triggered the event.
@@ -254,11 +284,16 @@ void Transceiver_Initialize(const TransceiverHardwareSettings *settings,
 /**
  * @brief Change the operating mode of the transceiver.
  * @param mode the new operating mode.
+ * @param token The token passed to the TransceiverEventCallback when the mode
+ *   change completes.
+ * @returns True if the mode change is queued, false if there was already
+ *   another mode change pending or the device is already in the requested
+ *   mode.
  *
  * After any in-progress operation completes, then next call to
  * Transceiver_Tasks() will result in the mode change.
  */
-void Transceiver_SetMode(TransceiverMode mode);
+bool Transceiver_SetMode(TransceiverMode mode, int16_t token);
 
 /**
  * @brief The operating mode of the transceiver.
@@ -281,7 +316,7 @@ void Transceiver_Tasks();
  * @returns true if the frame was accepted and buffered, false if the transmit
  *   buffer is full.
  */
-bool Transceiver_QueueDMX(uint8_t token, const uint8_t* data,
+bool Transceiver_QueueDMX(int16_t token, const uint8_t* data,
                           unsigned int size);
 
 /**
@@ -293,7 +328,7 @@ bool Transceiver_QueueDMX(uint8_t token, const uint8_t* data,
  * @returns true if the frame was accepted and buffered, false if the transmit
  *   buffer is full.
  */
-bool Transceiver_QueueASC(uint8_t token, uint8_t start_code,
+bool Transceiver_QueueASC(int16_t token, uint8_t start_code,
                           const uint8_t* data, unsigned int size);
 
 /**
@@ -304,7 +339,7 @@ bool Transceiver_QueueASC(uint8_t token, uint8_t start_code,
  * @returns true if the frame was accepted and buffered, false if the transmit
  *   buffer is full.
  */
-bool Transceiver_QueueRDMDUB(uint8_t token, const uint8_t* data,
+bool Transceiver_QueueRDMDUB(int16_t token, const uint8_t* data,
                              unsigned int size);
 
 /**
@@ -316,7 +351,7 @@ bool Transceiver_QueueRDMDUB(uint8_t token, const uint8_t* data,
  * @returns true if the frame was accepted and buffered, false if the transmit
  *   buffer is full.
  */
-bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
+bool Transceiver_QueueRDMRequest(int16_t token, const uint8_t* data,
                                  unsigned int size, bool is_broadcast);
 
 /**
@@ -330,6 +365,12 @@ bool Transceiver_QueueRDMRequest(uint8_t token, const uint8_t* data,
 bool Transceiver_QueueRDMResponse(bool include_break,
                                   const IOVec* iov,
                                   unsigned int iov_count);
+
+
+/**
+ * @brief Schedule a loopback self test.
+ */
+bool Transceiver_QueueSelfTest(int16_t token);
 
 /**
  * @brief Reset the transceiver state.
