@@ -35,7 +35,7 @@
  *
  * The transceiver can operate in various modes:
  *  - DMX / RDM Controller
- *  - DMX / RDM receiver
+ *  - DMX / RDM Receiver
  *  - Self Test
  *
  * Since we may be in the middle of performing an operation when the mode
