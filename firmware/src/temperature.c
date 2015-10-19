@@ -28,7 +28,7 @@
 #include "app_settings.h"
 
 static const uint16_t SAMPLING_PERIOD = 10000;  // 1s
-// Recalibrate every 5 minutes
+// Recalibrate every N SAMPLES - 5 minutes
 static const uint16_t CALIBRATION_CYCLE_LIMIT = 300;
 
 // The conversion function is:
