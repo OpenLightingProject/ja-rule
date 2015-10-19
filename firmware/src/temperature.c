@@ -28,6 +28,8 @@
 #include "app_settings.h"
 
 static const uint16_t SAMPLING_PERIOD = 10000;  // 1s
+// Recalibrate every N SAMPLES - 5 minutes
+static const uint16_t CALIBRATION_CYCLE_LIMIT = 300;
 
 // The conversion function is:
 //   temp [deci-degrees] = m * sampled_value + c
@@ -46,21 +48,23 @@ static const float CONVERSION_OFFSET = -205.128;
 
 static CoarseTimer_Value g_timer;
 
+// The number of samples since the last calibration.
+static uint8_t g_sample_count = 0;
+
 struct {
+  uint16_t offset;  //!< The calibration offset
   bool new_sample;  //!< true if there is a new sample
   uint16_t sample_value;  //!< The raw sampled value
   uint16_t temperature;  //!< The temperature in 10ths of a degree.
 } g_adc_data;
 
 void __ISR(_ADC_VECTOR, ipl1AUTO) ADCEvent() {
-  // AD1CON1bits.ASAM = 0;
-  PLIB_ADC_SampleAutoStartDisable(ADC_ID_1);
-  SYS_INT_SourceStatusClear(INT_SOURCE_ADC_1);
-  SYS_INT_SourceDisable(INT_SOURCE_ADC_1);
-  g_adc_data.new_sample = true;
-
-  // g_adc_data.value = ADC1BUF0;
+  // Read the value from ADC1BUF0
   g_adc_data.sample_value = PLIB_ADC_ResultGetByIndex(ADC_ID_1, 0);
+
+  SYS_INT_SourceDisable(INT_SOURCE_ADC_1);
+  SYS_INT_SourceStatusClear(INT_SOURCE_ADC_1);
+  g_adc_data.new_sample = true;
 }
 
 void Temperature_Init() {
@@ -95,8 +99,8 @@ void Temperature_Init() {
   PLIB_ADC_MuxAInputScanDisable(ADC_ID_1);
   PLIB_ADC_SamplesPerInterruptSelect(ADC_ID_1, ADC_1SAMPLE_PER_INTERRUPT);
 
-  // AD1CON1bits.ADON = 1;
-  PLIB_ADC_Enable(ADC_ID_1);
+  // Stop auto-sample after the interrupt
+  PLIB_ADC_ConversionStopSequenceEnable(ADC_ID_1);
 
   SYS_INT_VectorPrioritySet(INT_VECTOR_AD1, INT_PRIORITY_LEVEL1);
   SYS_INT_VectorSubprioritySet(INT_VECTOR_AD1, INT_SUBPRIORITY_LEVEL1);
@@ -111,6 +115,13 @@ uint16_t Temperature_GetValue(TemperatureSensor sensor) {
 void Temperature_Tasks() {
 #ifdef RDM_RESPONDER_TEMPERATURE_SENSOR
   if (CoarseTimer_HasElapsed(g_timer, SAMPLING_PERIOD)) {
+    if (g_sample_count == 0) {
+      PLIB_ADC_CalibrationEnable(ADC_ID_1);
+    } else {
+      PLIB_ADC_CalibrationDisable(ADC_ID_1);
+    }
+    PLIB_ADC_Enable(ADC_ID_1);
+
     SYS_INT_SourceStatusClear(INT_SOURCE_ADC_1);
     SYS_INT_SourceEnable(INT_SOURCE_ADC_1);
 
@@ -120,9 +131,21 @@ void Temperature_Tasks() {
   }
 
   if (g_adc_data.new_sample) {
+    PLIB_ADC_Disable(ADC_ID_1);
     g_adc_data.new_sample = false;
-    g_adc_data.temperature = CONVERSION_MULTIPLIER * g_adc_data.sample_value +
-        CONVERSION_OFFSET;
+
+    if (g_sample_count == 0) {
+      g_adc_data.offset = g_adc_data.sample_value;
+    } else {
+      g_adc_data.temperature =
+        CONVERSION_MULTIPLIER * (g_adc_data.sample_value  - g_adc_data.offset) +
+          CONVERSION_OFFSET;
+    }
+
+    g_sample_count++;
+    if (g_sample_count >= CALIBRATION_CYCLE_LIMIT) {
+      g_sample_count = 0;
+    }
   }
 #endif
 }
