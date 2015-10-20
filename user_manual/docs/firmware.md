@@ -15,7 +15,7 @@ The **Bootloader** is a mode that allows the firmware to be written to the board
 To enter the Bootloader mode press and hold the button on the board when powering up. If you are successful the top LED will be solid and the bottom three LEDS will flash together
 
 ## Flash Firmware {#update-flash}
-Download the latest firmware package from [firmware] and note its location
+Download the latest firmware package from [github] and note its location
 ### On Linux {#update-flash-linux}
 Download the **dfu-util** application using
 
@@ -40,4 +40,4 @@ MPLAB IPE
 
 ## Steps {#bootloader-update-steps}
 
-[firmware]:	http://dl.openlighting.org	"firmware"
+[github]:	https://github.com/OpenLightingProject/ja-rule/releases	"github"
