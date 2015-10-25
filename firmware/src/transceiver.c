@@ -404,7 +404,7 @@ static void TakeNextBuffer() {
 
 // Event Handler functions
 // ----------------------------------------------------------------------------
-static inline void RunEventHandler(TransceiverEvent *event) {
+static inline void RunTXEventHandler(TransceiverEvent *event) {
   if (event->token < 0) {
     return;
   }
@@ -414,6 +414,16 @@ static inline void RunEventHandler(TransceiverEvent *event) {
 #else
   if (g_tx_callback) {
     g_tx_callback(event);
+  }
+#endif
+}
+
+static inline void RunRXEventHandler(TransceiverEvent *event) {
+#ifdef PIPELINE_TRANSCEIVER_RX_EVENT
+  PIPELINE_TRANSCEIVER_RX_EVENT(event);
+#else
+  if (g_rx_callback) {
+    g_rx_callback(event);
   }
 #endif
 }
@@ -440,7 +450,7 @@ static inline void FrameComplete() {
     length,
     &g_timing
   };
-  RunEventHandler(&event);
+  RunTXEventHandler(&event);
 }
 
 /*
@@ -456,7 +466,7 @@ static inline void RXFrameEvent() {
     g_transceiver.data_index,
     &g_timing
   };
-  RunEventHandler(&event);
+  RunRXEventHandler(&event);
 }
 
 /*
@@ -471,7 +481,7 @@ static inline void RXEndFrameEvent() {
     0u,
     &g_timing
   };
-  RunEventHandler(&event);
+  RunRXEventHandler(&event);
 }
 
 // Operating Mode management
@@ -504,7 +514,7 @@ static void SwitchMode() {
     T_RESULT_OK,
     NULL, 0, NULL
   };
-  RunEventHandler(&event);
+  RunTXEventHandler(&event);
 }
 
 // ----------------------------------------------------------------------------
