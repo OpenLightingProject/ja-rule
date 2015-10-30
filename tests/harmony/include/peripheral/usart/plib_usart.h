@@ -94,8 +94,6 @@ void PLIB_USART_HandshakeModeSelect(USART_MODULE_ID index,
 void PLIB_USART_OperationModeSelect(USART_MODULE_ID index,
                                     USART_OPERATION_MODE operationmode);
 
-void PLIB_USART_SyncModeSelect(USART_MODULE_ID index, USART_SYNC_MODES mode);
-
 void PLIB_USART_LineControlModeSelect(USART_MODULE_ID index,
                                       USART_LINECONTROL_MODE dataFlowConfig);
 
