@@ -72,7 +72,7 @@ class PeripheralUART : public PeripheralUSARTInterface {
   Simulator *m_simulator;
   InterruptController *m_interrupt_controller;
   TXCallback *m_tx_callback;
-  std::auto_ptr<ola::Callback0<void>> m_callback;
+  std::unique_ptr<ola::Callback0<void>> m_callback;
 
   enum UARTState {
     IDLE,

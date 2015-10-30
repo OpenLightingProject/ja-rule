@@ -54,7 +54,7 @@ class PeripheralTimer : public PeripheralTimerInterface {
  private:
   Simulator *m_simulator;
   InterruptController *m_interrupt_controller;
-  std::auto_ptr<ola::Callback0<void>> m_callback;
+  std::unique_ptr<ola::Callback0<void>> m_callback;
 
   struct Timer {
    public:
