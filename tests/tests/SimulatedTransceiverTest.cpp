@@ -24,8 +24,9 @@
 #include <vector>
 
 #include "Array.h"
-#include "transceiver.h"
+#include "dmx_spec.h"
 #include "setting_macros.h"
+#include "transceiver.h"
 
 #include "tests/sim/InterruptController.h"
 #include "tests/sim/PeripheralInputCapture.h"
@@ -57,13 +58,14 @@ MATCHER_P3(EventIs, token, op, result, "") {
   return arg->token == token && arg->op == op && arg->result == result;
 }
 
-MATCHER_P2(MatchesFrame, expected_data, expected_length, "") {
+MATCHER_P3(MatchesFrame, start_code, expected_data, expected_length, "") {
   if (arg.empty()) {
     *result_listener << "Frame is empty";
     return false;
   }
-  if (arg[0] != 0) {
-    *result_listener << "Non-0 start code";
+  if (arg[0] != start_code) {
+    *result_listener << "Start code mismatch, was " << static_cast<int>(arg[0])
+                     << ", expected " << static_cast<int>(start_code);
     return false;
   }
   if (arg.size() != expected_length + 1) {
@@ -131,6 +133,9 @@ class TransceiverTest : public testing::Test {
         NewCallback(&Transceiver_UARTEvent));
 
     m_simulator.AddTask(ola::NewCallback(&Transceiver_Tasks));
+
+    TransceiverHardwareSettings settings = DefaultSettings();
+    Transceiver_Initialize(&settings, &EventHandler, &EventHandler);
   }
 
   void TearDown() {
@@ -196,9 +201,6 @@ void TransceiverTest::SwitchToControllerMode() {
 //    get a cancel
 
 TEST_F(TransceiverTest, txDMXFrame) {
-  TransceiverHardwareSettings settings = DefaultSettings();
-  Transceiver_Initialize(&settings, &EventHandler, &EventHandler);
-
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -211,5 +213,56 @@ TEST_F(TransceiverTest, txDMXFrame) {
   Transceiver_QueueDMX(1, dmx, arraysize(dmx));
   m_simulator.Run();
 
-  EXPECT_THAT(m_sent_bytes, MatchesFrame(dmx, arraysize(dmx)));
+  EXPECT_THAT(m_sent_bytes, MatchesFrame(NULL_START_CODE, dmx, arraysize(dmx)));
+}
+
+TEST_F(TransceiverTest, txShortDMXFrame) {
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  Transceiver_QueueDMX(1, nullptr, 0);
+  m_simulator.Run();
+
+  const uint8_t dmx[] = {};
+  EXPECT_THAT(m_sent_bytes, MatchesFrame(NULL_START_CODE, dmx, 0ul));
+}
+
+TEST_F(TransceiverTest, txJumboDMXFrame) {
+  SwitchToControllerMode();
+
+  uint8_t dmx[1024];
+  memset(dmx, 255, arraysize(dmx));
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  Transceiver_QueueDMX(1, dmx, arraysize(dmx));
+  m_simulator.Run();
+
+  // Limited to 512 slots
+  EXPECT_THAT(m_sent_bytes, MatchesFrame(NULL_START_CODE, dmx, 512ul));
+}
+
+TEST_F(TransceiverTest, txASCFrame) {
+  const uint8_t ASC = 0xdd;
+  SwitchToControllerMode();
+
+  const uint8_t asc_frame[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  Transceiver_QueueASC(1, ASC, asc_frame, arraysize(asc_frame));
+  m_simulator.Run();
+
+  EXPECT_THAT(m_sent_bytes, MatchesFrame(ASC, asc_frame, arraysize(asc_frame)));
 }
