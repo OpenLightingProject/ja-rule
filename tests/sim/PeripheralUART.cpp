@@ -248,7 +248,7 @@ void PeripheralUART::OperationModeSelect(
   if (index >= m_uarts.size()) {
     FAIL() << "Invalid UART " << index;
   }
-  if (operationmode != USART_ENABLE_TX_RX_USED) {
+  if (operationMode != USART_ENABLE_TX_RX_USED) {
     FAIL() << "Unimplemented operation mode: " << operationMode;
   }
 }
