@@ -20,10 +20,16 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <ola/rdm/UID.h>
+#include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMCommandSerializer.h>
+#include <ola/rdm/RDMEnums.h>
 
 #include <vector>
 
 #include "Array.h"
+#include "coarse_timer.h"
+#include "constants.h"
 #include "dmx_spec.h"
 #include "setting_macros.h"
 #include "transceiver.h"
@@ -34,12 +40,16 @@
 #include "tests/sim/PeripheralUART.h"
 #include "tests/sim/Simulator.h"
 
-using ola::NewCallback;
-using ::testing::StrictMock;
-using ::testing::Return;
 using ::testing::DoAll;
 using ::testing::InvokeWithoutArgs;
+using ::testing::Return;
+using ::testing::StrictMock;
 using ::testing::_;
+using ola::NewCallback;
+using ola::rdm::NewDiscoveryUniqueBranchRequest;
+using ola::rdm::RDMDiscoveryRequest;
+using ola::rdm::RDMGetRequest;
+using ola::rdm::UID;
 using std::vector;
 
 #ifdef __cplusplus
@@ -105,7 +115,8 @@ class TransceiverTest : public testing::Test {
         m_simulator(80000000),  // 1s of CPU runtime.
         m_timer(&m_simulator, &m_interrupt_controller),
         m_ic(&m_simulator, &m_interrupt_controller),
-        m_uart(&m_simulator, &m_interrupt_controller, m_tx_callback.get()) {
+        m_uart(&m_simulator, &m_interrupt_controller, m_tx_callback.get()),
+        m_controller_uid(0x7a70, 0) {
   }
 
   void GotByte(USART_MODULE_ID uart_id, uint8_t byte) {
@@ -121,6 +132,8 @@ class TransceiverTest : public testing::Test {
     PLIB_USART_SetMock(&m_uart);
     SYS_INT_SetMock(&m_interrupt_controller);
 
+    m_interrupt_controller.RegisterISR(INT_SOURCE_TIMER_1,
+        NewCallback(&CoarseTimer_TimerEvent));
     m_interrupt_controller.RegisterISR(INT_SOURCE_TIMER_3,
         NewCallback(&Transceiver_TimerEvent));
     m_interrupt_controller.RegisterISR(INT_SOURCE_INPUT_CAPTURE_2,
@@ -136,6 +149,12 @@ class TransceiverTest : public testing::Test {
 
     TransceiverHardwareSettings settings = DefaultSettings();
     Transceiver_Initialize(&settings, &EventHandler, &EventHandler);
+
+    CoarseTimer_Settings timer_settings = {
+      .timer_id = AS_TIMER_ID(1),
+      .interrupt_source = AS_TIMER_INTERRUPT_SOURCE(1)
+    };
+    CoarseTimer_Initialize(&timer_settings);
   }
 
   void TearDown() {
@@ -176,6 +195,8 @@ class TransceiverTest : public testing::Test {
   PeripheralTimer m_timer;
   PeripheralInputCapture m_ic;
   PeripheralUART m_uart;
+
+  UID m_controller_uid;
 
   StrictMock<MockEventHandler> m_event_handler;
 
@@ -265,4 +286,48 @@ TEST_F(TransceiverTest, txASCFrame) {
   m_simulator.Run();
 
   EXPECT_THAT(m_sent_bytes, MatchesFrame(ASC, asc_frame, arraysize(asc_frame)));
+}
+
+TEST_F(TransceiverTest, txRDMBroadcast) {
+  SwitchToControllerMode();
+
+  RDMGetRequest get_request(m_controller_uid, UID::AllDevices(), 0, 0, 0,
+                            ola::rdm::PID_DEVICE_INFO, nullptr, 0);
+
+  ola::io::ByteString data;
+  EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(get_request, &data));
+
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_BROADCAST, T_RESULT_RX_TIMEOUT)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  Transceiver_QueueRDMRequest(1, data.data(), data.size(), true);
+  m_simulator.Run();
+
+  EXPECT_THAT(m_sent_bytes,
+              MatchesFrame(RDM_START_CODE, data.data(), data.size()));
+}
+
+TEST_F(TransceiverTest, txRDMDUBNoResponse) {
+  SwitchToControllerMode();
+
+  std::unique_ptr<RDMDiscoveryRequest> request(NewDiscoveryUniqueBranchRequest(
+      m_controller_uid, UID(0, 0), UID::AllDevices(), 0, 0));
+
+  ola::io::ByteString data;
+  EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*(request.get()), &data));
+
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_DUB, T_RESULT_RX_TIMEOUT)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  Transceiver_QueueRDMDUB(1, data.data(), data.size());
+  m_simulator.Run();
+
+  EXPECT_THAT(m_sent_bytes,
+              MatchesFrame(RDM_START_CODE, data.data(), data.size()));
 }

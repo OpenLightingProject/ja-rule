@@ -78,7 +78,7 @@ void PeripheralInputCapture::Tick() {
       continue;
     }
     // See 15.7.2 Interrupt Persistence
-    if (ic.buffer.size() >= ic.events_per_interrupt) {
+    if (ic.buffer.size() > ic.events_per_interrupt) {
       m_interrupt_controller->RaiseInterrupt(ic.interrupt_source);
     }
   }

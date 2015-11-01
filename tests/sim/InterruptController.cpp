@@ -1,4 +1,5 @@
 /*
+
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -49,6 +50,10 @@ void InterruptController::RaiseInterrupt(INT_SOURCE source) {
   // printf("Raised int %d\n", source);
   Interrupt *interrupt = GetInterrupt(source);
   interrupt->active = true;
+  if (!interrupt->enabled) {
+    return;
+  }
+
   while (interrupt->active) {
     if (interrupt->callback) {
       // The ISR is responsible for clearing the active flag

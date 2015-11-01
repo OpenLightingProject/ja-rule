@@ -230,13 +230,14 @@ tests_tests_transceiver_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
 
 tests_tests_simulated_transceiver_test_SOURCES = \
     tests/tests/SimulatedTransceiverTest.cpp
-tests_tests_simulated_transceiver_test_CXXFLAGS = $(TESTING_CXXFLAGS)
+tests_tests_simulated_transceiver_test_CXXFLAGS = \
+    $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
 tests_tests_simulated_transceiver_test_LDADD = \
-    $(GMOCK_LIBS) $(GTEST_LIBS) \
+    $(GMOCK_LIBS) $(GTEST_LIBS) $(OLA_LIBS) \
     tests/sim/libsim.la \
     firmware/src/libtransceiver.la \
+    firmware/src/libcoarsetimer.la \
     tests/harmony/mocks/libharmonymock.la \
-    tests/mocks/libcoarsetimermock.la \
     tests/mocks/libsyslogmock.la
 
 tests_tests_utils_test_SOURCES = tests/tests/UtilsTest.cpp
