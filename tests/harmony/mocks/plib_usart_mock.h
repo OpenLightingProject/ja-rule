@@ -26,7 +26,7 @@ class PeripheralUSARTInterface {
   virtual void HandshakeModeSelect(USART_MODULE_ID index,
                                    USART_HANDSHAKE_MODE handshakeConfig) = 0;
   virtual void OperationModeSelect(USART_MODULE_ID index,
-                                   USART_OPERATION_MODE operationmode) = 0;
+                                   USART_OPERATION_MODE operationMode) = 0;
   virtual void LineControlModeSelect(USART_MODULE_ID index,
                                      USART_LINECONTROL_MODE dataFlowConfig) = 0;
   virtual USART_ERROR ErrorsGet(USART_MODULE_ID index) = 0;
@@ -54,7 +54,7 @@ class MockPeripheralUSART : public PeripheralUSARTInterface {
                void(USART_MODULE_ID index,
                     USART_HANDSHAKE_MODE handshakeConfig));
   MOCK_METHOD2(OperationModeSelect,
-               void(USART_MODULE_ID index, USART_OPERATION_MODE operationmode));
+               void(USART_MODULE_ID index, USART_OPERATION_MODE operationMode));
   MOCK_METHOD2(LineControlModeSelect,
                void(USART_MODULE_ID index,
                     USART_LINECONTROL_MODE dataFlowConfig));
