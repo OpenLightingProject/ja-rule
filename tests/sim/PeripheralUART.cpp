@@ -223,7 +223,8 @@ void PeripheralUART::ReceiverDisable(USART_MODULE_ID index) {
 }
 
 void PeripheralUART::TransmitterInterruptModeSelect(
-    USART_MODULE_ID index, USART_TRANSMIT_INTR_MODE fifolevel) {
+    USART_MODULE_ID index,
+    USART_TRANSMIT_INTR_MODE fifolevel) {
   if (index >= m_uarts.size()) {
     FAIL() << "Invalid UART " << index;
   }
@@ -243,12 +244,12 @@ void PeripheralUART::HandshakeModeSelect(
 
 void PeripheralUART::OperationModeSelect(
     USART_MODULE_ID index,
-    USART_OPERATION_MODE operationmode) {
+    USART_OPERATION_MODE operationMode) {
   if (index >= m_uarts.size()) {
     FAIL() << "Invalid UART " << index;
   }
   if (operationmode != USART_ENABLE_TX_RX_USED) {
-    FAIL() << "Unimplemented operation  mode: " << operationmode;
+    FAIL() << "Unimplemented operation mode: " << operationMode;
   }
 }
 
