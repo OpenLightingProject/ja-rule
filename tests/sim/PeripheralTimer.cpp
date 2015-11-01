@@ -118,7 +118,7 @@ void PeripheralTimer::Period16BitSet(TMR_MODULE_ID index, uint16_t period) {
     timer->period = period;
   } else {
     FAIL() << "Period modifed while timer " << static_cast<int>(index)
-           << "was active";
+           << " was active";
   }
 }
 
@@ -148,7 +148,7 @@ void PeripheralTimer::PrescaleSelect(TMR_MODULE_ID index,
   Timer *timer = &m_timers[index];
   if (timer->enabled) {
     FAIL() << "Prescale modifed while timer " << static_cast<int>(index)
-           << "was active";
+           << " was active";
   } else {
     timer->prescale = prescale;
   }
@@ -162,7 +162,7 @@ void PeripheralTimer::CounterAsyncWriteDisable(TMR_MODULE_ID index) {
   const Timer &timer = m_timers[index];
   if (timer.enabled) {
     FAIL() << "CounterAsyncWrite modifed while timer "
-           << static_cast<int>(index) << "was active";
+           << static_cast<int>(index) << " was active";
   }
 }
 
@@ -175,7 +175,7 @@ void PeripheralTimer::ClockSourceSelect(TMR_MODULE_ID index,
   const Timer &timer = m_timers[index];
   if (timer.enabled) {
     FAIL() << "ClockSource modifed while timer "
-           << static_cast<int>(index) << "was active";
+           << static_cast<int>(index) << " was active";
   }
 }
 
@@ -187,7 +187,7 @@ void PeripheralTimer::Mode16BitEnable(TMR_MODULE_ID index) {
   const Timer &timer = m_timers[index];
   if (timer.enabled) {
     FAIL() << "Mode16BitEnable modifed while timer "
-           << static_cast<int>(index) << "was active";
+           << static_cast<int>(index) << " was active";
   }
 }
 
