@@ -38,6 +38,7 @@ class PeripheralInputCapture : public PeripheralInputCaptureInterface {
                          InterruptController *interrupt_controller);
   ~PeripheralInputCapture();
 
+  // Cause an IC event to fire.
   void TriggerEvent(IC_MODULE_ID index, IC_EDGE_TYPES edge_type);
 
   void Tick();

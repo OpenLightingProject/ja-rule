@@ -71,8 +71,8 @@ PeripheralTimer::~PeripheralTimer() {
 
 void PeripheralTimer::Tick() {
   uint64_t ticks = m_simulator->Clock();
-  for (auto& timer : m_timers) {
-    if (timer.enabled && ticks % m_prescale_values[timer.prescale] == 0) {
+  for (auto &timer : m_timers) {
+    if (timer.enabled && (ticks % m_prescale_values[timer.prescale] == 0)) {
       if (timer.counter == timer.period) {
         timer.counter = 0;
       } else {

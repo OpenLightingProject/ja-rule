@@ -45,7 +45,7 @@ void Simulator::Run() {
   m_run = true;
   m_clock = 0;
   while (m_run) {
-    for (const auto& task : m_tasks) {
+    for (const auto &task : m_tasks) {
       task->Run();
     }
     m_clock++;

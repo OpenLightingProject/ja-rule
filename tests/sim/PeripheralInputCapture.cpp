@@ -63,7 +63,7 @@ PeripheralInputCapture::PeripheralInputCapture(
     INT_SOURCE_INPUT_CAPTURE_4,
     INT_SOURCE_INPUT_CAPTURE_5,
   };
-  for (const auto& source : timer_sources) {
+  for (const auto &source : timer_sources) {
     m_ic.push_back(InputCapture(source));
   }
 }
@@ -73,7 +73,7 @@ PeripheralInputCapture::~PeripheralInputCapture() {
 }
 
 void PeripheralInputCapture::Tick() {
-  for (auto& ic : m_ic) {
+  for (auto &ic : m_ic) {
     if (!ic.enabled) {
       continue;
     }
@@ -181,9 +181,9 @@ void PeripheralInputCapture::Disable(IC_MODULE_ID index) {
   // Resets the event count (for interrupt generation)
   // Resets the prescaler count
   ic.buffer.clear();
+  ic.got_trigger = false;
   ic.capture_counter = 0;
   ic.prescale_counter = 0;
-  ic.got_trigger = false;
 }
 
 void PeripheralInputCapture::FirstCaptureEdgeSelect(IC_MODULE_ID index,

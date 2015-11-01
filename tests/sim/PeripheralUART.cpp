@@ -102,7 +102,7 @@ void PeripheralUART::Tick() {
         trigger_tx_isr = uart.tx_buffer.size() < TX_FIFO_SIZE;
         break;
       case USART_TRANSMIT_FIFO_IDLE:
-        trigger_tx_isr = uart.tx_state == IDLE && uart.tx_buffer.empty();
+        trigger_tx_isr = (uart.tx_state == IDLE && uart.tx_buffer.empty());
         break;
       case USART_TRANSMIT_FIFO_EMPTY:
         trigger_tx_isr = uart.tx_buffer.empty();
