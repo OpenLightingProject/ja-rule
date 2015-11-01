@@ -63,7 +63,7 @@ class PeripheralUART : public PeripheralUSARTInterface {
   void HandshakeModeSelect(USART_MODULE_ID index,
                            USART_HANDSHAKE_MODE handshakeConfig);
   void OperationModeSelect(USART_MODULE_ID index,
-                           USART_OPERATION_MODE operationmode);
+                           USART_OPERATION_MODE operationMode);
   void LineControlModeSelect(USART_MODULE_ID index,
                              USART_LINECONTROL_MODE dataFlowConfig);
   USART_ERROR ErrorsGet(USART_MODULE_ID index);
