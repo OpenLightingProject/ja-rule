@@ -28,10 +28,13 @@ Simulator::Simulator(uint64_t clock_limit)
       m_clock(0) {
 }
 
+void Simulator::SetClockLimit(uint64_t clock_limit) {
+  m_clock_limit = clock_limit;
+}
+
 void Simulator::AddTask(TaskFn *fn) {
   m_tasks.insert(fn);
 }
-
 
 void Simulator::RemoveTask(TaskFn *fn) {
   m_tasks.erase(fn);

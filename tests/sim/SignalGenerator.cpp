@@ -39,10 +39,11 @@ SignalGenerator::SignalGenerator(Simulator *simulator,
       m_uart(uart),
       m_ic_index(ic_index),
       m_uart_index(uart_index),
-      m_cycles_per_microsecond(clock_speed / 1000000),
+      m_cycles_per_usecond(clock_speed / 1000000),
       m_cycles_per_bit(clock_speed / uart_baud_rate),
       m_stop_on_complete(false),
       m_next_event_at(0),
+      m_framing_error_at(0),
       m_line_state(HIGH),
       m_tx_byte(0),
       m_state(IDLE),
@@ -56,6 +57,13 @@ SignalGenerator::~SignalGenerator() {
 
 void SignalGenerator::Tick() {
   uint64_t clock = m_simulator->Clock();
+  if (m_framing_error_at && clock == m_framing_error_at) {
+    // A framing error causes a byte to be received as well.
+    m_uart->SignalFramingError(m_uart_index, 0);
+    m_uart->ReceiveByte(m_uart_index, 0);
+    m_framing_error_at = 0;
+  }
+
   if (clock < m_next_event_at) {
     return;
   }
@@ -78,14 +86,11 @@ void SignalGenerator::Tick() {
     case BIT_6:
     case BIT_7:
     case STOP_BIT_1:
-      // printf("@%lld processing bit %d\n", clock, m_state);
       SetLineState(GetNextBit() ? HIGH : LOW);
       m_next_event_at = clock + m_cycles_per_bit;
       m_state = static_cast<State>(m_state + 1);
-      // printf("waiting until %lld\n", m_next_event_at);
       break;
     case STOP_BIT_2:
-      printf("dispatching UART byte %d\n", m_tx_byte);
       m_uart->ReceiveByte(m_uart_index, m_tx_byte);
       m_state = IDLE;
       ProcessNextEvent();
@@ -136,14 +141,17 @@ void SignalGenerator::ProcessNextEvent() {
   }
 
   Event &event = m_events.front();
-  // printf("clock %lld, event type %d %d %d\n", m_simulator->Clock(),
-  //         event.type, event.duration, event.byte);
   switch (event.type) {
     case EVENT_DELAY:
       AddDurationToClock(event.duration);
       m_state = WAITING;
       break;
     case EVENT_BREAK:
+      if (m_line_state == HIGH &&
+          ((9 * m_cycles_per_bit) / m_cycles_per_usecond) < event.duration) {
+        // This will generate a framing error, if the UART RX is active.
+        m_framing_error_at = m_simulator->Clock() + 9 * m_cycles_per_bit;
+      }
       SetLineState(LOW);
       AddDurationToClock(event.duration);
       m_state = WAITING;
@@ -158,16 +166,17 @@ void SignalGenerator::ProcessNextEvent() {
       m_tx_byte = event.byte;
       SetLineState(LOW);
       m_state = START_BIT;
+      if (event.type == EVENT_FRAMING_ERROR) {
+        m_framing_error_at = m_simulator->Clock() + 9 * m_cycles_per_bit;
+      }
       m_next_event_at = m_simulator->Clock() + m_cycles_per_bit;
-      // printf("waiting until %lld\n", m_next_event_at);
       break;
   }
   m_events.pop();
 }
 
 void SignalGenerator::AddDurationToClock(uint32_t duration) {
-  m_next_event_at = m_simulator->Clock() + duration * m_cycles_per_microsecond;
-  // printf("waiting until %lld\n", m_next_event_at);
+  m_next_event_at = m_simulator->Clock() + duration * m_cycles_per_usecond;
 }
 
 void SignalGenerator::SetLineState(LineState new_state) {
@@ -175,7 +184,6 @@ void SignalGenerator::SetLineState(LineState new_state) {
     return;
   }
   m_line_state = new_state;
-  // printf("firing IC event %d\n", new_state);
   m_input_capture->TriggerEvent(
       m_ic_index,
       new_state == LOW ? IC_EDGE_FALLING : IC_EDGE_RISING);

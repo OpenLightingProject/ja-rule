@@ -477,8 +477,8 @@ static inline void RXEndFrameEvent() {
     0u,
     T_OP_RX,
     T_RESULT_RX_FRAME_TIMEOUT,
-    NULL,
-    0u,
+    g_transceiver.active->data,
+    g_transceiver.data_index,
     &g_timing
   };
   RunRXEventHandler(&event);
@@ -669,6 +669,7 @@ void __ISR(AS_IC_ISR_VECTOR(TRANSCEIVER_IC), ipl6AUTO)
           g_timing.request.mark_time = value - g_timing.request.break_time;
           g_transceiver.state = STATE_R_RX_DATA;
         }
+        g_transceiver.last_change = value;
         break;
 
       case STATE_R_RX_DATA:
@@ -922,9 +923,6 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
         SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
         UART_FlushRX();
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
-
-        // TODO(simon): how to handle this?
-        // We need to make sure the last byte was delivered.
         RebaseTimer(g_transceiver.last_change);
         g_transceiver.data_index = 0u;
         g_transceiver.event_index = 0u;
@@ -960,6 +958,15 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
         ResetToMark();
         g_transceiver.state = STATE_C_COMPLETE;
         break;
+      case STATE_R_RX_DATA:
+        // This is probably a new break
+        SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+        SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
+        PLIB_USART_ReceiverDisable(g_hw_settings.usart);
+        RebaseTimer(g_transceiver.last_change);
+        g_transceiver.state = STATE_R_RX_BREAK;
+        break;
+
       case STATE_C_INITIALIZE:
       case STATE_C_TX_READY:
       case STATE_C_IN_BREAK:
@@ -976,7 +983,6 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
       case STATE_R_RX_PREPARE:
       case STATE_R_RX_BREAK:
       case STATE_R_RX_MARK:
-      case STATE_R_RX_DATA:
       case STATE_R_RX_MBB:
       case STATE_R_TX_WAITING:
       case STATE_R_TX_BREAK:
