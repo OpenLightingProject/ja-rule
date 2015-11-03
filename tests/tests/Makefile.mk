@@ -43,6 +43,7 @@ TESTS += tests/tests/bootloader_test \
          tests/tests/spirgb_test \
          tests/tests/stream_decoder_test \
          tests/tests/transceiver_test \
+         tests/tests/simulated_transceiver_test \
          tests/tests/usb_transport_test \
          tests/tests/utils_test
 
@@ -226,6 +227,18 @@ tests_tests_transceiver_test_LDADD = $(GMOCK_LIBS) $(GTEST_LIBS) \
                                      tests/harmony/mocks/libharmonymock.la \
                                      tests/mocks/libcoarsetimermock.la \
                                      tests/mocks/libsyslogmock.la
+
+tests_tests_simulated_transceiver_test_SOURCES = \
+    tests/tests/SimulatedTransceiverTest.cpp
+tests_tests_simulated_transceiver_test_CXXFLAGS = \
+    $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
+tests_tests_simulated_transceiver_test_LDADD = \
+    $(GMOCK_LIBS) $(GTEST_LIBS) $(OLA_LIBS) \
+    tests/sim/libsim.la \
+    firmware/src/libtransceiver.la \
+    firmware/src/libcoarsetimer.la \
+    tests/harmony/mocks/libharmonymock.la \
+    tests/mocks/libsyslogmock.la
 
 tests_tests_utils_test_SOURCES = tests/tests/UtilsTest.cpp
 tests_tests_utils_test_CXXFLAGS = $(TESTING_CXXFLAGS)

@@ -507,6 +507,17 @@ static void SwitchMode() {
       return;
   }
   // Reset in case there were any pending commands
+  if (g_transceiver.next) {
+    TransceiverEvent event = {
+      g_transceiver.next->token,
+      (TransceiverOperation) g_transceiver.next->op,
+      T_RESULT_CANCELLED,
+      NULL,
+      0,
+      &g_timing
+    };
+    RunTXEventHandler(&event);
+  }
   InitializeBuffers();
   TransceiverEvent event = {
     g_transceiver.mode_change_token,

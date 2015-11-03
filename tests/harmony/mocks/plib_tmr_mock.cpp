@@ -1,11 +1,13 @@
 #include <gmock/gmock.h>
 #include "plib_tmr_mock.h"
 
+#include "common/macros.h"
+
 namespace {
-  MockPeripheralTimer *g_plib_timer_mock = NULL;
+  PeripheralTimerInterface *g_plib_timer_mock = NULL;
 }
 
-void PLIB_TMR_SetMock(MockPeripheralTimer* mock) {
+void PLIB_TMR_SetMock(PeripheralTimerInterface* mock) {
   g_plib_timer_mock = mock;
 }
 
