@@ -165,7 +165,6 @@ void PeripheralInputCapture::Enable(IC_MODULE_ID index) {
   if (index >= m_ic.size()) {
     FAIL() << "Invalid IC " << index;
   }
-  printf("enabled IC %d\n", index);
   m_ic[index].enabled = true;
 }
 

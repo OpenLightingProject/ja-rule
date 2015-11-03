@@ -46,6 +46,7 @@ using ::testing::AnyOf;
 using ::testing::DoAll;
 using ::testing::ElementsAreArray;
 using ::testing::Gt;
+using ::testing::Le;
 using ::testing::Lt;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
@@ -91,8 +92,6 @@ MATCHER_P4(EventIs, token, op, result, data_size, "") {
 // Check that the event has the correct response timing.
 // Remember the timing values are in 10ths of a microsecond
 MATCHER_P2(RequestTimingIs, break_time, mark_time, "") {
-  printf("%d %d\n", arg->timing->request.break_time,
-                    arg->timing->request.mark_time);
   return arg->timing != nullptr &&
          Value(arg->timing->request.break_time, break_time) &&
          Value(arg->timing->request.mark_time, mark_time);
@@ -255,10 +254,12 @@ class TransceiverTest : public testing::Test {
 
   static const uint8_t kDMX1[];
   static const uint8_t kDMX2[];
+  static const uint8_t kDMX3[];
 };
 
-const uint8_t TransceiverTest::kDMX1[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-const uint8_t TransceiverTest::kDMX2[] = {255, 0, 127, 128};
+const uint8_t TransceiverTest::kDMX1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+const uint8_t TransceiverTest::kDMX2[] = {0, 255, 0, 127, 128};
+const uint8_t TransceiverTest::kDMX3[] = {0};
 
 void TransceiverTest::SwitchToControllerMode() {
   uint8_t token = 1;
@@ -275,6 +276,7 @@ void TransceiverTest::SwitchToControllerMode() {
 // Tests to add:
 //  - queue frame in controller mode, then switch to responder mode, confirm we
 //    get a cancel
+//  - rx a frame bigger than 512 bytes.
 
 TEST_F(TransceiverTest, txDMX) {
   SwitchToControllerMode();
@@ -467,3 +469,144 @@ TEST_F(TransceiverTest, rxShortMark) {
 
   EXPECT_THAT(rx_data, ElementsAreArray(kDMX2, arraysize(kDMX2)));
 }
+
+// Interslot delay, this test can take a while to run.
+TEST_F(TransceiverTest, rxInterSlotDelay) {
+  vector<uint8_t> rx_data;
+
+  const uint8_t expected_frame[] = {0, 10, 20, 30, 40, 50};
+  uint8_t token = 0;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RX, _, Le(arraysize(expected_frame)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(token, T_OP_RX, T_RESULT_RX_FRAME_TIMEOUT,
+                  arraysize(expected_frame))))
+    .WillOnce(AppendTo(&rx_data));
+
+  // we need more than 1s of runtime
+  m_simulator.SetClockLimit(3 * kClockSpeed);
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+
+  // We can have up to 1s between DMX slots.
+  m_generator.AddByte(0);
+  m_generator.AddDelay(100);  // 100us
+  m_generator.AddByte(10);
+  m_generator.AddDelay(1000);  // 1ms
+  m_generator.AddByte(20);
+  m_generator.AddDelay(10000);  // 10ms
+  m_generator.AddByte(30);
+  m_generator.AddDelay(100000);  // 100ms
+  m_generator.AddByte(40);
+  m_generator.AddDelay(999999);  // 0.999999s
+  m_generator.AddByte(50);
+  // This must be long enough for the coarse timer, which operates on 10s of
+  // millisecond.
+  m_generator.AddDelay(1010000);  // 1.01s
+  m_generator.AddByte(60);
+
+  m_simulator.Run();
+
+  EXPECT_THAT(rx_data, ElementsAreArray(expected_frame,
+              arraysize(expected_frame)));
+}
+
+// Test what happens if we send a break / mark sequence, followed by another
+// break / mark sequence with data.
+TEST_F(TransceiverTest, rxZeroLengthFrame) {
+  vector<uint8_t> rx_data;
+
+  uint8_t token = 0;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RX, _, Lt(arraysize(kDMX2)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(AllOf(
+          EventIs(token, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME, arraysize(kDMX2)),
+          RequestTimingIs(1800, 140))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddBreak(180);
+  m_generator.AddMark(14);
+  m_generator.AddFrame(kDMX2, arraysize(kDMX2));
+  m_generator.AddDelay(100);
+
+  m_simulator.Run();
+
+  EXPECT_THAT(rx_data, ElementsAreArray(kDMX2, arraysize(kDMX2)));
+}
+
+// Test we can send two frames back to back.
+TEST_F(TransceiverTest, rxDoubleFrame) {
+  vector<uint8_t> rx_data1, rx_data2;
+
+  uint8_t token = 0;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(_, T_OP_RX, _, _)))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(AllOf(
+          EventIs(token, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME, arraysize(kDMX1)),
+          RequestTimingIs(1760, 120))))
+    .WillOnce(AppendTo(&rx_data1));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(AllOf(
+          EventIs(token, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME, arraysize(kDMX2)),
+          RequestTimingIs(1800, 140))))
+    .WillOnce(AppendTo(&rx_data2));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kDMX1, arraysize(kDMX1));
+  m_generator.AddBreak(180);
+  m_generator.AddMark(14);
+  m_generator.AddFrame(kDMX2, arraysize(kDMX2));
+  m_generator.AddDelay(100);
+
+  m_simulator.Run();
+
+  EXPECT_THAT(rx_data1, ElementsAreArray(kDMX1, arraysize(kDMX1)));
+  EXPECT_THAT(rx_data2, ElementsAreArray(kDMX2, arraysize(kDMX2)));
+}
+
+// Test we handle framing errors correctly.
+// This ensures we deliver up to but not including the bad data
+TEST_F(TransceiverTest, rxFramingError) {
+  vector<uint8_t> rx_data;
+
+  uint8_t token = 0;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RX, _, Lt(arraysize(kDMX2)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(AllOf(
+          EventIs(token, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME, arraysize(kDMX2)),
+          RequestTimingIs(1760, 120))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kDMX2, arraysize(kDMX2));
+  m_generator.AddFramingError(255);
+
+  m_simulator.Run();
+
+  EXPECT_THAT(rx_data, ElementsAreArray(kDMX2, arraysize(kDMX2)));
+}
+

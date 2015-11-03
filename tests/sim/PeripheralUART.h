@@ -47,6 +47,9 @@ class PeripheralUART : public PeripheralUSARTInterface {
   // Used to push a byte of data to the receiver.
   void ReceiveByte(USART_MODULE_ID index, uint8_t byte);
 
+  // Signal a framing error has occured.
+  void SignalFramingError(USART_MODULE_ID index, uint8_t byte);
+
   void Enable(USART_MODULE_ID index);
   void Disable(USART_MODULE_ID index);
   void TransmitterEnable(USART_MODULE_ID index);
@@ -101,9 +104,10 @@ class PeripheralUART : public PeripheralUSARTInterface {
     USART_TRANSMIT_INTR_MODE int_mode;
 
     std::queue<uint8_t> tx_buffer;
-    std::queue<uint8_t> rx_buffer;
+    // The MSB bit holds the state of the framing error
+    std::queue<uint16_t> rx_buffer;
     uint8_t tx_byte;
-    USART_ERROR errors;
+    uint8_t errors;
 
     uint32_t ticks_per_bit;
     uint32_t tx_counter;

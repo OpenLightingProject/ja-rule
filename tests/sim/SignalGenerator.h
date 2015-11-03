@@ -157,6 +157,7 @@ class SignalGenerator {
   bool m_stop_on_complete;
 
   uint64_t m_next_event_at;
+  uint64_t m_framing_error_at;
   LineState m_line_state;
   uint8_t m_tx_byte;
   State m_state;

@@ -32,6 +32,8 @@ class Simulator {
 
   explicit Simulator(uint64_t clock_limit);
 
+  void SetClockLimit(uint64_t clock_limit);
+
   void AddTask(TaskFn *fn);
   void RemoveTask(TaskFn *fn);
 

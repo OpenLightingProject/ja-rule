@@ -52,7 +52,6 @@ void InterruptController::RegisterISR(INT_SOURCE source,
 }
 
 void InterruptController::RaiseInterrupt(INT_SOURCE source) {
-  // printf("Raised int %d\n", source);
   Interrupt *interrupt = GetInterrupt(source);
   interrupt->active = true;
   if (!interrupt->enabled) {

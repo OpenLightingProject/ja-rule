@@ -94,24 +94,24 @@ void PeripheralUART::Tick() {
           uart.tx_state = static_cast<UARTState>(uart.tx_state + 1);
         }
       }
-    }
 
-    bool trigger_tx_isr = false;
-    switch (uart.int_mode) {
-      case USART_TRANSMIT_FIFO_NOT_FULL:
-        trigger_tx_isr = uart.tx_buffer.size() < TX_FIFO_SIZE;
-        break;
-      case USART_TRANSMIT_FIFO_IDLE:
-        trigger_tx_isr = (uart.tx_state == IDLE && uart.tx_buffer.empty());
-        break;
-      case USART_TRANSMIT_FIFO_EMPTY:
-        trigger_tx_isr = uart.tx_buffer.empty();
-        break;
-    }
+      bool trigger_tx_isr = false;
+      switch (uart.int_mode) {
+        case USART_TRANSMIT_FIFO_NOT_FULL:
+          trigger_tx_isr = uart.tx_buffer.size() < TX_FIFO_SIZE;
+          break;
+        case USART_TRANSMIT_FIFO_IDLE:
+          trigger_tx_isr = (uart.tx_state == IDLE && uart.tx_buffer.empty());
+          break;
+        case USART_TRANSMIT_FIFO_EMPTY:
+          trigger_tx_isr = uart.tx_buffer.empty();
+          break;
+      }
 
-    if (trigger_tx_isr) {
-      m_interrupt_controller->RaiseInterrupt(
-          static_cast<INT_SOURCE>(uart.interrupt_source + 2));
+      if (trigger_tx_isr) {
+        m_interrupt_controller->RaiseInterrupt(
+            static_cast<INT_SOURCE>(uart.interrupt_source + 2));
+      }
     }
 
     // Raise RX interrupt if required
@@ -129,6 +129,26 @@ void PeripheralUART::ReceiveByte(USART_MODULE_ID index, uint8_t byte) {
   UART &uart = m_uarts[index];
   if (uart.rx_enable) {
     uart.rx_buffer.push(byte);
+  }
+}
+
+void PeripheralUART::SignalFramingError(USART_MODULE_ID index, uint8_t byte) {
+  if (index >= m_uarts.size()) {
+    FAIL() << "Invalid UART " << index;
+  }
+
+  UART &uart = m_uarts[index];
+  // The logic here is a bit confusing, it looks like the parity and framing
+  // error bits are buffered along with the data byte.
+  if (uart.rx_enable) {
+    if (uart.rx_buffer.empty()) {
+      uart.errors |= USART_ERROR_FRAMING;
+      uart.rx_buffer.push(byte);
+      m_interrupt_controller->RaiseInterrupt(
+        static_cast<INT_SOURCE>(uart.interrupt_source));
+    } else {
+      uart.rx_buffer.push(0x8000 | byte);
+    }
   }
 }
 
@@ -202,6 +222,14 @@ int8_t PeripheralUART::ReceiverByteReceive(USART_MODULE_ID index) {
   if (!uart.rx_buffer.empty()) {
     value = uart.rx_buffer.front();
     uart.rx_buffer.pop();
+    // clear the framing error bit
+    uart.errors &= !USART_ERROR_FRAMING;
+    if (!uart.rx_buffer.empty()) {
+      // Set the next framing error bit
+      if (uart.rx_buffer.front() & 0x8000) {
+        uart.errors |= USART_ERROR_FRAMING;
+      }
+    }
   }
   return value;
 }
@@ -283,5 +311,6 @@ USART_ERROR PeripheralUART::ErrorsGet(USART_MODULE_ID index) {
     ADD_FAILURE() << "Invalid UART " << index;
     return USART_ERROR_NONE;
   }
-  return m_uarts[index].errors;
+  // Yuck
+  return static_cast<USART_ERROR>(m_uarts[index].errors);
 }
