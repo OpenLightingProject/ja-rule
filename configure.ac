@@ -77,16 +77,27 @@ DX_ENV_APPEND(PROJECT_NUMBER, $doxygen_project_number)
 
 DX_INIT_DOXYGEN($PACKAGE_NAME, Doxyfile, [], 1.8.0)
 
+# pthread
+ACX_PTHREAD([
+             LIBS="$PTHREAD_LIBS $LIBS"
+             CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+             CXXFLAGS="$CXXFLAGS $PTHREAD_CXXFLAGS"
+             CC="$PTHREAD_CC"
+             CXX="$PTHREAD_CXX"],
+            [AC_MSG_ERROR([Missing pthread, please install it])])
+
 # gmock
 #####################################################
 AC_ARG_WITH([gmock],
   [AS_HELP_STRING([--with-gmock=PATH], [The location of a built gmock)])],
   [], [with_gmock=./gtest-read-only])
 
+# This is a mess, see
+# http://stackoverflow.com/questions/27091835/undefined-reference-to-pthread-key-create-argument-order-does-not-fix-issue
 GMOCK_INCLUDES="-isystem $with_gmock/googlemock/include"
-GMOCK_LIBS="$with_gmock/googlemock/lib/libgmock.la $with_gmock/googlemock/lib/libgmock_main.la"
+GMOCK_LIBS="$PTHREAD_CFLAGS $with_gmock/googlemock/lib/.libs/libgmock_main.a $with_gmock/googlemock/lib/.libs/libgmock.a"
 GTEST_INCLUDES="-isystem $with_gmock/googletest/include"
-GTEST_LIBS="$with_gmock/googletest/lib/libgtest.la $with_gmock/googletest/lib/libgtest_main.la"
+GTEST_LIBS="$PTHREAD_CFLAGS $with_gmock/googletest/lib/.libs/libgtest.a $with_gmock/googletest/lib/.libs/libgtest_main.a"
 
 # save CPPFLAGS
 old_cppflags=$CPPFLAGS
