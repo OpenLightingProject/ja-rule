@@ -49,6 +49,7 @@ class InterruptController : public SysIntInterface {
   struct Interrupt {
    public:
     Interrupt();
+    ~Interrupt();
 
     bool enabled;
     bool active;

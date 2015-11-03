@@ -32,6 +32,12 @@ InterruptController::Interrupt::Interrupt()
       callback(nullptr) {
 }
 
+InterruptController::Interrupt::~Interrupt() {
+  if (callback) {
+    delete callback;
+  }
+}
+
 InterruptController::~InterruptController() {
   ola::STLDeleteValues(&m_interrupts);
 }

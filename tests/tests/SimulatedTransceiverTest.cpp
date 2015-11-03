@@ -38,12 +38,20 @@
 #include "tests/sim/PeripheralInputCapture.h"
 #include "tests/sim/PeripheralTimer.h"
 #include "tests/sim/PeripheralUART.h"
+#include "tests/sim/SignalGenerator.h"
 #include "tests/sim/Simulator.h"
 
+using ::testing::AllOf;
+using ::testing::AnyOf;
 using ::testing::DoAll;
+using ::testing::ElementsAreArray;
+using ::testing::Gt;
+using ::testing::Lt;
+using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::Value;
 using ::testing::_;
 using ola::NewCallback;
 using ola::rdm::NewDiscoveryUniqueBranchRequest;
@@ -56,6 +64,7 @@ using std::vector;
 extern "C" {
 #endif
 
+// Declare the ISR symbols.
 void InputCaptureEvent(void);
 void Transceiver_TimerEvent();
 void Transceiver_UARTEvent();
@@ -64,10 +73,32 @@ void Transceiver_UARTEvent();
 }
 #endif
 
-MATCHER_P3(EventIs, token, op, result, "") {
-  return arg->token == token && arg->op == op && arg->result == result;
+// Teach gmock how to print TransceiverEvents.
+::std::ostream& operator<<(::std::ostream& os, const TransceiverEvent* event) {
+    return os << "Event(token: " << event->token << ", op: " << event->op
+              << ", result: " << event->result << ", length: " << event->length
+              << ")";
 }
 
+// Check that the event has the correct token, op, result & data size.
+MATCHER_P4(EventIs, token, op, result, data_size, "") {
+  return Value(arg->token, token) &&
+         Value(arg->op, op) &&
+         Value(arg->result, result) &&
+         Value(arg->length, data_size);
+}
+
+// Check that the event has the correct response timing.
+// Remember the timing values are in 10ths of a microsecond
+MATCHER_P2(RequestTimingIs, break_time, mark_time, "") {
+  printf("%d %d\n", arg->timing->request.break_time,
+                    arg->timing->request.mark_time);
+  return arg->timing != nullptr &&
+         Value(arg->timing->request.break_time, break_time) &&
+         Value(arg->timing->request.mark_time, mark_time);
+}
+
+// Check that a vector contains the specified E1.11 frame.
 MATCHER_P3(MatchesFrame, start_code, expected_data, expected_length, "") {
   if (arg.empty()) {
     *result_listener << "Frame is empty";
@@ -93,7 +124,15 @@ MATCHER_P3(MatchesFrame, start_code, expected_data, expected_length, "") {
   return true;
 }
 
+// Capture TransceiverEvents and store the data to a vector of bytes.
+ACTION_P(AppendTo, output) {
+  for (unsigned int i = output->size(); i < arg0->length; i++) {
+    output->push_back(arg0->data[i]);
+  }
+  return true;
+}
 
+// This mock is used to capture Transceiver event handlers.
 class MockEventHandler {
  public:
   MOCK_METHOD1(Run, bool(const TransceiverEvent *event));
@@ -112,10 +151,13 @@ class TransceiverTest : public testing::Test {
  public:
   TransceiverTest()
       : m_tx_callback(NewCallback(this, &TransceiverTest::GotByte)),
-        m_simulator(80000000),  // 1s of CPU runtime.
+        m_callback(ola::NewCallback(&Transceiver_Tasks)),
+        m_simulator(kClockSpeed),  // limit to 1s of CPU runtime.
         m_timer(&m_simulator, &m_interrupt_controller),
         m_ic(&m_simulator, &m_interrupt_controller),
         m_uart(&m_simulator, &m_interrupt_controller, m_tx_callback.get()),
+        m_generator(&m_simulator, &m_ic, &m_uart, AS_IC_ID(2),
+                    AS_USART_ID(1), kClockSpeed, kBaudRate),
         m_controller_uid(0x7a70, 0) {
   }
 
@@ -145,7 +187,7 @@ class TransceiverTest : public testing::Test {
     m_interrupt_controller.RegisterISR(INT_SOURCE_USART_1_RECEIVE,
         NewCallback(&Transceiver_UARTEvent));
 
-    m_simulator.AddTask(ola::NewCallback(&Transceiver_Tasks));
+    m_simulator.AddTask(m_callback.get());
 
     TransceiverHardwareSettings settings = DefaultSettings();
     Transceiver_Initialize(&settings, &EventHandler, &EventHandler);
@@ -163,6 +205,8 @@ class TransceiverTest : public testing::Test {
     PLIB_IC_SetMock(nullptr);
     PLIB_USART_SetMock(nullptr);
     SYS_INT_SetMock(nullptr);
+
+    m_simulator.RemoveTask(m_callback.get());
   }
 
   TransceiverHardwareSettings DefaultSettings() const {
@@ -189,12 +233,14 @@ class TransceiverTest : public testing::Test {
 
  protected:
   std::auto_ptr<PeripheralUART::TXCallback> m_tx_callback;
+  std::unique_ptr<ola::Callback0<void>> m_callback;
 
   Simulator m_simulator;
   InterruptController m_interrupt_controller;
   PeripheralTimer m_timer;
   PeripheralInputCapture m_ic;
   PeripheralUART m_uart;
+  SignalGenerator m_generator;
 
   UID m_controller_uid;
 
@@ -203,12 +249,21 @@ class TransceiverTest : public testing::Test {
   vector<uint8_t> m_sent_bytes;
 
   void SwitchToControllerMode();
+
+  static const uint32_t kClockSpeed = 80000000;
+  static const uint32_t kBaudRate = 250000;
+
+  static const uint8_t kDMX1[];
+  static const uint8_t kDMX2[];
 };
+
+const uint8_t TransceiverTest::kDMX1[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+const uint8_t TransceiverTest::kDMX2[] = {255, 0, 127, 128};
 
 void TransceiverTest::SwitchToControllerMode() {
   uint8_t token = 1;
   EXPECT_CALL(m_event_handler,
-              Run(EventIs(token, T_OP_MODE_CHANGE, T_RESULT_OK)))
+              Run(EventIs(token, T_OP_MODE_CHANGE, T_RESULT_OK, 0)))
     .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
                     Return(true)));
 
@@ -221,12 +276,12 @@ void TransceiverTest::SwitchToControllerMode() {
 //  - queue frame in controller mode, then switch to responder mode, confirm we
 //    get a cancel
 
-TEST_F(TransceiverTest, txDMXFrame) {
+TEST_F(TransceiverTest, txDMX) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
   EXPECT_CALL(m_event_handler,
-              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK)))
+              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK, 0)))
     .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
                     Return(true)));
 
@@ -237,12 +292,12 @@ TEST_F(TransceiverTest, txDMXFrame) {
   EXPECT_THAT(m_sent_bytes, MatchesFrame(NULL_START_CODE, dmx, arraysize(dmx)));
 }
 
-TEST_F(TransceiverTest, txShortDMXFrame) {
+TEST_F(TransceiverTest, txShortDMX) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
   EXPECT_CALL(m_event_handler,
-              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK)))
+              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK, 0)))
     .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
                     Return(true)));
 
@@ -253,14 +308,14 @@ TEST_F(TransceiverTest, txShortDMXFrame) {
   EXPECT_THAT(m_sent_bytes, MatchesFrame(NULL_START_CODE, dmx, 0ul));
 }
 
-TEST_F(TransceiverTest, txJumboDMXFrame) {
+TEST_F(TransceiverTest, txJumboDMX) {
   SwitchToControllerMode();
 
   uint8_t dmx[1024];
   memset(dmx, 255, arraysize(dmx));
   uint8_t token = 1;
   EXPECT_CALL(m_event_handler,
-              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK)))
+              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK, 0)))
     .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
                     Return(true)));
 
@@ -278,7 +333,7 @@ TEST_F(TransceiverTest, txASCFrame) {
   const uint8_t asc_frame[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
   uint8_t token = 1;
   EXPECT_CALL(m_event_handler,
-              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK)))
+              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK, 0)))
     .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
                     Return(true)));
 
@@ -299,7 +354,7 @@ TEST_F(TransceiverTest, txRDMBroadcast) {
 
   uint8_t token = 1;
   EXPECT_CALL(m_event_handler,
-              Run(EventIs(token, T_OP_RDM_BROADCAST, T_RESULT_RX_TIMEOUT)))
+              Run(EventIs(token, T_OP_RDM_BROADCAST, T_RESULT_RX_TIMEOUT, 0)))
     .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
                     Return(true)));
 
@@ -321,7 +376,7 @@ TEST_F(TransceiverTest, txRDMDUBNoResponse) {
 
   uint8_t token = 1;
   EXPECT_CALL(m_event_handler,
-              Run(EventIs(token, T_OP_RDM_DUB, T_RESULT_RX_TIMEOUT)))
+              Run(EventIs(token, T_OP_RDM_DUB, T_RESULT_RX_TIMEOUT, 0)))
     .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
                     Return(true)));
 
@@ -330,4 +385,85 @@ TEST_F(TransceiverTest, txRDMDUBNoResponse) {
 
   EXPECT_THAT(m_sent_bytes,
               MatchesFrame(RDM_START_CODE, data.data(), data.size()));
+}
+
+TEST_F(TransceiverTest, rxDMX) {
+  vector<uint8_t> rx_data;
+
+  uint8_t token = 0;
+  InSequence seq;
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(token, T_OP_RX,
+                  AnyOf(T_RESULT_RX_START_FRAME, T_RESULT_RX_CONTINUE_FRAME),
+                  Gt(0))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(m_event_handler, Run(AllOf(
+          EventIs(token, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME, arraysize(kDMX1)),
+          RequestTimingIs(1760, 120))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kDMX1, arraysize(kDMX1));
+
+  m_simulator.Run();
+
+  EXPECT_THAT(rx_data, ElementsAreArray(kDMX1, arraysize(kDMX1)));
+}
+
+TEST_F(TransceiverTest, rxShortBreak) {
+  vector<uint8_t> rx_data;
+
+  uint8_t token = 0;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RX, _, Lt(arraysize(kDMX2)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler, Run(AllOf(
+          EventIs(token, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME, arraysize(kDMX2)),
+          RequestTimingIs(1900, 140))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(87);  // min is 88uS
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kDMX1, arraysize(kDMX1));
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(190);
+  m_generator.AddMark(14);
+  m_generator.AddFrame(kDMX2, arraysize(kDMX2));
+  m_simulator.Run();
+
+  EXPECT_THAT(rx_data, ElementsAreArray(kDMX2, arraysize(kDMX2)));
+}
+
+TEST_F(TransceiverTest, rxShortMark) {
+  vector<uint8_t> rx_data;
+
+  uint8_t token = 0;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RX, _, Lt(arraysize(kDMX2)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler, Run(AllOf(
+          EventIs(token, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME, arraysize(kDMX2)),
+          RequestTimingIs(1900, 140))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(7);  // min is 8uS
+  m_generator.AddFrame(kDMX1, arraysize(kDMX1));
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(190);
+  m_generator.AddMark(14);
+  m_generator.AddFrame(kDMX2, arraysize(kDMX2));
+  m_simulator.Run();
+
+  EXPECT_THAT(rx_data, ElementsAreArray(kDMX2, arraysize(kDMX2)));
 }

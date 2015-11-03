@@ -21,8 +21,8 @@
 #ifndef TESTS_SIM_PERIPHERALUART_H_
 #define TESTS_SIM_PERIPHERALUART_H_
 
-#include <deque>
 #include <memory>
+#include <queue>
 #include <vector>
 
 #include "plib_usart_mock.h"
@@ -44,7 +44,8 @@ class PeripheralUART : public PeripheralUSARTInterface {
 
   void Tick();
 
-  // TODO(simon): add mgmt functions here
+  // Used to push a byte of data to the receiver.
+  void ReceiveByte(USART_MODULE_ID index, uint8_t byte);
 
   void Enable(USART_MODULE_ID index);
   void Disable(USART_MODULE_ID index);
@@ -99,16 +100,14 @@ class PeripheralUART : public PeripheralUSARTInterface {
     bool rx_enable;
     USART_TRANSMIT_INTR_MODE int_mode;
 
-    std::deque<uint8_t> tx_buffer;
-    std::deque<uint8_t> rx_buffer;
+    std::queue<uint8_t> tx_buffer;
+    std::queue<uint8_t> rx_buffer;
     uint8_t tx_byte;
     USART_ERROR errors;
 
     uint32_t ticks_per_bit;
     uint32_t tx_counter;
     UARTState tx_state;
-
-    // state?
   };
 
   std::vector<UART> m_uarts;

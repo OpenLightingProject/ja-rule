@@ -79,7 +79,7 @@ void PeripheralUART::Tick() {
       if (uart.tx_state == IDLE && !uart.tx_buffer.empty()) {
         uart.tx_state = START_BIT;
         uart.tx_byte = uart.tx_buffer.front();
-        uart.tx_buffer.pop_front();
+        uart.tx_buffer.pop();
       }
       uart.tx_counter++;
       if (uart.tx_counter == uart.ticks_per_bit) {
@@ -122,6 +122,16 @@ void PeripheralUART::Tick() {
   }
 }
 
+void PeripheralUART::ReceiveByte(USART_MODULE_ID index, uint8_t byte) {
+  if (index >= m_uarts.size()) {
+    FAIL() << "Invalid UART " << index;
+  }
+  UART &uart = m_uarts[index];
+  if (uart.rx_enable) {
+    uart.rx_buffer.push(byte);
+  }
+}
+
 void PeripheralUART::Enable(USART_MODULE_ID index) {
   if (index >= m_uarts.size()) {
     FAIL() << "Invalid UART " << index;
@@ -137,8 +147,12 @@ void PeripheralUART::Disable(USART_MODULE_ID index) {
   uart.enabled = false;
 
   // 21.4.2
-  uart.tx_buffer.clear();
-  uart.rx_buffer.clear();
+  while (!uart.tx_buffer.empty()) {
+    uart.tx_buffer.pop();
+  }
+  while (!uart.rx_buffer.empty()) {
+    uart.rx_buffer.pop();
+  }
   uart.tx_counter = 0;
   uart.tx_state = IDLE;
   // TODO(simon): reset flags here
@@ -174,7 +188,7 @@ void PeripheralUART::TransmitterByteSend(USART_MODULE_ID index, int8_t data) {
   }
   UART &uart = m_uarts[index];
   if (uart.tx_buffer.size() < TX_FIFO_SIZE) {
-    uart.tx_buffer.push_back(data);
+    uart.tx_buffer.push(data);
   }
 }
 
@@ -187,7 +201,7 @@ int8_t PeripheralUART::ReceiverByteReceive(USART_MODULE_ID index) {
   uint8_t value = 0;
   if (!uart.rx_buffer.empty()) {
     value = uart.rx_buffer.front();
-    uart.rx_buffer.pop_front();
+    uart.rx_buffer.pop();
   }
   return value;
 }
