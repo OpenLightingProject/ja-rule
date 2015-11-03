@@ -147,7 +147,7 @@ void PeripheralUART::SignalFramingError(USART_MODULE_ID index, uint8_t byte) {
       m_interrupt_controller->RaiseInterrupt(
         static_cast<INT_SOURCE>(uart.interrupt_source));
     } else {
-      uart.rx_buffer.push(0x8000 | byte);
+      uart.rx_buffer.push(UART::FRAMING_ERROR_FLAG | byte);
     }
   }
 }
@@ -226,7 +226,7 @@ int8_t PeripheralUART::ReceiverByteReceive(USART_MODULE_ID index) {
     uart.errors &= !USART_ERROR_FRAMING;
     if (!uart.rx_buffer.empty()) {
       // Set the next framing error bit
-      if (uart.rx_buffer.front() & 0x8000) {
+      if (uart.rx_buffer.front() & UART::FRAMING_ERROR_FLAG) {
         uart.errors |= USART_ERROR_FRAMING;
       }
     }

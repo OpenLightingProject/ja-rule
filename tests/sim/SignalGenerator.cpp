@@ -39,7 +39,7 @@ SignalGenerator::SignalGenerator(Simulator *simulator,
       m_uart(uart),
       m_ic_index(ic_index),
       m_uart_index(uart_index),
-      m_cycles_per_microsecond(clock_speed / 1000000),
+      m_cycles_per_usecond(clock_speed / 1000000),
       m_cycles_per_bit(clock_speed / uart_baud_rate),
       m_stop_on_complete(false),
       m_next_event_at(0),
@@ -148,7 +148,7 @@ void SignalGenerator::ProcessNextEvent() {
       break;
     case EVENT_BREAK:
       if (m_line_state == HIGH &&
-          (9 * m_cycles_per_bit) / m_cycles_per_microsecond < event.duration) {
+          ((9 * m_cycles_per_bit) / m_cycles_per_usecond) < event.duration) {
         // This will generate a framing error, if the UART RX is active.
         m_framing_error_at = m_simulator->Clock() + 9 * m_cycles_per_bit;
       }
@@ -176,7 +176,7 @@ void SignalGenerator::ProcessNextEvent() {
 }
 
 void SignalGenerator::AddDurationToClock(uint32_t duration) {
-  m_next_event_at = m_simulator->Clock() + duration * m_cycles_per_microsecond;
+  m_next_event_at = m_simulator->Clock() + duration * m_cycles_per_usecond;
 }
 
 void SignalGenerator::SetLineState(LineState new_state) {

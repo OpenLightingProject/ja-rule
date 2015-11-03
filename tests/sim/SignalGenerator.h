@@ -152,7 +152,7 @@ class SignalGenerator {
   PeripheralUART *m_uart;
   const IC_MODULE_ID m_ic_index;
   const USART_MODULE_ID m_uart_index;
-  const uint32_t m_cycles_per_microsecond;
+  const uint32_t m_cycles_per_usecond;
   const uint32_t m_cycles_per_bit;
   bool m_stop_on_complete;
 

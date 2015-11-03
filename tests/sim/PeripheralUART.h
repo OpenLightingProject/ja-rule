@@ -112,6 +112,8 @@ class PeripheralUART : public PeripheralUSARTInterface {
     uint32_t ticks_per_bit;
     uint32_t tx_counter;
     UARTState tx_state;
+
+    static const uint16_t FRAMING_ERROR_FLAG = 0x8000;
   };
 
   std::vector<UART> m_uarts;
