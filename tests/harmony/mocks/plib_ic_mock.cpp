@@ -2,10 +2,10 @@
 #include "plib_ic_mock.h"
 
 namespace {
-  MockPeripheralInputCapture *g_plib_ic_mock = NULL;
+  PeripheralInputCaptureInterface *g_plib_ic_mock = NULL;
 }
 
-void PLIB_IC_SetMock(MockPeripheralInputCapture* mock) {
+void PLIB_IC_SetMock(PeripheralInputCaptureInterface* mock) {
   g_plib_ic_mock = mock;
 }
 

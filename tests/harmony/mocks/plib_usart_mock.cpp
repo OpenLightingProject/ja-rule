@@ -2,10 +2,10 @@
 #include "plib_usart_mock.h"
 
 namespace {
-  MockPeripheralUSART *g_plib_usart_mock = NULL;
+  PeripheralUSARTInterface *g_plib_usart_mock = NULL;
 }
 
-void PLIB_USART_SetMock(MockPeripheralUSART* mock) {
+void PLIB_USART_SetMock(PeripheralUSARTInterface* mock) {
   g_plib_usart_mock = mock;
 }
 
@@ -98,12 +98,6 @@ void PLIB_USART_OperationModeSelect(USART_MODULE_ID index,
                                     USART_OPERATION_MODE operationmode) {
   if (g_plib_usart_mock) {
     g_plib_usart_mock->OperationModeSelect(index, operationmode);
-  }
-}
-
-void PLIB_USART_SyncModeSelect(USART_MODULE_ID index, USART_SYNC_MODES mode) {
-  if (g_plib_usart_mock) {
-    g_plib_usart_mock->SyncModeSelect(index, mode);
   }
 }
 

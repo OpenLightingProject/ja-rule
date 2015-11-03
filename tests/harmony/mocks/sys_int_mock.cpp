@@ -2,10 +2,10 @@
 #include "sys_int_mock.h"
 
 namespace {
-  MockSysInt *g_sys_int_mock = NULL;
+  SysIntInterface *g_sys_int_mock = NULL;
 }
 
-void SYS_INT_SetMock(MockSysInt* mock) {
+void SYS_INT_SetMock(SysIntInterface* mock) {
   g_sys_int_mock = mock;
 }
 
