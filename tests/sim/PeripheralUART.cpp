@@ -223,7 +223,7 @@ int8_t PeripheralUART::ReceiverByteReceive(USART_MODULE_ID index) {
     value = uart.rx_buffer.front();
     uart.rx_buffer.pop();
     // clear the framing error bit
-    uart.errors &= !USART_ERROR_FRAMING;
+    uart.errors &= ~USART_ERROR_FRAMING;
     if (!uart.rx_buffer.empty()) {
       // Set the next framing error bit
       if (uart.rx_buffer.front() & UART::FRAMING_ERROR_FLAG) {
