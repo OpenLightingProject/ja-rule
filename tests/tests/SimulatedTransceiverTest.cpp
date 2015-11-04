@@ -817,7 +817,7 @@ TEST_F(TransceiverTest, responderRxRDMInterSlotDelay) {
   m_generator.AddBreak(176);
   m_generator.AddMark(12);
 
-  // We can have up to 2.1ms between DMX slots.
+  // We can have up to 2.1ms between RDM slots.
   m_generator.AddByte(RDM_START_CODE);
   m_generator.AddDelay(100);  // 100us
   m_generator.AddByte(10);

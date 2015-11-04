@@ -367,6 +367,7 @@ bool UART_RXBytes() {
 
 /*
  * @brief Return the number of free buffers.
+ *
  * This is exposed for testing purposes.
  */
 uint8_t Transceiver_FreeBufferCount() {
@@ -1740,6 +1741,8 @@ uint16_t Transceiver_GetRDMResponseTimeout() {
 }
 
 bool Transceiver_SetRDMDUBResponseLimit(uint16_t limit) {
+  // If you change the max here be mindful of the comment in the RX UART ISR
+  // about buffer sizes.
   if (limit < 10000u || limit > 35000u) {
     return false;
   }
