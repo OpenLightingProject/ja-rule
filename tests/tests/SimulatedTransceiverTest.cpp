@@ -46,10 +46,11 @@ using ::testing::AnyOf;
 using ::testing::DoAll;
 using ::testing::ElementsAreArray;
 using ::testing::Gt;
-using ::testing::Le;
-using ::testing::Lt;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
+using ::testing::IsEmpty;
+using ::testing::Le;
+using ::testing::Lt;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::Value;
@@ -311,9 +312,8 @@ void TransceiverTest::SwitchToControllerMode() {
 }
 
 // Tests to add:
-//  - queue frame in controller mode, then switch to responder mode, confirm we
-//    get a cancel
-//  - rx a frame bigger than 512 bytes.
+//  - responder, rx a frame bigger than 512 bytes.
+//  - controller, rx an RDM responder larger than 512 bytes
 
 TEST_F(TransceiverTest, controllerTxDMX) {
   SwitchToControllerMode();
@@ -514,6 +514,57 @@ TEST_F(TransceiverTest, controllerRDMGetWithShortBreak) {
                     Return(true)));
 
   m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, controllerRDMGetWithLongBreak) {
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  StopAfter(1 + arraysize(kRDMRequest));
+  Transceiver_QueueRDMRequest(token, kRDMRequest, arraysize(kRDMRequest),
+                              false);
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrame(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+
+  // Queue the response, with a break
+  m_generator.AddDelay(176);
+  m_generator.AddBreak(353);  // max is 352uS
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kRDMResponse, arraysize(kRDMResponse));
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_INVALID,
+                          0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, controllerModeChange) {
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_CANCELLED, 0)))
+    .WillOnce(Return(true));
+
+  EXPECT_TRUE(Transceiver_QueueDMX(token, kDMX1, arraysize(kDMX1)));
+
+  token++;
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_MODE_CHANGE, T_RESULT_OK, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+  EXPECT_TRUE(Transceiver_SetMode(T_MODE_RESPONDER, token));
+
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, IsEmpty());
 }
 
 TEST_F(TransceiverTest, responderRxDMX) {
