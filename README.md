@@ -38,6 +38,11 @@ The hardware designs and the documentation is licensed under the
 │   └── src
 ├── linker       # linker scripts for the bootloader & application
 ├── tests        # Unit tests
+│   ├── harmony  # The mock Harmony modules
+│   ├── include  # Test headers
+│   ├── mocks    # Module mocks.
+│   ├── sim      # A simple PIC32 simulator
+│   └── tests    # The unittests
 ├── tools        # tools to upgrade the firmware on the device.
 └── user_manual  # The user manual
 ```
