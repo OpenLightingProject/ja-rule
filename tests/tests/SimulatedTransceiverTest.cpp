@@ -901,6 +901,42 @@ TEST_F(TransceiverTest, responderRxDoubleFrame) {
   EXPECT_THAT(rx_data2, ElementsAreArray(kDMX2, arraysize(kDMX2)));
 }
 
+// Test we don't crash if we receive a frame larger than 512 slots.
+TEST_F(TransceiverTest, responderRxJumboFrameWithResponse) {
+  uint8_t jumbo_frame[600];
+  for (unsigned int i = 0; i < arraysize(jumbo_frame); i++) {
+    jumbo_frame[i] = i & 0xff;
+  }
+
+  vector<uint8_t> rx_data;
+
+  uint8_t token = 0;
+  EXPECT_CALL(m_event_handler, Run(EventIs(_, T_OP_RX, _, _)))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(token, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME, 512u)))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(jumbo_frame, arraysize(jumbo_frame));
+
+  m_simulator.Run();
+
+  EXPECT_THAT(rx_data, ElementsAreArray(jumbo_frame, 512u));
+
+  // Now try to queue a response, which should fail because we've ignored this
+  // (bad) request.
+  IOVec iovec = {
+    .base = kRDMResponse,
+    .length = arraysize(kRDMResponse)
+  };
+  EXPECT_FALSE(Transceiver_QueueRDMResponse(true, &iovec, 1));
+}
+
 // Test we handle framing errors correctly.
 // This ensures we deliver up to but not including the bad data
 TEST_F(TransceiverTest, responderRxFramingError) {

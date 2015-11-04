@@ -931,6 +931,8 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
       // and the DUB Response limit (g_timing_settings.rdm_dub_response_limit)
       // is at most 3500us. This means even with 0 interslot delay, the maximum
       // bytes we can receive is 79.
+
+      // TODO(simon): handle the non-DUB case here
      UART_RXBytes();
     } else if (g_transceiver.state == STATE_R_RX_DATA) {
       if (PLIB_USART_ErrorsGet(g_hw_settings.usart) & USART_ERROR_FRAMING) {
@@ -945,11 +947,9 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
         g_transceiver.state = STATE_R_RX_BREAK;
       } else if (UART_RXBytes()) {
         // RX buffer is full.
-        // TODO(simon): What should we do here?
         SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
         SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
-
         g_transceiver.state = STATE_R_TX_COMPLETE;
       }
     } else if (g_transceiver.state == STATE_T_RX_WAIT) {
@@ -1612,6 +1612,11 @@ bool Transceiver_QueueRDMResponse(bool include_break,
                                   const IOVec* data,
                                   unsigned int iov_count) {
   if (g_transceiver.mode != T_MODE_RESPONDER || g_transceiver.free_size == 0u) {
+    return false;
+  }
+
+  if (g_transceiver.state != STATE_R_RX_DATA) {
+    // Can only queue while we're receiving data
     return false;
   }
 
