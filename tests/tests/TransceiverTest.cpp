@@ -144,6 +144,12 @@ TEST_F(TransceiverTest, testModeChanges) {
   EXPECT_FALSE(Transceiver_QueueRDMDUB(token, NULL, 0));
   EXPECT_FALSE(Transceiver_QueueRDMRequest(token, NULL, 0, false));
   EXPECT_FALSE(Transceiver_QueueRDMResponse(token, NULL, 0));
+
+  // Switch back to controller mode
+  token++;
+  EXPECT_TRUE(Transceiver_SetMode(T_MODE_CONTROLLER, token));
+  // There is already a mode change pending, so this will fail
+  EXPECT_FALSE(Transceiver_SetMode(T_MODE_CONTROLLER, ++token));
 }
 
 TEST_F(TransceiverTest, testSetBreakTime) {

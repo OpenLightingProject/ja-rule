@@ -364,6 +364,15 @@ bool UART_RXBytes() {
 // Memory Buffer Management
 // ----------------------------------------------------------------------------
 
+
+/*
+ * @brief Return the number of free buffers.
+ * This is exposed for testing purposes.
+ */
+uint8_t Transceiver_FreeBufferCount() {
+  return g_transceiver.free_size;
+}
+
 /*
  * @brief Setup the transceiver buffers.
  */
@@ -914,16 +923,11 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
   if (SYS_INT_SourceStatusGet(g_hw_settings.usart_rx_source)) {
     if (g_transceiver.state == STATE_C_RX_IN_DUB ||
         g_transceiver.state == STATE_C_RX_DATA) {
-      if (UART_RXBytes()) {
-        // RX buffer is full.
-        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
-        SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
-        SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
-        PLIB_USART_ReceiverDisable(g_hw_settings.usart);
-        ResetToMark();
-        g_transceiver.result = T_RESULT_RX_INVALID;
-        g_transceiver.state = STATE_C_COMPLETE;
-      }
+      // It's impossible to overflow the buffer here, because each byte is 44uS
+      // and the DUB Response limit (g_timing_settings.rdm_dub_response_limit)
+      // is at most 3500us. This means even with 0 interslot delay, the maximum
+      // bytes we can receive is 79.
+     UART_RXBytes();
     } else if (g_transceiver.state == STATE_R_RX_DATA) {
       if (PLIB_USART_ErrorsGet(g_hw_settings.usart) & USART_ERROR_FRAMING) {
         // A framing error indicates a possible break.

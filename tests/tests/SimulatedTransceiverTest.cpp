@@ -46,6 +46,7 @@ using ::testing::AnyOf;
 using ::testing::Contains;
 using ::testing::DoAll;
 using ::testing::ElementsAreArray;
+using ::testing::Ge;
 using ::testing::Gt;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
@@ -74,6 +75,8 @@ extern "C" {
 void InputCaptureEvent(void);
 void Transceiver_TimerEvent();
 void Transceiver_UARTEvent();
+uint8_t Transceiver_FreeBufferCount();
+
 
 #ifdef __cplusplus
 }
@@ -178,6 +181,7 @@ class TransceiverTest : public testing::Test {
   }
 
   void SetUp() {
+    m_simulator.SetClockLimit(1000000, true);  // default to 1s
     g_event_handler = &m_event_handler;
     PLIB_TMR_SetMock(&m_timer);
     PLIB_IC_SetMock(&m_ic);
@@ -210,6 +214,19 @@ class TransceiverTest : public testing::Test {
   }
 
   void TearDown() {
+    if (!::testing::Test::HasFatalFailure()) {
+      // Run for another 6ms to allow any final states to timeout
+      m_simulator.SetClockLimit(6000, false);
+      m_simulator.Run();
+      // if we're in responder mode, then one buffer is used for the incoming
+      // frame.
+      if (Transceiver_GetMode() == T_MODE_RESPONDER) {
+        EXPECT_EQ(1, Transceiver_FreeBufferCount());
+      } else {
+        EXPECT_EQ(2, Transceiver_FreeBufferCount());
+      }
+    }
+
     g_event_handler = nullptr;
     PLIB_TMR_SetMock(nullptr);
     PLIB_IC_SetMock(nullptr);
@@ -474,6 +491,38 @@ TEST_F(TransceiverTest, controllerRDMDUBWithResponse) {
   m_simulator.Run();
 }
 
+TEST_F(TransceiverTest, controllerRDMDUBWithLargeResponse) {
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  StopAfter(1 + arraysize(kDUBRequest));
+
+  Transceiver_QueueRDMDUB(token, kDUBRequest, arraysize(kDUBRequest));
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrame(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
+
+  uint8_t dub_response[600];
+  for (unsigned int i = 0; i < arraysize(dub_response); i++) {
+    dub_response[i] = i & 0xff;
+  }
+
+  // Now queue up the response
+  m_generator.AddDelay(176);
+  m_generator.AddFrame(dub_response, arraysize(dub_response));
+
+  // See the notes in transceiver.c, due to timing restrictions only the first
+  // 65 bytes will be accepted.
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_DUB, T_RESULT_RX_DATA, Ge(63))))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  m_simulator.Run();
+}
+
 TEST_F(TransceiverTest, controllerRDMGetTimeout) {
   SwitchToControllerMode();
 
@@ -577,6 +626,7 @@ TEST_F(TransceiverTest, controllerRDMGetWithLongBreak) {
   m_simulator.Run();
 }
 
+// Check that switching to responder mode cancels any in-flight transmissions.
 TEST_F(TransceiverTest, controllerModeChange) {
   SwitchToControllerMode();
 
@@ -697,7 +747,7 @@ TEST_F(TransceiverTest, responderRxInterSlotDelay) {
     .WillOnce(AppendTo(&rx_data));
 
   // we need more than 1s of runtime
-  m_simulator.SetClockLimit(3 * kClockSpeed);
+  m_simulator.SetClockLimit(3000000, true);
   m_generator.SetStopOnComplete(true);
   m_generator.AddDelay(100);
   m_generator.AddBreak(176);
@@ -899,8 +949,49 @@ TEST_F(TransceiverTest, responderRDMDUB) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(0xfe, kDUBResponse + 1,
-                   arraysize(kDUBResponse) - 1));
+      MatchesFrame(0xfe, kDUBResponse + 1, arraysize(kDUBResponse) - 1));
+}
+
+TEST_F(TransceiverTest, responderRDMDUBWithJitter) {
+  EXPECT_TRUE(Transceiver_SetRDMResponderJitter(1000));  // 100uS of jitter
+
+  vector<uint8_t> rx_data;
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(0, T_OP_RX, _, Lt(arraysize(kDUBRequest)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(0, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME,
+                  arraysize(kDUBRequest))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kDUBRequest, arraysize(kDUBRequest));
+
+  m_simulator.Run();
+
+  // Check the request was what we expected
+  EXPECT_THAT(rx_data, ElementsAreArray(kDUBRequest, arraysize(kDUBRequest)));
+
+  // Queue up the response
+  IOVec iovec = {
+    .base = kDUBResponse,
+    .length = arraysize(kDUBResponse)
+  };
+  Transceiver_QueueRDMResponse(false, &iovec, 1);
+
+  m_generator.Reset();
+  m_generator.SetStopOnComplete(false);
+  StopAfter(arraysize(kDUBResponse));
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrame(0xfe, kDUBResponse + 1, arraysize(kDUBResponse) - 1));
 }
 
 TEST_F(TransceiverTest, selfTestPass) {

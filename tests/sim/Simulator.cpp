@@ -22,14 +22,17 @@
 
 #include <gtest/gtest.h>
 
-Simulator::Simulator(uint64_t clock_limit)
-    : m_run(true),
-      m_clock_limit(clock_limit),
+Simulator::Simulator(uint32_t clock_speed)
+    : m_clock_speed(clock_speed),
+      m_run(true),
+      m_clock_limit(0),
+      m_clock_limit_fatal(false),
       m_clock(0) {
 }
 
-void Simulator::SetClockLimit(uint64_t clock_limit) {
-  m_clock_limit = clock_limit;
+void Simulator::SetClockLimit(uint64_t duration, bool fatal) {
+  m_clock_limit = m_clock + (m_clock_speed / 1000000) * duration;
+  m_clock_limit_fatal = fatal;
 }
 
 void Simulator::AddTask(TaskFn *fn) {
@@ -53,7 +56,9 @@ void Simulator::Run() {
     }
     m_clock++;
     if (m_clock_limit && m_clock >= m_clock_limit) {
-      FAIL() << "Clock limit exceeded: " << m_clock_limit;
+      if (m_clock_limit_fatal) {
+        FAIL() << "Clock limit exceeded: " << m_clock_limit;
+      }
       return;
     }
   }

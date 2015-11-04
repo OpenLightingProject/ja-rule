@@ -30,9 +30,11 @@ class Simulator {
  public:
   typedef ola::Callback0<void> TaskFn;
 
-  explicit Simulator(uint64_t clock_limit);
+  explicit Simulator(uint32_t clock_speed);
 
-  void SetClockLimit(uint64_t clock_limit);
+  // Stop the simulator after a certain duration.
+  // This can be made fatal to guard against tests that never complete.
+  void SetClockLimit(uint64_t duration, bool fatal);
 
   void AddTask(TaskFn *fn);
   void RemoveTask(TaskFn *fn);
@@ -46,8 +48,11 @@ class Simulator {
  private:
   typedef std::set<TaskFn*> Tasks;
 
+  const uint32_t m_clock_speed;
+
   bool m_run;
   uint64_t m_clock_limit;
+  bool m_clock_limit_fatal;
   uint64_t m_clock;
   Tasks m_tasks;
 };
