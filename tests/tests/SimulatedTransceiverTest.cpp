@@ -106,7 +106,7 @@ MATCHER_P2(RequestTimingIs, break_time, mark_time, "") {
 }
 
 // Check that a vector contains the specified E1.11 frame.
-MATCHER_P3(MatchesFrame, start_code, expected_data, expected_length, "") {
+MATCHER_P3(MatchesFrameWithSC, start_code, expected_data, expected_length, "") {
   if (arg.empty()) {
     *result_listener << "Frame is empty";
     return false;
@@ -124,7 +124,27 @@ MATCHER_P3(MatchesFrame, start_code, expected_data, expected_length, "") {
   for (unsigned int i = 0; i < expected_length; i++) {
     if (arg[i + 1] != expected_data[i]) {
       *result_listener << "Index " << i << " mismatch, was " << arg[i + 1]
-                       << ", expected " << expected_data[1];
+                       << ", expected " << expected_data[i];
+      return false;
+    }
+  }
+  return true;
+}
+
+MATCHER_P2(MatchesFrame, expected_data, expected_length, "") {
+  if (arg.empty()) {
+    *result_listener << "Frame is empty";
+    return false;
+  }
+  if (arg.size() != expected_length) {
+    *result_listener << "Frame size mismatch, was " << arg.size()
+                     << ", expected " << expected_length;
+    return false;
+  }
+  for (unsigned int i = 0; i < expected_length; i++) {
+    if (arg[i] != expected_data[i]) {
+      *result_listener << "Index " << i << " mismatch, was " << arg[i]
+                       << ", expected " << expected_data[i];
       return false;
     }
   }
@@ -359,7 +379,7 @@ TEST_F(TransceiverTest, controllerTxDMX) {
   Transceiver_QueueDMX(1, kDMX1, arraysize(kDMX1));
   m_simulator.Run();
   EXPECT_THAT(m_tx_bytes,
-              MatchesFrame(NULL_START_CODE, kDMX1, arraysize(kDMX1)));
+              MatchesFrameWithSC(NULL_START_CODE, kDMX1, arraysize(kDMX1)));
 }
 
 TEST_F(TransceiverTest, controllerTxEmptyDMX) {
@@ -375,7 +395,7 @@ TEST_F(TransceiverTest, controllerTxEmptyDMX) {
   m_simulator.Run();
 
   const uint8_t dmx[] = {};
-  EXPECT_THAT(m_tx_bytes, MatchesFrame(NULL_START_CODE, dmx, 0ul));
+  EXPECT_THAT(m_tx_bytes, MatchesFrameWithSC(NULL_START_CODE, dmx, 0ul));
 }
 
 TEST_F(TransceiverTest, controllerTxJumboDMX) {
@@ -393,7 +413,7 @@ TEST_F(TransceiverTest, controllerTxJumboDMX) {
   m_simulator.Run();
 
   // Limited to 512 slots
-  EXPECT_THAT(m_tx_bytes, MatchesFrame(NULL_START_CODE, dmx, 512ul));
+  EXPECT_THAT(m_tx_bytes, MatchesFrameWithSC(NULL_START_CODE, dmx, 512ul));
 }
 
 TEST_F(TransceiverTest, controllerTxASCFrame) {
@@ -410,7 +430,8 @@ TEST_F(TransceiverTest, controllerTxASCFrame) {
   Transceiver_QueueASC(token, ASC, asc_frame, arraysize(asc_frame));
   m_simulator.Run();
 
-  EXPECT_THAT(m_tx_bytes, MatchesFrame(ASC, asc_frame, arraysize(asc_frame)));
+  EXPECT_THAT(m_tx_bytes,
+              MatchesFrameWithSC(ASC, asc_frame, arraysize(asc_frame)));
 }
 
 TEST_F(TransceiverTest, controllerTxRDMBroadcast) {
@@ -427,7 +448,7 @@ TEST_F(TransceiverTest, controllerTxRDMBroadcast) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
 }
 
 TEST_F(TransceiverTest, controllerTxRDMBroadcastNoListen) {
@@ -445,7 +466,7 @@ TEST_F(TransceiverTest, controllerTxRDMBroadcastNoListen) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
 }
 
 TEST_F(TransceiverTest, controllerRDMDUBNoResponse) {
@@ -462,7 +483,7 @@ TEST_F(TransceiverTest, controllerRDMDUBNoResponse) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
 }
 
 TEST_F(TransceiverTest, controllerRDMDUBWithResponse) {
@@ -476,7 +497,7 @@ TEST_F(TransceiverTest, controllerRDMDUBWithResponse) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
 
   // Now queue up the response
   m_generator.AddDelay(176);
@@ -502,7 +523,7 @@ TEST_F(TransceiverTest, controllerRDMDUBWithLargeResponse) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
 
   uint8_t dub_response[600];
   for (unsigned int i = 0; i < arraysize(dub_response); i++) {
@@ -538,7 +559,7 @@ TEST_F(TransceiverTest, controllerRDMGetTimeout) {
   m_simulator.Run();
 
   EXPECT_THAT(m_tx_bytes,
-              MatchesFrame(RDM_START_CODE, kRDMRequest,
+              MatchesFrameWithSC(RDM_START_CODE, kRDMRequest,
                            arraysize(kRDMRequest)));
 }
 
@@ -553,7 +574,7 @@ TEST_F(TransceiverTest, controllerRDMGetWithResponse) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
 
   // Queue the response, with a break
   m_generator.AddDelay(176);
@@ -581,7 +602,7 @@ TEST_F(TransceiverTest, controllerRDMGetWithShortBreak) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
 
   // Queue the response, with a break
   m_generator.AddDelay(176);
@@ -609,7 +630,7 @@ TEST_F(TransceiverTest, controllerRDMGetWithLongBreak) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
 
   // Queue the response, with a break
   m_generator.AddDelay(176);
@@ -906,10 +927,7 @@ TEST_F(TransceiverTest, responderRDMRequest) {
   StopAfter(arraysize(kRDMResponse));
   m_simulator.Run();
 
-  EXPECT_THAT(
-      m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kRDMResponse + 1,
-                   arraysize(kRDMResponse) - 1));
+  EXPECT_THAT(m_tx_bytes, MatchesFrame(kRDMResponse, arraysize(kRDMResponse)));
 }
 
 TEST_F(TransceiverTest, responderRDMDUB) {
@@ -947,9 +965,51 @@ TEST_F(TransceiverTest, responderRDMDUB) {
   StopAfter(arraysize(kDUBResponse));
   m_simulator.Run();
 
-  EXPECT_THAT(
-      m_tx_bytes,
-      MatchesFrame(0xfe, kDUBResponse + 1, arraysize(kDUBResponse) - 1));
+  EXPECT_THAT(m_tx_bytes, MatchesFrame(kDUBResponse, arraysize(kDUBResponse)));
+}
+
+TEST_F(TransceiverTest, responderRDMOversizedDUB) {
+  vector<uint8_t> rx_data;
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(0, T_OP_RX, _, Lt(arraysize(kDUBRequest)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(0, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME,
+                  arraysize(kDUBRequest))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kDUBRequest, arraysize(kDUBRequest));
+
+  m_simulator.Run();
+
+  // Check the request was what we expected
+  EXPECT_THAT(rx_data, ElementsAreArray(kDUBRequest, arraysize(kDUBRequest)));
+
+  // Create a very large response
+  uint8_t dub_response[600];
+  for (unsigned int i = 0; i < arraysize(dub_response); i++) {
+    dub_response[i] = i & 0xff;
+  }
+
+  // Queue up the response
+  IOVec iovec = {
+    .base = dub_response,
+    .length = arraysize(dub_response)
+  };
+  Transceiver_QueueRDMResponse(false, &iovec, 1);
+
+  m_generator.Reset();
+  m_generator.SetStopOnComplete(false);
+  StopAfter(512);
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, MatchesFrame(dub_response, 512u));
 }
 
 TEST_F(TransceiverTest, responderRDMDUBWithJitter) {
@@ -989,9 +1049,7 @@ TEST_F(TransceiverTest, responderRDMDUBWithJitter) {
   StopAfter(arraysize(kDUBResponse));
   m_simulator.Run();
 
-  EXPECT_THAT(
-      m_tx_bytes,
-      MatchesFrame(0xfe, kDUBResponse + 1, arraysize(kDUBResponse) - 1));
+  EXPECT_THAT(m_tx_bytes, MatchesFrame(kDUBResponse, arraysize(kDUBResponse)));
 }
 
 TEST_F(TransceiverTest, selfTestPass) {
@@ -1049,4 +1107,29 @@ TEST_F(TransceiverTest, selfTestFailTimeout) {
 
   EXPECT_THAT(m_tx_bytes, SizeIs(1));
   EXPECT_THAT(m_tx_bytes, Contains(0xa5));
+}
+
+TEST_F(TransceiverTest, switchModes) {
+  SwitchToSelfTestMode();
+  EXPECT_EQ(T_MODE_SELF_TEST, Transceiver_GetMode());
+  SwitchToControllerMode();
+  EXPECT_EQ(T_MODE_CONTROLLER, Transceiver_GetMode());
+}
+
+TEST_F(TransceiverTest, reset) {
+  SwitchToControllerMode();
+
+  Transceiver_Reset();
+  Transceiver_Tasks();
+
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  EXPECT_TRUE(Transceiver_QueueDMX(1, kDMX1, arraysize(kDMX1)));
+  m_simulator.Run();
+  EXPECT_THAT(m_tx_bytes,
+              MatchesFrameWithSC(NULL_START_CODE, kDMX1, arraysize(kDMX1)));
 }

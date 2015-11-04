@@ -528,13 +528,16 @@ static void SwitchMode() {
     RunTXEventHandler(&event);
   }
   InitializeBuffers();
-  TransceiverEvent event = {
-    g_transceiver.mode_change_token,
-    T_OP_MODE_CHANGE,
-    T_RESULT_OK,
-    NULL, 0, NULL
-  };
-  RunTXEventHandler(&event);
+  if (g_transceiver.mode_change_token != TRANSCEIVER_NO_NOTIFICATION) {
+    TransceiverEvent event = {
+      g_transceiver.mode_change_token,
+      T_OP_MODE_CHANGE,
+      T_RESULT_OK,
+      NULL, 0, NULL
+    };
+    RunTXEventHandler(&event);
+    g_transceiver.mode_change_token = TRANSCEIVER_NO_NOTIFICATION;
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -1028,6 +1031,7 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
   g_transceiver.mode = T_MODE_RESPONDER;
   g_transceiver.desired_mode = T_MODE_RESPONDER;
   g_transceiver.data_index = 0u;
+  g_transceiver.mode_change_token = TRANSCEIVER_NO_NOTIFICATION;
 
   InitializeBuffers();
   ResetTimingSettings();
