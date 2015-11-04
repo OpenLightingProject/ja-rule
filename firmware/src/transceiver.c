@@ -871,6 +871,7 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
                    g_timing_settings.rdm_broadcast_timeout == 0u) {
           // Go directly to the complete state.
           PLIB_TMR_Stop(g_hw_settings.timer_module_id);
+          g_transceiver.data_index = 0u;
           g_transceiver.state = STATE_C_COMPLETE;
         } else {
           // Either T_OP_RDM_WITH_RESPONSE or a non-0 broadcast listen time.
@@ -1516,6 +1517,7 @@ void Transceiver_Tasks() {
           g_transceiver.active->data[0] == SELF_TEST_VALUE) {
         g_transceiver.result = T_RESULT_OK;
       }
+      g_transceiver.data_index = 0;
       FrameComplete();
       FreeActiveBuffer();
       g_transceiver.state = STATE_T_TX_READY;

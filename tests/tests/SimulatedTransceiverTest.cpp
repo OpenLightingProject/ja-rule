@@ -43,6 +43,7 @@
 
 using ::testing::AllOf;
 using ::testing::AnyOf;
+using ::testing::Contains;
 using ::testing::DoAll;
 using ::testing::ElementsAreArray;
 using ::testing::Gt;
@@ -52,6 +53,7 @@ using ::testing::IsEmpty;
 using ::testing::Le;
 using ::testing::Lt;
 using ::testing::Return;
+using ::testing::SizeIs;
 using ::testing::StrictMock;
 using ::testing::Value;
 using ::testing::_;
@@ -263,6 +265,7 @@ class TransceiverTest : public testing::Test {
   vector<uint8_t> m_tx_bytes;
 
   void SwitchToControllerMode();
+  void SwitchToSelfTestMode();
 
   static const uint32_t kClockSpeed = 80000000;
   static const uint32_t kBaudRate = 250000;
@@ -311,9 +314,21 @@ void TransceiverTest::SwitchToControllerMode() {
   m_simulator.Run();
 }
 
+void TransceiverTest::SwitchToSelfTestMode() {
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_MODE_CHANGE, T_RESULT_OK, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  EXPECT_TRUE(Transceiver_SetMode(T_MODE_SELF_TEST, token));
+  m_simulator.Run();
+}
+
 // Tests to add:
 //  - responder, rx a frame bigger than 512 bytes.
 //  - controller, rx an RDM responder larger than 512 bytes
+//  - self test mode
 
 TEST_F(TransceiverTest, controllerTxDMX) {
   SwitchToControllerMode();
@@ -387,6 +402,24 @@ TEST_F(TransceiverTest, controllerTxRDMBroadcast) {
   uint8_t token = 1;
   EXPECT_CALL(m_event_handler,
               Run(EventIs(token, T_OP_RDM_BROADCAST, T_RESULT_RX_TIMEOUT, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  Transceiver_QueueRDMRequest(token, kRDMRequest, arraysize(kRDMRequest), true);
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrame(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+}
+
+TEST_F(TransceiverTest, controllerTxRDMBroadcastNoListen) {
+  Transceiver_SetRDMBroadcastTimeout(0);
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_BROADCAST, T_RESULT_OK, 0)))
     .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
                     Return(true)));
 
@@ -827,4 +860,102 @@ TEST_F(TransceiverTest, responderRDMRequest) {
       m_tx_bytes,
       MatchesFrame(RDM_START_CODE, kRDMResponse + 1,
                    arraysize(kRDMResponse) - 1));
+}
+
+TEST_F(TransceiverTest, responderRDMDUB) {
+  vector<uint8_t> rx_data;
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(0, T_OP_RX, _, Lt(arraysize(kDUBRequest)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(0, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME,
+                  arraysize(kDUBRequest))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kDUBRequest, arraysize(kDUBRequest));
+
+  m_simulator.Run();
+
+  // Check the request was what we expected
+  EXPECT_THAT(rx_data, ElementsAreArray(kDUBRequest, arraysize(kDUBRequest)));
+
+  // Queue up the response
+  IOVec iovec = {
+    .base = kDUBResponse,
+    .length = arraysize(kDUBResponse)
+  };
+  Transceiver_QueueRDMResponse(false, &iovec, 1);
+
+  m_generator.Reset();
+  m_generator.SetStopOnComplete(false);
+  StopAfter(arraysize(kDUBResponse));
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrame(0xfe, kDUBResponse + 1,
+                   arraysize(kDUBResponse) - 1));
+}
+
+TEST_F(TransceiverTest, selfTestPass) {
+  SwitchToSelfTestMode();
+  uint8_t token = 2;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_SELF_TEST, T_RESULT_OK, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  EXPECT_TRUE(Transceiver_QueueSelfTest(token));
+  StopAfter(1);
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, SizeIs(1));
+  EXPECT_THAT(m_tx_bytes, Contains(0xa5));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddByte(0xa5);
+
+  m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, selfTestFailCorrupt) {
+  SwitchToSelfTestMode();
+  uint8_t token = 2;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_SELF_TEST, T_RESULT_SELF_TEST_FAILED, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  EXPECT_TRUE(Transceiver_QueueSelfTest(token));
+  StopAfter(1);
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, SizeIs(1));
+  EXPECT_THAT(m_tx_bytes, Contains(0xa5));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddByte(0x5a);  // opposite of what we sent
+
+  m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, selfTestFailTimeout) {
+  SwitchToSelfTestMode();
+  uint8_t token = 2;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_SELF_TEST, T_RESULT_SELF_TEST_FAILED, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  EXPECT_TRUE(Transceiver_QueueSelfTest(token));
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, SizeIs(1));
+  EXPECT_THAT(m_tx_bytes, Contains(0xa5));
 }
