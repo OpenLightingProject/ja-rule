@@ -315,7 +315,7 @@ void TransceiverTest::SwitchToControllerMode() {
 //    get a cancel
 //  - rx a frame bigger than 512 bytes.
 
-TEST_F(TransceiverTest, txDMX) {
+TEST_F(TransceiverTest, controllerTxDMX) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -330,7 +330,7 @@ TEST_F(TransceiverTest, txDMX) {
               MatchesFrame(NULL_START_CODE, kDMX1, arraysize(kDMX1)));
 }
 
-TEST_F(TransceiverTest, txEmptyDMX) {
+TEST_F(TransceiverTest, controllerTxEmptyDMX) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -346,7 +346,7 @@ TEST_F(TransceiverTest, txEmptyDMX) {
   EXPECT_THAT(m_tx_bytes, MatchesFrame(NULL_START_CODE, dmx, 0ul));
 }
 
-TEST_F(TransceiverTest, txJumboDMX) {
+TEST_F(TransceiverTest, controllerTxJumboDMX) {
   SwitchToControllerMode();
 
   uint8_t dmx[1024];
@@ -364,7 +364,7 @@ TEST_F(TransceiverTest, txJumboDMX) {
   EXPECT_THAT(m_tx_bytes, MatchesFrame(NULL_START_CODE, dmx, 512ul));
 }
 
-TEST_F(TransceiverTest, txASCFrame) {
+TEST_F(TransceiverTest, controllerTxASCFrame) {
   const uint8_t ASC = 0xdd;
   SwitchToControllerMode();
 
@@ -381,7 +381,7 @@ TEST_F(TransceiverTest, txASCFrame) {
   EXPECT_THAT(m_tx_bytes, MatchesFrame(ASC, asc_frame, arraysize(asc_frame)));
 }
 
-TEST_F(TransceiverTest, txRDMBroadcast) {
+TEST_F(TransceiverTest, controllerTxRDMBroadcast) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -398,7 +398,7 @@ TEST_F(TransceiverTest, txRDMBroadcast) {
       MatchesFrame(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
 }
 
-TEST_F(TransceiverTest, txRDMDUBNoResponse) {
+TEST_F(TransceiverTest, controllerRDMDUBNoResponse) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -415,7 +415,7 @@ TEST_F(TransceiverTest, txRDMDUBNoResponse) {
       MatchesFrame(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
 }
 
-TEST_F(TransceiverTest, txRDMDUBWithResponse) {
+TEST_F(TransceiverTest, controllerRDMDUBWithResponse) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -441,7 +441,7 @@ TEST_F(TransceiverTest, txRDMDUBWithResponse) {
   m_simulator.Run();
 }
 
-TEST_F(TransceiverTest, txRDMGetTimeout) {
+TEST_F(TransceiverTest, controllerRDMGetTimeout) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -460,7 +460,7 @@ TEST_F(TransceiverTest, txRDMGetTimeout) {
                            arraysize(kRDMRequest)));
 }
 
-TEST_F(TransceiverTest, txRDMGetWithResponse) {
+TEST_F(TransceiverTest, controllerRDMGetWithResponse) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -488,7 +488,7 @@ TEST_F(TransceiverTest, txRDMGetWithResponse) {
   m_simulator.Run();
 }
 
-TEST_F(TransceiverTest, txRDMGetWithShortBreak) {
+TEST_F(TransceiverTest, controllerRDMGetWithShortBreak) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -516,7 +516,7 @@ TEST_F(TransceiverTest, txRDMGetWithShortBreak) {
   m_simulator.Run();
 }
 
-TEST_F(TransceiverTest, rxDMX) {
+TEST_F(TransceiverTest, responderRxDMX) {
   vector<uint8_t> rx_data;
 
   uint8_t token = 0;
@@ -543,7 +543,7 @@ TEST_F(TransceiverTest, rxDMX) {
   EXPECT_THAT(rx_data, ElementsAreArray(kDMX1, arraysize(kDMX1)));
 }
 
-TEST_F(TransceiverTest, rxShortBreak) {
+TEST_F(TransceiverTest, responderRxShortBreak) {
   vector<uint8_t> rx_data;
 
   uint8_t token = 0;
@@ -570,7 +570,7 @@ TEST_F(TransceiverTest, rxShortBreak) {
   EXPECT_THAT(rx_data, ElementsAreArray(kDMX2, arraysize(kDMX2)));
 }
 
-TEST_F(TransceiverTest, rxShortMark) {
+TEST_F(TransceiverTest, responderRxShortMark) {
   vector<uint8_t> rx_data;
 
   uint8_t token = 0;
@@ -598,7 +598,7 @@ TEST_F(TransceiverTest, rxShortMark) {
 }
 
 // Interslot delay, this test can take a while to run.
-TEST_F(TransceiverTest, rxInterSlotDelay) {
+TEST_F(TransceiverTest, responderRxInterSlotDelay) {
   vector<uint8_t> rx_data;
 
   const uint8_t expected_frame[] = {0, 10, 20, 30, 40, 50};
@@ -644,7 +644,7 @@ TEST_F(TransceiverTest, rxInterSlotDelay) {
 
 // Test what happens if we send a break / mark sequence, followed by another
 // break / mark sequence with data.
-TEST_F(TransceiverTest, rxZeroLengthFrame) {
+TEST_F(TransceiverTest, responderRxZeroLengthFrame) {
   vector<uint8_t> rx_data;
 
   uint8_t token = 0;
@@ -672,8 +672,8 @@ TEST_F(TransceiverTest, rxZeroLengthFrame) {
   EXPECT_THAT(rx_data, ElementsAreArray(kDMX2, arraysize(kDMX2)));
 }
 
-// Test we can send two frames back to back.
-TEST_F(TransceiverTest, rxDoubleFrame) {
+// Test we can receive two frames back to back.
+TEST_F(TransceiverTest, responderRxDoubleFrame) {
   vector<uint8_t> rx_data1, rx_data2;
 
   uint8_t token = 0;
@@ -711,7 +711,7 @@ TEST_F(TransceiverTest, rxDoubleFrame) {
 
 // Test we handle framing errors correctly.
 // This ensures we deliver up to but not including the bad data
-TEST_F(TransceiverTest, rxFramingError) {
+TEST_F(TransceiverTest, responderRxFramingError) {
   vector<uint8_t> rx_data;
 
   uint8_t token = 0;
@@ -737,3 +737,43 @@ TEST_F(TransceiverTest, rxFramingError) {
   EXPECT_THAT(rx_data, ElementsAreArray(kDMX2, arraysize(kDMX2)));
 }
 
+TEST_F(TransceiverTest, responderRDMRequest) {
+  vector<uint8_t> rx_data;
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(0, T_OP_RX, _, Lt(arraysize(kRDMRequest)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(0, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME,
+                  arraysize(kRDMRequest))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kRDMRequest, arraysize(kRDMRequest));
+
+  m_simulator.Run();
+
+  // Check the request was what we expected
+  EXPECT_THAT(rx_data, ElementsAreArray(kRDMRequest, arraysize(kRDMRequest)));
+
+  // Queue up the response
+  IOVec iovec = {
+    .base = kRDMResponse,
+    .length = arraysize(kRDMResponse)
+  };
+  Transceiver_QueueRDMResponse(true, &iovec, 1);
+
+  m_generator.Reset();
+  m_generator.SetStopOnComplete(false);
+  StopAfter(arraysize(kRDMResponse));
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrame(RDM_START_CODE, kRDMResponse + 1,
+                   arraysize(kRDMResponse) - 1));
+}

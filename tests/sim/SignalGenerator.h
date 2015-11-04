@@ -64,6 +64,11 @@ class SignalGenerator {
   void Tick();
 
   /*
+   * @brief Reset the generator.
+   */
+  void Reset();
+
+  /*
    * @brief Controls if we stop the simulator when we run out of events.
    *
    * If true, we'll run for an extra 10us to let the system settle.

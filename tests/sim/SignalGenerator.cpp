@@ -101,6 +101,14 @@ void SignalGenerator::Tick() {
   }
 }
 
+void SignalGenerator::Reset() {
+  m_next_event_at = 0;
+  m_framing_error_at = 0;
+  m_line_state = HIGH;
+  m_tx_byte = 0;
+  m_state = IDLE;
+}
+
 void SignalGenerator::SetStopOnComplete(bool stop_on_complete) {
   m_stop_on_complete = stop_on_complete;
 }

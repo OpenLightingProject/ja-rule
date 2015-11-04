@@ -545,9 +545,12 @@ static inline void PrepareRDMResponse() {
   if (g_timing_settings.rdm_responder_jitter) {
     jitter = Random_PseudoGet() % g_timing_settings.rdm_responder_jitter;
   }
+  // It's important to stop the timer before changing the period, see 14.3.11
+  PLIB_TMR_Stop(g_hw_settings.timer_module_id);
   PLIB_TMR_Period16BitSet(
       g_hw_settings.timer_module_id,
       g_timing_settings.rdm_responder_delay - RESPONSE_FUDGE_FACTOR + jitter);
+  PLIB_TMR_Start(g_hw_settings.timer_module_id);
   SYS_INT_SourceStatusClear(g_hw_settings.timer_source);
   SYS_INT_SourceEnable(g_hw_settings.timer_source);
 }
@@ -748,11 +751,13 @@ void __ISR(AS_TIMER_ISR_VECTOR(TRANSCEIVER_TIMER), ipl6AUTO)
 
       if (g_transceiver.active->op == OP_RDM_WITH_RESPONSE) {
         SetBreak();
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
         PLIB_TMR_PrescaleSelect(g_hw_settings.timer_module_id,
                                 TMR_PRESCALE_VALUE_1);
         PLIB_TMR_Counter16BitClear(g_hw_settings.timer_module_id);
         PLIB_TMR_Period16BitSet(g_hw_settings.timer_module_id,
                                 g_timing_settings.break_ticks);
+        PLIB_TMR_Start(g_hw_settings.timer_module_id);
         g_transceiver.state = STATE_R_TX_BREAK;
       } else {
         SYS_INT_SourceDisable(g_hw_settings.timer_source);
@@ -761,8 +766,10 @@ void __ISR(AS_TIMER_ISR_VECTOR(TRANSCEIVER_TIMER), ipl6AUTO)
       break;
     case STATE_R_TX_MARK:
       SYS_INT_SourceDisable(g_hw_settings.timer_source);
+      PLIB_TMR_Stop(g_hw_settings.timer_module_id);
       PLIB_TMR_PrescaleSelect(g_hw_settings.timer_module_id,
                               TMR_PRESCALE_VALUE_8);
+      PLIB_TMR_Start(g_hw_settings.timer_module_id);
 
       StartSendingRDMResponse();
       break;
@@ -1444,7 +1451,9 @@ void Transceiver_Tasks() {
       FreeActiveBuffer();
       break;
     case STATE_R_TX_COMPLETE:
+      PLIB_TMR_Stop(g_hw_settings.timer_module_id);
       PLIB_TMR_Period16BitSet(g_hw_settings.timer_module_id, 65535u);
+      PLIB_TMR_Start(g_hw_settings.timer_module_id);
       g_transceiver.data_index = 0u;
       g_transceiver.state = STATE_R_RX_PREPARE;
       break;
