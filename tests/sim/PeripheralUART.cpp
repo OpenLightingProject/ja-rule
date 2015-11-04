@@ -81,36 +81,38 @@ void PeripheralUART::Tick() {
         uart.tx_byte = uart.tx_buffer.front();
         uart.tx_buffer.pop();
       }
-      uart.tx_counter++;
-      if (uart.tx_counter == uart.ticks_per_bit) {
-        uart.tx_counter = 0;
+      if (uart.tx_state != IDLE) {
+        uart.tx_counter++;
+        if (uart.tx_counter == uart.ticks_per_bit) {
+          uart.tx_counter = 0;
 
-        if (uart.tx_state == STOP_BIT_2) {
-          if (m_tx_callback) {
-            m_tx_callback->Run(static_cast<USART_MODULE_ID>(i), uart.tx_byte);
+          if (uart.tx_state == STOP_BIT_2) {
+            if (m_tx_callback) {
+              m_tx_callback->Run(static_cast<USART_MODULE_ID>(i), uart.tx_byte);
+            }
+            uart.tx_state = IDLE;
+          } else {
+            uart.tx_state = static_cast<UARTState>(uart.tx_state + 1);
           }
-          uart.tx_state = IDLE;
-        } else {
-          uart.tx_state = static_cast<UARTState>(uart.tx_state + 1);
         }
-      }
 
-      bool trigger_tx_isr = false;
-      switch (uart.int_mode) {
-        case USART_TRANSMIT_FIFO_NOT_FULL:
-          trigger_tx_isr = uart.tx_buffer.size() < TX_FIFO_SIZE;
-          break;
-        case USART_TRANSMIT_FIFO_IDLE:
-          trigger_tx_isr = (uart.tx_state == IDLE && uart.tx_buffer.empty());
-          break;
-        case USART_TRANSMIT_FIFO_EMPTY:
-          trigger_tx_isr = uart.tx_buffer.empty();
-          break;
-      }
+        bool trigger_tx_isr = false;
+        switch (uart.int_mode) {
+          case USART_TRANSMIT_FIFO_NOT_FULL:
+            trigger_tx_isr = uart.tx_buffer.size() < TX_FIFO_SIZE;
+            break;
+          case USART_TRANSMIT_FIFO_IDLE:
+            trigger_tx_isr = (uart.tx_state == IDLE && uart.tx_buffer.empty());
+            break;
+          case USART_TRANSMIT_FIFO_EMPTY:
+            trigger_tx_isr = uart.tx_buffer.empty();
+            break;
+        }
 
-      if (trigger_tx_isr) {
-        m_interrupt_controller->RaiseInterrupt(
-            static_cast<INT_SOURCE>(uart.interrupt_source + 2));
+        if (trigger_tx_isr) {
+          m_interrupt_controller->RaiseInterrupt(
+              static_cast<INT_SOURCE>(uart.interrupt_source + 2));
+        }
       }
     }
 

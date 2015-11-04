@@ -364,6 +364,16 @@ bool UART_RXBytes() {
 // Memory Buffer Management
 // ----------------------------------------------------------------------------
 
+
+/*
+ * @brief Return the number of free buffers.
+ *
+ * This is exposed for testing purposes.
+ */
+uint8_t Transceiver_FreeBufferCount() {
+  return g_transceiver.free_size;
+}
+
 /*
  * @brief Setup the transceiver buffers.
  */
@@ -519,13 +529,16 @@ static void SwitchMode() {
     RunTXEventHandler(&event);
   }
   InitializeBuffers();
-  TransceiverEvent event = {
-    g_transceiver.mode_change_token,
-    T_OP_MODE_CHANGE,
-    T_RESULT_OK,
-    NULL, 0, NULL
-  };
-  RunTXEventHandler(&event);
+  if (g_transceiver.mode_change_token != TRANSCEIVER_NO_NOTIFICATION) {
+    TransceiverEvent event = {
+      g_transceiver.mode_change_token,
+      T_OP_MODE_CHANGE,
+      T_RESULT_OK,
+      NULL, 0, NULL
+    };
+    RunTXEventHandler(&event);
+    g_transceiver.mode_change_token = TRANSCEIVER_NO_NOTIFICATION;
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -545,9 +558,12 @@ static inline void PrepareRDMResponse() {
   if (g_timing_settings.rdm_responder_jitter) {
     jitter = Random_PseudoGet() % g_timing_settings.rdm_responder_jitter;
   }
+  // It's important to stop the timer before changing the period, see 14.3.11
+  PLIB_TMR_Stop(g_hw_settings.timer_module_id);
   PLIB_TMR_Period16BitSet(
       g_hw_settings.timer_module_id,
       g_timing_settings.rdm_responder_delay - RESPONSE_FUDGE_FACTOR + jitter);
+  PLIB_TMR_Start(g_hw_settings.timer_module_id);
   SYS_INT_SourceStatusClear(g_hw_settings.timer_source);
   SYS_INT_SourceEnable(g_hw_settings.timer_source);
 }
@@ -748,11 +764,13 @@ void __ISR(AS_TIMER_ISR_VECTOR(TRANSCEIVER_TIMER), ipl6AUTO)
 
       if (g_transceiver.active->op == OP_RDM_WITH_RESPONSE) {
         SetBreak();
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
         PLIB_TMR_PrescaleSelect(g_hw_settings.timer_module_id,
                                 TMR_PRESCALE_VALUE_1);
         PLIB_TMR_Counter16BitClear(g_hw_settings.timer_module_id);
         PLIB_TMR_Period16BitSet(g_hw_settings.timer_module_id,
                                 g_timing_settings.break_ticks);
+        PLIB_TMR_Start(g_hw_settings.timer_module_id);
         g_transceiver.state = STATE_R_TX_BREAK;
       } else {
         SYS_INT_SourceDisable(g_hw_settings.timer_source);
@@ -761,8 +779,10 @@ void __ISR(AS_TIMER_ISR_VECTOR(TRANSCEIVER_TIMER), ipl6AUTO)
       break;
     case STATE_R_TX_MARK:
       SYS_INT_SourceDisable(g_hw_settings.timer_source);
+      PLIB_TMR_Stop(g_hw_settings.timer_module_id);
       PLIB_TMR_PrescaleSelect(g_hw_settings.timer_module_id,
                               TMR_PRESCALE_VALUE_8);
+      PLIB_TMR_Start(g_hw_settings.timer_module_id);
 
       StartSendingRDMResponse();
       break;
@@ -864,6 +884,7 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
                    g_timing_settings.rdm_broadcast_timeout == 0u) {
           // Go directly to the complete state.
           PLIB_TMR_Stop(g_hw_settings.timer_module_id);
+          g_transceiver.data_index = 0u;
           g_transceiver.state = STATE_C_COMPLETE;
         } else {
           // Either T_OP_RDM_WITH_RESPONSE or a non-0 broadcast listen time.
@@ -906,16 +927,11 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
   if (SYS_INT_SourceStatusGet(g_hw_settings.usart_rx_source)) {
     if (g_transceiver.state == STATE_C_RX_IN_DUB ||
         g_transceiver.state == STATE_C_RX_DATA) {
-      if (UART_RXBytes()) {
-        // RX buffer is full.
-        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
-        SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
-        SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
-        PLIB_USART_ReceiverDisable(g_hw_settings.usart);
-        ResetToMark();
-        g_transceiver.result = T_RESULT_RX_INVALID;
-        g_transceiver.state = STATE_C_COMPLETE;
-      }
+      // It's impossible to overflow the buffer here, because each byte is 44uS
+      // and the DUB Response limit (g_timing_settings.rdm_dub_response_limit)
+      // is at most 3500us. This means even with 0 interslot delay, the maximum
+      // bytes we can receive is 79.
+     UART_RXBytes();
     } else if (g_transceiver.state == STATE_R_RX_DATA) {
       if (PLIB_USART_ErrorsGet(g_hw_settings.usart) & USART_ERROR_FRAMING) {
         // A framing error indicates a possible break.
@@ -1016,6 +1032,7 @@ void Transceiver_Initialize(const TransceiverHardwareSettings* settings,
   g_transceiver.mode = T_MODE_RESPONDER;
   g_transceiver.desired_mode = T_MODE_RESPONDER;
   g_transceiver.data_index = 0u;
+  g_transceiver.mode_change_token = TRANSCEIVER_NO_NOTIFICATION;
 
   InitializeBuffers();
   ResetTimingSettings();
@@ -1444,7 +1461,9 @@ void Transceiver_Tasks() {
       FreeActiveBuffer();
       break;
     case STATE_R_TX_COMPLETE:
+      PLIB_TMR_Stop(g_hw_settings.timer_module_id);
       PLIB_TMR_Period16BitSet(g_hw_settings.timer_module_id, 65535u);
+      PLIB_TMR_Start(g_hw_settings.timer_module_id);
       g_transceiver.data_index = 0u;
       g_transceiver.state = STATE_R_RX_PREPARE;
       break;
@@ -1507,6 +1526,7 @@ void Transceiver_Tasks() {
           g_transceiver.active->data[0] == SELF_TEST_VALUE) {
         g_transceiver.result = T_RESULT_OK;
       }
+      g_transceiver.data_index = 0;
       FrameComplete();
       FreeActiveBuffer();
       g_transceiver.state = STATE_T_TX_READY;
@@ -1721,6 +1741,8 @@ uint16_t Transceiver_GetRDMResponseTimeout() {
 }
 
 bool Transceiver_SetRDMDUBResponseLimit(uint16_t limit) {
+  // If you change the max here be mindful of the comment in the RX UART ISR
+  // about buffer sizes.
   if (limit < 10000u || limit > 35000u) {
     return false;
   }

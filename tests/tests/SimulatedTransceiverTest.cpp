@@ -43,14 +43,18 @@
 
 using ::testing::AllOf;
 using ::testing::AnyOf;
+using ::testing::Contains;
 using ::testing::DoAll;
 using ::testing::ElementsAreArray;
+using ::testing::Ge;
 using ::testing::Gt;
-using ::testing::Le;
-using ::testing::Lt;
 using ::testing::InSequence;
 using ::testing::InvokeWithoutArgs;
+using ::testing::IsEmpty;
+using ::testing::Le;
+using ::testing::Lt;
 using ::testing::Return;
+using ::testing::SizeIs;
 using ::testing::StrictMock;
 using ::testing::Value;
 using ::testing::_;
@@ -71,6 +75,8 @@ extern "C" {
 void InputCaptureEvent(void);
 void Transceiver_TimerEvent();
 void Transceiver_UARTEvent();
+uint8_t Transceiver_FreeBufferCount();
+
 
 #ifdef __cplusplus
 }
@@ -100,7 +106,7 @@ MATCHER_P2(RequestTimingIs, break_time, mark_time, "") {
 }
 
 // Check that a vector contains the specified E1.11 frame.
-MATCHER_P3(MatchesFrame, start_code, expected_data, expected_length, "") {
+MATCHER_P3(MatchesFrameWithSC, start_code, expected_data, expected_length, "") {
   if (arg.empty()) {
     *result_listener << "Frame is empty";
     return false;
@@ -118,7 +124,27 @@ MATCHER_P3(MatchesFrame, start_code, expected_data, expected_length, "") {
   for (unsigned int i = 0; i < expected_length; i++) {
     if (arg[i + 1] != expected_data[i]) {
       *result_listener << "Index " << i << " mismatch, was " << arg[i + 1]
-                       << ", expected " << expected_data[1];
+                       << ", expected " << expected_data[i];
+      return false;
+    }
+  }
+  return true;
+}
+
+MATCHER_P2(MatchesFrame, expected_data, expected_length, "") {
+  if (arg.empty()) {
+    *result_listener << "Frame is empty";
+    return false;
+  }
+  if (arg.size() != expected_length) {
+    *result_listener << "Frame size mismatch, was " << arg.size()
+                     << ", expected " << expected_length;
+    return false;
+  }
+  for (unsigned int i = 0; i < expected_length; i++) {
+    if (arg[i] != expected_data[i]) {
+      *result_listener << "Index " << i << " mismatch, was " << arg[i]
+                       << ", expected " << expected_data[i];
       return false;
     }
   }
@@ -175,6 +201,7 @@ class TransceiverTest : public testing::Test {
   }
 
   void SetUp() {
+    m_simulator.SetClockLimit(1000000, true);  // default to 1s
     g_event_handler = &m_event_handler;
     PLIB_TMR_SetMock(&m_timer);
     PLIB_IC_SetMock(&m_ic);
@@ -207,6 +234,19 @@ class TransceiverTest : public testing::Test {
   }
 
   void TearDown() {
+    if (!::testing::Test::HasFatalFailure()) {
+      // Run for another 6ms to allow any final states to timeout
+      m_simulator.SetClockLimit(6000, false);
+      m_simulator.Run();
+      // if we're in responder mode, then one buffer is used for the incoming
+      // frame.
+      if (Transceiver_GetMode() == T_MODE_RESPONDER) {
+        EXPECT_EQ(1, Transceiver_FreeBufferCount());
+      } else {
+        EXPECT_EQ(2, Transceiver_FreeBufferCount());
+      }
+    }
+
     g_event_handler = nullptr;
     PLIB_TMR_SetMock(nullptr);
     PLIB_IC_SetMock(nullptr);
@@ -262,6 +302,7 @@ class TransceiverTest : public testing::Test {
   vector<uint8_t> m_tx_bytes;
 
   void SwitchToControllerMode();
+  void SwitchToSelfTestMode();
 
   static const uint32_t kClockSpeed = 80000000;
   static const uint32_t kBaudRate = 250000;
@@ -310,12 +351,23 @@ void TransceiverTest::SwitchToControllerMode() {
   m_simulator.Run();
 }
 
-// Tests to add:
-//  - queue frame in controller mode, then switch to responder mode, confirm we
-//    get a cancel
-//  - rx a frame bigger than 512 bytes.
+void TransceiverTest::SwitchToSelfTestMode() {
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_MODE_CHANGE, T_RESULT_OK, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
 
-TEST_F(TransceiverTest, txDMX) {
+  EXPECT_TRUE(Transceiver_SetMode(T_MODE_SELF_TEST, token));
+  m_simulator.Run();
+}
+
+// Tests to add:
+//  - responder, rx a frame bigger than 512 bytes.
+//  - controller, rx an RDM responder larger than 512 bytes
+//  - self test mode
+
+TEST_F(TransceiverTest, controllerTxDMX) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -327,10 +379,10 @@ TEST_F(TransceiverTest, txDMX) {
   Transceiver_QueueDMX(1, kDMX1, arraysize(kDMX1));
   m_simulator.Run();
   EXPECT_THAT(m_tx_bytes,
-              MatchesFrame(NULL_START_CODE, kDMX1, arraysize(kDMX1)));
+              MatchesFrameWithSC(NULL_START_CODE, kDMX1, arraysize(kDMX1)));
 }
 
-TEST_F(TransceiverTest, txEmptyDMX) {
+TEST_F(TransceiverTest, controllerTxEmptyDMX) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -343,10 +395,10 @@ TEST_F(TransceiverTest, txEmptyDMX) {
   m_simulator.Run();
 
   const uint8_t dmx[] = {};
-  EXPECT_THAT(m_tx_bytes, MatchesFrame(NULL_START_CODE, dmx, 0ul));
+  EXPECT_THAT(m_tx_bytes, MatchesFrameWithSC(NULL_START_CODE, dmx, 0ul));
 }
 
-TEST_F(TransceiverTest, txJumboDMX) {
+TEST_F(TransceiverTest, controllerTxJumboDMX) {
   SwitchToControllerMode();
 
   uint8_t dmx[1024];
@@ -361,10 +413,10 @@ TEST_F(TransceiverTest, txJumboDMX) {
   m_simulator.Run();
 
   // Limited to 512 slots
-  EXPECT_THAT(m_tx_bytes, MatchesFrame(NULL_START_CODE, dmx, 512ul));
+  EXPECT_THAT(m_tx_bytes, MatchesFrameWithSC(NULL_START_CODE, dmx, 512ul));
 }
 
-TEST_F(TransceiverTest, txASCFrame) {
+TEST_F(TransceiverTest, controllerTxASCFrame) {
   const uint8_t ASC = 0xdd;
   SwitchToControllerMode();
 
@@ -378,10 +430,11 @@ TEST_F(TransceiverTest, txASCFrame) {
   Transceiver_QueueASC(token, ASC, asc_frame, arraysize(asc_frame));
   m_simulator.Run();
 
-  EXPECT_THAT(m_tx_bytes, MatchesFrame(ASC, asc_frame, arraysize(asc_frame)));
+  EXPECT_THAT(m_tx_bytes,
+              MatchesFrameWithSC(ASC, asc_frame, arraysize(asc_frame)));
 }
 
-TEST_F(TransceiverTest, txRDMBroadcast) {
+TEST_F(TransceiverTest, controllerTxRDMBroadcast) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -395,10 +448,28 @@ TEST_F(TransceiverTest, txRDMBroadcast) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
 }
 
-TEST_F(TransceiverTest, txRDMDUBNoResponse) {
+TEST_F(TransceiverTest, controllerTxRDMBroadcastNoListen) {
+  Transceiver_SetRDMBroadcastTimeout(0);
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_BROADCAST, T_RESULT_OK, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  Transceiver_QueueRDMRequest(token, kRDMRequest, arraysize(kRDMRequest), true);
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+}
+
+TEST_F(TransceiverTest, controllerRDMDUBNoResponse) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -412,10 +483,10 @@ TEST_F(TransceiverTest, txRDMDUBNoResponse) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
 }
 
-TEST_F(TransceiverTest, txRDMDUBWithResponse) {
+TEST_F(TransceiverTest, controllerRDMDUBWithResponse) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -426,7 +497,7 @@ TEST_F(TransceiverTest, txRDMDUBWithResponse) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
 
   // Now queue up the response
   m_generator.AddDelay(176);
@@ -441,7 +512,39 @@ TEST_F(TransceiverTest, txRDMDUBWithResponse) {
   m_simulator.Run();
 }
 
-TEST_F(TransceiverTest, txRDMGetTimeout) {
+TEST_F(TransceiverTest, controllerRDMDUBWithLargeResponse) {
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  StopAfter(1 + arraysize(kDUBRequest));
+
+  Transceiver_QueueRDMDUB(token, kDUBRequest, arraysize(kDUBRequest));
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrameWithSC(RDM_START_CODE, kDUBRequest, arraysize(kDUBRequest)));
+
+  uint8_t dub_response[600];
+  for (unsigned int i = 0; i < arraysize(dub_response); i++) {
+    dub_response[i] = i & 0xff;
+  }
+
+  // Now queue up the response
+  m_generator.AddDelay(176);
+  m_generator.AddFrame(dub_response, arraysize(dub_response));
+
+  // See the notes in transceiver.c, due to timing restrictions only the first
+  // 65 bytes will be accepted.
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_DUB, T_RESULT_RX_DATA, Ge(63))))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, controllerRDMGetTimeout) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -456,11 +559,11 @@ TEST_F(TransceiverTest, txRDMGetTimeout) {
   m_simulator.Run();
 
   EXPECT_THAT(m_tx_bytes,
-              MatchesFrame(RDM_START_CODE, kRDMRequest,
+              MatchesFrameWithSC(RDM_START_CODE, kRDMRequest,
                            arraysize(kRDMRequest)));
 }
 
-TEST_F(TransceiverTest, txRDMGetWithResponse) {
+TEST_F(TransceiverTest, controllerRDMGetWithResponse) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -471,7 +574,7 @@ TEST_F(TransceiverTest, txRDMGetWithResponse) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
 
   // Queue the response, with a break
   m_generator.AddDelay(176);
@@ -488,7 +591,7 @@ TEST_F(TransceiverTest, txRDMGetWithResponse) {
   m_simulator.Run();
 }
 
-TEST_F(TransceiverTest, txRDMGetWithShortBreak) {
+TEST_F(TransceiverTest, controllerRDMGetWithShortBreak) {
   SwitchToControllerMode();
 
   uint8_t token = 1;
@@ -499,7 +602,7 @@ TEST_F(TransceiverTest, txRDMGetWithShortBreak) {
 
   EXPECT_THAT(
       m_tx_bytes,
-      MatchesFrame(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
 
   // Queue the response, with a break
   m_generator.AddDelay(176);
@@ -516,7 +619,59 @@ TEST_F(TransceiverTest, txRDMGetWithShortBreak) {
   m_simulator.Run();
 }
 
-TEST_F(TransceiverTest, rxDMX) {
+TEST_F(TransceiverTest, controllerRDMGetWithLongBreak) {
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  StopAfter(1 + arraysize(kRDMRequest));
+  Transceiver_QueueRDMRequest(token, kRDMRequest, arraysize(kRDMRequest),
+                              false);
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+
+  // Queue the response, with a break
+  m_generator.AddDelay(176);
+  m_generator.AddBreak(353);  // max is 352uS
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kRDMResponse, arraysize(kRDMResponse));
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_INVALID,
+                          0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  m_simulator.Run();
+}
+
+// Check that switching to responder mode cancels any in-flight transmissions.
+TEST_F(TransceiverTest, controllerModeChange) {
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_CANCELLED, 0)))
+    .WillOnce(Return(true));
+
+  EXPECT_TRUE(Transceiver_QueueDMX(token, kDMX1, arraysize(kDMX1)));
+
+  token++;
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_MODE_CHANGE, T_RESULT_OK, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+  EXPECT_TRUE(Transceiver_SetMode(T_MODE_RESPONDER, token));
+
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, IsEmpty());
+}
+
+TEST_F(TransceiverTest, responderRxDMX) {
   vector<uint8_t> rx_data;
 
   uint8_t token = 0;
@@ -543,7 +698,7 @@ TEST_F(TransceiverTest, rxDMX) {
   EXPECT_THAT(rx_data, ElementsAreArray(kDMX1, arraysize(kDMX1)));
 }
 
-TEST_F(TransceiverTest, rxShortBreak) {
+TEST_F(TransceiverTest, responderRxShortBreak) {
   vector<uint8_t> rx_data;
 
   uint8_t token = 0;
@@ -570,7 +725,7 @@ TEST_F(TransceiverTest, rxShortBreak) {
   EXPECT_THAT(rx_data, ElementsAreArray(kDMX2, arraysize(kDMX2)));
 }
 
-TEST_F(TransceiverTest, rxShortMark) {
+TEST_F(TransceiverTest, responderRxShortMark) {
   vector<uint8_t> rx_data;
 
   uint8_t token = 0;
@@ -598,7 +753,7 @@ TEST_F(TransceiverTest, rxShortMark) {
 }
 
 // Interslot delay, this test can take a while to run.
-TEST_F(TransceiverTest, rxInterSlotDelay) {
+TEST_F(TransceiverTest, responderRxInterSlotDelay) {
   vector<uint8_t> rx_data;
 
   const uint8_t expected_frame[] = {0, 10, 20, 30, 40, 50};
@@ -613,7 +768,7 @@ TEST_F(TransceiverTest, rxInterSlotDelay) {
     .WillOnce(AppendTo(&rx_data));
 
   // we need more than 1s of runtime
-  m_simulator.SetClockLimit(3 * kClockSpeed);
+  m_simulator.SetClockLimit(3000000, true);
   m_generator.SetStopOnComplete(true);
   m_generator.AddDelay(100);
   m_generator.AddBreak(176);
@@ -642,9 +797,46 @@ TEST_F(TransceiverTest, rxInterSlotDelay) {
               arraysize(expected_frame)));
 }
 
+// Interslot delay for RDM frames.
+TEST_F(TransceiverTest, responderRxRDMInterSlotDelay) {
+  vector<uint8_t> rx_data;
+
+  const uint8_t expected_frame[] = {RDM_START_CODE, 10, 20, 30};
+  uint8_t token = 0;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RX, _, Le(arraysize(expected_frame)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(token, T_OP_RX, T_RESULT_RX_FRAME_TIMEOUT,
+                  arraysize(expected_frame))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+
+  // We can have up to 2.1ms between RDM slots.
+  m_generator.AddByte(RDM_START_CODE);
+  m_generator.AddDelay(100);  // 100us
+  m_generator.AddByte(10);
+  m_generator.AddDelay(1000);  // 1ms
+  m_generator.AddByte(20);
+  m_generator.AddDelay(2100);  // 2.1ms
+  m_generator.AddByte(30);
+  m_generator.AddDelay(2200);  // 2.2ms
+  m_generator.AddByte(40);
+
+  m_simulator.Run();
+
+  EXPECT_THAT(rx_data, ElementsAreArray(expected_frame,
+              arraysize(expected_frame)));
+}
+
 // Test what happens if we send a break / mark sequence, followed by another
 // break / mark sequence with data.
-TEST_F(TransceiverTest, rxZeroLengthFrame) {
+TEST_F(TransceiverTest, responderRxZeroLengthFrame) {
   vector<uint8_t> rx_data;
 
   uint8_t token = 0;
@@ -672,8 +864,8 @@ TEST_F(TransceiverTest, rxZeroLengthFrame) {
   EXPECT_THAT(rx_data, ElementsAreArray(kDMX2, arraysize(kDMX2)));
 }
 
-// Test we can send two frames back to back.
-TEST_F(TransceiverTest, rxDoubleFrame) {
+// Test we can receive two frames back to back.
+TEST_F(TransceiverTest, responderRxDoubleFrame) {
   vector<uint8_t> rx_data1, rx_data2;
 
   uint8_t token = 0;
@@ -711,7 +903,7 @@ TEST_F(TransceiverTest, rxDoubleFrame) {
 
 // Test we handle framing errors correctly.
 // This ensures we deliver up to but not including the bad data
-TEST_F(TransceiverTest, rxFramingError) {
+TEST_F(TransceiverTest, responderRxFramingError) {
   vector<uint8_t> rx_data;
 
   uint8_t token = 0;
@@ -737,3 +929,244 @@ TEST_F(TransceiverTest, rxFramingError) {
   EXPECT_THAT(rx_data, ElementsAreArray(kDMX2, arraysize(kDMX2)));
 }
 
+TEST_F(TransceiverTest, responderRDMRequest) {
+  vector<uint8_t> rx_data;
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(0, T_OP_RX, _, Lt(arraysize(kRDMRequest)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(0, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME,
+                  arraysize(kRDMRequest))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kRDMRequest, arraysize(kRDMRequest));
+
+  m_simulator.Run();
+
+  // Check the request was what we expected
+  EXPECT_THAT(rx_data, ElementsAreArray(kRDMRequest, arraysize(kRDMRequest)));
+
+  // Queue up the response
+  IOVec iovec = {
+    .base = kRDMResponse,
+    .length = arraysize(kRDMResponse)
+  };
+  Transceiver_QueueRDMResponse(true, &iovec, 1);
+
+  m_generator.Reset();
+  m_generator.SetStopOnComplete(false);
+  StopAfter(arraysize(kRDMResponse));
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, MatchesFrame(kRDMResponse, arraysize(kRDMResponse)));
+}
+
+TEST_F(TransceiverTest, responderRDMDUB) {
+  vector<uint8_t> rx_data;
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(0, T_OP_RX, _, Lt(arraysize(kDUBRequest)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(0, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME,
+                  arraysize(kDUBRequest))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kDUBRequest, arraysize(kDUBRequest));
+
+  m_simulator.Run();
+
+  // Check the request was what we expected
+  EXPECT_THAT(rx_data, ElementsAreArray(kDUBRequest, arraysize(kDUBRequest)));
+
+  // Queue up the response
+  IOVec iovec = {
+    .base = kDUBResponse,
+    .length = arraysize(kDUBResponse)
+  };
+  Transceiver_QueueRDMResponse(false, &iovec, 1);
+
+  m_generator.Reset();
+  m_generator.SetStopOnComplete(false);
+  StopAfter(arraysize(kDUBResponse));
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, MatchesFrame(kDUBResponse, arraysize(kDUBResponse)));
+}
+
+TEST_F(TransceiverTest, responderRDMOversizedDUB) {
+  vector<uint8_t> rx_data;
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(0, T_OP_RX, _, Lt(arraysize(kDUBRequest)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(0, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME,
+                  arraysize(kDUBRequest))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kDUBRequest, arraysize(kDUBRequest));
+
+  m_simulator.Run();
+
+  // Check the request was what we expected
+  EXPECT_THAT(rx_data, ElementsAreArray(kDUBRequest, arraysize(kDUBRequest)));
+
+  // Create a very large response
+  uint8_t dub_response[600];
+  for (unsigned int i = 0; i < arraysize(dub_response); i++) {
+    dub_response[i] = i & 0xff;
+  }
+
+  // Queue up the response
+  IOVec iovec = {
+    .base = dub_response,
+    .length = arraysize(dub_response)
+  };
+  Transceiver_QueueRDMResponse(false, &iovec, 1);
+
+  m_generator.Reset();
+  m_generator.SetStopOnComplete(false);
+  StopAfter(512);
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, MatchesFrame(dub_response, 512u));
+}
+
+TEST_F(TransceiverTest, responderRDMDUBWithJitter) {
+  EXPECT_TRUE(Transceiver_SetRDMResponderJitter(1000));  // 100uS of jitter
+
+  vector<uint8_t> rx_data;
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(0, T_OP_RX, _, Lt(arraysize(kDUBRequest)))))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(0, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME,
+                  arraysize(kDUBRequest))))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(kDUBRequest, arraysize(kDUBRequest));
+
+  m_simulator.Run();
+
+  // Check the request was what we expected
+  EXPECT_THAT(rx_data, ElementsAreArray(kDUBRequest, arraysize(kDUBRequest)));
+
+  // Queue up the response
+  IOVec iovec = {
+    .base = kDUBResponse,
+    .length = arraysize(kDUBResponse)
+  };
+  Transceiver_QueueRDMResponse(false, &iovec, 1);
+
+  m_generator.Reset();
+  m_generator.SetStopOnComplete(false);
+  StopAfter(arraysize(kDUBResponse));
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, MatchesFrame(kDUBResponse, arraysize(kDUBResponse)));
+}
+
+TEST_F(TransceiverTest, selfTestPass) {
+  SwitchToSelfTestMode();
+  uint8_t token = 2;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_SELF_TEST, T_RESULT_OK, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  EXPECT_TRUE(Transceiver_QueueSelfTest(token));
+  StopAfter(1);
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, SizeIs(1));
+  EXPECT_THAT(m_tx_bytes, Contains(0xa5));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddByte(0xa5);
+
+  m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, selfTestFailCorrupt) {
+  SwitchToSelfTestMode();
+  uint8_t token = 2;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_SELF_TEST, T_RESULT_SELF_TEST_FAILED, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  EXPECT_TRUE(Transceiver_QueueSelfTest(token));
+  StopAfter(1);
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, SizeIs(1));
+  EXPECT_THAT(m_tx_bytes, Contains(0xa5));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddByte(0x5a);  // opposite of what we sent
+
+  m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, selfTestFailTimeout) {
+  SwitchToSelfTestMode();
+  uint8_t token = 2;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_SELF_TEST, T_RESULT_SELF_TEST_FAILED, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  EXPECT_TRUE(Transceiver_QueueSelfTest(token));
+  m_simulator.Run();
+
+  EXPECT_THAT(m_tx_bytes, SizeIs(1));
+  EXPECT_THAT(m_tx_bytes, Contains(0xa5));
+}
+
+TEST_F(TransceiverTest, switchModes) {
+  SwitchToSelfTestMode();
+  EXPECT_EQ(T_MODE_SELF_TEST, Transceiver_GetMode());
+  SwitchToControllerMode();
+  EXPECT_EQ(T_MODE_CONTROLLER, Transceiver_GetMode());
+}
+
+TEST_F(TransceiverTest, reset) {
+  SwitchToControllerMode();
+
+  Transceiver_Reset();
+  Transceiver_Tasks();
+
+  uint8_t token = 1;
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_TX_ONLY, T_RESULT_OK, 0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  EXPECT_TRUE(Transceiver_QueueDMX(1, kDMX1, arraysize(kDMX1)));
+  m_simulator.Run();
+  EXPECT_THAT(m_tx_bytes,
+              MatchesFrameWithSC(NULL_START_CODE, kDMX1, arraysize(kDMX1)));
+}
