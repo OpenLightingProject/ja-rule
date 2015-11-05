@@ -85,11 +85,11 @@ tests_tests_dimmer_model_test_LDADD = $(TESTING_LIBS) $(OLA_LIBS) \
                                       firmware/src/libdimmermodel.la \
                                       firmware/src/librdmresponder.la \
                                       firmware/src/libreceivercounters.la \
-                                      firmware/src/libcoarsetimer.la \
                                       firmware/src/librdmbuffer.la \
                                       firmware/src/librdmutil.la \
-                                      tests/tests/libmodeltest.la \
                                       tests/harmony/mocks/libharmonymock.la \
+                                      tests/mocks/libcoarsetimermock.la \
+                                      tests/tests/libmodeltest.la \
                                       tests/mocks/libmatchers.la
 
 tests_tests_flags_test_SOURCES = tests/tests/FlagsTest.cpp

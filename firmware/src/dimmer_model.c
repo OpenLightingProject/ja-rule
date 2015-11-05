@@ -1315,7 +1315,7 @@ static const PIDDescriptor SUBDEVICE_PID_DESCRIPTORS[] = {
   {PID_CLEAR_STATUS_ID, (PIDCommandHandler) NULL, 0u,
     DimmerModel_ClearStatusId},
   {PID_SUB_DEVICE_STATUS_REPORT_THRESHOLD,
-    DimmerModel_GetSubDeviceReportingThreshold, 1u,
+    DimmerModel_GetSubDeviceReportingThreshold, 0u,
     DimmerModel_SetSubDeviceReportingThreshold},
   {PID_SUPPORTED_PARAMETERS, RDMResponder_GetSupportedParameters, 0u,
     (PIDCommandHandler) NULL},

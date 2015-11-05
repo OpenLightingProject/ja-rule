@@ -33,6 +33,7 @@
 #include "rdm_buffer.h"
 #include "rdm_responder.h"
 #include "Array.h"
+#include "CoarseTimerMock.h"
 #include "Matchers.h"
 #include "ModelTest.h"
 #include "TestHelpers.h"
@@ -45,18 +46,29 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
 using std::unique_ptr;
+using testing::Return;
+using testing::_;
 
 class DimmerModelTest : public ModelTest {
  public:
   DimmerModelTest() : ModelTest(&DIMMER_MODEL_ENTRY) {}
 
   void SetUp() {
+    CoarseTimer_SetMock(&m_timer);
+
     RDMResponderSettings settings;
     memcpy(settings.uid, TEST_UID, UID_LENGTH);
     RDMResponder_Initialize(&settings);
     DimmerModel_Initialize();
     DIMMER_MODEL_ENTRY.activate_fn();
   }
+
+  void TearDown() {
+    CoarseTimer_SetMock(nullptr);
+  }
+
+ protected:
+  ::testing::NiceMock<MockCoarseTimer> m_timer;
 };
 
 TEST_F(DimmerModelTest, testLifecycle) {
@@ -139,3 +151,593 @@ TEST_F(DimmerModelTest, dmxBlockAddress) {
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
 
+TEST_F(DimmerModelTest, statusMessage) {
+  uint8_t status_type = STATUS_ADVISORY;
+  unique_ptr<RDMRequest> request = BuildGetRequest(
+      PID_STATUS_MESSAGES, &status_type, sizeof(status_type));
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(request.get()));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, statusIDDescription) {
+  uint16_t status_id = HostToNetwork(static_cast<uint16_t>(STS_OLP_TESTING));
+  unique_ptr<RDMRequest> request = BuildGetRequest(
+      PID_STATUS_ID_DESCRIPTION,
+      reinterpret_cast<const uint8_t*>(&status_id),
+      sizeof(status_id));
+
+  const uint8_t expected_response[] = "Counter cycle %d.%d";
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response) - 1));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, selfTest) {
+  unique_ptr<RDMRequest> get_request = BuildGetRequest(PID_PERFORM_SELFTEST);
+
+  uint8_t selftest = 0;
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        get_request.get(), &selftest, sizeof(selftest)));
+
+  int size = InvokeRDMHandler(get_request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Now enable it
+  selftest = 1;
+  unique_ptr<RDMRequest> set_request = BuildSetRequest(
+      PID_PERFORM_SELFTEST,
+      reinterpret_cast<const uint8_t*>(&selftest),
+      sizeof(selftest));
+
+  response.reset(GetResponseFromData(set_request.get()));
+  size = InvokeRDMHandler(set_request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Confirm self test is on
+  response.reset(GetResponseFromData(
+        get_request.get(), &selftest, sizeof(selftest)));
+
+  size = InvokeRDMHandler(get_request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, selfTestDescription) {
+  uint8_t test_id = 1;
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_SELF_TEST_DESCRIPTION,
+                                                   &test_id, sizeof(test_id));
+
+  const uint8_t expected_response[] = "\001Quick test";
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response) - 1));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, capturePreset) {
+  const uint8_t set_data[] = {
+    0, 2, 0, 0, 0, 0, 0, 0
+  };
+
+  unique_ptr<RDMRequest> request = BuildSetRequest(
+      PID_CAPTURE_PRESET,
+      reinterpret_cast<const uint8_t*>(set_data),
+      arraysize(set_data));
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(request.get()));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, presetPlayback) {
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_PRESET_PLAYBACK);
+
+  const uint8_t expected_response[] = { 0, 0, 0 };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data[] = { 0, 2, 0xff };
+  request = BuildSetRequest(
+        PID_PRESET_PLAYBACK,
+        reinterpret_cast<const uint8_t*>(set_data),
+        arraysize(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, failMode) {
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_DMX_FAIL_MODE);
+
+  const uint8_t expected_response[] = { 0, 0, 0, 0, 0, 0, 0 };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data[] = { 0, 2, 0, 0, 0, 0, 0};
+  request = BuildSetRequest(
+        PID_DMX_FAIL_MODE,
+        reinterpret_cast<const uint8_t*>(set_data),
+        arraysize(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, startupMode) {
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_DMX_STARTUP_MODE);
+
+  const uint8_t expected_response[] = { 0, 0, 0, 0, 0, 0, 0 };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data[] = { 0, 2, 0, 0, 0, 0, 0};
+  request = BuildSetRequest(
+        PID_DMX_STARTUP_MODE,
+        reinterpret_cast<const uint8_t*>(set_data),
+        arraysize(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, lockPin) {
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_LOCK_PIN);
+
+  const uint8_t expected_response[] = { 0, 0 };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data[] = { 0, 1, 0, 0 };
+  request = BuildSetRequest(
+        PID_LOCK_PIN,
+        reinterpret_cast<const uint8_t*>(set_data),
+        arraysize(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, lockState) {
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_LOCK_STATE);
+
+  const uint8_t expected_response[] = { 0, 2 };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data[] = { 0, 0, 1};
+  request = BuildSetRequest(
+        PID_LOCK_STATE,
+        reinterpret_cast<const uint8_t*>(set_data),
+        arraysize(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, lockStateDescription) {
+  uint8_t lock_state = 1;
+  unique_ptr<RDMRequest> request = BuildGetRequest(
+      PID_LOCK_STATE_DESCRIPTION,
+      &lock_state, sizeof(lock_state));
+
+  const uint8_t expected_response[] = "\001Subdevices locked";
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response) - 1));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, presetInfo) {
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_PRESET_INFO);
+
+  const uint8_t expected_response[] = {
+    1, 1, 1, 1, 1, 1, 0, 3,
+    0, 0, 0xff, 0xfe, 0, 0, 0xff, 0xfe,
+    0, 0, 0xff, 0xfe, 0, 0, 0xff, 0xfe,
+    0, 0, 0xff, 0xfe, 0, 0, 0xff, 0xfe,
+  };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, presetStatus) {
+  const uint8_t get_data[] = { 0, 1 };
+  unique_ptr<RDMRequest> request = BuildGetRequest(
+      PID_PRESET_STATUS,
+      reinterpret_cast<const uint8_t*>(get_data),
+      arraysize(get_data));
+
+  const uint8_t expected_response[] = {
+    0, 1, 0, 0, 0, 0, 0, 0, 2
+  };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data[] = {
+    0, 2, 0, 0, 0, 0, 0, 0, 0
+  };
+  request = BuildSetRequest(
+        PID_PRESET_STATUS,
+        reinterpret_cast<const uint8_t*>(set_data),
+        arraysize(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set with a clear
+  const uint8_t set_data2[] = {
+    0, 2, 0, 0, 0, 0, 0, 0, 1
+  };
+  request = BuildSetRequest(
+        PID_PRESET_STATUS,
+        reinterpret_cast<const uint8_t*>(set_data2),
+        arraysize(set_data2));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, mergeMode) {
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_PRESET_MERGEMODE);
+
+  const uint8_t expected_response = 0;
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), &expected_response, sizeof(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data = 1;
+  request = BuildSetRequest(PID_PRESET_MERGEMODE, &set_data, sizeof(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, powerOnSelfTest) {
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_POWER_ON_SELF_TEST);
+
+  const uint8_t expected_response = 0;
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), &expected_response, sizeof(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data = 1;
+  request = BuildSetRequest(PID_POWER_ON_SELF_TEST, &set_data,
+                            sizeof(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, clearStatusId) {
+  unique_ptr<RDMRequest> request = BuildSubDeviceSetRequest(
+      PID_CLEAR_STATUS_ID, 1);
+  unique_ptr<RDMResponse> response(GetResponseFromData(request.get()));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, subDeviceReportingThreshold) {
+  unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(
+      PID_SUB_DEVICE_STATUS_REPORT_THRESHOLD, 1);
+
+  const uint8_t expected_response = 2;
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), &expected_response, sizeof(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data = 3;
+  request = BuildSubDeviceSetRequest(PID_SUB_DEVICE_STATUS_REPORT_THRESHOLD,
+                                     1, &set_data, sizeof(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, identifyMode) {
+  unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(
+      PID_IDENTIFY_MODE, 1);
+
+  const uint8_t expected_response = 0;
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), &expected_response, sizeof(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data = 0xff;
+  request = BuildSubDeviceSetRequest(PID_IDENTIFY_MODE,
+                                     1, &set_data, sizeof(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, burnIn) {
+  unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(
+      PID_BURN_IN, 1);
+
+  const uint8_t expected_response = 0;
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), &expected_response, sizeof(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data = 0xff;
+  request = BuildSubDeviceSetRequest(PID_BURN_IN, 1, &set_data,
+                                     sizeof(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, dimmerInfo) {
+  unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(PID_DIMMER_INFO, 1);
+
+  const uint8_t expected_response[] = {
+    0, 0, 0xff, 0xfe, 0, 0, 0xff, 0xfe,
+    4, 8, 1
+  };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, minimumLevel) {
+  unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(
+      PID_MINIMUM_LEVEL, 1);
+
+  const uint8_t expected_response[] = { 0, 0, 0, 0, 0 };
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(),
+        reinterpret_cast<const uint8_t*>(&expected_response),
+        sizeof(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data[] = { 0, 0, 0, 0, 0 };
+  request = BuildSubDeviceSetRequest(
+      PID_MINIMUM_LEVEL, 1,
+      reinterpret_cast<const uint8_t*>(&set_data),
+      sizeof(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, maximumLevel) {
+  unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(
+      PID_MAXIMUM_LEVEL, 1);
+
+  const uint8_t expected_response[] = { 0, 0 };
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(),
+        reinterpret_cast<const uint8_t*>(&expected_response),
+        sizeof(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data[] = { 0, 0 };
+  request = BuildSubDeviceSetRequest(
+      PID_MAXIMUM_LEVEL, 1,
+      reinterpret_cast<const uint8_t*>(&set_data),
+      sizeof(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, curve) {
+  unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(
+      PID_CURVE, 1);
+
+  const uint8_t expected_response[] = { 1, 4 };
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(),
+        reinterpret_cast<const uint8_t*>(&expected_response),
+        sizeof(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data[] = { 1 };
+  request = BuildSubDeviceSetRequest(
+      PID_CURVE, 1,
+      reinterpret_cast<const uint8_t*>(&set_data),
+      sizeof(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, curveDescription) {
+  uint8_t curve = 1;
+  unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(
+      PID_CURVE_DESCRIPTION, 1, &curve, sizeof(curve));
+
+  const uint8_t expected_response[] = "\001Linear";
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response) - 1));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, outputResponseTime) {
+  unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(
+      PID_OUTPUT_RESPONSE_TIME, 1);
+
+  const uint8_t expected_response[] = { 1, 2 };
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(),
+        reinterpret_cast<const uint8_t*>(&expected_response),
+        sizeof(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data[] = { 1 };
+  request = BuildSubDeviceSetRequest(
+      PID_OUTPUT_RESPONSE_TIME, 1,
+      reinterpret_cast<const uint8_t*>(&set_data),
+      sizeof(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, outputResponseTimeDescription) {
+  uint8_t setting = 1;
+  unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(
+      PID_OUTPUT_RESPONSE_TIME_DESCRIPTION, 1, &setting, sizeof(setting));
+
+  const uint8_t expected_response[] = "\001Fast";
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response) - 1));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, modulationFrequency) {
+  unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(
+      PID_MODULATION_FREQUENCY, 1);
+
+  const uint8_t expected_response[] = { 1, 4 };
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(),
+        reinterpret_cast<const uint8_t*>(&expected_response),
+        sizeof(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data[] = { 1 };
+  request = BuildSubDeviceSetRequest(
+      PID_MODULATION_FREQUENCY, 1,
+      reinterpret_cast<const uint8_t*>(&set_data),
+      sizeof(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, modulationFrequencyDescription) {
+  uint8_t setting = 1;
+  unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(
+      PID_MODULATION_FREQUENCY_DESCRIPTION, 1, &setting, sizeof(setting));
+
+  const uint8_t expected_response[] = "\001\000\000\000\06250Hz";
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response) - 1));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, queuedMessages) {
+  EXPECT_CALL(m_timer, HasElapsed(_, _)).WillOnce(Return(true));
+  DIMMER_MODEL_ENTRY.tasks_fn();
+
+  uint8_t status_type = 0x02;
+  unique_ptr<RDMRequest> request = BuildGetRequest(
+      PID_STATUS_MESSAGES, &status_type, sizeof(status_type));
+
+  const uint8_t expected_response[] = {
+    0, 3, 2, 0x80, 0, 0, 0, 0, 0
+  };
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+      request.get(),
+      reinterpret_cast<const uint8_t*>(expected_response),
+      arraysize(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
