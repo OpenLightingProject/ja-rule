@@ -363,9 +363,7 @@ void TransceiverTest::SwitchToSelfTestMode() {
 }
 
 // Tests to add:
-//  - responder, rx a frame bigger than 512 bytes.
-//  - controller, rx an RDM responder larger than 512 bytes
-//  - self test mode
+//  - controller, rx an RDM response with an out-of-range interslot delay
 
 TEST_F(TransceiverTest, controllerTxDMX) {
   SwitchToControllerMode();
@@ -585,6 +583,39 @@ TEST_F(TransceiverTest, controllerRDMGetWithResponse) {
   EXPECT_CALL(m_event_handler,
               Run(EventIs(token, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_DATA,
                           arraysize(kRDMResponse))))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, controllerRDMGetWithJumboResponse) {
+  SwitchToControllerMode();
+
+  uint8_t response[600];
+  for (unsigned int i = 0; i < arraysize(response); i++) {
+    response[i] = i & 0xff;
+  }
+
+  uint8_t token = 1;
+  StopAfter(1 + arraysize(kRDMRequest));
+  Transceiver_QueueRDMRequest(token, kRDMRequest, arraysize(kRDMRequest),
+                              false);
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+
+  // Queue the response, with a break
+  m_generator.AddDelay(176);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(response, arraysize(response));
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_DATA,
+                          513u)))
     .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
                     Return(true)));
 

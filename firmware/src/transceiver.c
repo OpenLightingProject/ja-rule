@@ -872,8 +872,6 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
           SYS_INT_SourceStatusClear(g_hw_settings.input_capture_source);
           SYS_INT_SourceEnable(g_hw_settings.input_capture_source);
 
-          // TODO(simon) I think we can remove this because its done in the IC
-          // ISR
           PLIB_USART_ReceiverEnable(g_hw_settings.usart);
           SYS_INT_SourceStatusClear(g_hw_settings.usart_rx_source);
           SYS_INT_SourceEnable(g_hw_settings.usart_rx_source);
@@ -927,13 +925,22 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
   if (SYS_INT_SourceStatusGet(g_hw_settings.usart_rx_source)) {
     if (g_transceiver.state == STATE_C_RX_IN_DUB ||
         g_transceiver.state == STATE_C_RX_DATA) {
-      // It's impossible to overflow the buffer here, because each byte is 44uS
-      // and the DUB Response limit (g_timing_settings.rdm_dub_response_limit)
-      // is at most 3500us. This means even with 0 interslot delay, the maximum
-      // bytes we can receive is 79.
+      // For the DUB case, It's impossible to overflow the buffer here, because
+      // each byte is 44uS and the DUB Response limit
+      // (g_timing_settings.rdm_dub_response_limit) is at most 3500us. This
+      // means even with 0 interslot delay, the maximum bytes we can receive is
+      // 79.
 
-      // TODO(simon): handle the non-DUB case here
-     UART_RXBytes();
+     if (UART_RXBytes()) {
+       // Protect against a responder sending us more than 512 bytes of data.
+       // The maximum RDM frame size is 257 so this *should* never happen.
+       PLIB_TMR_Stop(g_hw_settings.timer_module_id);
+       SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+       SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
+       PLIB_USART_ReceiverDisable(g_hw_settings.usart);
+       ResetToMark();
+       g_transceiver.state = STATE_C_COMPLETE;
+     }
     } else if (g_transceiver.state == STATE_R_RX_DATA) {
       if (PLIB_USART_ErrorsGet(g_hw_settings.usart) & USART_ERROR_FRAMING) {
         // A framing error indicates a possible break.
