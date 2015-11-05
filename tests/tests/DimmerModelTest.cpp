@@ -33,6 +33,7 @@
 #include "rdm_buffer.h"
 #include "rdm_responder.h"
 #include "Array.h"
+#include "CoarseTimerMock.h"
 #include "Matchers.h"
 #include "ModelTest.h"
 #include "TestHelpers.h"
@@ -45,18 +46,29 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
 using std::unique_ptr;
+using testing::Return;
+using testing::_;
 
 class DimmerModelTest : public ModelTest {
  public:
   DimmerModelTest() : ModelTest(&DIMMER_MODEL_ENTRY) {}
 
   void SetUp() {
+    CoarseTimer_SetMock(&m_timer);
+
     RDMResponderSettings settings;
     memcpy(settings.uid, TEST_UID, UID_LENGTH);
     RDMResponder_Initialize(&settings);
     DimmerModel_Initialize();
     DIMMER_MODEL_ENTRY.activate_fn();
   }
+
+  void TearDown() {
+    CoarseTimer_SetMock(nullptr);
+  }
+
+ protected:
+  ::testing::NiceMock<MockCoarseTimer> m_timer;
 };
 
 TEST_F(DimmerModelTest, testLifecycle) {
@@ -705,6 +717,26 @@ TEST_F(DimmerModelTest, modulationFrequencyDescription) {
 
   unique_ptr<RDMResponse> response(GetResponseFromData(
         request.get(), expected_response, arraysize(expected_response) - 1));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, queuedMessages) {
+  EXPECT_CALL(m_timer, HasElapsed(_, _)).WillOnce(Return(true));
+  DIMMER_MODEL_ENTRY.tasks_fn();
+
+  uint8_t status_type = 0x02;
+  unique_ptr<RDMRequest> request = BuildGetRequest(
+      PID_STATUS_MESSAGES, &status_type, sizeof(status_type));
+
+  const uint8_t expected_response[] = {
+    0, 3, 2, 0x80, 0, 0, 0, 0, 0
+  };
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+      request.get(),
+      reinterpret_cast<const uint8_t*>(expected_response),
+      arraysize(expected_response)));
 
   int size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
