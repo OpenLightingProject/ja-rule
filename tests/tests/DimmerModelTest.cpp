@@ -344,3 +344,90 @@ TEST_F(DimmerModelTest, lockStateDescription) {
   int size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
+
+TEST_F(DimmerModelTest, presetInfo) {
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_PRESET_INFO);
+
+  const uint8_t expected_response[] = {
+    1, 1, 1, 1, 1, 1, 0, 3,
+    0, 0, 0xff, 0xfe, 0, 0, 0xff, 0xfe,
+    0, 0, 0xff, 0xfe, 0, 0, 0xff, 0xfe,
+    0, 0, 0xff, 0xfe, 0, 0, 0xff, 0xfe,
+  };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, presetStatus) {
+  const uint8_t get_data[] = { 0, 1 };
+  unique_ptr<RDMRequest> request = BuildGetRequest(
+      PID_PRESET_STATUS,
+      reinterpret_cast<const uint8_t*>(get_data),
+      arraysize(get_data));
+
+  const uint8_t expected_response[] = {
+    0, 1, 0, 0, 0, 0, 0, 0, 2
+  };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), expected_response, arraysize(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data[] = {
+    0, 2, 0, 0, 0, 0, 0, 0, 0
+  };
+  request = BuildSetRequest(
+        PID_PRESET_STATUS,
+        reinterpret_cast<const uint8_t*>(set_data),
+        arraysize(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, mergeMode) {
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_PRESET_MERGEMODE);
+
+  const uint8_t expected_response = 0;
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), &expected_response, sizeof(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data = 1;
+  request = BuildSetRequest(PID_PRESET_MERGEMODE, &set_data, sizeof(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(DimmerModelTest, powerOnSelfTest) {
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_POWER_ON_SELF_TEST);
+
+  const uint8_t expected_response = 0;
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(), &expected_response, sizeof(expected_response)));
+
+  int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  const uint8_t set_data = 1;
+  request = BuildSetRequest(PID_POWER_ON_SELF_TEST, &set_data,
+                            sizeof(set_data));
+
+  response.reset(GetResponseFromData(request.get()));
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
