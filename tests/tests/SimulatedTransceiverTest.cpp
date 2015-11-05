@@ -720,6 +720,59 @@ TEST_F(TransceiverTest, controllerRDMGetWithLongBreak) {
   m_simulator.Run();
 }
 
+TEST_F(TransceiverTest, controllerRDMGetWithNoMark) {
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  StopAfter(1 + arraysize(kRDMRequest));
+  Transceiver_QueueRDMRequest(token, kRDMRequest, arraysize(kRDMRequest),
+                              false);
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+
+  // Queue the response, with a break
+  m_generator.AddDelay(176);
+  m_generator.AddBreak(176);
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_INVALID,
+                          0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, controllerRDMGetWithNoData) {
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  StopAfter(1 + arraysize(kRDMRequest));
+  Transceiver_QueueRDMRequest(token, kRDMRequest, arraysize(kRDMRequest),
+                              false);
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+
+  // Queue the response, with a break
+  m_generator.AddDelay(176);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_INVALID,
+                          0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  m_simulator.Run();
+}
+
 // Check that switching to responder mode cancels any in-flight transmissions.
 TEST_F(TransceiverTest, controllerModeChange) {
   SwitchToControllerMode();

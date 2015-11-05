@@ -89,6 +89,14 @@
 #define CONTROLLER_RX_BREAK_TIME_MAX 3520u
 
 /**
+ * @brief The maximum mark time for controllers to receive.
+ *
+ * Measured in 10ths of a microsecond. The value is from line 2 of Table 3-1
+ * in E1.20.
+ */
+#define CONTROLLER_RX_MARK_TIME_MAX 880u  // 88us
+
+/**
  * @brief The minimum break-to-break time at a controller.
  *
  * Measured in 10ths of a millisecond. The value is from Table 6
