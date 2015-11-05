@@ -362,9 +362,6 @@ void TransceiverTest::SwitchToSelfTestMode() {
   m_simulator.Run();
 }
 
-// Tests to add:
-//  - controller, rx an RDM response with an out-of-range interslot delay
-
 TEST_F(TransceiverTest, controllerTxDMX) {
   SwitchToControllerMode();
 
@@ -620,6 +617,51 @@ TEST_F(TransceiverTest, controllerRDMGetWithJumboResponse) {
                     Return(true)));
 
   m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, controllerRDMGetInterslotTimeout) {
+  vector<uint8_t> rx_data;
+  const uint8_t expected_frame[] = {RDM_START_CODE, 10, 20, 30};
+
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  StopAfter(1 + arraysize(kRDMRequest));
+  Transceiver_QueueRDMRequest(token, kRDMRequest, arraysize(kRDMRequest),
+                              false);
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+
+
+  // Queue the response, with a break
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+
+  // We can have up to 2.1ms between RDM slots.
+  m_generator.AddByte(RDM_START_CODE);
+  m_generator.AddDelay(100);  // 100us
+  m_generator.AddByte(10);
+  m_generator.AddDelay(1000);  // 1ms
+  m_generator.AddByte(20);
+  m_generator.AddDelay(2100);  // 2.1ms
+  m_generator.AddByte(30);
+  m_generator.AddDelay(2200);  // 2.2ms
+  m_generator.AddByte(40);
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_DATA,
+                          _)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    AppendTo(&rx_data)));
+
+  m_simulator.Run();
+
+  EXPECT_THAT(rx_data,
+              ElementsAreArray(expected_frame, arraysize(expected_frame)));
 }
 
 TEST_F(TransceiverTest, controllerRDMGetWithShortBreak) {

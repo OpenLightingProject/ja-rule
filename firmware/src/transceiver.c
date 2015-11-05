@@ -1234,9 +1234,31 @@ void Transceiver_Tasks() {
       break;
 
     case STATE_C_RX_DATA:
-      // TODO(simon): handle the timeout case here.
-      // It's not a static timeout, rather it varies with the slot count.
-      // PLIB_TMR_Stop(g_hw_settings.timer_module_id);
+      // There is not hard timeout on RDM responses, instead it depends on the
+      // number of slots sent, see Table 3.3.
+      //
+      // Since there is nothing you can do to 'shut-off' a bad responder, the
+      // goal is to prevent a bad responder from crashing or deadlocking us.
+      //
+      // The simplest thing to do is to check the inter-slot timeout. When
+      // combined with a fixed RX buffer size, this puts an upper bound on the
+      // duration of an RDM response.
+      //
+      // With an inter-slot timeout of 2.1ms and a buffer size of 512, a single
+      // responder can block us for up to 1.04s.
+      SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+      SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
+      if (g_transceiver.data_index > 0 &&
+          CoarseTimer_HasElapsed(g_transceiver.last_byte_coarse,
+                                 CONTROLLER_RECEIVE_RDM_INTERSLOT_TIMEOUT)) {
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
+        PLIB_USART_ReceiverDisable(g_hw_settings.usart);
+        ResetToMark();
+        g_transceiver.state = STATE_C_COMPLETE;
+        return;
+      }
+      SYS_INT_SourceEnable(g_hw_settings.usart_rx_source);
+      SYS_INT_SourceEnable(g_hw_settings.usart_error_source);
       break;
 
     case STATE_C_RX_WAIT_FOR_DUB:

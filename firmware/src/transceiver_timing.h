@@ -173,7 +173,7 @@
  * Measured in 10ths of a millisecond. The value is from line 1 of Table 3-3
  * in E1.20.
  */
-#define RESPONDER_RX_MARK_TIME_MAX  10000u
+#define RESPONDER_RX_MARK_TIME_MAX  10000u  // 1s
 
 /**
  * @brief The inter-slot timeout for RDM frames.
@@ -181,14 +181,22 @@
  * Measured in 10ths of a millisecond. The value is from line 1 of Table 3-3
  * in E1.20.
  */
-#define RESPONDER_RDM_INTERSLOT_TIMEOUT 21u
+#define RESPONDER_RDM_INTERSLOT_TIMEOUT 21u  // 2.1ms
 
 /**
  * @brief The inter-slot timeout for DMX and other ASC frames.
  *
  * Measured in 10ths of a millisecond. The value is from Table 6 of E1.11-2008
  */
-#define RESPONDER_DMX_INTERSLOT_TIMEOUT 10000u
+#define RESPONDER_DMX_INTERSLOT_TIMEOUT 10000u  // 1s
+
+/**
+ * @brief The inter-slot timeout for RDM frames.
+ *
+ * Measured in 10ths of a millisecond. The value is from line 2 of Table 3-1
+ * in E1.20.
+ */
+#define CONTROLLER_RECEIVE_RDM_INTERSLOT_TIMEOUT 21u  // 2.1ms
 
 
 /**
