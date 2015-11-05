@@ -50,6 +50,18 @@ class ModelTest : public testing::Test {
       const uint8_t *param_data = nullptr,
       unsigned int param_data_size = 0);
 
+  std::unique_ptr<ola::rdm::RDMRequest> BuildSubDeviceGetRequest(
+      uint16_t pid,
+      uint16_t sub_device,
+      const uint8_t *param_data = nullptr,
+      unsigned int param_data_size = 0);
+
+  std::unique_ptr<ola::rdm::RDMRequest> BuildSubDeviceSetRequest(
+      uint16_t pid,
+      uint16_t sub_device,
+      const uint8_t *param_data = nullptr,
+      unsigned int param_data_size = 0);
+
   int InvokeRDMHandler(const ola::rdm::RDMRequest *request);
 };
 

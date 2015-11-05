@@ -67,6 +67,26 @@ unique_ptr<RDMRequest> ModelTest::BuildSetRequest(
       param_data_size));
 }
 
+unique_ptr<RDMRequest> ModelTest::BuildSubDeviceGetRequest(
+    uint16_t pid,
+    uint16_t sub_device,
+    const uint8_t *param_data,
+    unsigned int param_data_size) {
+  return unique_ptr<RDMGetRequest>(new RDMGetRequest(
+      m_controller_uid, m_our_uid, 0, 0, sub_device, pid, param_data,
+      param_data_size));
+}
+
+unique_ptr<RDMRequest> ModelTest::BuildSubDeviceSetRequest(
+    uint16_t pid,
+    uint16_t sub_device,
+    const uint8_t *param_data,
+    unsigned int param_data_size) {
+  return unique_ptr<RDMSetRequest>(new RDMSetRequest(
+      m_controller_uid, m_our_uid, 0, 0, sub_device, pid, param_data,
+      param_data_size));
+}
+
 int ModelTest::InvokeRDMHandler(const ola::rdm::RDMRequest *request) {
   ola::io::ByteString data;
   data.push_back(RDM_START_CODE);
