@@ -12,6 +12,7 @@
 *.zip
 .deps
 .dirstamp
+.DS_Store
 gtest-read-only/
 Makefile
 Makefile.in
