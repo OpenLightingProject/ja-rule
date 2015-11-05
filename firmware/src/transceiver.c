@@ -1255,7 +1255,7 @@ void Transceiver_Tasks() {
       break;
 
     case STATE_C_RX_DATA:
-      // There is not hard timeout on RDM responses, instead it depends on the
+      // There is no hard timeout on RDM responses, instead it depends on the
       // number of slots sent, see Table 3.3.
       //
       // Since there is nothing you can do to 'shut-off' a bad responder, the
