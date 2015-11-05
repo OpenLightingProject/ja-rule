@@ -713,7 +713,7 @@ TEST_F(DimmerModelTest, modulationFrequencyDescription) {
   unique_ptr<RDMRequest> request = BuildSubDeviceGetRequest(
       PID_MODULATION_FREQUENCY_DESCRIPTION, 1, &setting, sizeof(setting));
 
-  const uint8_t expected_response[] = "\001\000\000\000250Hz";
+  const uint8_t expected_response[] = "\001\000\000\000\06250Hz";
 
   unique_ptr<RDMResponse> response(GetResponseFromData(
         request.get(), expected_response, arraysize(expected_response) - 1));
