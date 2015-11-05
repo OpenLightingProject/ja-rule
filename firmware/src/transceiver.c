@@ -66,33 +66,34 @@ typedef enum {
   STATE_C_TX_DATA = 4,  //!< Transmitting data
   STATE_C_TX_DRAIN = 5,  //!< Wait for last byte to be sent
   STATE_C_RX_WAIT_FOR_BREAK = 6,  //!< Waiting for RX break
-  STATE_C_RX_WAIT_FOR_MARK = 7,  //!< Waiting for RX mark
-  STATE_C_RX_DATA = 8,  //!< Receiving data.
-  STATE_C_RX_WAIT_FOR_DUB = 9,  //!< Waiting for DUB response
-  STATE_C_RX_IN_DUB = 10,  //!< In DUB response
-  STATE_C_RX_TIMEOUT = 11,  //!< A RX timeout occured.
-  STATE_C_COMPLETE = 12,  //!< Running the completion handler.
-  STATE_C_BACKOFF = 13,  //!< Waiting until we can send the next break
+  STATE_C_RX_IN_BREAK = 7,  //!< In break
+  STATE_C_RX_IN_MARK = 8,  //!< In mark
+  STATE_C_RX_DATA = 9,  //!< Receiving data.
+  STATE_C_RX_WAIT_FOR_DUB = 10,  //!< Waiting for DUB response
+  STATE_C_RX_IN_DUB = 11,  //!< In DUB response
+  STATE_C_RX_TIMEOUT = 12,  //!< A RX timeout occured.
+  STATE_C_COMPLETE = 13,  //!< Running the completion handler.
+  STATE_C_BACKOFF = 14,  //!< Waiting until we can send the next break
 
   // Responder states.
-  STATE_R_INITIALIZE = 14,  //!< Initialze responder state
-  STATE_R_RX_PREPARE = 15,  //!< Prepare to receive frame
-  STATE_R_RX_MBB = 16,  //!< In mark before break
-  STATE_R_RX_BREAK = 17,  //!< In break
-  STATE_R_RX_MARK = 18,  //!< In mark after break
-  STATE_R_RX_DATA = 19,  //!< Receiving data
-  STATE_R_TX_WAITING = 20,  //!< Delay before response
-  STATE_R_TX_BREAK = 21,  //!< In TX Break
-  STATE_R_TX_MARK = 22,  //!< In TX Mark
-  STATE_R_TX_DATA = 23,  //!< Transmitting data.
-  STATE_R_TX_DRAIN = 24,  //!< Wait for last byte to be sent.
-  STATE_R_TX_COMPLETE = 25,  //!< Response complete
+  STATE_R_INITIALIZE = 20,  //!< Initialze responder state
+  STATE_R_RX_PREPARE = 21,  //!< Prepare to receive frame
+  STATE_R_RX_MBB = 22,  //!< In mark before break
+  STATE_R_RX_BREAK = 23,  //!< In break
+  STATE_R_RX_MARK = 24,  //!< In mark after break
+  STATE_R_RX_DATA = 25,  //!< Receiving data
+  STATE_R_TX_WAITING = 26,  //!< Delay before response
+  STATE_R_TX_BREAK = 27,  //!< In TX Break
+  STATE_R_TX_MARK = 28,  //!< In TX Mark
+  STATE_R_TX_DATA = 29,  //!< Transmitting data.
+  STATE_R_TX_DRAIN = 30,  //!< Wait for last byte to be sent.
+  STATE_R_TX_COMPLETE = 31,  //!< Response complete
 
   // Self test states
-  STATE_T_INITIALIZE = 26,  //!< Init self test
-  STATE_T_TX_READY = 27,  //!< Wait for send operation
-  STATE_T_RX_WAIT = 28,  //!< Wait for response
-  STATE_T_VERIFY = 29,  //!< Check response
+  STATE_T_INITIALIZE = 40,  //!< Init self test
+  STATE_T_TX_READY = 41,  //!< Wait for send operation
+  STATE_T_RX_WAIT = 42,  //!< Wait for response
+  STATE_T_VERIFY = 43,  //!< Check response
 
   // Common states
   STATE_RESET = 99,
@@ -624,9 +625,9 @@ void __ISR(AS_IC_ISR_VECTOR(TRANSCEIVER_IC), ipl6AUTO)
         break;
       case STATE_C_RX_WAIT_FOR_BREAK:
         g_timing.get_set_response.break_start = value;
-        g_transceiver.state = STATE_C_RX_WAIT_FOR_MARK;
+        g_transceiver.state = STATE_C_RX_IN_BREAK;
         break;
-      case STATE_C_RX_WAIT_FOR_MARK:
+      case STATE_C_RX_IN_BREAK:
         if ((uint16_t) (value - g_timing.get_set_response.break_start) <
             CONTROLLER_RX_BREAK_TIME_MIN) {
           // The break was too short, keep looking for a break
@@ -640,13 +641,14 @@ void __ISR(AS_IC_ISR_VECTOR(TRANSCEIVER_IC), ipl6AUTO)
           SYS_INT_SourceStatusClear(g_hw_settings.usart_error_source);
           SYS_INT_SourceEnable(g_hw_settings.usart_error_source);
           PLIB_USART_ReceiverEnable(g_hw_settings.usart);
-          g_transceiver.state = STATE_C_RX_DATA;
+          g_transceiver.state = STATE_C_RX_IN_MARK;
         }
         break;
-      case STATE_C_RX_DATA:
+      case STATE_C_RX_IN_MARK:
         g_timing.get_set_response.mark_end = value;
         SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
         PLIB_IC_Disable(g_hw_settings.input_capture_module);
+        g_transceiver.state = STATE_C_RX_DATA;
         break;
 
       case STATE_R_RX_MBB:
@@ -698,6 +700,7 @@ void __ISR(AS_IC_ISR_VECTOR(TRANSCEIVER_IC), ipl6AUTO)
       case STATE_C_IN_MARK:
       case STATE_C_TX_DATA:
       case STATE_C_TX_DRAIN:
+      case STATE_C_RX_DATA:
       case STATE_C_RX_TIMEOUT:
       case STATE_C_COMPLETE:
       case STATE_C_BACKOFF:
@@ -791,7 +794,8 @@ void __ISR(AS_TIMER_ISR_VECTOR(TRANSCEIVER_TIMER), ipl6AUTO)
     case STATE_C_TX_DATA:
     case STATE_C_TX_DRAIN:
     case STATE_C_RX_WAIT_FOR_BREAK:
-    case STATE_C_RX_WAIT_FOR_MARK:
+    case STATE_C_RX_IN_BREAK:
+    case STATE_C_RX_IN_MARK:
     case STATE_C_RX_DATA:
     case STATE_C_RX_WAIT_FOR_DUB:
     case STATE_C_RX_IN_DUB:
@@ -872,8 +876,6 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
           SYS_INT_SourceStatusClear(g_hw_settings.input_capture_source);
           SYS_INT_SourceEnable(g_hw_settings.input_capture_source);
 
-          // TODO(simon) I think we can remove this because its done in the IC
-          // ISR
           PLIB_USART_ReceiverEnable(g_hw_settings.usart);
           SYS_INT_SourceStatusClear(g_hw_settings.usart_rx_source);
           SYS_INT_SourceEnable(g_hw_settings.usart_rx_source);
@@ -927,11 +929,22 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
   if (SYS_INT_SourceStatusGet(g_hw_settings.usart_rx_source)) {
     if (g_transceiver.state == STATE_C_RX_IN_DUB ||
         g_transceiver.state == STATE_C_RX_DATA) {
-      // It's impossible to overflow the buffer here, because each byte is 44uS
-      // and the DUB Response limit (g_timing_settings.rdm_dub_response_limit)
-      // is at most 3500us. This means even with 0 interslot delay, the maximum
-      // bytes we can receive is 79.
-     UART_RXBytes();
+      // For the DUB case, It's impossible to overflow the buffer here, because
+      // each byte is 44uS and the DUB Response limit
+      // (g_timing_settings.rdm_dub_response_limit) is at most 3500us. This
+      // means even with 0 interslot delay, the maximum bytes we can receive is
+      // 79.
+
+     if (UART_RXBytes()) {
+       // Protect against a responder sending us more than 512 bytes of data.
+       // The maximum RDM frame size is 257 so this *should* never happen.
+       PLIB_TMR_Stop(g_hw_settings.timer_module_id);
+       SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+       SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
+       PLIB_USART_ReceiverDisable(g_hw_settings.usart);
+       ResetToMark();
+       g_transceiver.state = STATE_C_COMPLETE;
+     }
     } else if (g_transceiver.state == STATE_R_RX_DATA) {
       if (PLIB_USART_ErrorsGet(g_hw_settings.usart) & USART_ERROR_FRAMING) {
         // A framing error indicates a possible break.
@@ -945,11 +958,9 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
         g_transceiver.state = STATE_R_RX_BREAK;
       } else if (UART_RXBytes()) {
         // RX buffer is full.
-        // TODO(simon): What should we do here?
         SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
         SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
         PLIB_USART_ReceiverDisable(g_hw_settings.usart);
-
         g_transceiver.state = STATE_R_TX_COMPLETE;
       }
     } else if (g_transceiver.state == STATE_T_RX_WAIT) {
@@ -990,7 +1001,8 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
       case STATE_C_TX_DATA:
       case STATE_C_TX_DRAIN:
       case STATE_C_RX_WAIT_FOR_BREAK:
-      case STATE_C_RX_WAIT_FOR_MARK:
+      case STATE_C_RX_IN_BREAK:
+      case STATE_C_RX_IN_MARK:
       case STATE_C_RX_WAIT_FOR_DUB:
       case STATE_C_RX_TIMEOUT:
       case STATE_C_COMPLETE:
@@ -1198,7 +1210,7 @@ void Transceiver_Tasks() {
                                  g_transceiver.rdm_response_timeout)) {
         SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
         // Note: the IC ISR may have run between the case check and the
-        // SourceDisable and switched us to STATE_C_RX_WAIT_FOR_MARK.
+        // SourceDisable and switched us to STATE_C_RX_IN_BREAK.
         SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
         SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
         PLIB_IC_Disable(g_hw_settings.input_capture_module);
@@ -1209,10 +1221,10 @@ void Transceiver_Tasks() {
       }
       break;
 
-    case STATE_C_RX_WAIT_FOR_MARK:
+    case STATE_C_RX_IN_BREAK:
       // Disable interupts so we don't race
       SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
-      if (g_transceiver.state == STATE_C_RX_WAIT_FOR_MARK &&
+      if (g_transceiver.state == STATE_C_RX_IN_BREAK &&
           ((uint16_t) (PLIB_TMR_Counter16BitGet(g_hw_settings.timer_module_id) -
             g_timing.get_set_response.break_start) >
             CONTROLLER_RX_BREAK_TIME_MAX)) {
@@ -1221,15 +1233,53 @@ void Transceiver_Tasks() {
         PLIB_TMR_Stop(g_hw_settings.timer_module_id);
         ResetToMark();
         g_transceiver.state = STATE_C_COMPLETE;
-      } else {
-        SYS_INT_SourceEnable(g_hw_settings.input_capture_source);
+        return;
       }
+      SYS_INT_SourceEnable(g_hw_settings.input_capture_source);
+      break;
+
+    case STATE_C_RX_IN_MARK:
+      SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
+      if (g_transceiver.state == STATE_C_RX_IN_MARK &&
+          ((uint16_t) (PLIB_TMR_Counter16BitGet(g_hw_settings.timer_module_id) -
+            g_timing.get_set_response.mark_start) >
+            CONTROLLER_RX_MARK_TIME_MAX)) {
+        // Break was too long
+        g_transceiver.result = T_RESULT_RX_INVALID;
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
+        ResetToMark();
+        g_transceiver.state = STATE_C_COMPLETE;
+        return;
+      }
+      SYS_INT_SourceEnable(g_hw_settings.input_capture_source);
       break;
 
     case STATE_C_RX_DATA:
-      // TODO(simon): handle the timeout case here.
-      // It's not a static timeout, rather it varies with the slot count.
-      // PLIB_TMR_Stop(g_hw_settings.timer_module_id);
+      // There is no hard timeout on RDM responses, instead it depends on the
+      // number of slots sent, see Table 3.3.
+      //
+      // Since there is nothing you can do to 'shut-off' a bad responder, the
+      // goal is to prevent a bad responder from crashing or deadlocking us.
+      //
+      // The simplest thing to do is to check the inter-slot timeout. When
+      // combined with a fixed RX buffer size, this puts an upper bound on the
+      // duration of an RDM response.
+      //
+      // With an inter-slot timeout of 2.1ms and a buffer size of 512, a single
+      // responder can block us for up to 1.04s.
+      SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
+      SYS_INT_SourceDisable(g_hw_settings.usart_error_source);
+      if (g_transceiver.data_index > 0 &&
+          CoarseTimer_HasElapsed(g_transceiver.last_byte_coarse,
+                                 CONTROLLER_RECEIVE_RDM_INTERSLOT_TIMEOUT)) {
+        PLIB_TMR_Stop(g_hw_settings.timer_module_id);
+        PLIB_USART_ReceiverDisable(g_hw_settings.usart);
+        ResetToMark();
+        g_transceiver.state = STATE_C_COMPLETE;
+        return;
+      }
+      SYS_INT_SourceEnable(g_hw_settings.usart_rx_source);
+      SYS_INT_SourceEnable(g_hw_settings.usart_error_source);
       break;
 
     case STATE_C_RX_WAIT_FOR_DUB:
@@ -1612,6 +1662,11 @@ bool Transceiver_QueueRDMResponse(bool include_break,
                                   const IOVec* data,
                                   unsigned int iov_count) {
   if (g_transceiver.mode != T_MODE_RESPONDER || g_transceiver.free_size == 0u) {
+    return false;
+  }
+
+  if (g_transceiver.state != STATE_R_RX_DATA) {
+    // Can only queue while we're receiving data
     return false;
   }
 

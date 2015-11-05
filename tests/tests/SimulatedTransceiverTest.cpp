@@ -362,11 +362,6 @@ void TransceiverTest::SwitchToSelfTestMode() {
   m_simulator.Run();
 }
 
-// Tests to add:
-//  - responder, rx a frame bigger than 512 bytes.
-//  - controller, rx an RDM responder larger than 512 bytes
-//  - self test mode
-
 TEST_F(TransceiverTest, controllerTxDMX) {
   SwitchToControllerMode();
 
@@ -591,6 +586,84 @@ TEST_F(TransceiverTest, controllerRDMGetWithResponse) {
   m_simulator.Run();
 }
 
+TEST_F(TransceiverTest, controllerRDMGetWithJumboResponse) {
+  SwitchToControllerMode();
+
+  uint8_t response[600];
+  for (unsigned int i = 0; i < arraysize(response); i++) {
+    response[i] = i & 0xff;
+  }
+
+  uint8_t token = 1;
+  StopAfter(1 + arraysize(kRDMRequest));
+  Transceiver_QueueRDMRequest(token, kRDMRequest, arraysize(kRDMRequest),
+                              false);
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+
+  // Queue the response, with a break
+  m_generator.AddDelay(176);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(response, arraysize(response));
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_DATA,
+                          513u)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, controllerRDMGetInterslotTimeout) {
+  vector<uint8_t> rx_data;
+  const uint8_t expected_frame[] = {RDM_START_CODE, 10, 20, 30};
+
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  StopAfter(1 + arraysize(kRDMRequest));
+  Transceiver_QueueRDMRequest(token, kRDMRequest, arraysize(kRDMRequest),
+                              false);
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+
+
+  // Queue the response, with a break
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+
+  // We can have up to 2.1ms between RDM slots.
+  m_generator.AddByte(RDM_START_CODE);
+  m_generator.AddDelay(100);  // 100us
+  m_generator.AddByte(10);
+  m_generator.AddDelay(1000);  // 1ms
+  m_generator.AddByte(20);
+  m_generator.AddDelay(2100);  // 2.1ms
+  m_generator.AddByte(30);
+  m_generator.AddDelay(2200);  // 2.2ms
+  m_generator.AddByte(40);
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_DATA,
+                          _)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    AppendTo(&rx_data)));
+
+  m_simulator.Run();
+
+  EXPECT_THAT(rx_data,
+              ElementsAreArray(expected_frame, arraysize(expected_frame)));
+}
+
 TEST_F(TransceiverTest, controllerRDMGetWithShortBreak) {
   SwitchToControllerMode();
 
@@ -637,6 +710,59 @@ TEST_F(TransceiverTest, controllerRDMGetWithLongBreak) {
   m_generator.AddBreak(353);  // max is 352uS
   m_generator.AddMark(12);
   m_generator.AddFrame(kRDMResponse, arraysize(kRDMResponse));
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_INVALID,
+                          0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, controllerRDMGetWithNoMark) {
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  StopAfter(1 + arraysize(kRDMRequest));
+  Transceiver_QueueRDMRequest(token, kRDMRequest, arraysize(kRDMRequest),
+                              false);
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+
+  // Queue the response, with a break
+  m_generator.AddDelay(176);
+  m_generator.AddBreak(176);
+
+  EXPECT_CALL(m_event_handler,
+              Run(EventIs(token, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_INVALID,
+                          0)))
+    .WillOnce(DoAll(InvokeWithoutArgs(&m_simulator, &Simulator::Stop),
+                    Return(true)));
+
+  m_simulator.Run();
+}
+
+TEST_F(TransceiverTest, controllerRDMGetWithNoData) {
+  SwitchToControllerMode();
+
+  uint8_t token = 1;
+  StopAfter(1 + arraysize(kRDMRequest));
+  Transceiver_QueueRDMRequest(token, kRDMRequest, arraysize(kRDMRequest),
+                              false);
+  m_simulator.Run();
+
+  EXPECT_THAT(
+      m_tx_bytes,
+      MatchesFrameWithSC(RDM_START_CODE, kRDMRequest, arraysize(kRDMRequest)));
+
+  // Queue the response, with a break
+  m_generator.AddDelay(176);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
 
   EXPECT_CALL(m_event_handler,
               Run(EventIs(token, T_OP_RDM_WITH_RESPONSE, T_RESULT_RX_INVALID,
@@ -899,6 +1025,42 @@ TEST_F(TransceiverTest, responderRxDoubleFrame) {
 
   EXPECT_THAT(rx_data1, ElementsAreArray(kDMX1, arraysize(kDMX1)));
   EXPECT_THAT(rx_data2, ElementsAreArray(kDMX2, arraysize(kDMX2)));
+}
+
+// Test we don't crash if we receive a frame larger than 512 slots.
+TEST_F(TransceiverTest, responderRxJumboFrameWithResponse) {
+  uint8_t jumbo_frame[600];
+  for (unsigned int i = 0; i < arraysize(jumbo_frame); i++) {
+    jumbo_frame[i] = i & 0xff;
+  }
+
+  vector<uint8_t> rx_data;
+
+  uint8_t token = 0;
+  EXPECT_CALL(m_event_handler, Run(EventIs(_, T_OP_RX, _, _)))
+    .WillRepeatedly(Return(true));
+  EXPECT_CALL(
+      m_event_handler,
+      Run(EventIs(token, T_OP_RX, T_RESULT_RX_CONTINUE_FRAME, 512u)))
+    .WillOnce(AppendTo(&rx_data));
+
+  m_generator.SetStopOnComplete(true);
+  m_generator.AddDelay(100);
+  m_generator.AddBreak(176);
+  m_generator.AddMark(12);
+  m_generator.AddFrame(jumbo_frame, arraysize(jumbo_frame));
+
+  m_simulator.Run();
+
+  EXPECT_THAT(rx_data, ElementsAreArray(jumbo_frame, 512u));
+
+  // Now try to queue a response, which should fail because we've ignored this
+  // (bad) request.
+  IOVec iovec = {
+    .base = kRDMResponse,
+    .length = arraysize(kRDMResponse)
+  };
+  EXPECT_FALSE(Transceiver_QueueRDMResponse(true, &iovec, 1));
 }
 
 // Test we handle framing errors correctly.
