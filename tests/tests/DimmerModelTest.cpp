@@ -152,7 +152,7 @@ TEST_F(DimmerModelTest, dmxBlockAddress) {
 }
 
 TEST_F(DimmerModelTest, statusMessage) {
-  uint8_t status_type = 0x02;
+  uint8_t status_type = STATUS_ADVISORY;
   unique_ptr<RDMRequest> request = BuildGetRequest(
       PID_STATUS_MESSAGES, &status_type, sizeof(status_type));
 
