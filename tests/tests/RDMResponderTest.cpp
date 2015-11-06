@@ -101,16 +101,15 @@ const char SENSOR_NAME1[] = "Temperature";
 
 const SensorDefinition SENSOR_DEFINITIONS[] = {
   {
-    .description = SENSOR_NAME1,
-    .normal_maximum_value = 500,
-    .normal_minimum_value = 300,
-    .range_maximum_value = 1000,
-    .range_minimum_value = -400,
-    .recorded_value_support = SENSOR_SUPPORTS_RECORDING_MASK |
-        SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK,
-    .type = SENSOR_TEMPERATURE,
-    .unit = UNITS_CENTIGRADE,
-    .prefix = PREFIX_DECI
+    SENSOR_NAME1,
+    1000,
+    -400,
+    500,
+    300,
+    SENSOR_SUPPORTS_RECORDING_MASK | SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK,
+    SENSOR_TEMPERATURE,
+    UNITS_CENTIGRADE,
+    PREFIX_DECI
   }
 };
 
