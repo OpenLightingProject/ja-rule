@@ -96,9 +96,10 @@ int ClearSensors(const RDMHeader *header,
 }
 
 // Sensors
-enum { NUMBER_OF_SENSORS = 1 };
+enum { NUMBER_OF_SENSORS = 2 };
 
 const char SENSOR_NAME1[] = "Temperature";
+const char SENSOR_NAME2[] = "Power";
 
 const SensorDefinition SENSOR_DEFINITIONS[] = {
   {
@@ -110,6 +111,17 @@ const SensorDefinition SENSOR_DEFINITIONS[] = {
     SENSOR_SUPPORTS_RECORDING_MASK | SENSOR_SUPPORTS_LOWEST_HIGHEST_MASK,
     SENSOR_TEMPERATURE,
     UNITS_CENTIGRADE,
+    PREFIX_DECI
+  },
+  {
+    SENSOR_NAME2,
+    882,  // +8G
+    -686,  // -8G
+    196,  // +1G
+    0,  // -1G
+    0u,
+    SENSOR_ACCELERATION,
+    UNITS_METERS_PER_SECOND_SQUARED,
     PREFIX_DECI
   }
 };
@@ -162,8 +174,7 @@ static const PersonalityDefinition PERSONALITIES[PERSONALITY_COUNT] = {
   }
 };
 
-/*
-const char PIXEL_TYPE_STRING[] = "Pixel Type";
+const char PIXEL_TYPE_STRING[] = "Type";
 
 const ParameterDescription PIXEL_TYPE_DESCRIPTION = {
   .pdl_size = 2u,
@@ -176,7 +187,6 @@ const ParameterDescription PIXEL_TYPE_DESCRIPTION = {
   .default_value = 0u,
   .description = PIXEL_TYPE_STRING,
 };
-*/
 
 }  // namespace
 
@@ -213,7 +223,7 @@ class RDMResponderTest : public testing::Test {
     def->default_device_label = nullptr;
     def->product_detail_ids = nullptr;
     def->sensors = SENSOR_DEFINITIONS;
-    def->sensor_count = 1;
+    def->sensor_count = NUMBER_OF_SENSORS;
     def->personalities = PERSONALITIES;
     def->personality_count = PERSONALITY_COUNT;
 
@@ -250,8 +260,8 @@ class RDMResponderTest : public testing::Test {
   }
 
   unique_ptr<RDMRequest> BuildSetRequest(uint16_t pid,
-                                         const uint8_t *param_data,
-                                         unsigned int param_data_size) {
+                                         const uint8_t *param_data = nullptr,
+                                         unsigned int param_data_size = 0) {
     return unique_ptr<RDMSetRequest>(new RDMSetRequest(
         m_controller_uid, m_our_uid, 0, 0, 0, pid, param_data,
         param_data_size));
@@ -672,6 +682,14 @@ TEST_F(RDMResponderTest, commsStatus) {
 
   int size = InvokeHandler(RDMResponder_GetCommsStatus, request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Try a set
+  request = BuildSetRequest(PID_COMMS_STATUS);
+
+  response.reset(GetResponseFromData(request.get()));
+
+  size = InvokeHandler(RDMResponder_SetCommsStatus, request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
 
 TEST_F(RDMResponderTest, bootSoftwareVersion) {
@@ -793,6 +811,72 @@ TEST_F(RDMResponderTest, dmxStartAddress) {
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
 
+TEST_F(RDMResponderTest, slotInfo) {
+  unique_ptr<RDMRequest> request = BuildGetRequest(PID_SLOT_INFO);
+
+  const uint8_t expected_response[] = {
+    0, 0, 0, 0, 1, 0, 1, 1, 0, 0
+  };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(),
+        expected_response,
+        arraysize(expected_response)));
+
+  ResponderDefinition responder_def;
+  InitDefinition(&responder_def);
+
+  int size = InvokeHandler(RDMResponder_GetSlotInfo,
+                           request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(RDMResponderTest, slotDescription) {
+  uint8_t request_data[] = { 0, 0 };
+  unique_ptr<RDMRequest> request = BuildGetRequest(
+      PID_SLOT_DESCRIPTION,
+      request_data,
+      arraysize(request_data));
+
+  const uint8_t expected_response[] = "\000\000Dimmer";
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(),
+        expected_response,
+        arraysize(expected_response) - 1));
+
+  ResponderDefinition responder_def;
+  InitDefinition(&responder_def);
+
+  int size = InvokeHandler(RDMResponder_GetSlotDescription,
+                           request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
+
+TEST_F(RDMResponderTest, slotDefaultValue) {
+  uint8_t request_data[] = { 0, 0 };
+  unique_ptr<RDMRequest> request = BuildGetRequest(
+      PID_DEFAULT_SLOT_VALUE,
+      request_data,
+      arraysize(request_data));
+
+  const uint8_t expected_response[] = {
+    0, 0, 0,
+    0, 1, 0,
+  };
+
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(),
+        expected_response,
+        arraysize(expected_response)));
+
+  ResponderDefinition responder_def;
+  InitDefinition(&responder_def);
+
+  int size = InvokeHandler(RDMResponder_GetDefaultSlotValue,
+                           request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+}
 
 // Generic Tests
 TEST_F(RDMResponderTest, testGenericUInt8) {
@@ -880,9 +964,9 @@ TEST_F(RDMResponderTest, sensorDefinition) {
 TEST_F(RDMResponderTest, sensorValue) {
   uint8_t sensor = 0;
   unique_ptr<RDMRequest> request = BuildGetRequest(
-      PID_SENSOR_DEFINITION, &sensor, sizeof(sensor));
+      PID_SENSOR_VALUE, &sensor, sizeof(sensor));
 
-  const uint8_t expected_response[] = {
+  uint8_t expected_response[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0
   };
 
@@ -898,6 +982,30 @@ TEST_F(RDMResponderTest, sensorValue) {
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 
   // Try a set
+  request = BuildSetRequest(PID_SENSOR_VALUE, &sensor, sizeof(sensor));
+
+  response.reset(GetResponseFromData(
+        request.get(),
+        expected_response,
+        arraysize(expected_response)));
+
+  size = InvokeHandler(RDMResponder_SetSensorValue, request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  sensor = 1;
+  expected_response[0] = 1;
+  request = BuildSetRequest(PID_SENSOR_DEFINITION, &sensor, sizeof(sensor));
+
+  response.reset(GetResponseFromData(
+        request.get(),
+        expected_response,
+        arraysize(expected_response)));
+
+  size = InvokeHandler(RDMResponder_SetSensorValue, request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  sensor = 0xff;
+  expected_response[0] = 0;
   request = BuildSetRequest(PID_SENSOR_DEFINITION, &sensor, sizeof(sensor));
 
   response.reset(GetResponseFromData(
@@ -921,6 +1029,14 @@ TEST_F(RDMResponderTest, recordSensor) {
 
   int size = InvokeHandler(RDMResponder_SetRecordSensor, request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  sensor = 0xff;
+  request = BuildSetRequest(PID_RECORD_SENSORS, &sensor, sizeof(sensor));
+
+  response.reset(GetResponseFromData(request.get()));
+
+  size = InvokeHandler(RDMResponder_SetRecordSensor, request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
 
 // Other tests
@@ -933,17 +1049,34 @@ TEST_F(RDMResponderTest, ioctl) {
   EXPECT_EQ(0, memcmp(TEST_UID, uid, UID_LENGTH));
 }
 
-/*
 TEST_F(RDMResponderTest, paramDescription) {
-  uint8_t sensor = 0;
+  uint16_t param_id = 0x8000;
   unique_ptr<RDMRequest> request = BuildGetRequest(
-      PID_RECORD_SENSORS, &sensor, sizeof(sensor));
+      PID_PARAMETER_DESCRIPTION,
+      reinterpret_cast<uint8_t*>(&param_id),
+      sizeof(param_id));
 
-  unique_ptr<RDMResponse> response(GetResponseFromData(request.get()));
+  ola::io::ByteString data;
+  data.push_back(RDM_START_CODE);
+  EXPECT_TRUE(ola::rdm::RDMCommandSerializer::Pack(*request, &data));
 
-  ResponderDefinition responder_def;
+  const uint8_t expected_response[] = {
+    0x80, 0,
+    2, 5, 3, 0, 0, 0,
+    0, 0, 0, 0,  // min
+    0, 0, 0, 1,  // max
+    0, 0, 0, 0,  // default
+    'T', 'y', 'p', 'e'
+  };
 
-  int size = InvokeHandler(RDMResponder_SetRecordSensor, request.get());
+  unique_ptr<RDMResponse> response(GetResponseFromData(
+        request.get(),
+        expected_response,
+        arraysize(expected_response)));
+
+  int size = RDMResponder_BuildParamDescription(
+      AsHeader(data.data()),
+      param_id,
+      &PIXEL_TYPE_DESCRIPTION);
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
-*/
