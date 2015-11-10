@@ -52,6 +52,7 @@ const int16_t TRANSCEIVER_NO_NOTIFICATION = -1;
 static const uint16_t BREAK_FUDGE_FACTOR = 74u;
 static const uint16_t MARK_FUDGE_FACTOR = 217u;
 static const uint16_t RESPONSE_FUDGE_FACTOR = 24u;
+static const uint16_t RESPONSE_TIME_RX_FUDGE_FACTOR = 13u;
 
 // The value of the test byte we send during the self test
 static const uint8_t SELF_TEST_VALUE = 0xa5;
@@ -843,8 +844,10 @@ void __ISR(AS_USART_ISR_VECTOR(TRANSCEIVER_UART), ipl6AUTO)
         g_transceiver.state = STATE_C_TX_DRAIN;
       }
     } else if (g_transceiver.state == STATE_C_TX_DRAIN) {
-      // The last byte has been transmitted
-      PLIB_TMR_Counter16BitClear(g_hw_settings.timer_module_id);
+      // The last byte has been transmitted. This event occurs around 1.5us
+      // after the actual UART event, so we use a fudge factor.
+      PLIB_TMR_Counter16BitSet(g_hw_settings.timer_module_id,
+                               RESPONSE_TIME_RX_FUDGE_FACTOR);
       // 6.5 ms until overflow.
       PLIB_TMR_Period16BitSet(g_hw_settings.timer_module_id, 65535u);
       PLIB_TMR_PrescaleSelect(g_hw_settings.timer_module_id,
