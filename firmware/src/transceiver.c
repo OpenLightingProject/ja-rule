@@ -49,9 +49,9 @@ enum { NUMBER_OF_BUFFERS = 2};
 const int16_t TRANSCEIVER_NO_NOTIFICATION = -1;
 
 // Timing offsets
-static const uint16_t BREAK_FUDGE_FACTOR = 74u;
-static const uint16_t MARK_FUDGE_FACTOR = 217u;
-static const uint16_t RESPONSE_FUDGE_FACTOR = 24u;
+static const uint16_t BREAK_FUDGE_FACTOR = 140u;
+static const uint16_t MARK_FUDGE_FACTOR = 270u;
+static const uint16_t RESPONSE_FUDGE_FACTOR = 37u;
 static const uint16_t RESPONSE_TIME_RX_FUDGE_FACTOR = 13u;
 
 // The value of the test byte we send during the self test
