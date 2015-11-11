@@ -206,6 +206,37 @@ TEST_F(DimmerModelTest, selfTest) {
 
   size = InvokeRDMHandler(get_request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Run Tasks
+  testing::InSequence seq;
+  EXPECT_CALL(m_timer, HasElapsed(_, 50000)).WillOnce(Return(true));
+  EXPECT_CALL(m_timer, HasElapsed(_, _)).WillRepeatedly(Return(false));
+  DIMMER_MODEL_ENTRY.tasks_fn();
+
+  // Confirm self test is complete
+  selftest = 0;
+
+  response.reset(GetResponseFromData(
+        get_request.get(), &selftest, sizeof(selftest)));
+
+  size = InvokeRDMHandler(get_request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // Get the status message
+  uint8_t status_type = 0x02;
+  unique_ptr<RDMRequest> request = BuildGetRequest(
+      PID_STATUS_MESSAGES, &status_type, sizeof(status_type));
+
+  const uint8_t expected_response[] = {
+    0, 0, 2, 0x80, 1, 0, 1, 0, 0
+  };
+  response.reset(GetResponseFromData(
+      request.get(),
+      reinterpret_cast<const uint8_t*>(expected_response),
+      arraysize(expected_response)));
+
+  size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
 
 TEST_F(DimmerModelTest, selfTestDescription) {
@@ -739,5 +770,13 @@ TEST_F(DimmerModelTest, queuedMessages) {
       arraysize(expected_response)));
 
   int size = InvokeRDMHandler(request.get());
+  EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
+
+  // get last
+  status_type = 0x01;
+  request = BuildGetRequest(
+      PID_STATUS_MESSAGES, &status_type, sizeof(status_type));
+
+  size = InvokeRDMHandler(request.get());
   EXPECT_THAT(ArrayTuple(g_rdm_buffer, size), ResponseIs(response.get()));
 }
