@@ -99,7 +99,7 @@ int ClearSensors(const RDMHeader *header,
 enum { NUMBER_OF_SENSORS = 2 };
 
 const char SENSOR_NAME1[] = "Temperature";
-const char SENSOR_NAME2[] = "Power";
+const char SENSOR_NAME2[] = "Accel";
 
 const SensorDefinition SENSOR_DEFINITIONS[] = {
   {
@@ -132,19 +132,10 @@ SensorData g_sensors[NUMBER_OF_SENSORS];
 enum { PERSONALITY_COUNT = 2 };
 
 static const char SLOT_DIMMER_DESCRIPTION[] = "Dimmer";
-static const char PERSONALITY_DESCRIPTION1[] = "8-bit mode";
-static const char PERSONALITY_DESCRIPTION2[] = "16-bit mode";
+static const char PERSONALITY_DESCRIPTION1[] = "16-bit mode";
+static const char PERSONALITY_DESCRIPTION2[] = "8-bit mode";
 
 static const SlotDefinition PERSONALITY_SLOTS1[] = {
-  {
-    SLOT_DIMMER_DESCRIPTION,
-    SD_INTENSITY,
-    ST_PRIMARY,
-    0u,
-  },
-};
-
-static const SlotDefinition PERSONALITY_SLOTS2[] = {
   {
     SLOT_DIMMER_DESCRIPTION,
     SD_INTENSITY,
@@ -159,18 +150,28 @@ static const SlotDefinition PERSONALITY_SLOTS2[] = {
   },
 };
 
+
+static const SlotDefinition PERSONALITY_SLOTS2[] = {
+  {
+    SLOT_DIMMER_DESCRIPTION,
+    SD_INTENSITY,
+    ST_PRIMARY,
+    0u,
+  },
+};
+
 static const PersonalityDefinition PERSONALITIES[PERSONALITY_COUNT] = {
   {
-    1u,
+    2u,
     PERSONALITY_DESCRIPTION1,
     PERSONALITY_SLOTS1,
-    1u
+    2u
   },
   {
     2u,
     PERSONALITY_DESCRIPTION2,
     PERSONALITY_SLOTS2,
-    2u
+    1u
   }
 };
 
@@ -768,7 +769,7 @@ TEST_F(RDMResponderTest, dmxPersonalityDescription) {
   unique_ptr<RDMRequest> request = BuildGetRequest(
       PID_DMX_PERSONALITY, &personality, sizeof(personality));
 
-  const uint8_t expected_response[] = "\001\000\0018-bit mode";
+  const uint8_t expected_response[] = "\001\000\00216-bit mode";
 
   unique_ptr<RDMResponse> response(GetResponseFromData(
         request.get(),
@@ -814,9 +815,7 @@ TEST_F(RDMResponderTest, dmxStartAddress) {
 TEST_F(RDMResponderTest, slotInfo) {
   unique_ptr<RDMRequest> request = BuildGetRequest(PID_SLOT_INFO);
 
-  const uint8_t expected_response[] = {
-    0, 0, 0, 0, 1, 0, 1, 1, 0, 0
-  };
+  const uint8_t expected_response[] = { 0, 0, 0, 0, 1 };
 
   unique_ptr<RDMResponse> response(GetResponseFromData(
         request.get(),
@@ -861,8 +860,7 @@ TEST_F(RDMResponderTest, slotDefaultValue) {
       arraysize(request_data));
 
   const uint8_t expected_response[] = {
-    0, 0, 0,
-    0, 1, 0,
+    0, 0, 0
   };
 
   unique_ptr<RDMResponse> response(GetResponseFromData(
