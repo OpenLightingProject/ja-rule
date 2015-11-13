@@ -102,6 +102,7 @@
         <itemPath>../../common/dfu_spec.h</itemPath>
         <itemPath>../src/dmx_spec.h</itemPath>
         <itemPath>../src/temperature.h</itemPath>
+        <itemPath>../src/spi.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">
@@ -254,6 +255,7 @@
         <itemPath>../src/usb_transport.c</itemPath>
         <itemPath>../src/app.c</itemPath>
         <itemPath>../src/temperature.c</itemPath>
+        <itemPath>../src/spi.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="bsp" projectFiles="true">
         <logicalFolder name="f1" displayName="pic32mx_eth_sk2" projectFiles="true">

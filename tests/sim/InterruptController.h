@@ -61,5 +61,4 @@ class InterruptController : public SysIntInterface {
   Interrupt *GetInterrupt(INT_SOURCE source);
 };
 
-
 #endif  // TESTS_SIM_INTERRUPTCONTROLLER_H_
