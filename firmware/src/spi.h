@@ -40,7 +40,7 @@
 #define FIRMWARE_SRC_SPI_H_
 
 #include <stdbool.h>
-#include <stdlib.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

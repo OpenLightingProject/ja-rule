@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * SPITest
+ * SPITest.cpp
  * Tests for the SPI code.
  * Copyright (C) 2015 Simon Newton
  */
@@ -35,6 +35,7 @@
 #include "tests/sim/Simulator.h"
 
 using ::testing::ElementsAreArray;
+using ::testing::InSequence;;
 using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -120,7 +121,8 @@ class SPITest : public testing::Test {
 
 TEST_F(SPITest, testOutput) {
   uint8_t output[] = {1, 2, 3};
-  SPI_QueueTransfer(output, arraysize(output), nullptr, 0, &EventHandler);
+  EXPECT_TRUE(SPI_QueueTransfer(
+      output, arraysize(output), nullptr, 0, &EventHandler));
 
   EXPECT_CALL(m_event_handler, Run(SPI_BEGIN_TRANSFER)).Times(1);
   EXPECT_CALL(m_event_handler, Run(SPI_COMPLETE_TRANSFER))
@@ -135,7 +137,8 @@ TEST_F(SPITest, testInput) {
   AddInputBytes(data, arraysize(data));
 
   uint8_t input[3];
-  SPI_QueueTransfer(nullptr, 0, input, arraysize(input), &EventHandler);
+  EXPECT_TRUE(SPI_QueueTransfer(
+      nullptr, 0, input, arraysize(input), &EventHandler));
 
   EXPECT_CALL(m_event_handler, Run(SPI_BEGIN_TRANSFER)).Times(1);
   EXPECT_CALL(m_event_handler, Run(SPI_COMPLETE_TRANSFER))
@@ -149,4 +152,34 @@ TEST_F(SPITest, testInput) {
   // Check we only sent 0s
   const uint8_t sent_bytes[] = {0, 0, 0};
   EXPECT_THAT(m_spi.SentBytes(SPI_ID_2), ElementsAreArray(sent_bytes));
+}
+
+TEST_F(SPITest, testDoubleTransfer) {
+  uint8_t output1[] = {1, 2, 3};
+  uint8_t output2[] = {4, 5, 6};
+  uint8_t output3[] = {7, 8, 9};
+  EXPECT_TRUE(SPI_QueueTransfer(
+      output1, arraysize(output1), nullptr, 0, &EventHandler));
+  EXPECT_TRUE(SPI_QueueTransfer(
+      output2, arraysize(output2), nullptr, 0, &EventHandler));
+  EXPECT_FALSE(SPI_QueueTransfer(
+      output3, arraysize(output3), nullptr, 0, &EventHandler));
+
+  InSequence seq;
+  EXPECT_CALL(m_event_handler, Run(SPI_BEGIN_TRANSFER)).Times(1);
+  EXPECT_CALL(m_event_handler, Run(SPI_COMPLETE_TRANSFER))
+    .WillOnce(InvokeWithoutArgs(&m_simulator, &Simulator::Stop));
+  EXPECT_CALL(m_event_handler, Run(SPI_BEGIN_TRANSFER)).Times(1);
+  EXPECT_CALL(m_event_handler, Run(SPI_COMPLETE_TRANSFER))
+    .WillOnce(InvokeWithoutArgs(&m_simulator, &Simulator::Stop));
+
+  m_simulator.Run();
+
+  EXPECT_THAT(m_spi.SentBytes(SPI_ID_2), ElementsAreArray(output1));
+
+  // Now continue.
+  m_simulator.Run();
+
+  const uint8_t expected[] = {1, 2, 3, 4, 5, 6};
+  EXPECT_THAT(m_spi.SentBytes(SPI_ID_2), ElementsAreArray(expected));
 }
