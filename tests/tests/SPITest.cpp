@@ -37,6 +37,7 @@
 using ::testing::ElementsAreArray;
 using ::testing::InSequence;;
 using ::testing::InvokeWithoutArgs;
+using ::testing::IsEmpty;;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -152,6 +153,33 @@ TEST_F(SPITest, testInput) {
   // Check we only sent 0s
   const uint8_t sent_bytes[] = {0, 0, 0};
   EXPECT_THAT(m_spi.SentBytes(SPI_ID_2), ElementsAreArray(sent_bytes));
+}
+
+TEST_F(SPITest, nullTransfer) {
+  EXPECT_TRUE(SPI_QueueTransfer(
+      nullptr, 0, nullptr, 0, &EventHandler));
+
+  EXPECT_CALL(m_event_handler, Run(SPI_COMPLETE_TRANSFER))
+    .WillOnce(InvokeWithoutArgs(&m_simulator, &Simulator::Stop));
+
+  m_simulator.Run();
+
+  EXPECT_THAT(m_spi.SentBytes(SPI_ID_2), IsEmpty());
+}
+
+TEST_F(SPITest, bigTransfer) {
+  // larger than the enhanced buffer size.
+  uint8_t output[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+  uint8_t input[10];
+  EXPECT_TRUE(SPI_QueueTransfer(
+      output, arraysize(output), input, arraysize(input), &EventHandler));
+
+  EXPECT_CALL(m_event_handler, Run(SPI_BEGIN_TRANSFER)).Times(1);
+  EXPECT_CALL(m_event_handler, Run(SPI_COMPLETE_TRANSFER))
+    .WillOnce(InvokeWithoutArgs(&m_simulator, &Simulator::Stop));
+
+  m_simulator.Run();
+  EXPECT_THAT(m_spi.SentBytes(SPI_ID_2), ElementsAreArray(output));
 }
 
 TEST_F(SPITest, testDoubleTransfer) {
