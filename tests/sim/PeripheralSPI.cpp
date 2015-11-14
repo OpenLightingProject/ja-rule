@@ -158,13 +158,13 @@ void PeripheralSPI::Tick() {
         run_rx_isr = spi.rx_queue.size() == spi.fifo_size;
         break;
       case SPI_FIFO_INTERRUPT_WHEN_RECEIVE_BUFFER_IS_1HALF_FULL_OR_MORE:
-        run_tx_isr = spi.rx_queue.size() >= spi.fifo_size / 2;
+        run_rx_isr = spi.rx_queue.size() >= spi.fifo_size / 2;
         break;
       case SPI_FIFO_INTERRUPT_WHEN_RECEIVE_BUFFER_IS_NOT_EMPTY:
-        run_tx_isr = !spi.rx_queue.empty();
+        run_rx_isr = !spi.rx_queue.empty();
         break;
       case SPI_FIFO_INTERRUPT_WHEN_BUFFER_IS_EMPTY:
-        run_tx_isr = spi.rx_queue.empty();
+        run_rx_isr = spi.rx_queue.empty();
         break;
       default:
         {}

@@ -62,16 +62,19 @@ typedef void (*SPI_Callback)(SPIEventType event);
 
 /**
  * @brief Queue an SPI transfer.
- * @param output The output buffer to send. If null 0s will be sent.
+ * @param output The output buffer to send.
  * @param output_length The size of the output buffer.
  * @param input The location to store received data, may be NULL.
  * @param input_length The length of the input data buffer.
  * @param callback The callback run prior and post this transfer.
  * @returns True if the transfer was scheduled, false if the queue was full.
  *
- * The number of bytes sent will be the maximum of (output_length,
- * input_length). If output_length < input_length, the output data will be
- * padded with 0s.
+ * This queues a write / read SPI operation. First the data in output will be
+ * sent, then input_length worth of data will be read while 0s are sent. Both
+ * stages are optional.
+ *
+ * The total number of bytes sent will be the sum of (output_length,
+ * input_length).
  */
 bool SPI_QueueTransfer(const uint8_t *output,
                        unsigned int output_length,

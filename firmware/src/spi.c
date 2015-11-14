@@ -46,6 +46,7 @@ typedef struct {
   unsigned int output_remaining;
   unsigned int extra_zeros_to_send;
   uint8_t *input;
+  unsigned int skip_input_bytes;
   unsigned int input_remaining;
   TransferState state;
   SPI_Callback callback;
@@ -95,13 +96,17 @@ static void QueueBytes(Transfer *transfer) {
 static void ReadBytes(Transfer *transfer) {
   while (!PLIB_SPI_ReceiverFIFOIsEmpty(MY_SPI)) {
     uint8_t data = PLIB_SPI_BufferRead(MY_SPI);
-    if (transfer->input_remaining) {
-      *transfer->input = data;
-      transfer->input++;
-      transfer->input_remaining--;
-    }
-    if (transfer->input_remaining == 0) {
-      SYS_INT_SourceDisable(INT_SOURCE_SPI_2_RECEIVE);
+    if (transfer->skip_input_bytes) {
+      transfer->skip_input_bytes--;
+    } else {
+      if (transfer->input_remaining) {
+        *transfer->input = data;
+        transfer->input++;
+        transfer->input_remaining--;
+      }
+      if (transfer->input_remaining == 0) {
+        SYS_INT_SourceDisable(INT_SOURCE_SPI_2_RECEIVE);
+      }
     }
   }
 }
@@ -176,13 +181,10 @@ bool SPI_QueueTransfer(const uint8_t *output,
   transfer->state = QUEUED;
   transfer->output = output;
   transfer->output_remaining = output_length;
-  if (input_length > output_length) {
-    transfer->extra_zeros_to_send = input_length - output_length;
-  } else {
-    transfer->extra_zeros_to_send = 0u;
-  }
+  transfer->extra_zeros_to_send = input_length;
   transfer->input = input;
   transfer->input_remaining = input_length;
+  transfer->skip_input_bytes = output_length;
   transfer->callback = callback;
   return true;
 }

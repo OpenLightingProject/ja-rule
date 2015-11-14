@@ -167,12 +167,39 @@ TEST_F(SPITest, nullTransfer) {
   EXPECT_THAT(m_spi.SentBytes(SPI_ID_2), IsEmpty());
 }
 
+TEST_F(SPITest, writeReadTransfer) {
+  // larger than the enhanced buffer size.
+  uint8_t tx_data[] = {1, 2, 3, 4};
+  const uint8_t rx_data[] = {0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 9, 8, 7, 6, 5};
+  for (unsigned int i = 0; i < arraysize(tx_data); i++) {
+    m_spi.QueueResponseByte(SPI_ID_2, 0);
+  }
+  AddInputBytes(rx_data, arraysize(rx_data));
+
+  uint8_t input[11];
+  EXPECT_TRUE(SPI_QueueTransfer(
+      tx_data, arraysize(tx_data), input, arraysize(input), &EventHandler));
+
+  EXPECT_CALL(m_event_handler, Run(SPI_BEGIN_TRANSFER)).Times(1);
+  EXPECT_CALL(m_event_handler, Run(SPI_COMPLETE_TRANSFER))
+    .WillOnce(InvokeWithoutArgs(&m_simulator, &Simulator::Stop));
+
+  m_simulator.Run();
+  const uint8_t expected_tx[] = {
+    1, 2, 3, 4,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  };
+  EXPECT_THAT(m_spi.SentBytes(SPI_ID_2), ElementsAreArray(expected_tx));
+
+  ArrayTuple received_bytes(input, arraysize(input));
+  EXPECT_THAT(received_bytes, DataIs(rx_data, arraysize(rx_data)));
+}
+
 TEST_F(SPITest, bigTransfer) {
   // larger than the enhanced buffer size.
   uint8_t output[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-  uint8_t input[10];
   EXPECT_TRUE(SPI_QueueTransfer(
-      output, arraysize(output), input, arraysize(input), &EventHandler));
+      output, arraysize(output), nullptr, 0, &EventHandler));
 
   EXPECT_CALL(m_event_handler, Run(SPI_BEGIN_TRANSFER)).Times(1);
   EXPECT_CALL(m_event_handler, Run(SPI_COMPLETE_TRANSFER))
