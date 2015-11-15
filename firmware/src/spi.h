@@ -55,14 +55,14 @@ typedef enum {
 } SPIEventType;
 
 /**
- * @brief The callback run before or after the SPI transfer begins.
+ * @brief The callback run before and after the SPI transfer begins.
  * @param event The type of SPI event that occurs.
  */
 typedef void (*SPI_Callback)(SPIEventType event);
 
 /**
  * @brief Queue an SPI transfer.
- * @param output The output buffer to send.
+ * @param output The output buffer to send, may be NULL.
  * @param output_length The size of the output buffer.
  * @param input The location to store received data, may be NULL.
  * @param input_length The length of the input data buffer.

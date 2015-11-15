@@ -3,14 +3,14 @@
 
 noinst_LTLIBRARIES += tests/sim/libsim.la
 
-tests_sim_libsim_la_SOURCES = tests/sim/PeripheralTimer.h \
-                              tests/sim/InterruptController.cpp \
+tests_sim_libsim_la_SOURCES = tests/sim/InterruptController.cpp \
                               tests/sim/InterruptController.h \
                               tests/sim/PeripheralInputCapture.cpp \
                               tests/sim/PeripheralInputCapture.h \
                               tests/sim/PeripheralSPI.cpp \
                               tests/sim/PeripheralSPI.h \
                               tests/sim/PeripheralTimer.cpp \
+                              tests/sim/PeripheralTimer.h \
                               tests/sim/PeripheralUART.cpp \
                               tests/sim/PeripheralUART.h \
                               tests/sim/SignalGenerator.cpp \
