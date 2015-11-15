@@ -1167,7 +1167,7 @@ static void DimmerModel_Tasks() {
   if (g_root_device.running_self_test &&
       CoarseTimer_HasElapsed(
           g_root_device.self_test_timer,
-          SELF_TESTS[g_root_device.running_self_test].duration)) {
+          SELF_TESTS[g_root_device.running_self_test - 1].duration)) {
     // Queue a status message for the root.
     QueueStatusMessage(
         &g_root_device.status_message, SUBDEVICE_ROOT, STATUS_ADVISORY,
