@@ -196,7 +196,7 @@ void PeripheralSPI::Disable(SPI_MODULE_ID index) {
 
 bool PeripheralSPI::TransmitBufferIsFull(SPI_MODULE_ID index) {
   if (index >= m_spi.size()) {
-    ADD_FAILURE() << "invalid SPI " << index;
+    ADD_FAILURE() << "Invalid SPI " << index;
   }
   return m_spi[index].tx_queue.size() == m_spi[index].fifo_size;
 }
@@ -225,7 +225,7 @@ void PeripheralSPI::MasterEnable(SPI_MODULE_ID index) {
 void PeripheralSPI::FIFOInterruptModeSelect(SPI_MODULE_ID index,
                                             SPI_FIFO_INTERRUPT mode) {
   if (index >= m_spi.size()) {
-    ADD_FAILURE() << "invalid spi " << index;
+    ADD_FAILURE() << "Invalid spi " << index;
     return;
   }
   SPI *spi = &m_spi[index];
