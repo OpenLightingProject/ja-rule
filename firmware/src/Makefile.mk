@@ -12,6 +12,7 @@ noinst_LTLIBRARIES += firmware/src/libcoarsetimer.la \
                       firmware/src/librdmutil.la \
                       firmware/src/libreceivercounters.la \
                       firmware/src/libresponder.la \
+                      firmware/src/libspi.la \
                       firmware/src/libspirgb.la \
                       firmware/src/libstreamdecoder.la \
                       firmware/src/libtransceiver.la \
@@ -61,6 +62,9 @@ firmware_src_libresponder_la_CFLAGS = $(BUILD_FLAGS)
 
 firmware_src_libspirgb_la_SOURCES = firmware/src/spi_rgb.c
 firmware_src_libspirgb_la_CFLAGS = $(BUILD_FLAGS)
+
+firmware_src_libspi_la_SOURCES = firmware/src/spi.c
+firmware_src_libspi_la_CFLAGS = $(BUILD_FLAGS)
 
 firmware_src_libstreamdecoder_la_SOURCES = firmware/src/stream_decoder.c
 firmware_src_libstreamdecoder_la_CFLAGS = $(BUILD_FLAGS)

@@ -42,8 +42,9 @@ TESTS += tests/tests/bootloader_test \
          tests/tests/responder_test \
          tests/tests/spirgb_test \
          tests/tests/stream_decoder_test \
-         tests/tests/transceiver_test \
          tests/tests/simulated_transceiver_test \
+         tests/tests/spi_test \
+         tests/tests/transceiver_test \
          tests/tests/usb_transport_test \
          tests/tests/utils_test
 
@@ -219,6 +220,15 @@ tests_tests_usb_transport_test_LDADD = $(TESTING_LIBS) \
                                        tests/mocks/libresetmock.la \
                                        tests/mocks/libstreamdecodermock.la \
                                        firmware/src/libflags.la
+
+tests_tests_spi_test_SOURCES = tests/tests/SPITest.cpp
+tests_tests_spi_test_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)
+tests_tests_spi_test_LDADD = \
+    $(GMOCK_LIBS) $(GTEST_LIBS) $(OLA_LIBS) \
+    tests/sim/libsim.la \
+    firmware/src/libspi.la \
+    tests/mocks/libmatchers.la \
+    tests/harmony/mocks/libharmonymock.la
 
 tests_tests_transceiver_test_SOURCES = tests/tests/TransceiverTest.cpp
 tests_tests_transceiver_test_CXXFLAGS = $(TESTING_CXXFLAGS)
