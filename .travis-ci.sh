@@ -64,6 +64,23 @@ elif [[ $TASK = 'doxygen' ]]; then
   else
     echo "Found $warnings doxygen warnings"
   fi;
+elif [[ $TASK = 'doxygen-manual' ]]; then
+  # check doxygen only if it is the requested task
+  autoreconf -i && ./configure --without-ola
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for Doxygen to run against
+  #make builtfiles
+  # count the number of warnings
+  cd user_manual
+  warnings=$(doxygen 2>&1 >/dev/null | wc -l)
+  if [[ $warnings -ne 0 ]]; then
+    # print the output for info
+    doxygen
+    echo "Found $warnings user manual doxygen warnings"
+    exit 1;
+  else
+    echo "Found $warnings user manual doxygen warnings"
+  fi;
 elif [[ $TASK = 'coverage' ]]; then
   # Compile with coverage for coveralls
   autoreconf -i && ./configure --enable-gcov && make && make check
