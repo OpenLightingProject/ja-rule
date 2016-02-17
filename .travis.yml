@@ -15,6 +15,7 @@ matrix:
     - compiler: gcc
       env: TASK='coverity'
     - env: TASK='doxygen'
+    - env: TASK='doxygen-manual'
     - env: TASK='lint'
     - env: TASK='check-licences'
   allow_failures:
@@ -73,8 +74,8 @@ before_install:
  #Install coveralls if required
  - if [ "$TASK" = "coverage" ]; then sudo pip install -qq cpp-coveralls; fi
  #Install doxygen if required
- - if [ "$TASK" = "doxygen" ]; then sudo apt-get install -qq doxygen graphviz; fi
- - if [ "$TASK" = "compile" -o "$TASK" = "doxygen" -o "$TASK" = "coverage" -o "$TASK" = "coverity" ]; then ./install-gmock.sh; fi
+ - if [ "$TASK" = "doxygen" -o "$TASK" = "doxygen-manual" ]; then sudo apt-get install -qq doxygen graphviz; fi
+ - if [ "$TASK" = "compile" -o "$TASK" = "doxygen" -o "$TASK" = "doxygen-manual" -o "$TASK" = "coverage" -o "$TASK" = "coverity" ]; then ./install-gmock.sh; fi
 
 after_success:
  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi

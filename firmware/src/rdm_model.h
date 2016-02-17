@@ -18,6 +18,11 @@
  */
 
 /**
+ * @defgroup rdm_models RDM Models
+ * @brief The RDM Model implementations.
+ */
+
+/**
  * @addtogroup rdm
  * @{
  * @file rdm_model.h
