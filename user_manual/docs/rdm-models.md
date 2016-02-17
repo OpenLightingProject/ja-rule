@@ -13,6 +13,9 @@ provided:
 Note that these PIDs do not appear in the supported parameters list, so they
 are 'hidden' in a sense.
 
+The PIDs aren't included in the 0.10.0 release of OLA, so you will need to add [this file](https://raw.githubusercontent.com/OpenLightingProject/ja-rule/master/data/rdm/stellascapes_lightwidgets_number1.proto)
+ to your PID data directory (normally /usr/local/share/ola/pids or /usr/share/ola/pids) and restart olad.
+
 Using the OLA CLI, to get a list of available models:
 ~~~~~
 $ ola_rdm_get -u 1 --uid 7a70:fffffe00 model_id_list
