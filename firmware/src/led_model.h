@@ -21,7 +21,7 @@
  * @addtogroup rdm_models
  * @{
  * @file led_model.h
- * @brief A led RDM Model for controlling RGB pixels.
+ * @brief A LED RDM Model for controlling RGB pixels.
  */
 
 #ifndef FIRMWARE_SRC_LED_MODEL_H_
@@ -43,7 +43,7 @@ extern "C" {
 extern const ModelEntry LED_MODEL_ENTRY;
 
 /**
- * @brief Initialize the led model.
+ * @brief Initialize the LED model.
  */
 void LEDModel_Initialize();
 
