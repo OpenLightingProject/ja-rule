@@ -664,7 +664,7 @@ INPUT                  = Bootloader/firmware/src \
                          doxygen/memory.md \
                          doxygen/controller.md \
                          doxygen/responder.md \
-                         doxygen/rdm_models.md \
+                         doxygen/rdm-models.md \
                          doxygen/reference-design.md \
                          doxygen/message-format.md \
                          doxygen/mplab-setup.md \
