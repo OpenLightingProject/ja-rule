@@ -14,7 +14,7 @@ fi
 echo "Output dir: $output_dir";
 
 if [ ! -d ./html/ ]; then
-  echo ./html/ doesn\'t exist, make doxygen-doc failed somehow
+  echo ./html/ doesn\'t exist, ./doxygen failed somehow
   exit 1;
 fi
 
