@@ -762,6 +762,7 @@ WARN_LOGFILE           =
 INPUT                  = docs/main.md \
                          docs/rdm-models.md \
                          docs/rdm-responder.md \
+                         docs/usb-logging.md \
                          docs/console.md \
                          docs/firmware.md \
                          docs/examples.md

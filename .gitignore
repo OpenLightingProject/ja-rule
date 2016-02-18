@@ -82,3 +82,7 @@ firmware/ja-rule.X/dist/number8/
 firmware/ja-rule.X/nbproject/Makefile*
 firmware/ja-rule.X/nbproject/Package*
 firmware/ja-rule.X/nbproject/private/
+user_manual/doxygen_entrydb_*.tmp
+user_manual/doxygen_objdb_*.tmp
+user_manual/doxygen_sqlite3.db
+user_manual/html/
