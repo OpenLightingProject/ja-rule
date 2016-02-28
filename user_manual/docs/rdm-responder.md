@@ -90,7 +90,7 @@ This model has a DMX footprint of 0.
 
 Sensor Index | Name           | Type, Units                     | Units   | Notes
 -------------|----------------|---------------------------------|---------|---------
-0            | Temperature    | Temperature, Centigrade         | Deci    | Data is from the onboard temp. sensor if present.
+0            | Temperature    | Temperature, Centigrade         | Deci    | Data is from the onboard temp. sensor if present, or random data if not.
 1            | Missing Sensor | Acceleration, meters / second^2 | Deci    | Always NACKs SENSOR_VALUE with NR_HARDWARE_FAULT
 2            | Voltage        | Voltage, Volts                  | Milli   | Data is random numbers
 
@@ -155,5 +155,4 @@ The default lock pin is 0000.
 ## Self Tests
 
 The root device supports two self tests. The 1st completes in 5s and
-always passes. The 2nd takes 20s and always fails. When the test completes a
-status message is queued.
+always passes. The 2nd takes 20s and always fails. When the test completes a status message is queued.
