@@ -21,4 +21,4 @@ To update the bootloader you'll need special hardware and
 software that can interface with the PIC32 microcontroller.
 
 The easiest way to get started is with a PicKit 3 programmer. You'll also need
-to MPLAB IPE software.
+to install the MPLAB IPE software.

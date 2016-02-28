@@ -10,8 +10,8 @@ see the [OLE Developer Guide](http://docs.openlighting.org/ole/doc/latest/).
 
 Since the OLE software is customizable, the version running on a particular
 device may have different functionality from what is described here. Consult
-your manufacturer's documentation on the specific features enabled on a
-particular hardware product.
+your manufacturer's documentation on the features are enabled on
+each product.
 
 The examples in this guide are from a
 [Number1](https://www.openlighting.org/ole/number1/) since that was the first
