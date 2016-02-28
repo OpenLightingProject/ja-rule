@@ -1,1 +1,0 @@
-../user_manual/docs/rdm-models.md

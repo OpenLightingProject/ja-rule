@@ -5,7 +5,7 @@ Introduction     {#mainpage}
 
 # Overview {#main-overview}
 
-Ja Rule is an Open Source DMX512 / RDM stack for PIC32 microcontrollers. It
+OLE is an Open Source DMX512 / RDM stack for PIC32 microcontrollers. It
 contains code to function as either an DMX / RDM controller (transmitter) or as an
 DMX receiver / RDM responder.
 
@@ -24,7 +24,7 @@ DMX receiver / RDM responder.
 
 ## DMX512 / RDM Receiver {#main-features-responder}
 
-- The ability to simulate many different types of @ref rdm-models.
+- The ability to simulate many different types of rdm-models.
  Together, they support all PIDs from the E1.20, E1.37-1 & E1.37-2
  standards. This allows RDM controllers to be tested without having access
  to a large number of RDM devices. The code can act as:
@@ -40,7 +40,7 @@ DMX receiver / RDM responder.
 
 ## Common {#main-features-common}
 
-- \ref usb-logging, with adjustable log levels. Requires Linux or MAC OS X 10.7 or
+- USB Logging, with adjustable log levels. Requires Linux or MAC OS X 10.7 or
   greater.
 - Extensive @ref testing.
 

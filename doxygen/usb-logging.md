@@ -1,1 +1,0 @@
-../user_manual/docs/usb-logging.md

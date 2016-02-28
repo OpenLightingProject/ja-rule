@@ -35,8 +35,6 @@
  * To log messages to the console, use SysLog_Message() and SysLog_Print().
  * This should not be called within interrupt context.
  *
- * For information on viewing the console, see @ref usb-logging.
- *
  * @addtogroup logging
  * @{
  * @file syslog.h
