@@ -5,7 +5,7 @@ Introduction     {#mainpage}
 
 # Overview {#main-overview}
 
-Ja Rule is an Open Source DMX512 / RDM stack for PIC32 microcontrollers. It
+OLE is an Open Source DMX512 / RDM stack for PIC32 microcontrollers. It
 contains code to function as either an DMX / RDM controller (transmitter) or as an
 DMX receiver / RDM responder.
 

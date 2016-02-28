@@ -7,11 +7,12 @@ software is developed as part of the
 
 ## Documentation
 
+The [Ja Rule User Manual](http://docs.openlighting.org/ja-rule/manual/latest/) 
+describes how to use a Ja Rule device.
+
 The [Ja Rule Developer
 Documentation](https://docs.openlighting.org/ja-rule/doc/latest/), is targeted
 towards people who want to know more about the platform and how to modify it.
-
-The Ja Rule User Guide is not available yet.
 
 ## Licensing
 
