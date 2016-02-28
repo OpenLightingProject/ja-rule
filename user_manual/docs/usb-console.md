@@ -28,6 +28,8 @@ On Linux, minicom can be used. The device will usually appear as an ACM device.
 
 ## Mac OS {#usb-console-mac}
 
+To use the USB console requires Mac OS 10.7 or later.
+
 On Mac OS X, minicom can be used. The device will appear as a usbmodem:
 
     $ minicom  -D /dev/tty.usbmodem14121

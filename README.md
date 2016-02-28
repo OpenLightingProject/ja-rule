@@ -1,4 +1,4 @@
-# Ja Rule
+# Open Lighting Embedded
 [![Build Status](https://travis-ci.org/OpenLightingProject/ja-rule.svg?branch=master)](https://travis-ci.org/OpenLightingProject/ja-rule) [![Coverity Scan Status](https://scan.coverity.com/projects/3938/badge.svg)](https://scan.coverity.com/projects/3938) [![Coverage Status](https://coveralls.io/repos/OpenLightingProject/ja-rule/badge.svg?branch=master&service=github)](https://coveralls.io/github/OpenLightingProject/ja-rule?branch=master)
 
 Open Lighting Embedded (OLE) is an open source DMX512 / RDM stack for PIC32
@@ -8,7 +8,7 @@ microcontrollers. The software is developed as part of the
 ## Documentation
 
 The [OLE User Manual](http://docs.openlighting.org/ole/manual/latest/) 
-describes how to use a Ja Rule device.
+describes how to use an OLE device.
 
 The [OLE Developer
 Documentation](https://docs.openlighting.org/ole/doc/latest/), is targeted
