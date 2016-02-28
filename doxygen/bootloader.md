@@ -17,8 +17,8 @@ protocol. This is a standard protocol for upgrading firmware over USB.
 
 # Update Procedure {#bootloader-procedure}
 
-Generally the update procedure is:
-- Download or create a new firmware image.
-- Activate the bootloader mode on the device.
-- Perform the update.
-- Run the new code.
+To update the bootloader you'll need special hardware and
+software that can interface with the PIC32 microcontroller.
+
+The easiest way to get started is with a PicKit 3 programmer. You'll also need
+to MPLAB IPE software.
