@@ -6,22 +6,22 @@ RDM Responder  {#responder}
 # Overview {#responder-overview}
 
 The OLE software can simulate different types of RDM Device Models. This
-allows RDM controllers to be tested without having to purchase a many
-different types of RDM products.
+allows RDM controllers to be tested without having to purchase different types
+of RDM products.
 
 Each Device Model is identified with a 16-bit Device Model ID. See Section
 10.5.1 of the RDM Standard for more information on Device Model IDs.
 
 The device can only operate as one model at a time.
 
-Model ID (hex)  | Description
---------------- | -------------
-0x0100          | LED Driver
-0x0101          | Proxy, which ACK_TIMERs all requests to child devices.
-0x0102          | Moving Light
-0x0103          | Sensor only device (no DMX footprint)
-0x0104          | E1.37-2 Network Device
-0x0105          | Dimmer, with sub-devices & status messages.
+Model ID (hex)  | Model Id (dec)  | Description
+--------------- | ----------------|----------------
+0x0100          | 256             | LED Driver
+0x0101          | 257             | Proxy, which ACK_TIMERs all requests to child devices.
+0x0102          | 258             | Moving Light
+0x0103          | 259             | Sensor only device (no DMX footprint)
+0x0104          | 260             | E1.37-2 Network Device
+0x0105          | 261             | Dimmer, with sub-devices & status messages.
 
 ## Selecting the Device Model ID {#responder-changing-models}
 
@@ -33,7 +33,7 @@ they are 'hidden'.
 ### MODEL_ID_LIST
 
 [MODEL_ID_LIST](http://rdm.openlighting.org/pid/display?manufacturer=31344&pid=32771)
-will return a list of Device Model IDs. The request PDL is 0.
+will return a list of Device Model IDs. There is no data in the GET request.
 
 ### MODEL_ID
 
@@ -46,8 +46,8 @@ The PIDs aren't included in the 0.10.0 release of OLA, so you will need to
 add [this file](https://raw.githubusercontent.com/OpenLightingProject/ja-rule/master/data/rdm/stellascapes_lightwidgets_number1.proto)
 to your PID data directory (normally /usr/local/share/ola/pids or /usr/share/ola/pids) and restart olad.
 
-Once you know the UID of your device. you can use  OLA CLI, to get a list of
-available models:
+Once you know the UID of your device. you can use OLA command line tools, to
+fetch a list of available models:
 
     $ ola_rdm_get --universe 1 --uid 7a70:fffffe00 model_id_list
 
@@ -90,9 +90,9 @@ This model has a DMX footprint of 0.
 
 Sensor Index | Name           | Type, Units                     | Units   | Notes
 -------------|----------------|---------------------------------|---------|---------
-0            | Temperature    | Temperature, Centigrade         | Deci    | Data is from the onboard temp. sensor if present.
+0            | Temperature    | Temperature, Centigrade         | Deci    | Data is from the onboard temp. sensor if present, or random data if not.
 1            | Missing Sensor | Acceleration, meters / second^2 | Deci    | Always NACKs SENSOR_VALUE with NR_HARDWARE_FAULT
-2            | Voltage        | Voltage, Volts                  | Milli   | -
+2            | Voltage        | Voltage, Volts                  | Milli   | Data is random numbers
 
 # Network Model {#responder-network}
 
@@ -116,8 +116,9 @@ All PIDs from E1.37-1, Dimmer Message Sets are supported.
 The dimmer has multiple sub-devices, that each take a single slot of DMX
 data. The sub-devices are not contiguous.
 
-DMX_BLOCK_ADDRESS can be used to set the DMX Start Address of all sub-devices in
-a single operation.
+[DMX_BLOCK_ADDRESS](http://rdm.openlighting.org/pid/display?manufacturer=0&pid=320)
+can be used to set the DMX Start Address of all sub-devices in a single
+operation.
 
 ## Dimmer Settings
 
@@ -154,6 +155,4 @@ The default lock pin is 0000.
 ## Self Tests
 
 The root device supports two self tests. The 1st completes in 5s and
-always passes. The 2nd takes 20s and always fails. When the test completes a
-status message is queued.
-
+always passes. The 2nd takes 20s and always fails. When the test completes a status message is queued.

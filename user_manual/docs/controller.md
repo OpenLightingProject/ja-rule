@@ -8,5 +8,14 @@ DMX / RDM Controller {#controller}
 The device will automatically switch to controller mode when it's configured as
 an output port within OLA.
 
-When operating in controller mode, remember to set the biasing switches
-according to the manufacturer's instructions.
+# Biasing & Termination {#controller-biasing}
+
+For correct operation, RDM networks need to be
+[biased](https://en.wikipedia.org/wiki/Biasing) appropriately. This requires
+two things:
+
+- Biasing at the controller side.
+- A terminator on the last responder in the DMX chain.
+
+See your manufacturer's instructions for how to set the correct biasing for
+your device.

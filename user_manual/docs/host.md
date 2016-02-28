@@ -15,13 +15,13 @@ The device enumerates as a [CDC](https://en.wikipedia.org/wiki/USB_communication
 and as a custom device class. The former is used for the USB Console while the
 latter is used for DMX / RDM controller messages.
 
-To use the device as a DMX/RDM controller, [libftdi](https://www.intra2net.com/en/developer/libftdi/)
+To use the device as a DMX/RDM controller, [libusb](http://libusb.info/)
 will need to be installed. See the OLA installation instructions for more
 details.
 
 ## Mac {#host-drivers-mac}
 
-The CDC driver is pre-installed on Mac OS X.
+The CDC driver is pre-installed on Mac OS X versions 10.7 and above.
 
 ## Linux {#host-drivers-linux}
 

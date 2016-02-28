@@ -24,7 +24,7 @@ DMX receiver / RDM responder.
 
 ## DMX512 / RDM Receiver {#main-features-responder}
 
-- The ability to simulate many different types of rdm-models.
+- The ability to simulate many different types of RDM Models.
  Together, they support all PIDs from the E1.20, E1.37-1 & E1.37-2
  standards. This allows RDM controllers to be tested without having access
  to a large number of RDM devices. The code can act as:
