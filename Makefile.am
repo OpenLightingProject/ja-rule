@@ -35,5 +35,6 @@ include tests/Makefile.mk
 endif
 
 include tools/Makefile.mk
+include user_manual/Makefile.mk
 
 check_PROGRAMS = $(TESTS)

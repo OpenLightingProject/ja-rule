@@ -57,36 +57,37 @@ To change the current model:
 
 # LED Model {#responder-led}
 
-The LED Model can be used to control SPI LED Pixels.
+The LED Model can be used to control SPI LED Pixels. It provides very basic RDM
+support, with 2 Manufacturer specific PIDs to control the type and number of
+pixels.
+
+## Supported Parameters {#responder-led-params}
+@htmlinclude led.html
 
 # Proxy Model {#responder-proxy}
 
-This model simulates a wireless RDM proxy with 2 downstream RDM devices. As
-such, all requests to the downstream devices will return an ACK_TIMER. The
+This model simulates a wireless RDM proxy with 2 downstream RDM devices.
+All requests to the downstream devices will return an ACK_TIMER. The
 response messages can be obtained with a GET QUEUED_MESSAGES.
 
+## Supported Parameters {#responder-proxy-params}
+@htmlinclude proxy.html
 
 # Moving Light Model {#responder-moving-light}
 
-This model emulates an RDM enabled Moving Light.
+This model simulates an RDM enabled Moving Light.
 
-## Supported Parameters
-
-PID                         | Get | Set |
---------------------------- | ----|-----|
-COMMS_STATUS                |  Y  |     |
-SUPPORTED_PARAMETERS        |  Y  |     |
-DEVICE_INFO                 |  Y  |     |
-PRODUCT_DETAIL_ID_LIST      |  Y  |     |
-DEVICE_MODEL_DESCRIPTION    |  Y  |     |
-BOOT_SOFTWARE_VERSION_LABEL |  Y  |     |
-DMX_PERSONALITY_DESCRIPTION |  Y  |     |
-
-and more..
+## Supported Parameters {#responder-moving-light-params}
+@htmlinclude moving_light.html
 
 # Sensor Model {#responder-sensor}
 
 This model has a DMX footprint of 0.
+
+## Supported Parameters {#responder-sensor-params}
+@htmlinclude sensor.html
+
+## Sensors {#responder-sensor-sensors}
 
 Sensor Index | Name           | Type, Units                     | Units   | Notes
 -------------|----------------|---------------------------------|---------|---------
@@ -94,9 +95,15 @@ Sensor Index | Name           | Type, Units                     | Units   | Note
 1            | Missing Sensor | Acceleration, meters / second^2 | Deci    | Always NACKs SENSOR_VALUE with NR_HARDWARE_FAULT
 2            | Voltage        | Voltage, Volts                  | Milli   | Data is random numbers
 
+
 # Network Model {#responder-network}
 
 This model implements the PIDs from E1.37-2, IPv4 & DNS Configuration Messages.
+
+## Supported Parameters {#responder-network-params}
+@htmlinclude network.html
+
+## Interfaces {#responder-network-interfaces}
 
 Interface Index | Name  | DHCP Supported   |  Notes
 ----------------|-------|------------------|--------
@@ -110,6 +117,9 @@ This model simulates a Dimmer. The root device has a DMX footprint of 0 and
 there are 4 sub-devices present.
 
 All PIDs from E1.37-1, Dimmer Message Sets are supported.
+
+## Supported Parameters {#responder-dimmer-params}
+@htmlinclude dimmer.html
 
 ## Sub-devices
 

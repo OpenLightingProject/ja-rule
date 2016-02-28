@@ -22,6 +22,7 @@
 
 #include "coarse_timer.h"
 #include "constants.h"
+#include "random.h"
 #include "rdm_frame.h"
 #include "rdm_responder.h"
 #include "rdm_util.h"
