@@ -1,22 +1,22 @@
 # Ja Rule
 [![Build Status](https://travis-ci.org/OpenLightingProject/ja-rule.svg?branch=master)](https://travis-ci.org/OpenLightingProject/ja-rule) [![Coverity Scan Status](https://scan.coverity.com/projects/3938/badge.svg)](https://scan.coverity.com/projects/3938) [![Coverage Status](https://coveralls.io/repos/OpenLightingProject/ja-rule/badge.svg?branch=master&service=github)](https://coveralls.io/github/OpenLightingProject/ja-rule?branch=master)
 
-Ja Rule is an open source DMX512 / RDM stack for PIC32 microcontrollers. The
-software is developed as part of the
+Open Lighting Embedded (OLE) is an open source DMX512 / RDM stack for PIC32
+microcontrollers. The software is developed as part of the
 [Open Lighting Project](https://www.openlighting.org/).
 
 ## Documentation
 
-The [Ja Rule User Manual](http://docs.openlighting.org/ja-rule/manual/latest/) 
+The [OLE User Manual](http://docs.openlighting.org/ole/manual/latest/) 
 describes how to use a Ja Rule device.
 
-The [Ja Rule Developer
-Documentation](https://docs.openlighting.org/ja-rule/doc/latest/), is targeted
+The [OLE Developer
+Documentation](https://docs.openlighting.org/ole/doc/latest/), is targeted
 towards people who want to know more about the platform and how to modify it.
 
 ## Licensing
 
-The Ja Rule codebase is licensed under the
+The OLE codebase is licensed under the
 [LGPL](http://www.gnu.org/licenses/lgpl.html).
 
 The unit-testing code & mocks are licenced under the
