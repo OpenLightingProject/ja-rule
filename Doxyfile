@@ -664,12 +664,10 @@ INPUT                  = Bootloader/firmware/src \
                          doxygen/memory.md \
                          doxygen/controller.md \
                          doxygen/responder.md \
-                         doxygen/rdm-models.md \
                          doxygen/reference-design.md \
                          doxygen/message-format.md \
                          doxygen/mplab-setup.md \
                          doxygen/testing.md \
-                         doxygen/usb-logging.md \
                          doxygen
 
 # This tag can be used to specify the character encoding of the source files
