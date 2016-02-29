@@ -1,6 +1,6 @@
 # LIBS
 
-TESTS += user_manual/pid_gen/pid_gen
+noinst_PROGRAMS += user_manual/pid_gen/pid_gen
 
 user_manual_pid_gen_pid_gen_SOURCES = user_manual/pid_gen/pid_gen.cpp
 user_manual_pid_gen_pid_gen_CXXFLAGS = $(TESTING_CXXFLAGS) $(OLA_CFLAGS)

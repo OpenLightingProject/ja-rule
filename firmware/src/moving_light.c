@@ -364,7 +364,8 @@ int MovingLightModel_SetPowerState(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
-  if (param_data[0] > POWER_STATE_NORMAL) {
+  if (param_data[0] > POWER_STATE_STANDBY &&
+      param_data[0] != POWER_STATE_NORMAL) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
   if (g_moving_light.power_state != param_data[0]) {

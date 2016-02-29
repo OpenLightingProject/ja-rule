@@ -59,7 +59,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-const uint8_t TEST_UID[] = {0x7a, 0x70, 0, 0, 0, 1};
+const uint8_t TEST_UID[] = {0x7a, 0x70, 0xff, 0xff, 0xfe, 0x10};
 
 const uint16_t MANUFACTURER_RANGE = 0x8000;
 
@@ -124,7 +124,7 @@ string BuildLink(uint16_t pid) {
   } else {
     str << ola::OPEN_LIGHTING_ESTA_CODE;
   }
-  str << "&pid=" << pid;
+  str << "&amp;pid=" << pid;
   return str.str();
 }
 
@@ -223,7 +223,7 @@ int main(int argc, char* argv[]) {
       &argc,
       argv,
       "[options]",
-      "generate Markdown tables for each models supported parameters");
+      "generate Markdown tables for each model's supported parameters");
 
   PidStoreHelper pid_helper(FLAGS_pid_location.str());
   if (!pid_helper.Init()) {
