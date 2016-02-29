@@ -287,14 +287,14 @@ int MovingLightModel_SetUInt32(const RDMHeader *header,
 }
 
 int MovingLightModel_GetFactoryDefaults(const RDMHeader *header,
-                                        const uint8_t *param_data) {
+                                        UNUSED const uint8_t *param_data) {
   bool using_defaults = (g_moving_light.using_factory_defaults &&
                          g_responder->using_factory_defaults);
   return RDMResponder_GenericGetBool(header, using_defaults);
 }
 
 int MovingLightModel_SetFactoryDefaults(const RDMHeader *header,
-                                        const uint8_t *param_data) {
+                                        UNUSED const uint8_t *param_data) {
   if (header->param_data_length != 0u) {
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
@@ -364,7 +364,8 @@ int MovingLightModel_SetPowerState(const RDMHeader *header,
     return RDMResponder_BuildNack(header, NR_FORMAT_ERROR);
   }
 
-  if (param_data[0] > POWER_STATE_NORMAL) {
+  if (param_data[0] > POWER_STATE_STANDBY &&
+      param_data[0] != POWER_STATE_NORMAL) {
     return RDMResponder_BuildNack(header, NR_DATA_OUT_OF_RANGE);
   }
   if (g_moving_light.power_state != param_data[0]) {

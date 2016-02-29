@@ -35,5 +35,10 @@ include tests/Makefile.mk
 endif
 
 include tools/Makefile.mk
+include user_manual/Makefile.mk
 
 check_PROGRAMS = $(TESTS)
+
+doc-gen: user_manual/pid_gen/pid_gen
+	./user_manual/pid_gen/pid_gen --output-dir user_manual/gen
+

@@ -3,6 +3,7 @@ noinst_LTLIBRARIES += firmware/src/libcoarsetimer.la \
                       firmware/src/libflags.la \
                       firmware/src/libledmodel.la \
                       firmware/src/libmessagehandler.la \
+                      firmware/src/libmovinglightmodel.la \
                       firmware/src/libnetworkmodel.la \
                       firmware/src/libproxymodel.la \
                       firmware/src/librandom.la \
@@ -12,6 +13,7 @@ noinst_LTLIBRARIES += firmware/src/libcoarsetimer.la \
                       firmware/src/librdmutil.la \
                       firmware/src/libreceivercounters.la \
                       firmware/src/libresponder.la \
+                      firmware/src/libsensormodel.la \
                       firmware/src/libspi.la \
                       firmware/src/libspirgb.la \
                       firmware/src/libstreamdecoder.la \
@@ -39,6 +41,9 @@ firmware_src_libnetworkmodel_la_CFLAGS = $(BUILD_FLAGS)
 firmware_src_libproxymodel_la_SOURCES = firmware/src/proxy_model.c
 firmware_src_libproxymodel_la_CFLAGS = $(BUILD_FLAGS)
 
+firmware_src_libmovinglightmodel_la_SOURCES = firmware/src/moving_light.c
+firmware_src_libmovinglightmodel_la_CFLAGS = $(BUILD_FLAGS)
+
 firmware_src_librandom_la_SOURCES = firmware/src/random.c
 firmware_src_librandom_la_CFLAGS = $(BUILD_FLAGS)
 
@@ -59,6 +64,9 @@ firmware_src_libreceivercounters_la_CFLAGS = $(BUILD_FLAGS)
 
 firmware_src_libresponder_la_SOURCES = firmware/src/responder.c
 firmware_src_libresponder_la_CFLAGS = $(BUILD_FLAGS)
+
+firmware_src_libsensormodel_la_SOURCES = firmware/src/sensor_model.c
+firmware_src_libsensormodel_la_CFLAGS = $(BUILD_FLAGS)
 
 firmware_src_libspirgb_la_SOURCES = firmware/src/spi_rgb.c
 firmware_src_libspirgb_la_CFLAGS = $(BUILD_FLAGS)
