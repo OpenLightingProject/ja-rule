@@ -65,7 +65,7 @@ before_install:
  # Required for Doxygen 1.8.8+
  - sudo add-apt-repository ppa:kedazo/doxygen-updates-precise -y
  - sudo apt-get update -qq
- - sudo apt-get install --force-yes ola ola-dev libprotobuf-dev
+ - sudo apt-get install --force-yes ola libola-dev libprotobuf-dev
  #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
  - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then sudo apt-get install -qq g++-5; fi
  - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
