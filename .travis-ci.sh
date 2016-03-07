@@ -8,6 +8,8 @@ CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cppli
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
 if [[ $TASK = 'lint' ]]; then
+  # We want the worst exit status when piping
+  set -o pipefail
   # run the lint tool only if it is the requested task
   # first check we've not got any generic NOLINTs
   # count the number of generic NOLINTs
@@ -28,7 +30,8 @@ if [[ $TASK = 'lint' ]]; then
     --extensions=c \
     Bootloader/firmware/src/*.c \
     $(find common boardcfg tools -name "*.c") \
-    firmware/src/*.c
+    firmware/src/*.c \
+  2>&1 | tee -a cpplint.log
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
@@ -38,10 +41,12 @@ if [[ $TASK = 'lint' ]]; then
     Bootloader/firmware/src/*.h \
     $(find common boardcfg tools -name "*.h" -type f) \
     firmware/src/*.h \
-    tests/{include,lib,sim,system_config,tests}/*.{h,cpp}
+    tests/{include,lib,sim,system_config,tests}/*.{h,cpp} \
+  2>&1 | tee -a cpplint.log
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
+  ./scripts/verify_cpplint_coverge.py ./ ./cpplint.log
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
   ./scripts/enforce_licence.py
