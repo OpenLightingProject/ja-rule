@@ -18,8 +18,8 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef TESTS_MOCKS_RDMRESPONDERMOCK_H_
-#define TESTS_MOCKS_RDMRESPONDERMOCK_H_
+#ifndef TESTS_MOCKS_RDMHANDLERMOCK_H_
+#define TESTS_MOCKS_RDMHANDLERMOCK_H_
 
 #include <gmock/gmock.h>
 
@@ -38,4 +38,4 @@ class MockRDMHandler {
 
 void RDMHandler_SetMock(MockRDMHandler* mock);
 
-#endif  // TESTS_MOCKS_RDMRESPONDERMOCK_H_
+#endif  // TESTS_MOCKS_RDMHANDLERMOCK_H_
