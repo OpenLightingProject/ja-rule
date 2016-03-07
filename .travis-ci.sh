@@ -8,8 +8,6 @@ CPP_LINT_URL="https://raw.githubusercontent.com/google/styleguide/gh-pages/cppli
 COVERITY_SCAN_BUILD_URL="https://scan.coverity.com/scripts/travisci_build_coverity_scan.sh"
 
 if [[ $TASK = 'lint' ]]; then
-  # We want the worst exit status when piping
-  set -o pipefail
   # run the lint tool only if it is the requested task
   # first check we've not got any generic NOLINTs
   # count the number of generic NOLINTs
@@ -24,6 +22,8 @@ if [[ $TASK = 'lint' ]]; then
   fi;
   wget -O cpplint.py $CPP_LINT_URL;
   chmod u+x cpplint.py;
+  # We want the worst exit status when piping
+  set -o pipefail
   # We can only do limited lint on the C firmware, as it's not C++
   ./cpplint.py \
     --filter=-legal/copyright,-build/include,-readability/casting \
