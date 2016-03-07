@@ -41,7 +41,7 @@ if [[ $TASK = 'lint' ]]; then
     Bootloader/firmware/src/*.h \
     $(find common boardcfg tools -name "*.h" -type f) \
     firmware/src/*.h \
-    tests/{include,lib,sim,system_config,tests}/*.{h,cpp} \
+    tests/{include,lib,sim,system_config,tests,mocks}/*.{h,cpp} \
   2>&1 | tee -a cpplint.log
   if [[ $? -ne 0 ]]; then
     exit 1;

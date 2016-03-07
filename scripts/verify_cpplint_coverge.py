@@ -41,6 +41,9 @@ IGNORE_PATTERNS = [
   'src/system_config/*',
   'tests/src/system_config/*',
   'tests/boot_src/system_config/*',
+  'boardcfg/ethernet_sk2/app_pipeline.h', # Symlink
+  'boardcfg/number1/app_pipeline.h', # Symlink
+  'boardcfg/number8/app_pipeline.h', # Symlink
 ]
 
 
