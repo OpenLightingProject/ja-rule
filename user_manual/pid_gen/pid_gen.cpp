@@ -32,6 +32,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <string>
 #include <algorithm>
 #include <fstream>
 #include <memory>

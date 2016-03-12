@@ -55,6 +55,14 @@ if [[ $TASK = 'lint' ]]; then
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
+  # Check the user_manual utilities
+  ./cpplint.py \
+    --filter=-legal/copyright,-build/include,-readability/streams \
+    user_manual/pid_gen/*.{h,cpp} \
+  2>&1 | tee -a cpplint.log
+  if [[ $? -ne 0 ]]; then
+    exit 1;
+  fi;
   ./scripts/verify_cpplint_coverge.py ./ ./cpplint.log
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
