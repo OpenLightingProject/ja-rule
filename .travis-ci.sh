@@ -35,6 +35,14 @@ if [[ $TASK = 'lint' ]]; then
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
+  # Use a bit more care on the dummy Harmony headers
+  ./cpplint.py \
+    --filter=-legal/copyright,-build/include,-readability/braces \
+    $(find tests/harmony/ -name "*.h" -type f) \
+  2>&1 | tee -a cpplint.log
+  if [[ $? -ne 0 ]]; then
+    exit 1;
+  fi;
   # Check everything else, including the firmware headers, more thoroughly
   ./cpplint.py \
     --filter=-legal/copyright,-build/include \
@@ -42,7 +50,7 @@ if [[ $TASK = 'lint' ]]; then
     $(find common boardcfg tools -name "*.h" -type f) \
     firmware/src/*.h \
     tests/{include,sim,system_config,tests,mocks}/*.{h,cpp} \
-    $(find tests/harmony/ -name "*.cpp" -o -name "*.h" -type f) \
+    $(find tests/harmony/ -name "*.cpp" -type f) \
   2>&1 | tee -a cpplint.log
   if [[ $? -ne 0 ]]; then
     exit 1;
