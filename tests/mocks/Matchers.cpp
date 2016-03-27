@@ -48,16 +48,14 @@ bool MemoryCompare(
       uint8_t actual = data[i];
       uint8_t expected = reinterpret_cast<const uint8_t*>(expected_data)[i];
 
-      *listener
-         << "\n" << i << ": 0x" << std::hex
-         << static_cast<int>(expected)
-         << (expected == actual ? " == " : " != ")
-         << "0x" << static_cast<int>(actual) << " ("
-         << (std::isprint(expected) ? static_cast<char>(expected) : ' ')
-         << (expected == actual ? " == " : " != ")
-         << (std::isprint(actual) ? static_cast<char>(actual) : ' ')
-         << ")" << std::dec;
-
+      *listener << "\n" << i << ": 0x" << std::hex
+                << static_cast<int>(expected)
+                << (expected == actual ? " == " : " != ")
+                << "0x" << static_cast<int>(actual) << " ("
+                << (std::isprint(expected) ? static_cast<char>(expected) : ' ')
+                << (expected == actual ? " == " : " != ")
+                << (std::isprint(actual) ? static_cast<char>(actual) : ' ')
+                << ")" << std::dec;
     }
     listener->stream()->flags(ostream_flags);
   }

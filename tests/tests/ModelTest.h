@@ -65,4 +65,4 @@ class ModelTest : public testing::Test {
   int InvokeRDMHandler(const ola::rdm::RDMRequest *request);
 };
 
-#endif   // TESTS_TESTS_MODELTEST_H_
+#endif  // TESTS_TESTS_MODELTEST_H_

@@ -18,8 +18,8 @@
  * Copyright (C) 2015 Simon Newton
  */
 
-#ifndef TESTS_MOCKS_BOOTLOADOPTIONSMOCK_H_
-#define TESTS_MOCKS_BOOTLOADOPTIONSMOCK_H_
+#ifndef TESTS_MOCKS_BOOTLOADEROPTIONSMOCK_H_
+#define TESTS_MOCKS_BOOTLOADEROPTIONSMOCK_H_
 
 #include <gmock/gmock.h>
 #include "bootloader_options.h"
@@ -32,4 +32,4 @@ class MockBootloaderOptions {
 
 void BootloaderOptions_SetMock(MockBootloaderOptions* mock);
 
-#endif  // TESTS_MOCKS_BOOTLOADOPTIONSMOCK_H_
+#endif  // TESTS_MOCKS_BOOTLOADEROPTIONSMOCK_H_
