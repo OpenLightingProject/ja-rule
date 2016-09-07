@@ -74,7 +74,8 @@ before_install:
  #Remove the old g++/gcc to ensure we're using the latest ones
  - if [ "$CXX" = "g++-4.9" -o "$CXX" = "g++-5" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
  #Install latest clang if we're compiling with clang
- - if [ "$CXX" = "clang++" -a "$CLANG_VERSION" = "3.8" ]; then sudo apt-get install clang-3.8; fi
+ #clang-3.8 packages seem to be unsigned so need forcing
+ - if [ "$CXX" = "clang++" -a "$CLANG_VERSION" = "3.8" ]; then sudo apt-get install --force-yes clang-3.8; fi
  - if [ "$CXX" = "clang++" -a "$CLANG_VERSION" = "3.8" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
  #Install latest working clang if we're compiling with clang
  - if [ "$CXX" = "clang++" -a "$CLANG_VERSION" = "3.7" ]; then sudo apt-get install -qq clang-3.7; fi
