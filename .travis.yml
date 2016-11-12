@@ -92,7 +92,7 @@ before_install:
 
 after_success:
  - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
- - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-5 -b . -e Bootloader/firmware/src/system_config -e firmware/src/system_config -e harmony -e tests -e tools -e gtest-read-only -e boardcfg -e config.h --gcov-options '\-lp' > /dev/null; fi
+ - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-6 -b . -e Bootloader/firmware/src/system_config -e firmware/src/system_config -e harmony -e tests -e tools -e gtest-read-only -e boardcfg -e config.h --gcov-options '\-lp' > /dev/null; fi
 
 after_failure:
  - cat /home/travis/build/${TRAVIS_REPO_SLUG}/config.log
