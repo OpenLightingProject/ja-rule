@@ -24,8 +24,9 @@ if [[ $TASK = 'lint' ]]; then
   chmod u+x cpplint.py;
   # We want the worst exit status when piping
   set -o pipefail
+  # Line buffer stdout and stderr to stop them being mixed together within a line
   # We can only do limited lint on the C firmware, as it's not C++
-  ./cpplint.py \
+  stdbuf -oL -eL ./cpplint.py \
     --filter=-legal/copyright,-build/include,-readability/casting \
     --extensions=c \
     Bootloader/firmware/src/*.c \
@@ -36,7 +37,7 @@ if [[ $TASK = 'lint' ]]; then
     exit 1;
   fi;
   # Use a bit more care on the dummy Harmony headers
-  ./cpplint.py \
+  stdbuf -oL -eL ./cpplint.py \
     --filter=-legal/copyright,-build/include,-readability/braces \
     $(find tests/harmony/ -name "*.h" -type f) \
   2>&1 | tee -a cpplint.log
@@ -44,7 +45,7 @@ if [[ $TASK = 'lint' ]]; then
     exit 1;
   fi;
   # Check everything else, including the firmware headers, more thoroughly
-  ./cpplint.py \
+  stdbuf -oL -eL ./cpplint.py \
     --filter=-legal/copyright,-build/include \
     Bootloader/firmware/src/*.h \
     $(find common boardcfg tools -name "*.h" -type f) \
@@ -56,7 +57,7 @@ if [[ $TASK = 'lint' ]]; then
     exit 1;
   fi;
   # Check the user_manual utilities
-  ./cpplint.py \
+  stdbuf -oL -eL ./cpplint.py \
     --filter=-legal/copyright,-build/include,-readability/streams \
     user_manual/pid_gen/*.{h,cpp} \
   2>&1 | tee -a cpplint.log

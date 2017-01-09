@@ -7,13 +7,7 @@ matrix:
   fast_finish: true
   include:
     - compiler: clang
-      env:
-        - TASK='compile'
-        - CLANG_VERSION='3.8'
-    - compiler: clang
-      env:
-        - TASK='compile'
-        - CLANG_VERSION='3.7'
+      env: TASK='compile'
     - compiler: gcc
       env: TASK='compile'
     - compiler: gcc
@@ -25,10 +19,6 @@ matrix:
     - env: TASK='lint'
     - env: TASK='check-licences'
   allow_failures:
-    - compiler: clang
-      env:
-        - TASK='compile'
-        - CLANG_VERSION='3.8'
     - compiler: gcc
       env: TASK='coverage'
     - compiler: gcc
@@ -37,7 +27,7 @@ matrix:
 env:
   global:
    # -- BEGIN Coverity Scan ENV
-   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="autoreconf -i && ./configure"
+   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-4.9 && autoreconf -i && ./configure"
    # The build command with all of the arguments that you would apply to a manual `cov-build`
    # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
    - COVERITY_SCAN_BUILD_COMMAND="make"
@@ -59,28 +49,26 @@ before_install:
  - sudo rm /etc/apt/sources.list.d/mongodb.list
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
  - sudo add-apt-repository ppa:voltvisionfrenchy/ola -y
- - sudo add-apt-repository "deb http://llvm.org/apt/precise/ llvm-toolchain-precise main" -y
- - sudo add-apt-repository "deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.7 main" -y
- - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+ - sudo add-apt-repository "deb http://apt.llvm.org/precise/ llvm-toolchain-precise-3.8 main" -y
+ - sudo add-apt-repository "deb http://apt.llvm.org/precise/ llvm-toolchain-precise-3.7 main" -y
+ - wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
  # Required for Doxygen 1.8.8+
  - sudo add-apt-repository ppa:kedazo/doxygen-updates-precise -y
  - sudo apt-get update -qq
  - sudo apt-get install --force-yes ola libola-dev libprotobuf-dev
  #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
- - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then sudo apt-get install -qq g++-5; fi
- - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
+ - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then sudo apt-get install -qq g++-6; fi
+ - if [ "$TASK" != "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-6" CC="gcc-6"; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.9; fi
  - if [ "$TASK" = "coverity" -a "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
  #Remove the old g++/gcc to ensure we're using the latest ones
  - if [ "$CXX" = "g++-4.9" -o "$CXX" = "g++-5" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
  #Install latest clang if we're compiling with clang
- - if [ "$CXX" = "clang++" -a "$CLANG_VERSION" = "3.8" ]; then sudo apt-get install -qq clang-3.8; fi
- - if [ "$CXX" = "clang++" -a "$CLANG_VERSION" = "3.8" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
- #Install latest working clang if we're compiling with clang
- - if [ "$CXX" = "clang++" -a "$CLANG_VERSION" = "3.7" ]; then sudo apt-get install -qq clang-3.7; fi
- - if [ "$CXX" = "clang++" -a "$CLANG_VERSION" = "3.7" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
+ #clang-3.8 packages seem to be unsigned so need forcing
+ - if [ "$CXX" = "clang++" ]; then sudo apt-get install --force-yes -qq clang-3.8; fi
+ - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
  #Remove the old clang to ensure we're using the latest ones
- - if [ "$CXX" = "clang++-3.7" -o "$CXX" = "clang++-3.8" ]; then sudo rm /usr/local/clang-3.4/bin/clang; sudo rm /usr/local/clang-3.4/bin/clang++; fi
+ - if [ "$CXX" = "clang++-3.8" ]; then sudo rm /usr/local/clang-3.4/bin/clang; sudo rm /usr/local/clang-3.4/bin/clang++; fi
  #Report the compiler version
  - $CXX --version
  #Install coveralls if required
@@ -90,8 +78,8 @@ before_install:
  - if [ "$TASK" = "compile" -o "$TASK" = "doxygen" -o "$TASK" = "doxygen-manual" -o "$TASK" = "coverage" -o "$TASK" = "coverity" ]; then ./install-gmock.sh; fi
 
 after_success:
- - if [ "$TASK" = "coverity" ]; then cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
- - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-5 -b . -e Bootloader/firmware/src/system_config -e firmware/src/system_config -e harmony -e tests -e tools -e gtest-read-only -e boardcfg -e config.h --gcov-options '\-lp' > /dev/null; fi
+ - if [ "$TASK" = "coverity" ]; then tail -n 10000 /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/build-log.txt; cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
+ - if [ "$TASK" = "coverage" ]; then coveralls --gcov /usr/bin/gcov-6 -b . -e Bootloader/firmware/src/system_config -e firmware/src/system_config -e harmony -e tests -e tools -e gtest-read-only -e boardcfg -e config.h --gcov-options '\-lp' > /dev/null; fi
 
 after_failure:
  - cat /home/travis/build/${TRAVIS_REPO_SLUG}/config.log

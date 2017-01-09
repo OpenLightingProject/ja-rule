@@ -283,7 +283,7 @@ class TransceiverTest : public testing::Test {
   }
 
  protected:
-  std::auto_ptr<PeripheralUART::TXCallback> m_tx_callback;
+  std::unique_ptr<PeripheralUART::TXCallback> m_tx_callback;
   std::unique_ptr<ola::Callback0<void>> m_callback;
 
   Simulator m_simulator;
