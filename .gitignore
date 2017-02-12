@@ -86,3 +86,4 @@ user_manual/doxygen_entrydb_*.tmp
 user_manual/doxygen_objdb_*.tmp
 user_manual/doxygen_sqlite3.db
 user_manual/html/
+user_manual/pid_gen/pid_gen
