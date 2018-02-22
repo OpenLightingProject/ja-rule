@@ -97,9 +97,7 @@ AC_ARG_WITH([gmock],
 GMOCK_INCLUDES="-isystem $with_gmock/googlemock/include"
 GMOCK_LIBS="$PTHREAD_CFLAGS $with_gmock/googlemock/lib/.libs/libgmock_main.a $with_gmock/googlemock/lib/.libs/libgmock.a"
 GTEST_INCLUDES="-isystem $with_gmock/googletest/include"
-# Ideally do some clever detection of which flavour of gmock people have, for now they'll just need to upgrade...
-# GTEST_LIBS="$PTHREAD_CFLAGS $with_gmock/googletest/lib/.libs/libgtest.a $with_gmock/googletest/lib/.libs/libgtest_main.a"
-GTEST_LIBS="$PTHREAD_CFLAGS $with_gmock/googletest/googletest/lib/.libs/libgtest.a $with_gmock/googletest/googlemock/lib/.libs/libgmock_main.a"
+GTEST_LIBS="$PTHREAD_CFLAGS $with_gmock/googletest/lib/.libs/libgtest.a $with_gmock/googletest/lib/.libs/libgtest_main.a"
 
 # save CPPFLAGS
 old_cppflags=$CPPFLAGS
