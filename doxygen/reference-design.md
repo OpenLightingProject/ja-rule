@@ -18,6 +18,10 @@ You'll also need an I/O breakout board:
 [PIC32 I/O Expansion Board (DM320002)]
 (http://www.microchipdirect.com/ProductSearch.aspx?keywords=DM320002)
 
+The hardware design for the [Number1]
+(https://github.com/OpenLightingProject/ja-rule/tree/master/hardware/number1)
+is also available to look at.
+
 # Pin Assignments {#reference-pin-assignments}
 
 On the DM320004-2 starter kit, with the DM320002 I/O board, the pin

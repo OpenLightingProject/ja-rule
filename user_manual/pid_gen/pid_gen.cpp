@@ -205,15 +205,15 @@ void GenerateTable(PidStoreHelper *pid_helper, const ModelProperties &model) {
     if (!descriptor) {
       cerr << "Failed to find descriptor for " << ola::strings::ToHex(pid)
            << endl;
+    } else {
+      PidEntry entry = {
+        descriptor->Name(),
+        pid,
+        descriptor->GetRequest() != nullptr,
+        descriptor->SetRequest() != nullptr,
+      };
+      rows.push_back(entry);
     }
-
-    PidEntry entry = {
-      descriptor->Name(),
-      pid,
-      descriptor->GetRequest() != nullptr,
-      descriptor->SetRequest() != nullptr,
-    };
-    rows.push_back(entry);
   }
   std::sort(rows.begin(), rows.end());
   OutputTable(model.name, rows);

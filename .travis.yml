@@ -27,7 +27,7 @@ matrix:
 env:
   global:
    # -- BEGIN Coverity Scan ENV
-   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-4.9 && autoreconf -i && ./configure"
+   - COVERITY_SCAN_BUILD_COMMAND_PREPEND="cov-configure --comptype gcc --compiler gcc-4.9 --template && autoreconf -i && ./configure"
    # The build command with all of the arguments that you would apply to a manual `cov-build`
    # Usually this is the same as STANDARD_BUILD_COMMAND, exluding the automated test arguments
    - COVERITY_SCAN_BUILD_COMMAND="make"
@@ -45,15 +45,16 @@ env:
 cache: apt
 
 before_install:
- # Remove some flaky repos that keep timing out
- - sudo rm /etc/apt/sources.list.d/mongodb.list
+ # Remove some flaky repos that keep timing out, probably not necessary any more
+ - if [ -e /etc/apt/sources.list.d/mongodb.list ]; then sudo rm /etc/apt/sources.list.d/mongodb.list; fi
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
  - sudo add-apt-repository ppa:voltvisionfrenchy/ola -y
+ - sudo add-apt-repository "deb http://apt.llvm.org/precise/ llvm-toolchain-precise main" -y
  - sudo add-apt-repository "deb http://apt.llvm.org/precise/ llvm-toolchain-precise-3.8 main" -y
  - sudo add-apt-repository "deb http://apt.llvm.org/precise/ llvm-toolchain-precise-3.7 main" -y
  - wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
  # Required for Doxygen 1.8.8+
- - sudo add-apt-repository ppa:kedazo/doxygen-updates-precise -y
+ - sudo add-apt-repository ppa:techzilla/doxygen-backport -y
  - sudo apt-get update -qq
  - sudo apt-get install --force-yes ola libola-dev libprotobuf-dev
  #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
@@ -65,10 +66,10 @@ before_install:
  - if [ "$CXX" = "g++-4.9" -o "$CXX" = "g++-5" ]; then sudo rm /usr/bin/g++; sudo rm /usr/bin/gcc; fi
  #Install latest clang if we're compiling with clang
  #clang-3.8 packages seem to be unsigned so need forcing
- - if [ "$CXX" = "clang++" ]; then sudo apt-get install --force-yes -qq clang-3.8; fi
- - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.8" CC="clang-3.8"; fi
+ - if [ "$CXX" = "clang++" ]; then sudo apt-get install --force-yes -qq clang-5.0; fi
+ - if [ "$CXX" = "clang++" ]; then export CXX="clang++-5.0" CC="clang-5.0"; fi
  #Remove the old clang to ensure we're using the latest ones
- - if [ "$CXX" = "clang++-3.8" ]; then sudo rm /usr/local/clang-3.4/bin/clang; sudo rm /usr/local/clang-3.4/bin/clang++; fi
+ - if [ "$CXX" = "clang++-5.0" -a -e /usr/local/clang-3.4/bin/clang ]; then sudo rm /usr/local/clang-3.4/bin/clang; sudo rm /usr/local/clang-3.4/bin/clang++; fi
  #Report the compiler version
  - $CXX --version
  #Install coveralls if required
