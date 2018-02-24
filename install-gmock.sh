@@ -11,7 +11,9 @@ else
   git clone $GTEST_REPO $GTEST_DIRECTORY
   cd $GTEST_DIRECTORY;
 fi
-cd googlemock
+# Ideally do some clever detection of which flavour of gmock people have, for
+# now they'll just need to upgrade...
+#cd googlemock
 autoreconf -fi
 ./configure
 make
