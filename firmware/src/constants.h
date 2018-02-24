@@ -280,7 +280,7 @@ typedef enum {
  *
  * Measured in 10ths of a millisecond. This can be 0, since we don't expect
  * responses from broadcast messages, however by waiting we can detect bad
- * responders, so we set this the same as DEFAULT_RDM_WAIT_TIME.
+ * responders, so we set this the same as DEFAULT_RDM_RESPONSE_TIMEOUT.
  */
 #define DEFAULT_RDM_BROADCAST_TIMEOUT 28u
 
