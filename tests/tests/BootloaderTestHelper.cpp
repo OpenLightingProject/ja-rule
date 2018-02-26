@@ -61,7 +61,7 @@ using testing::_;
     case DFU_STATE_ERROR:
       return os << "DFU_STATE_ERROR(10)";
     default:
-      return os << "UKNOWN(" << state << ")";
+      return os << "UNKNOWN(" << state << ")";
   }
 }
 
@@ -100,7 +100,7 @@ using testing::_;
     case DFU_STATUS_ERR_STALLED_PKT:
       return os << "DFU_STATUS_ERR_STALLED_PKT(0x0f)";
     default:
-      return os << "UKNOWN(" << status << ")";
+      return os << "UNKNOWN(" << status << ")";
   }
 }
 

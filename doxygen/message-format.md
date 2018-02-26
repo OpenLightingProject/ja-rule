@@ -149,7 +149,7 @@ The response contains no data.
 
 ## Get Hardware Information  {#message-commands-gethardware}
 
-Get the hardware infomation for the device.
+Get the hardware information for the device.
 
 ### Request Payload {#message-commands-gethardware-req}
 

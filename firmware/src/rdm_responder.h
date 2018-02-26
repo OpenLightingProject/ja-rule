@@ -35,7 +35,7 @@
  *    supported parameters list etc.
  *  - the global RDMResponder g_responder object, which holds basic state like
  *    mute, identify etc.
- *  - The PID dispatching mechanism, where we specifiy a table of function
+ *  - The PID dispatching mechanism, where we specify a table of function
  *    pointers as part of the responder definition and then later, when a RDM
  *    request arrives, RDMResponder_DispatchPID() is called which invokes the
  *    correct function. You can think of this like a vtable in C++.
@@ -252,7 +252,7 @@ typedef struct {
   const char *software_version_label;  //!< The software version label.
   const char *manufacturer_label;  //!< The manufacturer label.
   const char *model_description;  //!< The model description.
-  const char *default_device_label;  //!< The defaut device label.
+  const char *default_device_label;  //!< The default device label.
 
   /**
    * @brief The list of product IDs.
@@ -464,7 +464,7 @@ int RDMResponder_DispatchPID(const RDMHeader *incoming_header,
 /**
  * @brief A base Ioctl handler.
  * @param command The ioctl command to run.
- * @param data arbitary data, depends on the ModelIoctl.
+ * @param data arbitrary data, depends on the ModelIoctl.
  * @param length the size of the data.
  * @returns An int, the meaning of which depends on the ModelIoctl.
  */
