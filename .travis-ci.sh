@@ -118,10 +118,6 @@ elif [[ $TASK = 'coverity' ]]; then
   fi;
 elif [[ $TASK = 'codespell' ]]; then
   # run codespell only if it is the requested task
-  autoreconf -i && ./configure --without-ola
-  # the following is a bit of a hack to build the files normally built during
-  # the build, so they are present for codespell to run against
-  #make builtfiles
   spellingfiles=$(find ./ -type f -and ! \( \
       -wholename "./.git/*" \
       \) | xargs)
