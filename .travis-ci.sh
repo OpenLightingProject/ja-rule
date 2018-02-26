@@ -116,6 +116,25 @@ elif [[ $TASK = 'coverity' ]]; then
   else
     echo "Skipping Coverity Scan as no token found, probably a Pull Request"
   fi;
+elif [[ $TASK = 'codespell' ]]; then
+  # run codespell only if it is the requested task
+  autoreconf -i && ./configure --without-ola
+  # the following is a bit of a hack to build the files normally built during
+  # the build, so they are present for codespell to run against
+  #make builtfiles
+  spellingfiles=$(find ./ -type f -and ! \( \
+      -wholename "./.git/*" \
+      \) | xargs)
+  # count the number of codespell errors
+  spellingerrors=$(zrun codespell --check-filenames --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignore $spellingfiles 2>&1 | wc -l)
+  if [[ $spellingerrors -ne 0 ]]; then
+    # print the output for info
+    zrun codespell --check-filenames --quiet 2 --regex "[a-zA-Z0-9][\\-'a-zA-Z0-9]+[a-zA-Z0-9]" --exclude-file .codespellignore $spellingfiles
+    echo "Found $spellingerrors spelling errors via codespell"
+    exit 1;
+  else
+    echo "Found $spellingerrors spelling errors via codespell"
+  fi;
 else
   # Otherwise compile and check as normal
   autoreconf -i && ./configure && make check
