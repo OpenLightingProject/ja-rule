@@ -18,6 +18,15 @@ matrix:
     - env: TASK='doxygen-manual'
     - env: TASK='lint'
     - env: TASK='check-licences'
+    - os: linux
+      dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
+      env: TASK='codespell'
+      addons:
+        apt:
+          packages:
+           - moreutils
   allow_failures:
     - compiler: gcc
       env: TASK='coverage'
@@ -77,6 +86,7 @@ before_install:
  #Install doxygen if required
  - if [ "$TASK" = "doxygen" -o "$TASK" = "doxygen-manual" ]; then sudo apt-get install -qq doxygen graphviz; fi
  - if [ "$TASK" = "compile" -o "$TASK" = "doxygen" -o "$TASK" = "doxygen-manual" -o "$TASK" = "coverage" -o "$TASK" = "coverity" ]; then ./install-gmock.sh; fi
+ - if [ "$TASK" = "codespell" ]; then pip install git+https://github.com/lucasdemarchi/codespell.git; fi
 
 after_success:
  - if [ "$TASK" = "coverity" ]; then tail -n 10000 /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/build-log.txt; cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
