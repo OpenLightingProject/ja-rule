@@ -48,7 +48,7 @@ extern "C" {
  * modules (APP_Initialize).
  *
  * Remember that pins will default to analog if they share a function with the
- * A/D Convertor. If any of your pins share with the ADC, you'll need to change
+ * A/D Converter. If any of your pins share with the ADC, you'll need to change
  * them to digital mode. This should be done using this hook.
  */
 #define PRE_APP_INIT_HOOK Number8_PreAppHook

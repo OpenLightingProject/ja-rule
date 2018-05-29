@@ -77,7 +77,7 @@ bool RDMUtil_IsUnicast(const uint8_t uid[UID_LENGTH]);
 
 /**
  * @brief Verify the checksum of an RDM frame.
- * @param frame The frame data, begining with the start code.
+ * @param frame The frame data, beginning with the start code.
  * @param size The size of the frame data.
  * @returns True if the checksum was correct, false otherwise.
  *

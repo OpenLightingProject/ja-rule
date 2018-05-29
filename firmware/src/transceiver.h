@@ -98,7 +98,7 @@ extern "C" {
 extern const int16_t TRANSCEIVER_NO_NOTIFICATION;
 
 /**
- * @brief The operating modes of the transciever.
+ * @brief The operating modes of the transceiver.
  */
 typedef enum {
   T_MODE_CONTROLLER,  //!< An RDM controller and/or source of DMX512
@@ -124,7 +124,7 @@ typedef enum {
  * @brief The result of an operation.
  */
 typedef enum {
-  T_RESULT_OK,  //!< The operation completed sucessfully.
+  T_RESULT_OK,  //!< The operation completed successfully.
 
   T_RESULT_TX_ERROR,  //!< A TX error occurred.
   T_RESULT_RX_DATA,  //!< Data was received.

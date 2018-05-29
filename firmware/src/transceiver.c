@@ -72,12 +72,12 @@ typedef enum {
   STATE_C_RX_DATA = 9,  //!< Receiving data.
   STATE_C_RX_WAIT_FOR_DUB = 10,  //!< Waiting for DUB response
   STATE_C_RX_IN_DUB = 11,  //!< In DUB response
-  STATE_C_RX_TIMEOUT = 12,  //!< A RX timeout occured.
+  STATE_C_RX_TIMEOUT = 12,  //!< A RX timeout occurred.
   STATE_C_COMPLETE = 13,  //!< Running the completion handler.
   STATE_C_BACKOFF = 14,  //!< Waiting until we can send the next break
 
   // Responder states.
-  STATE_R_INITIALIZE = 20,  //!< Initialze responder state
+  STATE_R_INITIALIZE = 20,  //!< Initialize responder state
   STATE_R_RX_PREPARE = 21,  //!< Prepare to receive frame
   STATE_R_RX_MBB = 22,  //!< In mark before break
   STATE_R_RX_BREAK = 23,  //!< In break
@@ -653,7 +653,7 @@ void __ISR(AS_IC_ISR_VECTOR(TRANSCEIVER_IC), ipl6AUTO)
         break;
 
       case STATE_R_RX_MBB:
-        // Rebase the timer to when the falling edge occured.
+        // Rebase the timer to when the falling edge occurred.
         RebaseTimer(value);
         g_transceiver.state = STATE_R_RX_BREAK;
         break;
@@ -1225,7 +1225,7 @@ void Transceiver_Tasks() {
       break;
 
     case STATE_C_RX_IN_BREAK:
-      // Disable interupts so we don't race
+      // Disable interrupts so we don't race
       SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
       if (g_transceiver.state == STATE_C_RX_IN_BREAK &&
           ((uint16_t) (PLIB_TMR_Counter16BitGet(g_hw_settings.timer_module_id) -
@@ -1304,7 +1304,7 @@ void Transceiver_Tasks() {
       if ((uint16_t) (PLIB_TMR_Counter16BitGet(g_hw_settings.timer_module_id) -
                       g_timing.dub_response.start) >
            g_timing_settings.rdm_dub_response_limit) {
-        // The UART Error interupt may have fired, putting us into
+        // The UART Error interrupt may have fired, putting us into
         // STATE_C_COMPLETE, already.
         SYS_INT_SourceDisable(g_hw_settings.input_capture_source);
         SYS_INT_SourceDisable(g_hw_settings.usart_rx_source);
