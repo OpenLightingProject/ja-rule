@@ -1,1 +1,8 @@
   // coverity[dont_call]
+using testing::AtLeast;
+        .Times(AtLeast(1));
+ |      SOM      |     Token     |            Command            |
+@param SOM The start of message identifier: @ref START_OF_MESSAGE_ID
+ |      SOM      |     Token     |            Command            |
+@param SOM The start of message identifier: @ref START_OF_MESSAGE_ID
+ * Check we don't begin a message until a valid SOM / EOM is found
