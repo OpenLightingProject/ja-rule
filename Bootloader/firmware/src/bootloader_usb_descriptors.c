@@ -104,7 +104,7 @@ static uint8_t g_config_descriptor[] = {
   0x09,  // size
   0x21,  // DFU functional descriptor
   DFU_MANIFESTATION_TOLERANT | DFU_CAN_DOWNLOAD,  // download capable
-  0x00, 0x00,  // detatch timeout
+  0x00, 0x00,  // detach timeout
   DFU_BLOCK_SIZE, 0x00,  // transfer size
   0x01, 0x10   // Rev 1.1
 };
