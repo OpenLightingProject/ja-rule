@@ -5,7 +5,7 @@
     system_exceptions.c
 
   Summary:
-    This file contains a function which overrides the deafult _weak_ exception 
+    This file contains a function which overrides the default _weak_ exception 
     handler provided by the XC32 compiler.
 
   Description:
@@ -13,7 +13,7 @@
     friendly one. If an unexpected exception occurs the code will stop in a
     while(1) loop.  The debugger can be halted and two variables _excep_code and
     _except_addr can be examined to determine the cause and address where the
-    exception occured.
+    exception occurred.
  *******************************************************************************/
 
 // DOM-IGNORE-BEGIN
@@ -42,7 +42,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
 // DOM-IGNORE-END
 
 
-#include <xc.h>                 /* Defines special funciton registers, CP0 regs  */
+#include <xc.h>                 /* Defines special function registers, CP0 regs  */
 #include "system_config.h"
 #include "system_definitions.h"
 #include "system/debug/sys_debug.h"
@@ -62,7 +62,7 @@ SUBSTITUTE GOODS, TECHNOLOGY, SERVICES, OR ANY CLAIMS BY THIRD PARTIES
   Remarks:
     These global static items are used instead of local variables in the 
     _general_exception_handler function because the stack may not be available
-    if an exception has occured.
+    if an exception has occurred.
 */
 
 /* Code identifying the cause of the exception (CP0 Cause register). */
