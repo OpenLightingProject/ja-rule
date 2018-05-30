@@ -6,3 +6,6 @@ using testing::AtLeast;
  |      SOM      |     Token     |            Command            |
 @param SOM The start of message identifier: @ref START_OF_MESSAGE_ID
  * Check we don't begin a message until a valid SOM / EOM is found
+CONFIG_USB_DEVICE_NUMBER_REGISTRED_FUNCTION_DRIVER_IDX0=1
+# from $HARMONY_VERSION_PATH/framework/net/pres/config/net_pres.hconfig
+CONFIG_NET_PRES_USE=n
