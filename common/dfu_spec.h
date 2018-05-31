@@ -35,7 +35,7 @@ extern "C" {
  * @brief DFU message types
  */
 enum {
-  DFU_DETATCH = 0,
+  DFU_DETACH = 0,
   DFU_DNLOAD = 1,
   DFU_UPLOAD = 2,
   DFU_GETSTATUS = 3,
