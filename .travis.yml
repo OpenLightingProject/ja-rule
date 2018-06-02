@@ -6,18 +6,38 @@ script:
 matrix:
   fast_finish: true
   include:
-    - compiler: clang
+    - os: linux
+      dist: trusty
+      compiler: clang
       env: TASK='compile'
-    - compiler: gcc
+    - os: linux
+      dist: trusty
+      compiler: gcc
       env: TASK='compile'
-    - compiler: gcc
+    - os: linux
+      dist: trusty
+      compiler: gcc
       env: TASK='coverage'
-    - compiler: gcc
+    - os: linux
+      dist: trusty
+      compiler: gcc
       env: TASK='coverity'
-    - env: TASK='doxygen'
-    - env: TASK='doxygen-manual'
-    - env: TASK='lint'
-    - env: TASK='check-licences'
+    - os: linux
+      dist: trusty
+      env: TASK='doxygen'
+    - os: linux
+      dist: trusty
+      env: TASK='doxygen-manual'
+    - os: linux
+      dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
+      env: TASK='lint'
+    - os: linux
+      dist: trusty
+      # Short duration job, use the container/without sudo image as it boots faster
+      sudo: false
+      env: TASK='check-licences'
     - os: linux
       dist: trusty
       # Short duration job, use the container/without sudo image as it boots faster
@@ -28,9 +48,13 @@ matrix:
           packages:
            - moreutils
   allow_failures:
-    - compiler: gcc
+    - os: linux
+      dist: trusty
+      compiler: gcc
       env: TASK='coverage'
-    - compiler: gcc
+    - os: linux
+      dist: trusty
+      compiler: gcc
       env: TASK='coverity'
 
 env:
@@ -58,9 +82,9 @@ before_install:
  - if [ -e /etc/apt/sources.list.d/mongodb.list ]; then sudo rm /etc/apt/sources.list.d/mongodb.list; fi
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
  - sudo add-apt-repository ppa:voltvisionfrenchy/ola -y
- - sudo add-apt-repository "deb http://apt.llvm.org/precise/ llvm-toolchain-precise main" -y
- - sudo add-apt-repository "deb http://apt.llvm.org/precise/ llvm-toolchain-precise-3.8 main" -y
- - sudo add-apt-repository "deb http://apt.llvm.org/precise/ llvm-toolchain-precise-3.7 main" -y
+ - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty main" -y
+ - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.8 main" -y
+ - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.7 main" -y
  - wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
  # Required for Doxygen 1.8.8+
  - sudo add-apt-repository ppa:techzilla/doxygen-backport -y
