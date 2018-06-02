@@ -42,7 +42,7 @@ extern "C" {
 /**
  * @brief The power consumption of the USB device.
  *
- * Per the USB spec, this is multipled by 2 to give the current in mA.
+ * Per the USB spec, this is multiplied by 2 to give the current in mA.
  * e.g. 50 = 100mA, 100 = 200mA
  */
 #define USB_POWER_CONSUMPTION 100

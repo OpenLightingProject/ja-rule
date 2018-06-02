@@ -15,7 +15,7 @@ state machine operates as expected.
 
 ## Limitations
 
-The key limitiation is that we execute the Tasks() function once per virtual
+The key limitation is that we execute the Tasks() function once per virtual
 clock cycle. This means that ISRs will only run between calls to Tasks().
 
 As a result, we don't test iterleaving of ISRs with the main tasks function. I

@@ -14,7 +14,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * LauncherMock.cpp
- * A mock app laucher module.
+ * A mock app launcher module.
  * Copyright (C) 2015 Simon Newton
  */
 

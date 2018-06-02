@@ -98,7 +98,7 @@ extern "C" {
 extern const int16_t TRANSCEIVER_NO_NOTIFICATION;
 
 /**
- * @brief The operating modes of the transciever.
+ * @brief The operating modes of the transceiver.
  */
 typedef enum {
   T_MODE_CONTROLLER,  //!< An RDM controller and/or source of DMX512
@@ -124,7 +124,7 @@ typedef enum {
  * @brief The result of an operation.
  */
 typedef enum {
-  T_RESULT_OK,  //!< The operation completed sucessfully.
+  T_RESULT_OK,  //!< The operation completed successfully.
 
   T_RESULT_TX_ERROR,  //!< A TX error occurred.
   T_RESULT_RX_DATA,  //!< Data was received.
@@ -186,10 +186,10 @@ typedef union {
  *
  * In controller mode an event occurs when:
  *  - A DMX frame has been completely sent.
- *  - A TX error occured.
+ *  - A TX error occurred.
  *  - A RDM frame has been broadcast.
  *  - A RDM response (either DUB or Get/Set) has been received.
- *  - A RDM timeout has occured.
+ *  - A RDM timeout has occurred.
  *
  * In responder mode, events occur when a frame is received.
  */
@@ -456,7 +456,7 @@ uint16_t Transceiver_GetRDMBroadcastTimeout();
  *
  * By setting the value less than 28, we can cause responders that are at the
  * limits of the specification to fail. By setting the value more than 28, we
- * can accomodate responders that are out-of-spec.
+ * can accommodate responders that are out-of-spec.
  */
 bool Transceiver_SetRDMResponseTimeout(uint16_t delay);
 

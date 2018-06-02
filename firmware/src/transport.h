@@ -48,7 +48,7 @@ typedef enum {
 /**
  * @brief A function pointer to send a message to the host
  * @param token The frame token, this should match the request.
- * @param command the Command indentifier to send
+ * @param command the Command identifier to send
  * @param rc The 8-bit return code.
  * @param iov A pointer to an array of IOVec structures. The data will be
  *   copied.

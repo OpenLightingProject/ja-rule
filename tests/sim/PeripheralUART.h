@@ -47,7 +47,7 @@ class PeripheralUART : public PeripheralUSARTInterface {
   // Used to push a byte of data to the receiver.
   void ReceiveByte(USART_MODULE_ID index, uint8_t byte);
 
-  // Signal a framing error has occured.
+  // Signal a framing error has occurred.
   void SignalFramingError(USART_MODULE_ID index, uint8_t byte);
 
   void Enable(USART_MODULE_ID index);

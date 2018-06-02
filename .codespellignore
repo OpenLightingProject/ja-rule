@@ -1,0 +1,13 @@
+  // coverity[dont_call]
+using testing::AtLeast;
+        .Times(AtLeast(1));
+ |      SOM      |     Token     |            Command            |
+@param SOM The start of message identifier: @ref START_OF_MESSAGE_ID
+ |      SOM      |     Token     |            Command            |
+@param SOM The start of message identifier: @ref START_OF_MESSAGE_ID
+ * Check we don't begin a message until a valid SOM / EOM is found
+CONFIG_USB_DEVICE_NUMBER_REGISTRED_FUNCTION_DRIVER_IDX0=1
+CONFIG_USB_DEVICE_NUMBER_REGISTRED_FUNCTION_DRIVER_IDX0=3
+# from $HARMONY_VERSION_PATH/framework/net/pres/config/net_pres.hconfig
+CONFIG_NET_PRES_USE=n
+  int fd = open(file, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR);

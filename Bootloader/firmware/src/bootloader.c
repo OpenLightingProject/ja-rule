@@ -166,7 +166,7 @@ static uint8_t g_status_response[GET_STATUS_RESPONSE_SIZE];
  * means we could end up with 1-3 bytes that we can't write immediately.
  *
  * The solution is to make the incoming DFU buffer slightly bigger so we can
- * accomodate this, and write them out once we receive the remaining data.
+ * accommodate this, and write them out once we receive the remaining data.
  */
 static uint8_t g_data_buffer[DFU_BLOCK_SIZE + FLASH_WORD_SIZE - 1];
 

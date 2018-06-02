@@ -126,7 +126,7 @@ typedef struct {
   /**
    * @brief The function used to deactivate an RDM Model.
    *
-   * The deactivate function is called if this modle is active, and another
+   * The deactivate function is called if this model is active, and another
    * model becomes active via a call to RDMHandler_SetActiveModel().
    */
   void (*deactivate_fn)();
@@ -134,7 +134,7 @@ typedef struct {
   /**
    * @brief The generic catch-all function.
    * @param command The ioctl command to run.
-   * @param data arbitary data, depends on the ModelIoctl.
+   * @param data arbitrary data, depends on the ModelIoctl.
    * @param length the size of the data.
    * @returns An int, the meaning of which depends on the ModelIoctl.
    * @sa ModelIoctl for a list of commands.

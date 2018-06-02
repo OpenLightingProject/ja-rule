@@ -72,7 +72,7 @@ Start Address  | End Address   | Size  | Use
 0x9d008000     | 0x9d07ffff    | 479kB | Application Code
 
 Finally, we use the Program Flash Write Protect (PWP, see the data sheet for
-the chip) feature to avoid a bug accidently overwriting the bootloader.
+the chip) feature to avoid a bug accidentally overwriting the bootloader.
 PWP is at the page-level so we write protect the first 6 pages (24k).
 
 ## RAM {#memory-organization-ram}
@@ -83,7 +83,7 @@ main application. We call this the <em>boot_option</em>.
 
 We could use flash for this, but we'd have to dedicate another
 entire page of flash (4kB) since that's the smallest granularity of a
-flash-erase and it would persist accross power-cycles, which may not be what
+flash-erase and it would persist across power-cycles, which may not be what
 we want.
 
 Instead, we store the Boot Options in the upper range of the RAM address

@@ -19,7 +19,7 @@
 
 /**
  * @defgroup flags Flags
- * @brief Flags track the occurence of abnormal events.
+ * @brief Flags track the occurrence of abnormal events.
  *
  * A flag is a single-bit variable which can be set when an abnormal event
  * occurs. The next response frame sent to the Host will have the flags-changed

@@ -49,7 +49,7 @@ static const char SOFTWARE_LABEL[] = "Alpha";
 static const char DEFAULT_DEVICE_LABEL[] = "Ja Rule";
 static const char PERSONALITY_DESCRIPTION[] = "Dimmer";
 static const uint8_t STATUS_TYPE_MASK = 0xf;
-static const uint16_t INITIAL_START_ADDRESSS = 1u;
+static const uint16_t INITIAL_START_ADDRESS = 1u;
 static const uint32_t STATUS_MESSAGE_TRIGGER_INTERVAL = 300000;  // 30s
 
 static const char LOCK_STATE_DESCRIPTION_UNLOCKED[] = "Unlocked";
@@ -1067,11 +1067,11 @@ void DimmerModel_Initialize() {
 
   // restore
   RDMResponder_RestoreResponder();
-  if (!ResetToBlockAddress(INITIAL_START_ADDRESSS)) {
+  if (!ResetToBlockAddress(INITIAL_START_ADDRESS)) {
     // Set them all to 1
     for (i = 0u; i < NUMBER_OF_SUB_DEVICES; i++) {
       RDMResponder *responder = &g_subdevices[i].responder;
-      responder->dmx_start_address = INITIAL_START_ADDRESSS;
+      responder->dmx_start_address = INITIAL_START_ADDRESS;
     }
   }
 

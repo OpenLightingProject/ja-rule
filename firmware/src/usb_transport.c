@@ -82,7 +82,7 @@ static inline bool IsDFUDetach(const USB_SETUP_PACKET *packet) {
   return (packet->RequestType == USB_SETUP_REQUEST_TYPE_CLASS &&
           packet->Recipient == USB_SETUP_REQUEST_RECIPIENT_INTERFACE &&
           packet->DataDir == USB_SETUP_REQUEST_DIRECTION_HOST_TO_DEVICE &&
-          packet->bRequest == DFU_DETATCH &&
+          packet->bRequest == DFU_DETACH &&
           packet->wIndex == RUNTIME_MODE_DFU_INTERFACE_INDEX);
 }
 
