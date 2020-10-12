@@ -34,10 +34,17 @@ The hardware designs and the documentation is licensed under the
 │       ├── src  # Bootloader source code
 ├── boardcfg     # Software configuration for each board
 ├── common  # Common code shared between the bootloader and application.
+├── config  # Autotools stuff to help with the build.
+├── data
+│   └── rdm # Standalone Number1 PID file
+├── doxygen  # Files to help generate the documentation.
 ├── firmware  # The main DMX/RDM application
 │   ├── ja-rule.X
 │   └── src
+├── hardware
+│   └── number1  # designs for the number1 hardware
 ├── linker       # linker scripts for the bootloader & application
+├── scripts      # utilities to assist with development tasks
 ├── tests        # Unit tests
 │   ├── harmony  # The mock Harmony modules
 │   ├── include  # Test headers
