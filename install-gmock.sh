@@ -11,7 +11,6 @@ else
   git clone $GTEST_REPO $GTEST_DIRECTORY
   cd $GTEST_DIRECTORY;
 fi
-cd googlemock
 mkdir build
 cd build
 cmake ..
