@@ -51,7 +51,7 @@ void USBConsole_Initialize();
  *
  * We may not buffer the entire message if the log buffer is full.
  * Since the messages are sent over a serial console, the NULL characters are
- * replaced with \n characters.
+ * replaced with \\n characters.
  */
 void USBConsole_Log(const char* message);
 
