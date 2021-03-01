@@ -81,7 +81,8 @@ before_install:
  # Remove some flaky repos that keep timing out, probably not necessary any more
  - if [ -e /etc/apt/sources.list.d/mongodb.list ]; then sudo rm /etc/apt/sources.list.d/mongodb.list; fi
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
- - sudo add-apt-repository ppa:voltvisionfrenchy/ola -y
+ # Installed directly from Ubuntu on bionic
+ - if [ "$TRAVIS_DIST" != "bionic" ]; then sudo add-apt-repository ppa:voltvisionfrenchy/ola -y; fi
  - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty main" -y
  - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main" -y
  - wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
