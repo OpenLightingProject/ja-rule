@@ -39,7 +39,7 @@ matrix:
       sudo: false
       env: TASK='check-licences'
     - os: linux
-      dist: trusty
+      dist: bionic
       # Short duration job, use the container/without sudo image as it boots faster
       sudo: false
       env: TASK='codespell'
@@ -109,7 +109,8 @@ before_install:
  #Install doxygen if required
  - if [ "$TASK" = "doxygen" -o "$TASK" = "doxygen-manual" ]; then sudo apt-get install -qq doxygen graphviz; fi
  - if [ "$TASK" = "compile" -o "$TASK" = "doxygen" -o "$TASK" = "doxygen-manual" -o "$TASK" = "coverage" -o "$TASK" = "coverity" ]; then ./install-gmock.sh; fi
- - if [ "$TASK" = "codespell" ]; then pip install --user git+https://github.com/codespell-project/codespell.git; fi
+ - if [ "$TASK" = "codespell" ]; then pyenv global 3.8.1; fi
+ - if [ "$TASK" = "codespell" ]; then pip3 install --user git+https://github.com/codespell-project/codespell.git; fi
 
 after_success:
  - if [ "$TASK" = "coverity" ]; then tail -n 10000 /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/build-log.txt; cat /home/travis/build/${TRAVIS_REPO_SLUG}/cov-int/scm_log.txt; fi
