@@ -14,3 +14,4 @@ fi
 mkdir build
 cd build
 cmake ..
+make
