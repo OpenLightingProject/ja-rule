@@ -95,9 +95,9 @@ AC_ARG_WITH([gmock],
 # This is a mess, see
 # http://stackoverflow.com/questions/27091835/undefined-reference-to-pthread-key-create-argument-order-does-not-fix-issue
 GMOCK_INCLUDES="-isystem $with_gmock/googlemock/include"
-GMOCK_LIBS="$PTHREAD_CFLAGS $with_gmock/build/googlemock/lib/.libs/libgmock_main.a $with_gmock/build/googlemock/lib/.libs/libgmock.a"
+GMOCK_LIBS="$PTHREAD_CFLAGS $with_gmock/build/lib/libgmock_main.a $with_gmock/build/lib/libgmock.a"
 GTEST_INCLUDES="-isystem $with_gmock/googletest/include"
-GTEST_LIBS="$PTHREAD_CFLAGS $with_gmock/build/googletest/lib/.libs/libgtest.a $with_gmock/build/googletest/lib/.libs/libgtest_main.a"
+GTEST_LIBS="$PTHREAD_CFLAGS $with_gmock/build/lib/libgtest.a $with_gmock/build/lib/libgtest_main.a"
 
 # save CPPFLAGS
 old_cppflags=$CPPFLAGS
