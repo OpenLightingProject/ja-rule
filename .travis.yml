@@ -82,12 +82,12 @@ before_install:
  - if [ -e /etc/apt/sources.list.d/mongodb.list ]; then sudo rm /etc/apt/sources.list.d/mongodb.list; fi
  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
  # Installed directly from Ubuntu on bionic
- - if [ "$TRAVIS_DIST" != "bionic" ]; then sudo add-apt-repository ppa:voltvisionfrenchy/ola -y; fi
- - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty main" -y
- - sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main" -y
+ - if [ "$TRAVIS_DIST" = "trusty" ]; then sudo add-apt-repository ppa:voltvisionfrenchy/ola -y; fi
  - wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+ - if [ "$TRAVIS_DIST" = "trusty" ]; then sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty main" -y; fi
+ - if [ "$TRAVIS_DIST" = "trusty" ]; then sudo add-apt-repository "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-6.0 main" -y; fi
  # Required for Doxygen 1.8.8+
- - sudo add-apt-repository ppa:techzilla/doxygen-backport -y
+ - if [ "$TRAVIS_DIST" = "trusty" ]; then sudo add-apt-repository ppa:techzilla/doxygen-backport -y; fi
  - sudo apt-get update -qq
  - sudo apt-get install --force-yes ola libola-dev libprotobuf-dev
  #Coverity doesn't work with g++ 5, so only upgrade to g++ 4.9 for that
