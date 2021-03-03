@@ -119,6 +119,8 @@ after_success:
 
 after_failure:
  - cat /home/travis/build/${TRAVIS_REPO_SLUG}/config.log
+ - sudo apt-get install tree
+ - tree /home/travis/build/${TRAVIS_REPO_SLUG}/gtest-read-only/
 
 
 #No notifications for now
