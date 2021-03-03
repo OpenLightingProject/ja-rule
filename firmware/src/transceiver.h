@@ -148,7 +148,7 @@ typedef enum {
  */
 typedef union {
   /**
-   * @brief The timing measurments for a DUB transaction.
+   * @brief The timing measurements for a DUB transaction.
    *
    * All times are measured in 10ths of a microsecond from the end of the DUB
    * frame.
@@ -159,7 +159,7 @@ typedef union {
   } dub_response;
 
   /**
-   * @brief The timing measurments for a Get / Set transaction.
+   * @brief The timing measurements for a Get / Set transaction.
    *
    * All times are measured in 10ths of a microsecond from the end of the DUB
    * frame.
