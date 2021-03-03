@@ -13,7 +13,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# verify_cpplint_coverge.py
+# verify_cpplint_coverage.py
 # Copyright (C) 2016 Peter Newman
 
 from __future__ import print_function
@@ -116,7 +116,7 @@ def main():
 
     print('\n---------------------------------------', file=sys.stderr)
     print('Either add the missing files to the cpplint run or update\n'
-          'IGNORE_PATTERNS in scripts/verify_cpplint_coverge.py',
+          'IGNORE_PATTERNS in scripts/verify_cpplint_coverage.py',
           file=sys.stderr)
     print('---------------------------------------', file=sys.stderr)
     sys.exit(1)

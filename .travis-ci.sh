@@ -64,7 +64,7 @@ if [[ $TASK = 'lint' ]]; then
   if [[ $? -ne 0 ]]; then
     exit 1;
   fi;
-  ./scripts/verify_cpplint_coverge.py ./ ./cpplint.log
+  ./scripts/verify_cpplint_coverage.py ./ ./cpplint.log
 elif [[ $TASK = 'check-licences' ]]; then
   # check licences only if it is the requested task
   ./scripts/enforce_licence.py
