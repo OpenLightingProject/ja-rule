@@ -34,6 +34,7 @@
 #include "usb_transport.h"
 
 using ::testing::Args;
+using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Mock;
 using ::testing::NotNull;
