@@ -90,7 +90,7 @@ ACX_PTHREAD([
 #####################################################
 AC_ARG_WITH([gmock],
   [AS_HELP_STRING([--with-gmock=PATH], [The location of a built gmock)])],
-  [], [with_gmock=./gtest-read-only])
+  [], [with_gmock=./gtest-read-only/build])
 
 # This is a mess, see
 # http://stackoverflow.com/questions/27091835/undefined-reference-to-pthread-key-create-argument-order-does-not-fix-issue
