@@ -43,7 +43,7 @@
  * ### Presets & Scenes.
  *
  * The root device provides 3 scenes. The first scene (index 1) is a factory
- * programed scene, which can't be modified. The 2nd and 3rd scenes can be
+ * programmed scene, which can't be modified. The 2nd and 3rd scenes can be
  * 'updated' with capture preset.
  *
  * DMX_FAIL_MODE and DMX_STARTUP_MODE can be used to change the on-failure and
