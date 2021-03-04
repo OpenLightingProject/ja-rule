@@ -181,7 +181,7 @@ TEST_P(ConfigurationTest, CheckSetGet) {
   MessageHandler_HandleMessage(&get_message);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SetCommand,
     ConfigurationTest,
     ::testing::Values(
