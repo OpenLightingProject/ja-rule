@@ -79,9 +79,9 @@ TEST_P(CoarseTimerTest, TimerWorks) {
   EXPECT_EQ(99, timer_events);
 }
 
-INSTANTIATE_TEST_CASE_P(InstantiationName,
-                        CoarseTimerTest,
-                        ::testing::Values(0, 1, 52, 0xfffffffe, 0xffffffff));
+INSTANTIATE_TEST_SUITE_P(InstantiationName,
+                         CoarseTimerTest,
+                         ::testing::Values(0, 1, 52, 0xfffffffe, 0xffffffff));
 
 TEST_F(CoarseTimerTest, interruptClear) {
   EXPECT_CALL(m_sys_int_mock, SourceStatusClear(INT_SOURCE_TIMER_2));
