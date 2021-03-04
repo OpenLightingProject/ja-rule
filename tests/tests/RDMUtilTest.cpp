@@ -190,7 +190,7 @@ TEST_P(ChecksumTest, checksumFails) {
   EXPECT_FALSE(RDMUtil_VerifyChecksum(SAMPLE_MESSAGE, GetParam()));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     sizeTooSmall,
     ChecksumTest,
     ::testing::Range(
