@@ -230,14 +230,12 @@ void ProcessHexFile(int fd, const Options *options) {
     r = read(fd, &checksum_data, sizeof(checksum_data));
     if (r != sizeof(checksum_data)) {
       printf("Failed to read checksum on line %d\n", line);
-      free(data);
       return;
     }
 
     uint8_t checksum;
     if (!HexToUInt8(checksum_data, &checksum)) {
       printf("Invalid checksum on line %d\n", line);
-      free(data);
       return;
     }
 
